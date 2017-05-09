@@ -21,6 +21,7 @@ settings['mysql_port'] = 3306
 settings['mysql_database'] = 'ten_dashboard'
 settings['mysql_user'] = 'root'
 settings['mysql_password'] = '123456'
+settings['mysql_charset'] = 'utf8mb4'
 
 
 
