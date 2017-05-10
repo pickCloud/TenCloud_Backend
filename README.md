@@ -11,7 +11,7 @@ pip install -r requirements.txt
 
 ### 创建DB
 ##### 数据库ten_dashboard
-CREATE DATABASE IF NOT EXISTS ten_dashboard DEFAULT CHARSET utf8;
+CREATE DATABASE IF NOT EXISTS ten_dashboard DEFAULT CHARSET utf8mb4;
 ##### 测试表for_test
 CREATE TABLE IF NOT EXISTS for_test (id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, name varchar(20) DEFAULT NULL);
 ##### 设置用户名和密码
