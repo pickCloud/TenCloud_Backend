@@ -13,6 +13,7 @@ __author__ = 'Jon'
 import json
 import tornado.web
 
+from tornado.gen import coroutine
 from service.cluster.cluster import ClusterService
 
 
@@ -27,21 +28,16 @@ class BaseHandler(tornado.web.RequestHandler):
     def log(self):
         return self.application.log
 
-    def init_params(self):
-        '''获取请求的参数
-           Usage::
-               >>> self.init_params()
-               >>> self.params['xxx']
+    @coroutine
+    def prepare(self):
+        '''获取请求的参数, json类型
+           Usage:
+               >>> self.params['x']
         '''
         self.params = {}
 
-        if self.request.method == 'GET':
-            self.params = self.request.query_arguments
-        elif self.request.method in ('POST', 'PUT'):
-            self.params = self.request.body_arguments
-
-        for k, v in self.params.items():
-            self.params[k] = v if len(v) > 1 else v[0]
+        if self.request.headers.get("Content-Type", "").startswith("application/json") and self.request.body != "":
+            self.params = json.loads(self.request.body.decode('utf-8'))
 
     def success(self, data=None, message="success"):
         """响应成功, 返回数据"""
