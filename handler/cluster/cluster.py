@@ -29,9 +29,9 @@ class ClusterNewHandler(BaseHandler):
                 desc -> 集群描述
         '''
         try:
-            id = yield self.cluster_service.add_cluster(self.params)
+            result = yield self.cluster_service.add_cluster(self.params)
 
-            self.success(id)
+            self.success(result)
         except:
             self.error()
             self.log.error(traceback.format_exc())
