@@ -13,11 +13,11 @@ __author__ = 'Jon'
 import json
 import tornado.web
 
-from service.server.server import ServerService
+from service.cluster.cluster import ClusterService
 
 
 class BaseHandler(tornado.web.RequestHandler):
-    server_service = ServerService()
+    cluster_service = ClusterService()
 
     @property
     def db(self):
@@ -43,5 +43,11 @@ class BaseHandler(tornado.web.RequestHandler):
         for k, v in self.params.items():
             self.params[k] = v if len(v) > 1 else v[0]
 
-    def write_json(self, data):
-        self.write(json.dumps(data))
+    def success(self, data=None, message="success"):
+        """响应成功, 返回数据"""
+        self.write({"status": 0, "message": message, "data": data})
+
+    def error(self, message='系统繁忙, 请重新尝试', data=None, code=400):
+        """响应失败, 返回错误原因"""
+        self.set_status(code, message)
+        self.write({"status": 1, "message": message, "data": data})
