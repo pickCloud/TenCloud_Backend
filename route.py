@@ -4,9 +4,10 @@ __author__ = 'Jon'
 项目路由文件
 '''
 
-from handler.server.server import ServerHander
+from handler.cluster.cluster import ClusterHandler, ClusterNewHandler
 
 
 routes = [
-    (r'/server/status', ServerHander)
+    (r'/api/clusters', ClusterHandler),
+    (r'/api/cluster/new', ClusterNewHandler)
 ]
