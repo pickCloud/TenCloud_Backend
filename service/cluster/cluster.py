@@ -5,6 +5,7 @@ import datetime
 from tornado.gen import coroutine
 from service.base import BaseService
 from constant import CLUSTER_DATE_FORMAT
+from utils.general import get_in_format
 
 
 class ClusterService(BaseService):
@@ -17,22 +18,19 @@ class ClusterService(BaseService):
         cur = yield self.db.execute(sql)
         data = cur.fetchall()
 
-        return self._change_data(data)
+        return self._filter_data(data)
 
-    def _change_data(self, data):
+    def _filter_data(self, data):
         '''
-        :param data: e.g. ((, , , , datetime.datetime(2017, 5, 16, 10, 24, 31), datetime.datetime(2017, 5, 16, 10, 27, 27)),)
-        :return:     e.g. ((, , , , '2017年05月16日', '2017年05月16日'),)
+        :param data: e.g. ((, , , , , datetime.datetime(2017, 5, 16, 10, 27, 27)),)
+        :return:     e.g. [{id:, name:, desc:, update_time: '2017年05月16日'},]
         '''
-        result = []
-
-        for d in data:
-            row = dict()
-            row['id'] = d[0]
-            row['name'] = d[1]
-            row['desc'] = d[2]
-            row['update_time'] = d[5].strftime(CLUSTER_DATE_FORMAT)
-            result.append(row)
+        result = [{
+                    'id':   row[0],
+                    'name': row[1],
+                    'desc': row[2],
+                    'update_time': row[5].strftime(CLUSTER_DATE_FORMAT)
+                  } for row in data]
 
         return result
 
@@ -46,3 +44,13 @@ class ClusterService(BaseService):
             'id': cur.lastrowid,
             'update_time': datetime.datetime.now().strftime(CLUSTER_DATE_FORMAT)
         }
+
+    @coroutine
+    def del_cluster(self, params):
+        sql = "DELETE FROM cluster WHERE id IN (%s)" % get_in_format(params['id'])
+
+        yield self.db.execute(sql, params['id'])
+
+    @coroutine
+    def get_detail(self, params):
+        return {}
