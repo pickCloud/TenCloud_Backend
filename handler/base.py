@@ -15,10 +15,12 @@ import tornado.web
 
 from tornado.gen import coroutine
 from service.cluster.cluster import ClusterService
+from service.imagehub.imagehub import ImagehubService
 
 
 class BaseHandler(tornado.web.RequestHandler):
     cluster_service = ClusterService()
+    imagehub_service = ImagehubService()
 
     @property
     def db(self):
