@@ -31,6 +31,40 @@ CREATE TABLE IF NOT EXISTS `cluster` (
 settings['mysql_user'], settings['mysql_password']
 ```
 
+* 镜像仓库 imagehub
+```
+CREATE TABLE IF NOT EXISTS `imagehub` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '镜像ID',
+  `name` varchar(128) NOT NULL COMMENT '镜像名称',
+  `url` varchar(128) COMMENT '镜像url',
+  `versions` varchar(128) COMMENT '镜像版本号',
+  `description` text COMMENT '描述',
+  `source` varchar(50) COMMENT '镜像来源',
+  `type` varchar(50) COMMENT '镜像类型',
+  `comments` varchar(200) COMMENT '配置说明',
+  `status` tinyint(4) DEFAULT '0' COMMENT '镜像状态',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) DEFAULT CHARSET=utf8mb4
+```
+*镜像仓库测试数据
+```
+INSERT INTO imagehub (name, url, versions, description, source, type, comments) VALUES ('Ubuntu','www.jmkbio.com','16.04',
+'Ubuntu是一个自由、开源、基于Debian的Linux发行版，发行周期为6个月，由 Canonical 公司和自由软件社区开发。 本镜像从Docker Hub 同步并由 DaoCloud 提供中文文档支持，用来帮助国内开发者更方便的使用 Docker 镜像。','tencom',
+'操作系统','docker pull www.jmkbio.com/tencom/ubuntu:tag'); 
+
+INSERT INTO imagehub (name, url, versions, description, source, type, comments) VALUES ('Mysql','www.jmkbio.com','5.17.8',
+'MySQL 由于其性能高、成本低、可靠性好，已经成为全球最流行的开源数据库软件，被广泛地被应用在 Internet 上的中小型网站中。本镜像从 Docker Hub 同步并由 DaoCloud 提供中文文档支持，用来帮助国内开发者更方便的使用 Docker 镜像。','tencom',
+'数据库','docker pull www.jmkbio.com/tencom/mysql:tag');
+ 
+ INSERT INTO imagehub (name, url, versions, description, source, type, comments) VALUES ('Mysql','www.jmkbio.com','5.17.8',
+'MySQL 由于其性能高、成本低、可靠性好，已经成为全球最流行的开源数据库软件，被广泛地被应用在 Internet 上的中小型网站中。','aliyun',
+'数据库','docker pull www.jmkbio.com/tencom/mysql:tag'); 
+
+```
+
+
 ## 测试
 ```
 curl http://localhost:8010/api/clusters
