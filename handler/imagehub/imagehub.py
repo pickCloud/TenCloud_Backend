@@ -25,7 +25,22 @@ class ImagehubBySourceHandler(BaseHandler):
         ''' 通过来源获取镜像仓库列表
         '''
         try:
-            result = yield self.imagehub_service.get_by_source(self.params)
+            source_id = int(self.params['source'])
+            result = yield self.imagehub_service.get_by_source(source_id)
+
+            self.success(result)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+class ImagehubByTypeHandler(BaseHandler):
+    @coroutine
+    def get(self):
+        ''' 通过类型获取镜像仓库列表
+        '''
+        try:
+            type_id = int(self.params['type'])
+            result = yield self.imagehub_service.get_by_type(type_id)
 
             self.success(result)
         except:
