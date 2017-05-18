@@ -52,7 +52,7 @@ class ImagehubService(BaseService):
             get_by_source = 通过来源显示镜像仓库列表
         END
         '''
-        sql = "SELECT id, name, description FROM imagehub WHERE source=%d"%source
+        sql = "SELECT id, name, description FROM imagehub WHERE source = %d" % source
 
         curl = yield self.db.execute(sql)
         data = curl.fetchall()
@@ -65,7 +65,7 @@ class ImagehubService(BaseService):
             get_by_source = 通过类型显示镜像仓库列表
         END
         '''
-        sql = "SELECT id, name, description FROM imagehub WHERE type=%d"%type
+        sql = "SELECT id, name, description FROM imagehub WHERE type = %d" % type
 
         curl = yield self.db.execute(sql)
         data = curl.fetchall()
