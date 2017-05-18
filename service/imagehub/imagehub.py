@@ -1,16 +1,19 @@
 __author__ = 'Zhang'
 
-import datetime
 
 from tornado.gen import coroutine
 from service.base import BaseService
-from constant import CLUSTER_DATE_FORMAT, IMAGEHUB_DATE_FORMAT
 
 
 ''' FILE BEGIN
     ImagehubService
+        Owner = @张煌辉
+        Partner = '@Jon'
+        Create = 2017-05-17
+        Update = 2017-05-18
         #get_list
         #get_by_source
+        #get_by_type
 END
 '''
 
@@ -22,43 +25,49 @@ class ImagehubService(BaseService):
             get_list = 取得镜像仓库列表
         END
         '''
-        sql = '''
-               SELECT * FROM imagehub
-           '''
+        hub_sql = 'SELECT id, name, description FROM imagehub'
+        type_sql = 'SELECT id, type_id, name FROM image_types'
+        source_sql = 'SELECT id, source_id, name FROM image_sources'
 
-        cur = yield self.db.execute(sql)
-        data = cur.fetchall()
+        hub_cur = yield self.db.execute(hub_sql)
+        hub_data = hub_cur.fetchall()
 
-        return self._filter_data(data)
+        type_cur = yield self.db.execute(type_sql)
+        type_data = type_cur.fetchall()
 
-    def _filter_data(self, data):
-        '''
-        :param data: e.g. ((, , , , , datetime.datetime(2017, 5, 16, 10, 27, 27)),)
-        :return:     e.g. [{id:, name:, desc:, update_time: '2017年05月16日'},]
-        '''
-        result = [{
-            'id': row[0],
-            'name': row[1],
-            'url': row[2],
-            'versions': row[3],
-            'description': row[4],
-            'source': row[5],
-            'type': row[6],
-            'comments': row[7],
-            'update_time': row[10].strftime(IMAGEHUB_DATE_FORMAT)
-        } for row in data]
+        source_cur = yield self.db.execute(source_sql)
+        source_data = source_cur.fetchall()
 
-        return result
+        data = {
+            'image_types': type_data,
+            'image_sources': source_data,
+            'imagehub': hub_data
+        }
+
+        return data
 
     @coroutine
-    def get_by_source(self, params):
+    def get_by_source(self, source):
         '''SPEC BEGIN
             get_by_source = 通过来源显示镜像仓库列表
         END
         '''
-        sql = "SELECT * FROM imagehub WHERE source = %s"
+        sql = "SELECT id, name, description FROM imagehub WHERE source=%d"%source
 
-        curl = yield self.db.execute(sql, params['source'])
+        curl = yield self.db.execute(sql)
         data = curl.fetchall()
 
-        return self._filter_data(data)
+        return data
+
+    @coroutine
+    def get_by_type(self, type):
+        '''SPEC BEGIN
+            get_by_source = 通过类型显示镜像仓库列表
+        END
+        '''
+        sql = "SELECT id, name, description FROM imagehub WHERE type=%d"%type
+
+        curl = yield self.db.execute(sql)
+        data = curl.fetchall()
+
+        return data
