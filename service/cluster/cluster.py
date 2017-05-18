@@ -12,27 +12,13 @@ class ClusterService(BaseService):
     @coroutine
     def get_list(self):
         sql = '''
-            SELECT * FROM cluster
-        '''
+            SELECT id, name, description, DATE_FORMAT(update_time, '%s') AS update_time FROM cluster
+        ''' % CLUSTER_DATE_FORMAT
 
         cur = yield self.db.execute(sql)
         data = cur.fetchall()
 
-        return self._filter_data(data)
-
-    def _filter_data(self, data):
-        '''
-        :param data: e.g. ((, , , , , datetime.datetime(2017, 5, 16, 10, 27, 27)),)
-        :return:     e.g. [{id:, name:, desc:, update_time: '2017年05月16日'},]
-        '''
-        result = [{
-                    'id':   row[0],
-                    'name': row[1],
-                    'desc': row[2],
-                    'update_time': row[5].strftime(CLUSTER_DATE_FORMAT)
-                  } for row in data]
-
-        return result
+        return data
 
     @coroutine
     def add_cluster(self, params):
