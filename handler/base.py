@@ -15,10 +15,12 @@ import tornado.web
 
 from tornado.gen import coroutine
 from service.cluster.cluster import ClusterService
+from service.server.server import ServerService
 
 
 class BaseHandler(tornado.web.RequestHandler):
     cluster_service = ClusterService()
+    server_service  = ServerService()
 
     @property
     def db(self):

@@ -13,8 +13,9 @@ def get_in_format(contens):
     return ','.join(['%s'] * len(contens))
 
 
-def change_update_time(data, format=CLUSTER_DATE_FORMAT):
-    '''
+def change_db_time(data, format=CLUSTER_DATE_FORMAT):
+    '''create_time/update_time 从datetime变成str
+
     :param data:   e.g. [{'update_time': datetime.datetime(2017, 5, 16, 10, 27, 27), ...}, ...] or
                         {'update_time': datetime.datetime(2017, 5, 16, 10, 27, 27), ...}
     :param format: e.g. '%Y年%m月%d日'
@@ -23,6 +24,9 @@ def change_update_time(data, format=CLUSTER_DATE_FORMAT):
     if not isinstance(data, list):
         data = [data]
 
-    for row in data:
-        if row.get('update_time'):
-            row['update_time'] = row['update_time'].strftime(format)
+    for field in ['create_time', 'update_time']:
+        for row in data:
+            if row.get(field):
+                row[field] = row[field].strftime(format)
+            else:
+                break
