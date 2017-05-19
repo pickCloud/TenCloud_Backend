@@ -43,7 +43,7 @@ class BaseService():
         sql = "SELECT {fields} ".format(fields=fields or self.fields)
 
         if ct:
-            sql += ", DATE_FORMAT(creat_time, '%s') AS create_time" % df
+            sql += ", DATE_FORMAT(create_time, '%s') AS create_time" % df
 
         if ut:
             sql += ", DATE_FORMAT(update_time, '%s') AS update_time " % df
