@@ -9,16 +9,8 @@ from utils.general import get_in_format
 
 
 class ClusterService(BaseService):
-    @coroutine
-    def get_list(self):
-        sql = '''
-            SELECT id, name, description, DATE_FORMAT(update_time, '%s') AS update_time FROM cluster
-        ''' % CLUSTER_DATE_FORMAT
-
-        cur = yield self.db.execute(sql)
-        data = cur.fetchall()
-
-        return data
+    table  = 'cluster'
+    fields = 'id, name, description'
 
     @coroutine
     def add_cluster(self, params):
@@ -38,5 +30,7 @@ class ClusterService(BaseService):
         yield self.db.execute(sql, params['id'])
 
     @coroutine
-    def get_detail(self, params):
-        return {}
+    def update_cluster(self, params):
+        sql = "UPDATE cluster SET name=%s, description=%s WHERE id=%s"
+
+        yield self.db.execute(sql, [params['name'], params['desc'], params['id']])

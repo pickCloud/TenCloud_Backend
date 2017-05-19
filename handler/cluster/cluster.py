@@ -12,7 +12,7 @@ class ClusterHandler(BaseHandler):
         ''' 获取集群列表
         '''
         try:
-            result = yield self.cluster_service.get_list()
+            result = yield self.cluster_service.select()
 
             self.success(result)
         except:
@@ -55,15 +55,33 @@ class ClusterDelHandler(BaseHandler):
 
 class ClusterDetailHandler(BaseHandler):
     @coroutine
-    def get(self):
+    def get(self, id):
         '''集群详情
            参数:
                id -> 集群id int
         '''
         try:
-            result = yield self.cluster_service.get_detail(self.params)
+            id = int(id)
 
-            self.success(result)
+            basic_info = yield self.cluster_service.select(conds=['id=%s'], params=[id], ct=False)
+            server_list = yield self.server_service.select(conds=['cluster_id=%s'], params=[id], ct=False)
+
+            self.success({
+                'basic_info': basic_info,
+                'server_list': server_list
+            })
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ClusterUpdateHandler(BaseHandler):
+    @coroutine
+    def post(self):
+        try:
+            yield self.cluster_service.update_cluster(self.params)
+
+            self.success()
         except:
             self.error()
             self.log.error(traceback.format_exc())
