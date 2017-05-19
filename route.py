@@ -14,7 +14,7 @@ routes = [
     (r'/api/cluster/new', ClusterNewHandler),
     (r'/api/cluster/del', ClusterDelHandler),
     (r'/api/cluster/detail/(\d+)', ClusterDetailHandler),
-    (r'/api/cluster/update', ClusterUpdateHandler)
+    (r'/api/cluster/update', ClusterUpdateHandler),
     (r'/api/imagehub', ImagehubHandler),
     (r'/api/imagehub/source', ImagehubBySourceHandler),
     (r'/api/imagehub/type', ImagehubByTypeHandler),
