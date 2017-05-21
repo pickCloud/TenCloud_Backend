@@ -19,6 +19,7 @@ class ImagehubHandler(BaseHandler):
             self.error()
             self.log.error(traceback.format_exc())
 
+
 class ImagehubBySourceHandler(BaseHandler):
     @coroutine
     def get(self):
@@ -33,6 +34,7 @@ class ImagehubBySourceHandler(BaseHandler):
             self.error()
             self.log.error(traceback.format_exc())
 
+
 class ImagehubByTypeHandler(BaseHandler):
     @coroutine
     def get(self):
@@ -42,6 +44,25 @@ class ImagehubByTypeHandler(BaseHandler):
             type_id = int(self.params['type'])
             result = yield self.imagehub_service.get_by_type(type_id)
 
+            self.success(result)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ImagehubSearchHandler(BaseHandler):
+    @coroutine
+    def get(self):
+        ''' 通过搜索获取镜像仓库列表
+        '''
+        try:
+            # 查询内容，名称，来源，类型
+            query_data = {
+                "name": self.params['name'],
+                "source": self.params['source'],
+                "type": tuple(self.params['type'])
+            }
+            result = yield self.imagehub_service.get_by_search(query_data)
             self.success(result)
         except:
             self.error()

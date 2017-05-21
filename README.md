@@ -65,8 +65,8 @@ INSERT INTO image_types (type_id, name) VALUES (1, '操作系统'),(2, '数据�
 ```
 CREATE TABLE IF NOT EXISTS `image_sources` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
-  `source_id` tinyint(4) NOT NULL UNIQUE COMMENT '镜像类型ID',
-  `name` varchar(50) NOT NULL COMMENT '镜像类型名',
+  `source_id` tinyint(4) NOT NULL UNIQUE COMMENT '镜像来源ID',
+  `name` varchar(50) NOT NULL COMMENT '镜像来源名',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
