@@ -6,8 +6,8 @@ __author__ = 'Jon'
 
 from handler.cluster.cluster import ClusterHandler, ClusterNewHandler, ClusterDelHandler, \
                                     ClusterDetailHandler, ClusterUpdateHandler
-from handler.imagehub.imagehub import ImagehubHandler, ImagehubBySourceHandler, ImagehubByTypeHandler
-
+from handler.imagehub.imagehub import ImagehubHandler, ImagehubBySourceHandler, ImagehubByTypeHandler, \
+    ImagehubSearchHandler
 
 routes = [
     (r'/api/clusters', ClusterHandler),
@@ -18,4 +18,5 @@ routes = [
     (r'/api/imagehub', ImagehubHandler),
     (r'/api/imagehub/source', ImagehubBySourceHandler),
     (r'/api/imagehub/type', ImagehubByTypeHandler),
+    (r'/api/imagehub/search', ImagehubSearchHandler),
 ]

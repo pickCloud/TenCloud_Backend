@@ -10,15 +10,19 @@ from service.base import BaseService
         Owner = @张煌辉
         Partner = '@Jon'
         Create = 2017-05-17
-        Update = 2017-05-18
+        Update = 2017-05-19
         #get_list
         #get_by_source
         #get_by_type
+        #get_by_search
 END
 '''
 
 
 class ImagehubService(BaseService):
+    table = 'imagehub'
+    fields = 'id, name, description'
+
     @coroutine
     def get_list(self):
         '''SPEC BEGIN
@@ -66,6 +70,27 @@ class ImagehubService(BaseService):
         END
         '''
         sql = "SELECT id, name, description FROM imagehub WHERE type = %d" % type
+
+        curl = yield self.db.execute(sql)
+        data = curl.fetchall()
+
+        return data
+
+    @coroutine
+    def get_by_search(self, params):
+        '''SPEC BEGIN
+            get_by_search = 通过查询内容显示镜像仓库列表
+        END
+        '''
+        # 查询时必有来源内容
+        sql = "SELECT id, name, description FROM imagehub WHERE source = %s " % params['source']
+        # 名称内容
+        if params['name']:
+            query_str = '%' + params['name'] + '%'
+            sql += "AND name LIKE %r " % query_str
+        # 类型内容
+        if params['type']:
+            sql += "AND type in %s" % str(params['type'])
 
         curl = yield self.db.execute(sql)
         data = curl.fetchall()
