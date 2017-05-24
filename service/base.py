@@ -6,7 +6,7 @@ __author__ = 'Jon'
 
 from tornado.gen import coroutine
 
-from utils.db import DB
+from utils.db import DB, REDIS
 from utils.log import LOG
 from constant import CLUSTER_DATE_FORMAT
 
@@ -14,6 +14,7 @@ from constant import CLUSTER_DATE_FORMAT
 class BaseService():
     def __init__(self):
         self.db = DB
+        self.redis = REDIS
         self.log = LOG
 
     @coroutine

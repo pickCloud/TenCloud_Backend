@@ -8,6 +8,7 @@ from tornado.gen import coroutine, Task
 from tornado.ioloop import PeriodicCallback
 from handler.base import BaseHandler
 from utils.db import REDIS
+from constant import SERVER_TOKEN
 
 
 class ServerNewHandler(WebSocketHandler):
@@ -27,7 +28,7 @@ class ServerNewHandler(WebSocketHandler):
     @coroutine
     def check(self):
         ''' 检查主机是否上报信息 '''
-        result = yield Task(REDIS.get, self.uuid)
+        result = yield Task(REDIS.hget, SERVER_TOKEN, self.uuid)
 
         if result:
             self.write_message('success')
@@ -43,6 +44,8 @@ class ServerReport(BaseHandler):
     def post(self):
         try:
             yield self.server_service.save_report(self.params)
+
+            yield self.server_service.to_feedback(self.params['token'])
             self.success()
         except:
             self.error()

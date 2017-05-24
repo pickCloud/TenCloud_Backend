@@ -18,5 +18,6 @@ DB = pools.Pool(
         max_recycle_sec=120
      )
 
+
 REDIS = tornadoredis.Client(host=settings['redis_host'], port=settings['redis_port'])
 REDIS.connect()

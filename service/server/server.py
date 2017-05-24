@@ -1,8 +1,9 @@
 __author__ = 'Jon'
 
 import json
-from tornado.gen import coroutine
+from tornado.gen import coroutine, Task
 from service.base import BaseService
+from constant import SERVER_TOKEN
 
 
 class ServerService(BaseService):
@@ -19,3 +20,7 @@ class ServerService(BaseService):
               " cpu=%s, memory=%s, disk=%s"
 
         yield self.db.execute(sql, [ip] + performance*2)
+
+    @coroutine
+    def to_feedback(self, token):
+        yield Task(self.redis.hset, SERVER_TOKEN, token, 1)

@@ -5,3 +5,4 @@ __author__ = 'Jon'
 '''
 
 CLUSTER_DATE_FORMAT =  '%Y年%m月%d日'
+SERVER_TOKEN = 'server_token'
