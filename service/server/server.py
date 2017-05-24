@@ -17,18 +17,19 @@ class ServerService(BaseService):
         if not data:
             raise ValueError('token miss')
 
-        return data == TOKEN_FLAG
+        return data
 
     @coroutine
     def save_report(self, params):
-        ip = params['ip']
         performance = [json.dumps(params[i]) for i in ['cpu', 'mem', 'disk']]
 
-        sql = " INSERT INTO server(ip, cpu, memory, disk) "\
-              " VALUES(%s, %s, %s, %s) ON DUPLICATE KEY UPDATE "\
-              " cpu=%s, memory=%s, disk=%s"
+        data = [params.get('name', ''), params.get('cluster_id', 0), params['ip']] + performance*2
 
-        yield self.db.execute(sql, [ip] + performance*2)
+        sql = " INSERT INTO server(name, cluster_id, ip, cpu, memory, disk) "\
+              " VALUES(%s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE "\
+              " name=name, cluster_id=cluster_id, cpu=%s, memory=%s, disk=%s"
+
+        yield self.db.execute(sql, data)
 
     @coroutine
     def to_feedback(self, token):
