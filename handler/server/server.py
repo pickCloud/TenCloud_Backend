@@ -16,12 +16,11 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
         return True
 
     def open(self):
-        pass
+        self.uuid = uuid.uuid4().hex
+        self.write_message(self.uuid)
 
     def on_message(self, message):
         self.msg = message
-        self.uuid = uuid.uuid4().hex
-        self.write_message(self.uuid)
 
         IOLoop.current().spawn_callback(callback=self.handle_message)
 
@@ -30,7 +29,7 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
 
     @coroutine
     def handle_message(self):
-        yield Task(self.redis.hset, SERVER_TOKEN, self.uuid, json.dumps(self.msg))
+        yield Task(self.redis.hset, SERVER_TOKEN, self.uuid, self.msg)
 
     @coroutine
     def check(self):
@@ -55,6 +54,7 @@ class ServerReport(BaseHandler):
             is_new_token = data != TOKEN_FLAG
 
             if is_new_token:
+                data = json.loads(data)
                 self.params.update({
                     'name': data['name'],
                     'cluster_id': data['cluster_id']
