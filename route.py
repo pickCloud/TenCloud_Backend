@@ -14,7 +14,7 @@ routes = [
     (r'/api/clusters', ClusterHandler),
     (r'/api/cluster/new', ClusterNewHandler),
     (r'/api/cluster/del', ClusterDelHandler),
-    (r'/api/cluster/detail/(\d+)', ClusterDetailHandler),
+    (r'/api/cluster/(\d+)', ClusterDetailHandler),
     (r'/api/cluster/update', ClusterUpdateHandler),
 
     # 主机相关

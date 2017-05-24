@@ -11,7 +11,7 @@ def get_ip_address():
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
     stdout, stderr = p.communicate()
 
-    return stdout.strip()
+    return stdout.strip().decode('utf8')
 
 def get_cpu():
     r = psutil.cpu_percent(interval=1)

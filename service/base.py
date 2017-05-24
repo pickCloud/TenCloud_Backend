@@ -8,7 +8,7 @@ from tornado.gen import coroutine
 
 from utils.db import DB, REDIS
 from utils.log import LOG
-from constant import CLUSTER_DATE_FORMAT
+from constant import CLUSTER_DATE_FORMAT, CLUSTER_DATE_FORMAT_ESCAPE
 
 
 class BaseService():
@@ -42,6 +42,8 @@ class BaseService():
         :return: sql or [sql, params]
         '''
         sql = "SELECT {fields} ".format(fields=fields or self.fields)
+
+        df = CLUSTER_DATE_FORMAT_ESCAPE if conds else CLUSTER_DATE_FORMAT
 
         if ct:
             sql += ", DATE_FORMAT(create_time, '%s') AS create_time" % df
