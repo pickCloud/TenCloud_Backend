@@ -11,7 +11,7 @@ from tornado.options import options, define, parse_command_line
 from route import routes
 from setting import settings
 from utils.log import LOG
-from utils.db import DB
+from utils.db import DB, REDIS
 
 
 ####################################################################
@@ -28,6 +28,7 @@ class Application(tornado.web.Application):
 
         self.db = DB
         self.log = LOG
+        self.redis = REDIS
         self.settings = settings
 
 

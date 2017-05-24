@@ -1,7 +1,10 @@
 __author__ = 'Jon'
 
-from setting import settings
+import tornadoredis
+
 from tornado_mysql import pools, cursors
+from setting import settings
+
 
 DB = pools.Pool(
         dict(host=settings['mysql_host'],
@@ -14,3 +17,6 @@ DB = pools.Pool(
         max_idle_connections=16,
         max_recycle_sec=120
      )
+
+REDIS = tornadoredis.Client(host=settings['redis_host'], port=settings['redis_port'])
+REDIS.connect()
