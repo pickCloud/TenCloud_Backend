@@ -1,5 +1,5 @@
+token=$1
 pip install psutil
 pip install requests
-cd /var
-curl -sSL http://47.94.18.22/supermonitor/report.py
-python report.py
+curl -sSL http://47.94.18.22/supermonitor/report.py > /var/report.py
+python /var/report.py ${token} &
