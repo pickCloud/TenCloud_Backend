@@ -46,5 +46,5 @@ if __name__ == '__main__':
             timeout=5
         )
 
-        requests.post(url + '/remote/server/report', **kw, timeout=5)
+        requests.post(url + '/remote/server/report', **kw)
         time.sleep(5)
