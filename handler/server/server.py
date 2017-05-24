@@ -2,6 +2,7 @@ __author__ = 'Jon'
 
 import traceback
 import uuid
+import json
 
 from tornado.websocket import WebSocketHandler
 from tornado.gen import coroutine, Task
@@ -29,7 +30,7 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
 
     @coroutine
     def handle_message(self):
-        yield Task(self.redis.hset, SERVER_TOKEN, self.uuid, 0)
+        yield Task(self.redis.hset, SERVER_TOKEN, self.uuid, json.dumps(self.msg))
 
     @coroutine
     def check(self):
@@ -49,11 +50,19 @@ class ServerReport(BaseHandler):
     @coroutine
     def post(self):
         try:
-            is_old_token = yield self.server_service.check_token(self.params['token'])
+            data = yield self.server_service.check_token(self.params['token'])
+
+            is_new_token = data != TOKEN_FLAG
+
+            if is_new_token:
+                self.params.update({
+                    'name': data['name'],
+                    'cluster_id': data['cluster_id']
+                })
 
             yield self.server_service.save_report(self.params)
 
-            if not is_old_token:
+            if is_new_token:
                 yield self.server_service.to_feedback(self.params['token'])
 
             self.success()
