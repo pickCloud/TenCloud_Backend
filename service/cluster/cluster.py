@@ -16,7 +16,7 @@ class ClusterService(BaseService):
     def add_cluster(self, params):
         sql = "INSERT INTO cluster (name, description) VALUES (%s, %s)"
 
-        cur = yield self.db.execute(sql, [params['name'], params['desc']])
+        cur = yield self.db.execute(sql, [params['name'], params['description']])
 
         return {
             'id': cur.lastrowid,
@@ -33,4 +33,4 @@ class ClusterService(BaseService):
     def update_cluster(self, params):
         sql = "UPDATE cluster SET name=%s, description=%s WHERE id=%s"
 
-        yield self.db.execute(sql, [params['name'], params['desc'], params['id']])
+        yield self.db.execute(sql, [params['name'], params['description'], params['id']])
