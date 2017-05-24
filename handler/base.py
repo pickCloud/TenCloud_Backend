@@ -8,6 +8,12 @@ __author__ = 'Jon'
 * 所有service的初始化
 * 复写tornado.web.RequestHandler的一些常用方法
 * 子类使用的共同函数抽象
+* api需要发送json, 存储在self.params
+* handler都需要try...catch
+    try:
+    except:
+        self.error()
+        self.log.error(traceback.format_exc())
 '''
 
 import json
@@ -27,6 +33,10 @@ class BaseHandler(tornado.web.RequestHandler):
     @property
     def db(self):
         return self.application.db
+
+    @property
+    def redis(self):
+        return self.application.redis
 
     @property
     def log(self):

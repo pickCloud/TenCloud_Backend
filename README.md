@@ -40,19 +40,20 @@ CREATE TABLE `server` (
   `owner` varchar(50) DEFAULT '' COMMENT '某个员工、部门、项目',
   `machine_status` tinyint(4) DEFAULT '1' COMMENT '0运行中, 1已停止, 2启动中, 3停止中, 4满负载',
   `business_status` tinyint(4) DEFAULT '0' COMMENT '0适用, 1正常, 2锁定, 3过期, 4即将过期',
-  `cluster_id` int(11) NOT NULL COMMENT '表cluster的id',
+  `cluster_id` int(11) NOT NULL DEFAULT '0' COMMENT '表cluster的id',
   `os` varchar(50) DEFAULT '' COMMENT '操作系统',
-  `cpu` varchar(50) DEFAULT '' COMMENT 'CPU',
-  `memory` varchar(50) DEFAULT '' COMMENT '内存',
-  `disk` varchar(50) DEFAULT '' COMMENT '硬盘',
-  `network` varchar(50) DEFAULT '' COMMENT '网络',
+  `cpu` text COMMENT 'cpu json数据',
+  `memory` text COMMENT 'memory json数据',
+  `disk` text COMMENT 'disk json数据',
+  `network` text COMMENT 'network json数据',
   `feature` varchar(50) DEFAULT '' COMMENT '机器特征',
   `provider` varchar(50) DEFAULT '' COMMENT '服务商',
   `period` varchar(20) DEFAULT '' COMMENT '周期',
   `pay_type` tinyint(4) DEFAULT '0' COMMENT '缴费方式, 0按年, 1按月',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ip` (`ip`)
 )
 ```
 
