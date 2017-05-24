@@ -5,4 +5,6 @@ __author__ = 'Jon'
 '''
 
 CLUSTER_DATE_FORMAT =  '%Y年%m月%d日'
+IMAGEHUB_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 SERVER_TOKEN = 'server_token'
+TOKEN_FLAG = '1'
