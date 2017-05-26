@@ -51,11 +51,19 @@ class BaseHandler(tornado.web.RequestHandler):
         if self.request.headers.get("Content-Type", "").startswith("application/json") and self.request.body != "":
             self.params = json.loads(self.request.body.decode('utf-8'))
 
+    def guarantee(self, *args):
+        ''' 接口参数是否完整 '''
+        for arg in args:
+            try:
+                self.params[arg]
+            except KeyError:
+                raise AttributeError('缺少 %s' % arg)
+
     def success(self, data=None, message="success"):
-        """响应成功, 返回数据"""
+        '''响应成功, 返回数据'''
         self.write({"status": 0, "message": message, "data": data})
 
     def error(self, message='系统繁忙, 请重新尝试', data=None, code=400):
-        """响应失败, 返回错误原因"""
+        '''响应失败, 返回错误原因'''
         self.set_status(code, message)
         self.write({"status": 1, "message": message, "data": data})

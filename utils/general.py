@@ -3,6 +3,7 @@ __author__ = 'Jon'
 '''
 一些平常的工具
 '''
+import re
 from constant import CLUSTER_DATE_FORMAT
 
 def get_in_format(contens):
@@ -30,3 +31,10 @@ def change_db_time(data, format=CLUSTER_DATE_FORMAT):
                 row[field] = row[field].strftime(format)
             else:
                 break
+
+def validate_ip(ip):
+    rule = '\d+\.\d+\.\d+\.\d+'
+    match = re.match(rule, ip)
+
+    if not match:
+        raise ValueError("不是合法的IP地址")

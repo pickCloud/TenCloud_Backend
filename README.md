@@ -57,6 +57,19 @@ CREATE TABLE `server` (
 )
 ```
 
+*主机账户表
+```
+CREATE TABLE `server_account` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主机账户ID',
+  `ip` varchar(15) NOT NULL COMMENT 'IP',
+  `username` varchar(128) NOT NULL COMMENT '主机的用户名',
+  `passwd` varchar(256) NOT NULL COMMENT '主机的密码',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+)
+```
+
 ## 测试
 ```
 curl http://localhost:8010/api/clusters
