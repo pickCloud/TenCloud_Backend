@@ -5,13 +5,16 @@ __author__ = 'Jon'
 '''
 
 from tornado.gen import coroutine
+from concurrent.futures import ThreadPoolExecutor
 
 from utils.db import DB, REDIS
 from utils.log import LOG
-from constant import CLUSTER_DATE_FORMAT, CLUSTER_DATE_FORMAT_ESCAPE
+from constant import CLUSTER_DATE_FORMAT, CLUSTER_DATE_FORMAT_ESCAPE, POOL_COUNT
 
 
 class BaseService():
+    executor = ThreadPoolExecutor(max_workers=POOL_COUNT)
+
     def __init__(self):
         self.db = DB
         self.redis = REDIS
