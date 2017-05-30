@@ -41,3 +41,9 @@ class ServerService(BaseService):
               " VALUES(%s, %s, %s)"
 
         yield self.db.execute(sql, [params['ip'], params['username'], params['passwd']])
+
+    @coroutine
+    def migrate_server(self, params):
+        sql = " UPDATE server SET cluster_id=%s WHERE id=%s "
+
+        yield self.db.execute(sql, [params['cluster_id'], params['id']])

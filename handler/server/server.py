@@ -109,3 +109,16 @@ class ServerReport(BaseHandler):
         except:
             self.error()
             self.log.error(traceback.format_exc())
+
+
+class ServerMigratinHandler(BaseHandler):
+    @coroutine
+    def post(self):
+        try:
+            yield self.server_service.migrate_server(self.params)
+
+            self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+

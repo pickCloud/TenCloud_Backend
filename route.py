@@ -6,7 +6,7 @@ __author__ = 'Jon'
 
 from handler.cluster.cluster import ClusterHandler, ClusterNewHandler, ClusterDelHandler, \
                                     ClusterDetailHandler, ClusterUpdateHandler
-from handler.server.server import ServerNewHandler, ServerReport
+from handler.server.server import ServerNewHandler, ServerReport, ServerMigratinHandler
 
 
 routes = [
@@ -19,6 +19,7 @@ routes = [
 
     # 主机相关
     (r'/api/server/new', ServerNewHandler),
+    (r'/api/server/migration', ServerMigratinHandler),
 
     # 远程主机上报信息
     (r'/remote/server/report', ServerReport)
