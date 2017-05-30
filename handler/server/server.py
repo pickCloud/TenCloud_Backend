@@ -1,7 +1,6 @@
 __author__ = 'Jon'
 
 import traceback
-import uuid
 import json
 
 from tornado.websocket import WebSocketHandler
@@ -10,6 +9,7 @@ from tornado.ioloop import PeriodicCallback, IOLoop
 from handler.base import BaseHandler
 from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG
 from utils.general import validate_ip
+from utils.security import Aes
 
 
 class ServerNewHandler(WebSocketHandler, BaseHandler):
@@ -20,7 +20,6 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
         self.write_message('open')
 
     def on_message(self, message):
-        self.msg = message
         self.params = json.loads(message)
 
         # 参数认证
@@ -53,11 +52,16 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
             self.write_message('%s 之前已部署' % self.params['ip'])
             return
 
-        yield Task(self.redis.hset, DEPLOYING, self.params['ip'], self.msg)
+        # 保存到redis之前加密
+        passwd = self.params['passwd']
+        self.params['passwd'] = Aes.encrypt(passwd)
+
+        yield Task(self.redis.hset, DEPLOYING, self.params['ip'], json.dumps(self.params))
 
         self.period = PeriodicCallback(self.check, 3000)  # 设置定时函数, 3秒
         self.period.start()
 
+        self.params.update({'passwd': passwd})
         yield self.server_service.remote_deploy(self.params)
 
     @coroutine
