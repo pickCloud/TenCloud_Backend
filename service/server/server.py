@@ -1,12 +1,12 @@
 __author__ = 'Jon'
 
 import json
-import paramiko
-from tornado.gen import coroutine, Task
+from tornado.gen import coroutine
 from tornado.concurrent import run_on_executor
 
 from service.base import BaseService
-from constant import DEPLOYING, DEPLOYED
+from utils.ssh import SSH
+from constant import CMD_MONITOR
 
 
 class ServerService(BaseService):
@@ -31,12 +31,8 @@ class ServerService(BaseService):
     def remote_deploy(self, params):
         ''' 远程部署主机
         '''
-        ssh = paramiko.SSHClient()
-        paramiko.util.log_to_file('logs/sysdeploy.log')
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(hostname=params['ip'], port=22, username=params['username'], password=params['passwd'])
-        stdin, stdout, stderr = ssh.exec_command('curl -sSL http://47.94.18.22/supermonitor/install.sh | sh')
-        result = stdout.read()
+        ssh = SSH(hostname=params['ip'], username=params['username'], passwd=params['passwd'])
+        ssh.exec(CMD_MONITOR)
         ssh.close()
 
     @coroutine
