@@ -21,14 +21,17 @@ class BaseService():
         self.log = LOG
 
     @coroutine
-    def select(self, conds=None, params=None, ct=True, ut=True, df=CLUSTER_DATE_FORMAT):
+    def select(self, conds=None, params=None, ct=True, ut=True, df=CLUSTER_DATE_FORMAT, one=False):
         '''
+        Usage::
+            >>> self.select(conds=['id=%s'], params=[id], ct=False)
+
         :return: [{'id': 1, ...}, ...]
         '''
         sql_params = self.create_query(conds=conds, params=params, ct=ct, ut=ut, df=df)
         cur = yield self.db.execute(*sql_params)
 
-        data = cur.fetchall()
+        data = cur.fetchone() if one else cur.fetchall()
 
         return data
 

@@ -11,7 +11,7 @@ from constant import CMD_MONITOR
 
 class ServerService(BaseService):
     table  = 'server'
-    fields = 'id, name, address, ip, machine_status, business_status'
+    fields = 'id, name, address, ip, machine_status, business_status, cpu, memory, disk, provider, period, pay_type'
 
     @coroutine
     def save_report(self, params):
@@ -47,3 +47,9 @@ class ServerService(BaseService):
         sql = " UPDATE server SET cluster_id=%s WHERE id=%s "
 
         yield self.db.execute(sql, [params['cluster_id'], params['id']])
+
+    @coroutine
+    def delete_server(self, params):
+        sql = " DELETE FROM server WHERE id=%s "
+
+        yield self.db.execute(sql, params['id'])

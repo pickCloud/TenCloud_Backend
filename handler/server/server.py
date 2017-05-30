@@ -3,6 +3,7 @@ __author__ = 'Jon'
 import traceback
 import json
 
+
 from tornado.websocket import WebSocketHandler
 from tornado.gen import coroutine, Task
 from tornado.ioloop import PeriodicCallback, IOLoop
@@ -114,6 +115,8 @@ class ServerReport(BaseHandler):
 class ServerMigratinHandler(BaseHandler):
     @coroutine
     def post(self):
+        ''' 主机迁移
+        '''
         try:
             yield self.server_service.migrate_server(self.params)
 
@@ -122,3 +125,57 @@ class ServerMigratinHandler(BaseHandler):
             self.error()
             self.log.error(traceback.format_exc())
 
+
+class ServerDeletionHandler(BaseHandler):
+    @coroutine
+    def post(self):
+        ''' 主机删除
+        '''
+        try:
+            yield self.server_service.delete_server(self.params)
+
+            self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ServerDetailHandler(BaseHandler):
+    @coroutine
+    def get(self, id):
+        ''' 主机详情
+        '''
+        try:
+            data = yield self.server_service.select(conds=['id=%s'], params=[id], one=True)
+
+            result = dict()
+
+            result['basic_info'] = {
+                'id': data['id'],
+                'name': data['name'],
+                'address': data['address'],
+                'ip': data['ip'],
+                'machine_status': data['machine_status'],
+                'business_status': data['business_status']
+            }
+
+            result['system_info'] = {
+                'config': {
+                    'cpu': json.loads(data['cpu']),
+                    'memory': json.loads(data['memory']),
+                    'disk': json.loads(data['disk'])
+                }
+            }
+
+            result['business_info'] = {
+                'provider': data['provider'],
+                'contract': {
+                    'period': data['period'],
+                    'pay_type': data['pay_type']
+                }
+            }
+
+            self.success(result)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
