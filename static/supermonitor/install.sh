@@ -18,9 +18,9 @@ if ps -ef|grep $sync_linux_amd64|grep -v grep > /dev/null; then
     kill $pid
     echo "restart sync with new version"
     chmod +x $sync_linux_amd64
-    ./sync_linux_amd64 &
+    ./sync_linux_amd64 --debug=false &
 else
     echo "create sync"
     chmod +x $sync_linux_amd64
-    ./sync_linux_amd64 &
+    ./sync_linux_amd64 --debug=false &
 fi
