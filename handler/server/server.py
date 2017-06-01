@@ -37,12 +37,12 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
             self.close()
             return
 
-        IOLoop.current().spawn_callback(callback=self.handle_msg) # on_message不能异步, 要实现异步需spawn_callback
+        IOLoop.current().spawn_callback(callback=self.handle_msg)  # on_message不能异步, 要实现异步需spawn_callback
 
     @coroutine
     def handle_msg(self):
         is_deploying = yield Task(self.redis.hget, DEPLOYING, self.params['ip'])
-        is_deployed  = yield Task(self.redis.hget, DEPLOYED, self.params['ip'])
+        is_deployed = yield Task(self.redis.hget, DEPLOYED, self.params['ip'])
 
         if is_deploying:
             self.write_message('%s 正在部署' % self.params['ip'])
@@ -83,25 +83,27 @@ class ServerReport(BaseHandler):
     @coroutine
     def post(self):
         try:
-            deploying_msg = yield Task(self.redis.hget, DEPLOYING, self.params['ip'])
-            is_deployed   = yield Task(self.redis.hget, DEPLOYED, self.params['ip'])
+            ip = self.params['ip']
+            deploying_msg = yield Task(self.redis.hget, DEPLOYING, ip['ip'])
+            is_deployed = yield Task(self.redis.hget, DEPLOYED, ip['ip'])
 
             if not deploying_msg and not is_deployed:
                 raise ValueError('%s not in deploying/deployed' % self.params['ip'])
 
             if deploying_msg:
                 data = json.loads(deploying_msg)
-
+                self.log.info(data)
                 self.params.update({
                     'name': data['name'],
-                    'cluster_id': data['cluster_id']
+                    'cluster_id': data['cluster_id'],
+                    'server_id': data['server_id']
                 })
 
                 yield self.server_service.save_server_account({'username': data['username'],
                                                                'passwd': data['passwd'],
                                                                'ip': data['ip']})
-                yield Task(self.redis.hdel, DEPLOYING, self.params['ip'])
-                yield Task(self.redis.hset, DEPLOYED, self.params['ip'], DEPLOYED_FLAG)
+                yield Task(self.redis.hdel, DEPLOYING, ip['ip'])
+                yield Task(self.redis.hset, DEPLOYED, ip['ip'], DEPLOYED_FLAG)
 
             yield self.server_service.save_report(self.params)
 
