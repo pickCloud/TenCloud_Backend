@@ -3,11 +3,12 @@ __author__ = 'Jon'
 import traceback
 import json
 
+
 from tornado.websocket import WebSocketHandler
 from tornado.gen import coroutine, Task
 from tornado.ioloop import PeriodicCallback, IOLoop
 from handler.base import BaseHandler
-from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG
+from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG, ALIYUN_REGION_NAME
 from utils.general import validate_ip
 from utils.security import Aes
 
@@ -24,14 +25,14 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
 
         # 参数认证
         try:
-            args = ['cluster_id', 'name', 'ip', 'username', 'passwd']
+            args = ['cluster_id', 'name', 'public_ip', 'username', 'passwd']
 
             self.guarantee(*args)
 
             for i in args[1:]:
                 self.params[i] = self.params[i].strip()
 
-            validate_ip(self.params['ip'])
+            validate_ip(self.params['public_ip'])
         except Exception as e:
             self.write_message(str(e))
             self.close()
@@ -41,22 +42,22 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
 
     @coroutine
     def handle_msg(self):
-        is_deploying = yield Task(self.redis.hget, DEPLOYING, self.params['ip'])
-        is_deployed  = yield Task(self.redis.hget, DEPLOYED, self.params['ip'])
+        is_deploying = yield Task(self.redis.hget, DEPLOYING, self.params['public_ip'])
+        is_deployed  = yield Task(self.redis.hget, DEPLOYED, self.params['public_ip'])
 
         if is_deploying:
-            self.write_message('%s 正在部署' % self.params['ip'])
+            self.write_message('%s 正在部署' % self.params['public_ip'])
             return
 
         if is_deployed:
-            self.write_message('%s 之前已部署' % self.params['ip'])
+            self.write_message('%s 之前已部署' % self.params['public_ip'])
             return
 
         # 保存到redis之前加密
         passwd = self.params['passwd']
         self.params['passwd'] = Aes.encrypt(passwd)
 
-        yield Task(self.redis.hset, DEPLOYING, self.params['ip'], json.dumps(self.params))
+        yield Task(self.redis.hset, DEPLOYING, self.params['public_ip'], json.dumps(self.params))
 
         self.period = PeriodicCallback(self.check, 3000)  # 设置定时函数, 3秒
         self.period.start()
@@ -67,7 +68,7 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
     @coroutine
     def check(self):
         ''' 检查主机是否上报信息 '''
-        result = yield Task(self.redis.hget, DEPLOYED, self.params['ip'])
+        result = yield Task(self.redis.hget, DEPLOYED, self.params['public_ip'])
 
         if result:
             self.write_message('success')
@@ -83,11 +84,11 @@ class ServerReport(BaseHandler):
     @coroutine
     def post(self):
         try:
-            deploying_msg = yield Task(self.redis.hget, DEPLOYING, self.params['ip'])
-            is_deployed   = yield Task(self.redis.hget, DEPLOYED, self.params['ip'])
+            deploying_msg = yield Task(self.redis.hget, DEPLOYING, self.params['public_ip'])
+            is_deployed   = yield Task(self.redis.hget, DEPLOYED, self.params['public_ip'])
 
             if not deploying_msg and not is_deployed:
-                raise ValueError('%s not in deploying/deployed' % self.params['ip'])
+                raise ValueError('%s not in deploying/deployed' % self.params['public_ip'])
 
             if deploying_msg:
                 data = json.loads(deploying_msg)
@@ -99,11 +100,151 @@ class ServerReport(BaseHandler):
 
                 yield self.server_service.save_server_account({'username': data['username'],
                                                                'passwd': data['passwd'],
-                                                               'ip': data['ip']})
-                yield Task(self.redis.hdel, DEPLOYING, self.params['ip'])
-                yield Task(self.redis.hset, DEPLOYED, self.params['ip'], DEPLOYED_FLAG)
+                                                               'public_ip': data['public_ip']})
+                yield Task(self.redis.hdel, DEPLOYING, self.params['public_ip'])
+                yield Task(self.redis.hset, DEPLOYED, self.params['public_ip'], DEPLOYED_FLAG)
 
             yield self.server_service.save_report(self.params)
+
+            self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ServerMigratinHandler(BaseHandler):
+    @coroutine
+    def post(self):
+        ''' 主机迁移
+            参数: id -> []
+        '''
+        try:
+            yield self.server_service.migrate_server(self.params)
+
+            self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ServerDelHandler(BaseHandler):
+    @coroutine
+    def post(self):
+        ''' 主机删除
+            参数: id -> []
+        '''
+        try:
+            yield self.server_service.delete_server(self.params)
+
+            self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ServerDetailHandler(BaseHandler):
+    @coroutine
+    def get(self, id):
+        ''' 主机详情
+        '''
+        try:
+            data = yield self.server_service.get_detail(id)
+
+            result = dict()
+
+            result['basic_info'] = {
+                'id': data['id'],
+                'name': data['name'],
+                'cluster_id': data['cluster_id'],
+                'cluster_name': data['cluster_name'],
+                'address': ALIYUN_REGION_NAME.get(data['region_id']),
+                'public_ip': data['public_ip'],
+                'machine_status': data['machine_status'],
+                'business_status': data['business_status']
+            }
+
+            result['system_info'] = {
+                'config': {
+                    'cpu': data['cpu'],
+                    'memory': data['memory'],
+                    'os_name': data['os_name'],
+                    'os_type': data['os_type']
+                }
+            }
+
+            result['business_info'] = {
+                'provider': data['provider'],
+                'contract': {
+                    'create_time': data['create_time'],
+                    'expired_time': data['expired_time'],
+                    'charge_type': data['charge_type']
+                }
+            }
+
+            self.success(result)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ServerPerformanceHandler(BaseHandler):
+    @coroutine
+    def get(self, id):
+        try:
+            result = yield self.server_service.get_performance(id)
+
+            self.success(result)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ServerUpdateHandler(BaseHandler):
+    @coroutine
+    def post(self):
+        try:
+            yield self.server_service.update_server(self.params)
+
+            self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ServerStopHandler(BaseHandler):
+    @coroutine
+    def get(self, id):
+        ''' 停止主机
+        '''
+        try:
+            yield self.server_service.stop_server(id)
+
+            self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ServerStartHandler(BaseHandler):
+    @coroutine
+    def get(self, id):
+        ''' 开启主机
+        '''
+        try:
+            yield self.server_service.start_server(id)
+
+            self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+class ServerRebootHandler(BaseHandler):
+    @coroutine
+    def get(self, id):
+        ''' 重启主机
+        '''
+        try:
+            yield self.server_service.reboot_server(id)
 
             self.success()
         except:
