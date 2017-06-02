@@ -83,26 +83,24 @@ class ServerReport(BaseHandler):
     @coroutine
     def post(self):
         try:
-            deploying_msg = yield Task(self.redis.hget, DEPLOYING, self.params['ip'])
-            is_deployed = yield Task(self.redis.hget, DEPLOYED, self.params['ip'])
+            deploying_msg = yield Task(self.redis.hget, DEPLOYING, self.params['public_ip'])
+            is_deployed = yield Task(self.redis.hget, DEPLOYED, self.params['public_ip'])
 
             if not deploying_msg and not is_deployed:
                 raise ValueError('%s not in deploying/deployed' % self.params['ip'])
 
             if deploying_msg:
                 data = json.loads(deploying_msg)
-                self.log.info(data)
                 self.params.update({
                     'name': data['name'],
-                    'cluster_id': data['cluster_id'],
-                    'server_id': data['server_id']
+                    'cluster_id': data['cluster_id']
                 })
 
                 yield self.server_service.save_server_account({'username': data['username'],
                                                                'passwd': data['passwd'],
                                                                'ip': data['ip']})
-                yield Task(self.redis.hdel, DEPLOYING, self.params['ip'])
-                yield Task(self.redis.hset, DEPLOYED, self.params['ip'], DEPLOYED_FLAG)
+                yield Task(self.redis.hdel, DEPLOYING, self.params['public_ip'])
+                yield Task(self.redis.hset, DEPLOYED, self.params['public_ip'], DEPLOYED_FLAG)
 
             yield self.server_service.save_report(self.params)
 
