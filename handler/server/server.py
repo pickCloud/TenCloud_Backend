@@ -98,7 +98,7 @@ class ServerReport(BaseHandler):
 
                 yield self.server_service.save_server_account({'username': data['username'],
                                                                'passwd': data['passwd'],
-                                                               'ip': data['ip']})
+                                                               'public_ip': data['public_ip']})
                 yield Task(self.redis.hdel, DEPLOYING, self.params['public_ip'])
                 yield Task(self.redis.hset, DEPLOYED, self.params['public_ip'], DEPLOYED_FLAG)
 
