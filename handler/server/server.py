@@ -41,15 +41,15 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
 
     @coroutine
     def handle_msg(self):
-        is_deploying = yield Task(self.redis.hget, DEPLOYING, self.params['ip'])
-        is_deployed = yield Task(self.redis.hget, DEPLOYED, self.params['ip'])
+        is_deploying = yield Task(self.redis.hget, DEPLOYING, self.params['public_ip'])
+        is_deployed = yield Task(self.redis.hget, DEPLOYED, self.params['public_ip'])
 
         if is_deploying:
-            self.write_message('%s 正在部署' % self.params['ip'])
+            self.write_message('%s 正在部署' % self.params['public_ip'])
             return
 
         if is_deployed:
-            self.write_message('%s 之前已部署' % self.params['ip'])
+            self.write_message('%s 之前已部署' % self.params['public_ip'])
             return
 
         # 保存到redis之前加密
@@ -67,7 +67,7 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
     @coroutine
     def check(self):
         ''' 检查主机是否上报信息 '''
-        result = yield Task(self.redis.hget, DEPLOYED, self.params['ip'])
+        result = yield Task(self.redis.hget, DEPLOYED, self.params['public_ip'])
 
         if result:
             self.write_message('success')
