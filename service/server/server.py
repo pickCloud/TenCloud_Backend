@@ -12,33 +12,35 @@ from constant import CMD_MONITOR, INSTANCE_STATUS
 
 
 class ServerService(BaseService):
-    table  = 'server'
-    fields = 'id, name, public_ip, business_status, cluster_id'
+
+    # table = 'server'
+    # fields = 'id, name, address, ip, machine_status, business_status'
 
     @coroutine
     def save_report(self, params):
-        ''' 保存主机上报的信息
-        '''
-        performance = [json.dumps(params[i]) for i in ['cpu', 'mem', 'disk']]
-
-        data = [params.get('name', ''), params.get('cluster_id', 0), params['public_ip']] + performance*2
-
-        sql = " INSERT INTO server(name, cluster_id, public_ip, cpu, memory, disk) "\
-              " VALUES(%s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE "\
-              " name=name, cluster_id=cluster_id, cpu=%s, memory=%s, disk=%s"
-
-        yield self.db.execute(sql, data)
+        """ 保存主机上报的信息
+        """
+        base_data = [params['public_ip'], params['time']]
+        base_sql = 'INSERT INTO %s(public_ip, created_time,content)'
+        suffix = ' values(%s,%s,%s)'
+        for table in ['cpu', 'memory', 'disk']:
+            content = json.dumps(params[table])
+            sql = (base_sql % table) + suffix
+            yield self.db.execute(sql, base_data + [content])
 
     @run_on_executor
     def remote_deploy(self, params):
-        ''' 远程部署主机
-        '''
+        """ 远程部署主机
+        """
         ssh = SSH(hostname=params['public_ip'], username=params['username'], passwd=params['passwd'])
+
         ssh.exec(CMD_MONITOR)
         ssh.close()
 
     @coroutine
     def save_server_account(self, params):
+
+
         sql = " INSERT INTO server_account(public_ip, username, passwd) "\
               " VALUES(%s, %s, %s)"
 
@@ -135,3 +137,4 @@ class ServerService(BaseService):
         sql = " UPDATE instance SET status=%s WHERE instance_id=%s "
 
         yield self.db.execute(sql, [status, instance_id])
+

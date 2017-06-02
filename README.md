@@ -147,6 +147,38 @@ CREATE TABLE `instance` (
 );
 ```
 
+*cpu表
+```
+create table ten_dashboard.cpu (
+	id int auto_increment primary key,
+	public_ip varchar(15) not null,
+	created_time int(10) not null,
+	content json null
+) comment 'cpu使用情况';
+create index ip_time on cpu (public_ip, created_time);
+```
+
+*memory表
+```
+create table ten_dashboard.memory (
+	id int auto_increment primary key,
+	public_ip varchar(15) not null,
+	created_time int(10) not null,
+	content json null 
+) comment 'memory使用情况';
+create index ip_time on memory (publlic_ip, created_time);
+```
+
+*disk表
+```
+create table ten_dashboard.disk (
+	id int auto_increment primary key,
+	public_ip varchar(15) not null,
+	created_time int(10) not null,
+	content json null
+) comment 'disk使用情况';
+create index ip_time on disk (public_ip, created_time);
+```
 ## 测试
 ```
 curl http://localhost:8010/api/clusters
