@@ -10,39 +10,37 @@ from constant import CMD_MONITOR
 
 
 class ServerService(BaseService):
-    table = 'server'
-    fields = 'id, name, address, ip, machine_status, business_status'
+    def __init__(self):
+        super().__init__()
+        self.base_data = []
+        self.base_sql = ""
+        self.suffix = ""
+    # table = 'server'
+    # fields = 'id, name, address, ip, machine_status, business_status'
+
+    @coroutine
+    def save(self, table, content):
+        base_data = self.base_data[:]
+        base_data.append(content)
+        sql = (self.base_sql % table) + self.suffix
+        yield self.db.execute(sql, base_data)
 
     @coroutine
     def save_report(self, params):
         """ 保存主机上报的信息
         """
-        cpu = json.dumps(params['mem'])
+        cpu = json.dumps(params['cpu'])
         mem = json.dumps(params['mem'])
         disk = json.dumps(params['disk'])
-        post_time = params['time']['time']
+        post_time = params['time']
 
-        data = [params.get('server_id', 0), params.get('cluster_id', 0), post_time]
-        sql = "INSERT INTO %s(cluster_id, server_id, created_time,content)"
-        suffix = "values(%s,%s,%s,%s)"
+        self.base_data = [params.get('server_id', 0), params.get('cluster_id', 0), post_time]
+        self.base_sql = 'INSERT INTO %s(cluster_id, server_id, created_time,content)'
+        self.suffix = ' values(%s,%s,%s,%s)'
 
-        cpu_sql = sql % ("cpu") + suffix
-        cpu_data = data + [cpu]
-        self.log.info(cpu_sql)
-        self.log.info(cpu_data)
-        yield self.db.execute(cpu_sql, cpu_data)
-
-        mem_sql = sql % ("memory") + suffix
-        mem_data = data + [mem]
-        self.log.info(mem_sql)
-        self.log.info(mem_data)
-        yield self.db.execute(mem_sql, mem_data)
-
-        disk_sql = sql % ("disk") + suffix
-        disk_data = data + [disk]
-        self.log.info(disk_sql)
-        self.log.info(disk_data)
-        yield self.db.execute(disk_sql, disk_data)
+        self.save(table='cpu', content=cpu)
+        self.save(table='memory', content=mem)
+        self.save(table='disk', content=disk)
 
     @run_on_executor
     def remote_deploy(self, params):

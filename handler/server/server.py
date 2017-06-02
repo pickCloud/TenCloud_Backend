@@ -83,9 +83,8 @@ class ServerReport(BaseHandler):
     @coroutine
     def post(self):
         try:
-            ip = self.params['ip']
-            deploying_msg = yield Task(self.redis.hget, DEPLOYING, ip['ip'])
-            is_deployed = yield Task(self.redis.hget, DEPLOYED, ip['ip'])
+            deploying_msg = yield Task(self.redis.hget, DEPLOYING, self.params['ip'])
+            is_deployed = yield Task(self.redis.hget, DEPLOYED, self.params['ip'])
 
             if not deploying_msg and not is_deployed:
                 raise ValueError('%s not in deploying/deployed' % self.params['ip'])
@@ -102,8 +101,8 @@ class ServerReport(BaseHandler):
                 yield self.server_service.save_server_account({'username': data['username'],
                                                                'passwd': data['passwd'],
                                                                'ip': data['ip']})
-                yield Task(self.redis.hdel, DEPLOYING, ip['ip'])
-                yield Task(self.redis.hset, DEPLOYED, ip['ip'], DEPLOYED_FLAG)
+                yield Task(self.redis.hdel, DEPLOYING, self.params['ip'])
+                yield Task(self.redis.hset, DEPLOYED, self.params['ip'], DEPLOYED_FLAG)
 
             yield self.server_service.save_report(self.params)
 
