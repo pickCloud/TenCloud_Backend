@@ -12,10 +12,7 @@ settings['port'] = 8010
 # 是否开启debug
 settings['debug'] = True
 
-# 日志级别
-settings['log_level'] = 'DEBUG'
-
-# DB配置
+# MYSQL配置
 settings['mysql_host'] = 'localhost'
 settings['mysql_port'] = 3306
 settings['mysql_database'] = 'ten_dashboard'
@@ -23,5 +20,10 @@ settings['mysql_user'] = 'root'
 settings['mysql_password'] = '123456'
 settings['mysql_charset'] = 'utf8mb4'
 
+# REDIS配置
+settings['redis_host'] = 'localhost'
+settings['redis_port'] = 6379
 
-
+# 阿里access_key
+settings['aliyun_id'] = ''
+settings['aliyun_secret'] = ''
