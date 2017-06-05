@@ -190,16 +190,6 @@ class ServerDetailHandler(BaseHandler):
 
 
 class ServerPerformanceHandler(BaseHandler):
-    # @coroutine
-    # def get(self, id):
-    #     try:
-    #         result = yield self.server_service.get_performance(id)
-    #
-    #         self.success(result)
-    #     except:
-    #         self.error()
-    #         self.log.error(traceback.format_exc())
-
     @coroutine
     def post(self):
         try:
@@ -208,6 +198,7 @@ class ServerPerformanceHandler(BaseHandler):
         except:
             self.error()
             self.log.error(traceback.format_exc())
+
 
 class ServerUpdateHandler(BaseHandler):
     @coroutine

@@ -12,8 +12,8 @@ from constant import CMD_MONITOR, INSTANCE_STATUS
 
 
 class ServerService(BaseService):
-    # table = 'server'
-    # fields = 'id, name, address, ip, machine_status, business_status'
+    table = 'server'
+    fields = 'id, name, address, ip, machine_status, business_status'
 
     @coroutine
     def save_report(self, params):
