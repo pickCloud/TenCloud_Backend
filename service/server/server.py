@@ -12,8 +12,8 @@ from constant import CMD_MONITOR, INSTANCE_STATUS
 
 
 class ServerService(BaseService):
-    # table = 'server'
-    # fields = 'id, name, address, ip, machine_status, business_status'
+    table = 'server'
+    fields = 'id, name, address, ip, machine_status, business_status'
 
     @coroutine
     def save_report(self, params):
@@ -89,12 +89,39 @@ class ServerService(BaseService):
         data = cur.fetchone()
 
         return data
-
+def __init__
+    @coroutine
+    def _get_memory(self,sql,data):
+        raw_data = {}
+        memory_sql = sql
+        cur = yield self.db.execute(memory_sql,data)
+        raw_data['memory'] = [[json.loads(x['content']), json.loads(x['created_time'])] for x in cur.fetchall()]
+    @coroutine
+    def _get_cpu(self, data):
+        raw_data = {}
+        for table in ['cpu', 'memory']:
+            sql = """
+                  SELECT content, created_time from %s 
+                  WHERE public_ip=%s AND created_time>=%s AND created_time<=%s
+                  """
+            sql = sql % table
+            cur = yield self.db.execute(sql, data)
+            raw_data[table] = [[json.loads(x['content']), json.loads(x['created_time'])] for x in cur.fetchall()]
+        return raw_data
+    @coroutine
+    def _get_disk(self,data):
+        raw_data = {}
+        sql = """
+            SELECT content FROM disk
+            WHERE public_ip=%s AND created_time<=%s DESC 
+        """
+        cur = yield  self.db.execute(sql,data)
+        raw_data['disk'] = [[json.loads(x[''])]]
     @coroutine
     def get_performance(self, params):
         public_ip = yield self.fetch_public_ip(params['id'])
         data = [public_ip, params['start_time'], params['end_time']]
-        base_sql = "SELECT content FROM %s "
+        base_sql = "SELECT created_time,content FROM %s "
         cond = "WHERE public_ip=%s AND created_time>=%s AND created_time<=%s"
         raw_data = {}
         for table in ['cpu', 'memory', 'disk']:
