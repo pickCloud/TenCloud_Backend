@@ -100,6 +100,7 @@ class ServerReport(BaseHandler):
                     'cluster_id': data['cluster_id']
                 })
 
+                yield self.server_service.add_server(self.params)
                 yield self.server_service.save_server_account({'username': data['username'],
                                                                'passwd': data['passwd'],
                                                                'public_ip': data['public_ip']})
