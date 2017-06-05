@@ -12,7 +12,6 @@ from constant import CMD_MONITOR, INSTANCE_STATUS
 
 
 class ServerService(BaseService):
-
     # table = 'server'
     # fields = 'id, name, address, ip, machine_status, business_status'
 
@@ -40,8 +39,7 @@ class ServerService(BaseService):
     @coroutine
     def save_server_account(self, params):
 
-
-        sql = " INSERT INTO server_account(public_ip, username, passwd) "\
+        sql = " INSERT INTO server_account(public_ip, username, passwd) " \
               " VALUES(%s, %s, %s)"
 
         yield self.db.execute(sql, [params['public_ip'], params['username'], params['passwd']])
@@ -93,21 +91,30 @@ class ServerService(BaseService):
         return data
 
     @coroutine
-    def get_performance(self, id):
-        fields = 'cpu, memory, disk'
+    def get_performance(self, params):
+        public_ip = yield self.fetch_public_ip(params['id'])
+        data = [public_ip, params['start_time'], params['end_time']]
+        base_sql = "SELECT content FROM %s "
+        cond = "WHERE public_ip=%s AND created_time>=%s AND created_time<=%s"
+        raw_data = {}
+        for table in ['cpu', 'memory', 'disk']:
+            sql = (base_sql % table) + cond
+            cur = yield self.db.execute(sql, data)
+            raw_data[table] = [json.loads(x['content']) for x in cur.fetchall()]
+        return raw_data
 
-        raw_data = yield self.select(fields=fields, conds=['id=%s'], params=[id], one=True, ct=False, ut=False)
-
-        data = {key:json.loads(raw_data[key]) for key in raw_data}
-
-        return data
+    @coroutine
+    def fetch_public_ip(self, server_id):
+        sql = " SELECT public_ip as public_ip FROM server WHERE id=%s "
+        cur = yield self.db.execute(sql, server_id)
+        data = cur.fetchone()
+        return data['public_ip']
 
     @coroutine
     def fetch_instance_id(self, server_id):
         sql = " SELECT i.instance_id as instance_id FROM instance i JOIN server s USING(public_ip) WHERE s.id=%s "
         cur = yield self.db.execute(sql, server_id)
         data = cur.fetchone()
-
         return data['instance_id']
 
     @coroutine
@@ -137,4 +144,3 @@ class ServerService(BaseService):
         sql = " UPDATE instance SET status=%s WHERE instance_id=%s "
 
         yield self.db.execute(sql, [status, instance_id])
-

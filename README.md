@@ -166,7 +166,7 @@ create table ten_dashboard.memory (
 	created_time int(10) not null,
 	content json null 
 ) comment 'memory使用情况';
-create index ip_time on memory (publlic_ip, created_time);
+create index ip_time on memory (public_ip, created_time);
 ```
 
 *disk表
