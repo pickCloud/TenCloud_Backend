@@ -96,7 +96,7 @@ class ServerService(BaseService):
             WHERE public_ip=%s AND created_time>=%s AND created_time<=%s
         """
         cur = yield self.db.execute(memory_sql, params)
-        return [[json.loads(str(x['created_time'])), json.loads(x['content'])['percent']] for x in cur.fetchall()]
+        return [[x['created_time'], json.loads(x['content'])['percent']] for x in cur.fetchall()]
 
     @coroutine
     def _get_cpu(self, params):
@@ -105,7 +105,7 @@ class ServerService(BaseService):
             WHERE public_ip=%s AND created_time>=%s AND created_time<=%s
         """
         cur = yield self.db.execute(cpu_sql, params)
-        return [[json.loads(str(x['created_time'])), json.loads(x['content'])['percent']] for x in cur.fetchall()]
+        return [[x['created_time'], json.loads(x['content'])['percent']] for x in cur.fetchall()]
 
     @coroutine
     def _get_disk(self, params):
