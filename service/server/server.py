@@ -12,8 +12,8 @@ from constant import CMD_MONITOR, INSTANCE_STATUS
 
 
 class ServerService(BaseService):
-    table = 'server'
-    fields = 'id, name, address, ip, machine_status, business_status'
+    # table = 'server'
+    # fields = 'id, name, address, ip, machine_status, business_status'
 
     @coroutine
     def save_report(self, params):
@@ -115,7 +115,6 @@ class ServerService(BaseService):
         """
         cur = yield self.db.execute(sql, params)
         data = json.loads(cur.fetchone()['content'])
-        self.log.info(data)
         return [data['free'], data['total']]
 
     @coroutine
@@ -126,7 +125,6 @@ class ServerService(BaseService):
         raw_data['cpu'] = yield self._get_cpu(func_params)
         raw_data['memory'] = yield self._get_memory(func_params)
         raw_data['disk'] = yield self._get_disk([public_ip, params['end_time']])
-        self.log.info(raw_data)
         return raw_data
 
     @coroutine
