@@ -31,7 +31,7 @@ routes = [
     (r'/api/server/(\d+)', ServerDetailHandler),
     (r'/api/server/update', ServerUpdateHandler),
     (r'/api/server/migration', ServerMigratinHandler),
-    (r'/api/server/performance/(\d+)', ServerPerformanceHandler),
+    (r'/api/server/performance/', ServerPerformanceHandler),
 
     (r'/api/server/stop/(\d+)', ServerStopHandler),
     (r'/api/server/start/(\d+)', ServerStartHandler),
