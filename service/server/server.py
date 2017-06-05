@@ -38,7 +38,6 @@ class ServerService(BaseService):
 
     @coroutine
     def save_server_account(self, params):
-
         sql = " INSERT INTO server_account(public_ip, username, passwd) " \
               " VALUES(%s, %s, %s)"
 
@@ -89,45 +88,45 @@ class ServerService(BaseService):
         data = cur.fetchone()
 
         return data
-def __init__
+
     @coroutine
-    def _get_memory(self,sql,data):
-        raw_data = {}
-        memory_sql = sql
-        cur = yield self.db.execute(memory_sql,data)
-        raw_data['memory'] = [[json.loads(x['content']), json.loads(x['created_time'])] for x in cur.fetchall()]
+    def _get_memory(self, params):
+        memory_sql = """
+            SELECT created_time,content FROM memory 
+            WHERE public_ip=%s AND created_time>=%s AND created_time<=%s
+        """
+        cur = yield self.db.execute(memory_sql, params)
+        return [[json.loads(str(x['created_time'])), json.loads(x['content'])['percent']] for x in cur.fetchall()]
+
     @coroutine
-    def _get_cpu(self, data):
-        raw_data = {}
-        for table in ['cpu', 'memory']:
-            sql = """
-                  SELECT content, created_time from %s 
-                  WHERE public_ip=%s AND created_time>=%s AND created_time<=%s
-                  """
-            sql = sql % table
-            cur = yield self.db.execute(sql, data)
-            raw_data[table] = [[json.loads(x['content']), json.loads(x['created_time'])] for x in cur.fetchall()]
-        return raw_data
+    def _get_cpu(self, params):
+        cpu_sql = """
+            SELECT created_time,content FROM cpu
+            WHERE public_ip=%s AND created_time>=%s AND created_time<=%s
+        """
+        cur = yield self.db.execute(cpu_sql, params)
+        return [[json.loads(str(x['created_time'])), json.loads(x['content'])['percent']] for x in cur.fetchall()]
+
     @coroutine
-    def _get_disk(self,data):
-        raw_data = {}
+    def _get_disk(self, params):
         sql = """
             SELECT content FROM disk
-            WHERE public_ip=%s AND created_time<=%s DESC 
+            WHERE public_ip=%s AND created_time<=%s ORDER BY created_time DESC LIMIT 1 
         """
-        cur = yield  self.db.execute(sql,data)
-        raw_data['disk'] = [[json.loads(x[''])]]
+        cur = yield self.db.execute(sql, params)
+        data = json.loads(cur.fetchone()['content'])
+        self.log.info(data)
+        return [data['free'], data['total']]
+
     @coroutine
     def get_performance(self, params):
-        public_ip = yield self.fetch_public_ip(params['id'])
-        data = [public_ip, params['start_time'], params['end_time']]
-        base_sql = "SELECT created_time,content FROM %s "
-        cond = "WHERE public_ip=%s AND created_time>=%s AND created_time<=%s"
         raw_data = {}
-        for table in ['cpu', 'memory', 'disk']:
-            sql = (base_sql % table) + cond
-            cur = yield self.db.execute(sql, data)
-            raw_data[table] = [json.loads(x['content']) for x in cur.fetchall()]
+        public_ip = yield self.fetch_public_ip(params['id'])
+        func_params = [public_ip, params['start_time'], params['end_time']]
+        raw_data['cpu'] = yield self._get_cpu(func_params)
+        raw_data['memory'] = yield self._get_memory(func_params)
+        raw_data['disk'] = yield self._get_disk([public_ip, params['end_time']])
+        self.log.info(raw_data)
         return raw_data
 
     @coroutine
