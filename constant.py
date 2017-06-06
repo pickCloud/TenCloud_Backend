@@ -23,7 +23,7 @@ AES_KEY = '01234^!@#$%56789'
 # 远程连接主机
 SSH_CONNECT_TIMEOUT = 30
 SERVER_HOST = '47.94.18.22'
-CMD_MONITOR = 'curl -sSL http://{host}/supermonitor/install.sh -o /etc/profile.d/install.sh | sh /etc/profile.d/install.sh'.format(host=SERVER_HOST)
+CMD_MONITOR = 'curl -sSL http://{host}/supermonitor/install.sh -o /etc/profile.d/install.sh && sh /etc/profile.d/install.sh'.format(host=SERVER_HOST)
 
 # 阿里云的region列表
 ALIYUN_DOMAIN = 'http://ecs.aliyuncs.com/?'
