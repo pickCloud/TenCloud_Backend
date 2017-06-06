@@ -8,7 +8,7 @@ from service.base import BaseService
 from utils.ssh import SSH
 from utils.general import get_in_format
 from utils.aliyun import Aliyun
-from constant import CMD_MONITOR, INSTANCE_STATUS
+from constant import MONITOR_CMD, INSTANCE_STATUS
 
 
 class ServerService(BaseService):
@@ -34,7 +34,7 @@ class ServerService(BaseService):
         ''' 远程部署主机
         '''
         ssh = SSH(hostname=params['public_ip'], username=params['username'], passwd=params['passwd'])
-        ssh.exec(CMD_MONITOR)
+        ssh.exec(MONITOR_CMD)
         ssh.close()
 
     @coroutine
