@@ -6,10 +6,10 @@ fi
 dir=$HOME/report_data
 ls $dir > /dev/null 2>&1;
 ret_dir=$?
-if [${ret_dir} -ne 0 ];then
+if [ ${ret_dir} -ne 0 ];then
     mkdir -p $dir
 fi
-cd $dir
+cd ${dir}
 url="http://47.94.18.22/supermonitor/sync_linux_amd64"
 curl --retry 3 --retry-delay 2 -s -L -O $url
 ret=$?
