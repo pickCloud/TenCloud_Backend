@@ -25,7 +25,7 @@ sync_linux_amd64="sync_linux_amd64"
 sync_url="http://47.94.18.22/supermonitor/sync_linux_amd64"
 sync_storage="/usr/sbin/sync_linux_amd64"
 if [ -f "${sync_storage}" ];then
-    rm "${sync_linux_amd64}"
+    rm "${sync_storage}"
 fi
 DownloadFunc ${sync_linux_amd64} ${sync_url} ${sync_storage}
 chmod 755 "${sync_storage}"
