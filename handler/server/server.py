@@ -38,12 +38,14 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
             self.close()
             return
 
-        IOLoop.current().spawn_callback(callback=self.handle_msg) # on_message不能异步, 要实现异步需spawn_callback
+        IOLoop.current().spawn_callback(callback=self.handle_msg)  # on_message不能异步, 要实现异步需spawn_callback
 
     @coroutine
     def handle_msg(self):
         is_deploying = yield Task(self.redis.hget, DEPLOYING, self.params['public_ip'])
-        is_deployed  = yield Task(self.redis.hget, DEPLOYED, self.params['public_ip'])
+
+        is_deployed = yield Task(self.redis.hget, DEPLOYED, self.params['public_ip'])
+
 
         if is_deploying:
             self.write_message('%s 正在部署' % self.params['public_ip'])
@@ -85,14 +87,14 @@ class ServerReport(BaseHandler):
     def post(self):
         try:
             deploying_msg = yield Task(self.redis.hget, DEPLOYING, self.params['public_ip'])
-            is_deployed   = yield Task(self.redis.hget, DEPLOYED, self.params['public_ip'])
+
+            is_deployed = yield Task(self.redis.hget, DEPLOYED, self.params['public_ip'])
 
             if not deploying_msg and not is_deployed:
                 raise ValueError('%s not in deploying/deployed' % self.params['public_ip'])
 
             if deploying_msg:
                 data = json.loads(deploying_msg)
-
                 self.params.update({
                     'name': data['name'],
                     'cluster_id': data['cluster_id']
@@ -190,11 +192,10 @@ class ServerDetailHandler(BaseHandler):
 
 class ServerPerformanceHandler(BaseHandler):
     @coroutine
-    def get(self, id):
+    def post(self):
         try:
-            result = yield self.server_service.get_performance(id)
-
-            self.success(result)
+            data = yield self.server_service.get_performance(self.params)
+            self.success(data)
         except:
             self.error()
             self.log.error(traceback.format_exc())

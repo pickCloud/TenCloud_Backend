@@ -12,34 +12,32 @@ from constant import MONITOR_CMD, INSTANCE_STATUS
 
 
 class ServerService(BaseService):
-    table  = 'server'
-    fields = 'id, name, public_ip, business_status, cluster_id'
+    table = 'server'
+    fields = 'id, name, address, ip, machine_status, business_status'
 
     @coroutine
     def save_report(self, params):
-        ''' 保存主机上报的信息
-        '''
-        performance = [json.dumps(params[i]) for i in ['cpu', 'mem', 'disk']]
-
-        data = [params.get('name', ''), params.get('cluster_id', 0), params['public_ip']] + performance*2
-
-        sql = " INSERT INTO server(name, cluster_id, public_ip, cpu, memory, disk) "\
-              " VALUES(%s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE "\
-              " name=name, cluster_id=cluster_id, cpu=%s, memory=%s, disk=%s"
-
-        yield self.db.execute(sql, data)
+        """ 保存主机上报的信息
+        """
+        base_data = [params['public_ip'], params['time']]
+        base_sql = 'INSERT INTO %s(public_ip, created_time,content)'
+        suffix = ' values(%s,%s,%s)'
+        for table in ['cpu', 'memory', 'disk']:
+            content = json.dumps(params[table])
+            sql = (base_sql % table) + suffix
+            yield self.db.execute(sql, base_data + [content])
 
     @run_on_executor
     def remote_deploy(self, params):
-        ''' 远程部署主机
-        '''
+        """ 远程部署主机
+        """
         ssh = SSH(hostname=params['public_ip'], username=params['username'], passwd=params['passwd'])
         ssh.exec(MONITOR_CMD)
         ssh.close()
 
     @coroutine
     def save_server_account(self, params):
-        sql = " INSERT INTO server_account(public_ip, username, passwd) "\
+        sql = " INSERT INTO server_account(public_ip, username, passwd) " \
               " VALUES(%s, %s, %s)"
 
         yield self.db.execute(sql, [params['public_ip'], params['username'], params['passwd']])
@@ -98,21 +96,55 @@ class ServerService(BaseService):
         return data
 
     @coroutine
-    def get_performance(self, id):
-        fields = 'cpu, memory, disk'
+    def _get_memory(self, params):
+        memory_sql = """
+            SELECT created_time,content FROM memory 
+            WHERE public_ip=%s AND created_time>=%s AND created_time<=%s
+        """
+        cur = yield self.db.execute(memory_sql, params)
+        return [[x['created_time'], json.loads(x['content'])['percent']] for x in cur.fetchall()]
 
-        raw_data = yield self.select(fields=fields, conds=['id=%s'], params=[id], one=True, ct=False, ut=False)
+    @coroutine
+    def _get_cpu(self, params):
+        cpu_sql = """
+            SELECT created_time,content FROM cpu
+            WHERE public_ip=%s AND created_time>=%s AND created_time<=%s
+        """
+        cur = yield self.db.execute(cpu_sql, params)
+        return [[x['created_time'], json.loads(x['content'])['percent']] for x in cur.fetchall()]
 
-        data = {key:json.loads(raw_data[key]) for key in raw_data}
+    @coroutine
+    def _get_disk(self, params):
+        sql = """
+            SELECT content FROM disk
+            WHERE public_ip=%s AND created_time<=%s ORDER BY created_time DESC LIMIT 1 
+        """
+        cur = yield self.db.execute(sql, params)
+        data = json.loads(cur.fetchone()['content'])
+        return [data['free'], data['total']]
 
-        return data
+    @coroutine
+    def get_performance(self, params):
+        raw_data = {}
+        public_ip = yield self.fetch_public_ip(params['id'])
+        func_params = [public_ip, params['start_time'], params['end_time']]
+        raw_data['cpu'] = yield self._get_cpu(func_params)
+        raw_data['memory'] = yield self._get_memory(func_params)
+        raw_data['disk'] = yield self._get_disk([public_ip, params['end_time']])
+        return raw_data
+
+    @coroutine
+    def fetch_public_ip(self, server_id):
+        sql = " SELECT public_ip as public_ip FROM server WHERE id=%s "
+        cur = yield self.db.execute(sql, server_id)
+        data = cur.fetchone()
+        return data['public_ip']
 
     @coroutine
     def fetch_instance_id(self, server_id):
         sql = " SELECT i.instance_id as instance_id FROM instance i JOIN server s USING(public_ip) WHERE s.id=%s "
         cur = yield self.db.execute(sql, server_id)
         data = cur.fetchone()
-
         return data['instance_id']
 
     @coroutine
