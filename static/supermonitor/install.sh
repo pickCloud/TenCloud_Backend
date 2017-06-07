@@ -16,8 +16,8 @@ report_data="report_data.service"
 report_data_url="http://47.94.18.22/supermonitor/report_data.service"
 report_data_stroage="/etc/systemd/system/report_data.service"
 if [ -f "${report_data_stroage}" ];then
-    rm "${report_data_stroage}"
     systemctl disable "${report_data}"
+    rm "${report_data_stroage}"
 fi
 DownloadFunc ${report_data} ${report_data_url} ${report_data_stroage}
 chmod 755 "${report_data_stroage}"
