@@ -1,0 +1,10 @@
+[Unit]
+Description=sync_linux_amd64  daemon
+
+[Service]
+Type=somple
+PIDFILE=/run/report_data/sync_linux_amd64.pid
+ExecStart=/usr/sbin/sync_linux_amd64 --debug=false --interval=60
+
+[Install]
+WantedBy=multi-user.target
