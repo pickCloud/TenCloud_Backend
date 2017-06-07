@@ -1,22 +1,39 @@
 #!/bin/sh
-sync_linux_amd64="sync_linux_amd64"
-if ls $(pwd) | grep ${sync_linux_amd64};then
-    rm ${sync_linux_amd64}
-fi
-url="http://47.94.18.22/supermonitor/sync_linux_amd64"
-curl --retry 3 --retry-delay 2 -s -L -o $HOME/sync_linux_amd64 $url
-ret=$?
-if [ ${ret} -ne 0 ];then
-    echo "failed to download sync_linux_amd64"
+DownloadFunc() {
+    name=${1}
+    url=${2}
+    stroage=${3}
+  curl --retry 3 --retry-delay 2 -s -L -o "${stroage}" "${url}"
+  ret=$?
+  if [ ${ret} -ne 0 ];then
+    echo "failed to download ${name}"
     exit 1
-else
-    echo "success to download sync_linux_amd64"
+  else
+    echo "success to download ${name}"
 fi
-pid=$(ps -ef|grep ${sync_linux_amd64}|grep -v grep|awk '{print $2}')
-if ps -ef|grep ${sync_linux_amd64}|grep -v grep > /dev/null; then
+}
+report_data="report_data.service"
+report_data_url="http://47.94.18.22/supermonitor/report_data.service"
+report_data_stroage="/etc/systemd/system/report_data.service"
+if [ -f "${report_data_stroage}" ];then
+    rm "${report_data_stroage}"
+    systemctl disable "${report_data}"
+fi
+DownloadFunc ${report_data} ${report_data_url} ${report_data_stroage}
+chmod 755 "${report_data_stroage}"
+sync_linux_amd64="sync_linux_amd64"
+sync_url="http://47.94.18.22/supermonitor/sync_linux_amd64"
+sync_storage="/usr/sbin/sync_linux_amd64"
+if [ -f "${sync_storage}" ];then
+    rm "${sync_linux_amd64}"
+fi
+DownloadFunc ${sync_linux_amd64} ${sync_url} ${sync_storage}
+chmod 755 "${sync_storage}"
+pid=$(pgrep -f "${sync_linux_amd64}")
+if pgrep -f ${sync_linux_amd64} > /dev/null; then
     echo "kill old version sync"
-    kill ${pid}
+    kill "${pid}"
 fi
 echo "create sync"
-chmod +x $HOME/${sync_linux_amd64}
-$HOME/sync_linux_amd64 --debug=false --interval=60 &
+systemctl enable "${report_data}"
+systemctl start "${report_data}"
