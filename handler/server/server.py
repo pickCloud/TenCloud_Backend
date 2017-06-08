@@ -65,7 +65,15 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
         self.period.start()
 
         self.params.update({'passwd': passwd})
-        yield self.server_service.remote_deploy(self.params)
+        err_msg = yield self.server_service.remote_deploy(self.params)
+
+        # 部署失败
+        if err_msg:
+            self.write_message(err_msg)
+            self.period.stop()
+            self.close()
+
+            yield Task(self.redis.hdel, DEPLOYING, self.params['public_ip'])
 
     @coroutine
     def check(self):
