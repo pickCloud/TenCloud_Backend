@@ -31,9 +31,12 @@ class ServerService(BaseService):
     def remote_deploy(self, params):
         """ 远程部署主机
         """
-        ssh = SSH(hostname=params['public_ip'], username=params['username'], passwd=params['passwd'])
-        ssh.exec(MONITOR_CMD)
-        ssh.close()
+        try:
+            ssh = SSH(hostname=params['public_ip'], username=params['username'], passwd=params['passwd'])
+            ssh.exec(MONITOR_CMD)
+            ssh.close()
+        except Exception as e:
+            return str(e)
 
     @coroutine
     def save_server_account(self, params):
