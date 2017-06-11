@@ -8,12 +8,12 @@ from service.base import BaseService
 from utils.ssh import SSH
 from utils.general import get_in_format
 from utils.aliyun import Aliyun
-from constant import CMD_MONITOR, INSTANCE_STATUS
+from constant import MONITOR_CMD, INSTANCE_STATUS
 
 
 class ServerService(BaseService):
-    # table = 'server'
-    # fields = 'id, name, address, ip, machine_status, business_status'
+    table = 'server'
+    fields = 'id, name, address, ip, machine_status, business_status'
 
     @coroutine
     def save_report(self, params):
@@ -31,10 +31,12 @@ class ServerService(BaseService):
     def remote_deploy(self, params):
         """ 远程部署主机
         """
-        ssh = SSH(hostname=params['public_ip'], username=params['username'], passwd=params['passwd'])
-
-        ssh.exec(CMD_MONITOR)
-        ssh.close()
+        try:
+            ssh = SSH(hostname=params['public_ip'], username=params['username'], passwd=params['passwd'])
+            ssh.exec(MONITOR_CMD)
+            ssh.close()
+        except Exception as e:
+            return str(e)
 
     @coroutine
     def save_server_account(self, params):
@@ -42,6 +44,13 @@ class ServerService(BaseService):
               " VALUES(%s, %s, %s)"
 
         yield self.db.execute(sql, [params['public_ip'], params['username'], params['passwd']])
+
+    @coroutine
+    def add_server(self, params):
+        sql = " INSERT INTO server(name, public_ip, cluster_id) " \
+              " VALUES(%s, %s, %s)"
+
+        yield self.db.execute(sql, [params['name'], params['public_ip'], params['cluster_id']])
 
     @coroutine
     def migrate_server(self, params):

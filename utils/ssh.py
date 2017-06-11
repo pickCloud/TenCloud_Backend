@@ -21,7 +21,12 @@ class SSH:
 
         self._client = paramiko.SSHClient()
         self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self._client.connect(hostname=hostname, port=port, username=username, password=passwd, timeout=SSH_CONNECT_TIMEOUT)
+
+        try:
+            self._client.connect(hostname=hostname, port=port, username=username, password=passwd, timeout=SSH_CONNECT_TIMEOUT)
+        except Exception as e:
+            self.close()
+            raise e
 
     def exec(self, cmd):
         LOG.info('ssh cmd: %s' % cmd)

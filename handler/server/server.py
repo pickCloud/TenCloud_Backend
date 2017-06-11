@@ -65,7 +65,15 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
         self.period.start()
 
         self.params.update({'passwd': passwd})
-        yield self.server_service.remote_deploy(self.params)
+        err_msg = yield self.server_service.remote_deploy(self.params)
+
+        # 部署失败
+        if err_msg:
+            self.write_message(err_msg)
+            self.period.stop()
+            self.close()
+
+            yield Task(self.redis.hdel, DEPLOYING, self.params['public_ip'])
 
     @coroutine
     def check(self):
@@ -100,6 +108,7 @@ class ServerReport(BaseHandler):
                     'cluster_id': data['cluster_id']
                 })
 
+                yield self.server_service.add_server(self.params)
                 yield self.server_service.save_server_account({'username': data['username'],
                                                                'passwd': data['passwd'],
                                                                'public_ip': data['public_ip']})
@@ -190,16 +199,6 @@ class ServerDetailHandler(BaseHandler):
 
 
 class ServerPerformanceHandler(BaseHandler):
-    # @coroutine
-    # def get(self, id):
-    #     try:
-    #         result = yield self.server_service.get_performance(id)
-    #
-    #         self.success(result)
-    #     except:
-    #         self.error()
-    #         self.log.error(traceback.format_exc())
-
     @coroutine
     def post(self):
         try:
@@ -208,6 +207,7 @@ class ServerPerformanceHandler(BaseHandler):
         except:
             self.error()
             self.log.error(traceback.format_exc())
+
 
 class ServerUpdateHandler(BaseHandler):
     @coroutine
