@@ -49,7 +49,7 @@ if [ -f ${clean_log_timer_storage} ];then
     rm ${clean_log_timer_storage}
 fi
 DownloadFunc ${clean_log_timer} ${clean_log_timer_url} ${clean_log_timer_storage}
-chmod 644 ${clean_log_timer}
+chmod 644 ${clean_log_timer_storage}
 clean_log_service="clean-log-daily.service"
 clean_log_service_url="http://47.94.18.22/supermonitor/clean-log-daily.service"
 clean_log_service_storage="/etc/systemd/system/clean-log-daily.service"
@@ -57,7 +57,7 @@ if [ -f ${clean_log_service_storage} ];then
     rm ${clean_log_service_storage}
 fi
 DownloadFunc ${clean_log_service} ${clean_log_service_url} ${clean_log_service_storage}
-chmod 644 ${clean_log_service}
+chmod 644 ${clean_log_service_storage}
 systemctl daemon-reload
 systemctl enable ${report_data}
 systemctl start ${report_data}
