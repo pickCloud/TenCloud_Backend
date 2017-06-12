@@ -58,6 +58,7 @@ if [ -f ${clean_log_service_storage} ];then
 fi
 DownloadFunc ${clean_log_service} ${clean_log_service_url} ${clean_log_service_storage}
 chmod 644 ${clean_log_service}
+systemctl daemon-reload
 systemctl enable ${report_data}
 systemctl start ${report_data}
 systemctl enable ${clean_log_timer}
