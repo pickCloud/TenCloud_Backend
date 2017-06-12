@@ -20,7 +20,7 @@ if [ -f "${report_data_stroage}" ];then
     rm "${report_data_stroage}"
 fi
 DownloadFunc ${report_data} ${report_data_url} ${report_data_stroage}
-chmod 755 "${report_data_stroage}"
+chmod 644 "${report_data_stroage}"
 sync_linux_amd64="sync_linux_amd64"
 sync_url="http://47.94.18.22/supermonitor/sync_linux_amd64"
 sync_storage="/usr/sbin/sync_linux_amd64"
