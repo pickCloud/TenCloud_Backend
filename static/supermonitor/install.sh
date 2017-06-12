@@ -35,5 +35,9 @@ if pgrep -f ${sync_linux_amd64} > /dev/null; then
     kill "${pid}"
 fi
 echo "create sync"
+log="/var/log/report_data"
+if [ ! -d ${log} ];then
+    mkdir -p ${log}
+fi
 systemctl enable "${report_data}"
 systemctl start "${report_data}"
