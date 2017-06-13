@@ -9,6 +9,7 @@ from utils.ssh import SSH
 from utils.general import get_in_format
 from utils.aliyun import Aliyun
 from constant import MONITOR_CMD, INSTANCE_STATUS, UNINSTALL_CMD, DEPLOYED
+from utils.security import Aes
 
 
 class ServerService(BaseService):
@@ -59,31 +60,28 @@ class ServerService(BaseService):
         yield self.db.execute(sql, params['id'])
 
     @coroutine
-    def _delete_report_data(self, public_ip):
+    def _uninstall_monitor_service(self, public_ip):
         sql = "SELECT username, passwd FROM server_account WHERE public_ip=%s"
         data = yield self.db.execute(sql, public_ip)
         try:
-            ssh = SSH(hostname=public_ip, username=data['username'], passwd=data['passwd'])
+            ssh = SSH(hostname=public_ip, username=data['username'], passwd=Aes.decrypt(data['passwd']))
             ssh.exec(UNINSTALL_CMD)
             ssh.close()
         except Exception as e:
             return str(e)
 
     @coroutine
-    def _delete_server_table(self, table, public_ip):
+    def _delete_server_info(self, table, public_ip):
         base_sql = "DELETE FROM %s " % table
         sql = base_sql + "WHERE public_ip=%s"
-        # params = [table, public_ip]
-        self.log.info("sql: " + sql)
-        # self.log.info(params)
         yield self.db.execute(sql, public_ip)
 
     @coroutine
     def _delete_server(self, server_id):
         public_ip = yield self.fetch_public_ip(server_id)
-        yield self._delete_report_data(public_ip=public_ip)
+        yield self._uninstall_monitor_service(public_ip=public_ip)
         for table in ['server', 'server_account']:
-            yield self._delete_server_table(table=table, public_ip=public_ip)
+            yield self._delete_server_info(table=table, public_ip=public_ip)
         yield Task(self.redis.hdel, DEPLOYED, public_ip)
 
     @coroutine
