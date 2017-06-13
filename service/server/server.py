@@ -1,14 +1,15 @@
 __author__ = 'Jon'
 
 import json
-from tornado.gen import coroutine
+from tornado.gen import coroutine, Task
 from tornado.concurrent import run_on_executor
 
 from service.base import BaseService
 from utils.ssh import SSH
 from utils.general import get_in_format
 from utils.aliyun import Aliyun
-from constant import MONITOR_CMD, INSTANCE_STATUS
+from constant import MONITOR_CMD, INSTANCE_STATUS, UNINSTALL_CMD, DEPLOYED
+from utils.security import Aes
 
 
 class ServerService(BaseService):
@@ -59,10 +60,34 @@ class ServerService(BaseService):
         yield self.db.execute(sql, params['id'])
 
     @coroutine
-    def delete_server(self, params):
-        sql = " DELETE FROM server WHERE id IN (%s) " % get_in_format(params['id'])
+    def _uninstall_monitor_service(self, public_ip):
+        sql = "SELECT username, passwd FROM server_account WHERE public_ip=%s"
+        data = yield self.db.execute(sql, public_ip)
+        try:
+            ssh = SSH(hostname=public_ip, username=data['username'], passwd=Aes.decrypt(data['passwd']))
+            ssh.exec(UNINSTALL_CMD)
+            ssh.close()
+        except Exception as e:
+            return str(e)
 
-        yield self.db.execute(sql, params['id'])
+    @coroutine
+    def _delete_server_info(self, table, public_ip):
+        base_sql = "DELETE FROM %s " % table
+        sql = base_sql + "WHERE public_ip=%s"
+        yield self.db.execute(sql, public_ip)
+
+    @coroutine
+    def _delete_server(self, server_id):
+        public_ip = yield self.fetch_public_ip(server_id)
+        yield self._uninstall_monitor_service(public_ip=public_ip)
+        for table in ['server', 'server_account']:
+            yield self._delete_server_info(table=table, public_ip=public_ip)
+        yield Task(self.redis.hdel, DEPLOYED, public_ip)
+
+    @coroutine
+    def delete_server(self, params):
+        for server_id in params['id']:
+            yield self._delete_server(server_id=server_id)
 
     @coroutine
     def update_server(self, params):
