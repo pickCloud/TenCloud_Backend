@@ -60,10 +60,12 @@ class ServerService(BaseService):
         yield self.db.execute(sql, params['id'])
 
     @coroutine
-    def _get_uninstall_info(self, server_id):
-        sql = "SELECT s.public_ip, sa.username, sa.passwd FROM server s ON server_account sa USING(public_ip) WHERE s.id=%s"
+    def _fetch_uninstall_info(self, server_id):
+        sql = "SELECT s.public_ip, sa.username, sa.passwd FROM server s JOIN server_account sa USING(public_ip) WHERE s.id=%s"
         cur = yield self.db.execute(sql, server_id)
         data = cur.fetchone()
+
+        data['passwd'] = Aes.decrypt(data['passwd'])
 
         return data
 
@@ -75,7 +77,7 @@ class ServerService(BaseService):
 
     @coroutine
     def _delete_server(self, server_id):
-        params = yield self._get_uninstall_info(server_id)
+        params = yield self._fetch_uninstall_info(server_id)
 
         yield self.remote_ssh(params, cmd=UNINSTALL_CMD)
 
