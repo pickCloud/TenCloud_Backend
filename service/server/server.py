@@ -59,10 +59,11 @@ class ServerService(BaseService):
 
         yield self.db.execute(sql, params['id'])
 
-    @coroutine
+    @run_on_executor
     def _uninstall_monitor_service(self, public_ip):
         sql = "SELECT username, passwd FROM server_account WHERE public_ip=%s"
-        data = yield self.db.execute(sql, public_ip)
+        cur = yield self.db.execute(sql, public_ip)
+        data = cur.fetchone()
         try:
             ssh = SSH(hostname=public_ip, username=data['username'], passwd=Aes.decrypt(data['passwd']))
             ssh.exec(UNINSTALL_CMD)
