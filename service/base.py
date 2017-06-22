@@ -2,6 +2,12 @@ __author__ = 'Jon'
 
 '''
 所有service的父类
+
+说明
+---------------
+* DB的增/删/查/改 (复杂的需要手写sql语句)
+* HTTP的异步请求
+
 '''
 import json
 import datetime
@@ -129,8 +135,8 @@ class BaseService():
     @coroutine
     def delete(self, conds=None, params=None):
         '''
-        :param conds:  同select 必需的
-        :param params: 同select 必需的
+        :param conds:  list 同select 必需的
+        :param params: list 同select 必需的
         :return:
         '''
         sql = " DELETE FROM {table} ".format(table=self.table)

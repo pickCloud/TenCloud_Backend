@@ -46,9 +46,10 @@ class BaseHandler(tornado.web.RequestHandler):
 
     @coroutine
     def prepare(self):
-        '''获取请求的参数, json类型
-           Usage:
-               >>> self.params['x']
+        ''' 获取请求的参数, json类型
+
+            Usage:
+                >>> self.params['x']
         '''
         self.params = {}
 
@@ -56,7 +57,8 @@ class BaseHandler(tornado.web.RequestHandler):
             self.params = json.loads(self.request.body.decode('utf-8'))
 
     def guarantee(self, *args):
-        ''' 接口参数是否完整 '''
+        ''' 接口参数是否完整
+        '''
         for arg in args:
             try:
                 self.params[arg]
@@ -64,10 +66,12 @@ class BaseHandler(tornado.web.RequestHandler):
                 raise AttributeError('缺少 %s' % arg)
 
     def success(self, data=None, message="success"):
-        '''响应成功, 返回数据'''
+        ''' 响应成功, 返回数据
+        '''
         self.write({"status": 0, "message": message, "data": data})
 
     def error(self, message='系统繁忙, 请重新尝试', data=None, code=400):
-        '''响应失败, 返回错误原因'''
+        ''' 响应失败, 返回错误原因
+        '''
         self.set_status(code, message)
         self.write({"status": 1, "message": message, "data": data})

@@ -5,12 +5,13 @@ import traceback
 from tornado.gen import coroutine
 from handler.base import BaseHandler
 from constant import ALIYUN_REGION_NAME
+from utils.general import get_in_formats
 
 
 class ClusterHandler(BaseHandler):
     @coroutine
     def get(self):
-        ''' 获取集群列表
+        ''' 获取列表
         '''
         try:
             result = yield self.cluster_service.select()
@@ -24,13 +25,13 @@ class ClusterHandler(BaseHandler):
 class ClusterNewHandler(BaseHandler):
     @coroutine
     def post(self):
-        ''' 创建新集群
+        ''' 新建
             参数:
-                name -> 集群名称 str
-                description -> 集群描述 str
+                {"name":        名称 str,
+                 "description": 描述 str}
         '''
         try:
-            result = yield self.cluster_service.add_cluster(self.params)
+            result = yield self.cluster_service.add(self.params)
 
             self.success(result)
         except:
@@ -41,12 +42,14 @@ class ClusterNewHandler(BaseHandler):
 class ClusterDelHandler(BaseHandler):
     @coroutine
     def post(self):
-        ''' 删除集群
+        ''' 删除
             参数:
-               id -> 集群id list
+               id -> list
         '''
         try:
-            yield self.cluster_service.del_cluster(self.params)
+            ids = self.params['id']
+
+            yield self.cluster_service.delete(conds=[get_in_formats('id', ids)], params=ids)
 
             self.success()
         except:
@@ -57,9 +60,7 @@ class ClusterDelHandler(BaseHandler):
 class ClusterDetailHandler(BaseHandler):
     @coroutine
     def get(self, id):
-        ''' 集群详情
-            参数:
-               id -> 集群id int
+        ''' 详情
         '''
         try:
             id = int(id)
@@ -82,10 +83,14 @@ class ClusterDetailHandler(BaseHandler):
 class ClusterUpdateHandler(BaseHandler):
     @coroutine
     def post(self):
-        ''' 集群信息更新
+        ''' 更新
         '''
         try:
-            yield self.cluster_service.update_cluster(self.params)
+            sets = ['name=%s', 'description=%s']
+            conds = ['id=%s']
+            params = [self.params['name'], self.params['description'], self.params['id']]
+
+            yield self.cluster_service.update(sets=sets, conds=conds, params=params)
 
             self.success()
         except:
