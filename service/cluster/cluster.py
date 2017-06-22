@@ -5,7 +5,7 @@ import datetime
 from tornado.gen import coroutine
 from service.base import BaseService
 from constant import CLUSTER_DATE_FORMAT
-from utils.general import get_in_format
+from utils.general import get_formats
 
 
 class ClusterService(BaseService):
@@ -25,7 +25,7 @@ class ClusterService(BaseService):
 
     @coroutine
     def del_cluster(self, params):
-        sql = "DELETE FROM cluster WHERE id IN (%s)" % get_in_format(params['id'])
+        sql = "DELETE FROM cluster WHERE id IN (%s)" % get_formats(params['id'])
 
         yield self.db.execute(sql, params['id'])
 

@@ -23,12 +23,14 @@ from tornado.gen import coroutine
 from service.cluster.cluster import ClusterService
 from service.imagehub.imagehub import ImagehubService
 from service.server.server import ServerService
+from service.project.project import ProjectService
 
 
 class BaseHandler(tornado.web.RequestHandler):
     cluster_service = ClusterService()
     imagehub_service = ImagehubService()
     server_service  = ServerService()
+    project_service = ProjectService()
 
     @property
     def db(self):

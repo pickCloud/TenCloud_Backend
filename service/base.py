@@ -4,6 +4,7 @@ __author__ = 'Jon'
 所有service的父类
 '''
 import json
+import datetime
 from tornado.gen import coroutine
 from tornado.httputil import url_concat
 from tornado.httpclient import AsyncHTTPClient
@@ -11,6 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from utils.db import DB, REDIS
 from utils.log import LOG
+from utils.general import get_formats
 from constant import CLUSTER_DATE_FORMAT, CLUSTER_DATE_FORMAT_ESCAPE, POOL_COUNT, HTTP_TIMEOUT, ALIYUN_DOMAIN
 
 
@@ -22,6 +24,9 @@ class BaseService():
         self.redis = REDIS
         self.log = LOG
 
+    ############################################################################################
+    # DB SELECT
+    ############################################################################################
     @coroutine
     def select(self, fields=None, conds=None, params=None, ct=True, ut=True, df=None, one=False):
         '''
@@ -32,8 +37,9 @@ class BaseService():
         :param ut     是否获取更新时间, True/False
         :param df     创建时间/更新时间的字符串格式, 可传'%Y-%m-%d %H:%M:%S'
         :param one    是否一行, True/False
+
         Usage::
-            >>> self.select(conds=['id=%s'], params=[id], ct=False)
+            >>> self.select(conds=['id=%s'], params=[1], ct=False)
 
         :return: [{'id': 1, ...}, ...]
         '''
@@ -72,29 +78,88 @@ class BaseService():
 
         return sql_params
 
+    ############################################################################################
+    # DB ADD
+    ############################################################################################
+    @coroutine
+    def add(self, params=None):
+        '''
+        :param params: hash 数据库字段:值, 可传{'name': 'foo', 'description': 'boo'}
+        :return: {
+            'id': cur.lastrowid,
+            'update_time': datetime.datetime.now().strftime(CLUSTER_DATE_FORMAT)
+        }
+        '''
+        fields = ','.join(params.keys())
+        values = list(params.values())
+
+        sql = "INSERT INTO {table} ({fields}) VALUES ({formats})".format(table=self.table,
+                                                                         fields=fields,
+                                                                         formats=get_formats(values))
+
+        cur = yield self.db.execute(sql, values)
+
+        return {
+            'id': cur.lastrowid,
+            'update_time': datetime.datetime.now().strftime(CLUSTER_DATE_FORMAT)
+        }
+
+    ############################################################################################
+    # DB UPDATE
+    ############################################################################################
+    @coroutine
+    def update(self, sets=None, conds=None, params=None):
+        '''
+        :param sets:   list e.g. ['name=%s', 'description=%s']
+        :param conds:  list e.g. ['id in (%s, %s)']
+        :param params: list e.g. ['foo', 'boo', 1, 2]
+        :return:
+        '''
+        sql = "UPDATE {table} SET ".format(table=self.table)
+
+        sql += ','.join(sets)
+
+        sql += ' WHERE ' + ' AND '.join(conds)
+
+        yield self.db.execute(sql, params)
+
+    ############################################################################################
+    # DB DELETE
+    ############################################################################################
+    @coroutine
+    def delete(self, conds=None, params=None):
+        '''
+        :param conds:  同select 必需的
+        :param params: 同select 必需的
+        :return:
+        '''
+        sql = " DELETE FROM {table} ".format(table=self.table)
+
+        sql += ' WHERE ' + ' AND '.join(conds)
+
+        yield self.db.execute(sql, params)
+
+    ############################################################################################
+    # HTTP GET
+    ############################################################################################
     @coroutine
     def get(self, data=None, timeout=HTTP_TIMEOUT, host=ALIYUN_DOMAIN):
         '''
         如果必要可以添加kwargs, 比如headers
-        :param uri:     e.g. /api
         :param data:    e.g. dict(x=1, y=2)
         :param timeout: e.g. 10
-        :param infra:   e.g. True
         :param host:    e.g. 'http://host'
         :return:        e.g. {'status': 0, 'message': 'success', 'data': {}}
 
         Usage::
-            host: 默认das, 若要基础服务infra=True
             >>> uri, data = '/api', {'x': 1}
-            >>> res = yield self.get(uri, data[, infra=True])
+            >>> res = yield self.get(uri, data)
         '''
         if not data: data = {}
 
         url = url_concat(host, data)
 
-        self.log.debug('GET: {}'.format(url))
         res = yield AsyncHTTPClient().fetch(url, request_timeout=timeout)
         data = json.loads(res.body.decode())
-        self.log.debug('GET: {}, RES: {}'.format(url, data))
 
         return data
