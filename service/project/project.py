@@ -5,4 +5,4 @@ from service.base import BaseService
 
 class ProjectService(BaseService):
     table  = 'project'
-    fields = 'id, name, description, repository'
+    fields = 'id, name, description, repos'
