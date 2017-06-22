@@ -6,7 +6,7 @@ from tornado.concurrent import run_on_executor
 
 from service.base import BaseService
 from utils.ssh import SSH
-from utils.general import get_in_format
+from utils.general import get_formats
 from utils.aliyun import Aliyun
 from constant import INSTANCE_STATUS, UNINSTALL_CMD, DEPLOYED
 from utils.security import Aes
@@ -55,7 +55,7 @@ class ServerService(BaseService):
 
     @coroutine
     def migrate_server(self, params):
-        sql = " UPDATE server SET cluster_id=%s WHERE id IN (%s) " % (params['cluster_id'], get_in_format(params['id']))
+        sql = " UPDATE server SET cluster_id=%s WHERE id IN (%s) " % (params['cluster_id'], get_formats(params['id']))
 
         yield self.db.execute(sql, params['id'])
 
