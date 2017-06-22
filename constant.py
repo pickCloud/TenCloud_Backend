@@ -24,6 +24,7 @@ AES_KEY = '01234^!@#$%56789'
 SSH_CONNECT_TIMEOUT = 30
 SERVER_HOST = '47.94.18.22'
 MONITOR_CMD = 'curl -sSL http://{host}/supermonitor/install.sh | sh'.format(host=SERVER_HOST)
+UNINSTALL_CMD = 'curl -sSL http://{host}/supermonitor/uninstall.sh | sh'.format(host=SERVER_HOST)
 
 # 阿里云的region列表
 ALIYUN_DOMAIN = 'http://ecs.aliyuncs.com/?'

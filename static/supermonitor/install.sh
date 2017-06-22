@@ -1,29 +1,65 @@
 #!/bin/sh
-sync_linux_amd64="sync_linux_amd64"
-if ls $(pwd) | grep ${sync_linux_amd64};then
-    rm ${sync_linux_amd64}
-fi
-dir=$HOME/report_data
-ls $dir > /dev/null 2>&1;
-ret_dir=$?
-if [ ${ret_dir} -ne 0 ];then
-    mkdir -p $dir
-fi
-cd ${dir}
-url="http://47.94.18.22/supermonitor/sync_linux_amd64"
-curl --retry 3 --retry-delay 2 -s -L -O $url
-ret=$?
-if [ ${ret} -ne 0 ];then
-    echo "failed to download sync_linux_amd64"
+DownloadFunc() {
+    name=${1}
+    url=${2}
+    stroage=${3}
+  curl --retry 3 --retry-delay 2 -s -L -o ${stroage} ${url}
+  ret=$?
+  if [ ${ret} -ne 0 ];then
+    echo "failed to download ${name}"
     exit 1
-else
-    echo "success to download sync_linux_amd64"
+  else
+    echo "success to download ${name}"
 fi
-pid=$(ps -ef|grep ${sync_linux_amd64}|grep -v grep|awk '{print $2}')
-if ps -ef|grep ${sync_linux_amd64}|grep -v grep > /dev/null; then
+}
+report_data="report_data.service"
+report_data_url="http://47.94.18.22/supermonitor/report_data.service"
+report_data_stroage="/etc/systemd/system/report_data.service"
+if [ -f ${report_data_stroage} ];then
+    systemctl stop ${report_data}
+    systemctl disable ${report_data}
+    rm ${report_data_stroage}
+fi
+DownloadFunc ${report_data} ${report_data_url} ${report_data_stroage}
+chmod 644 ${report_data_stroage}
+sync_linux_amd64="sync_linux_amd64"
+sync_url="http://47.94.18.22/supermonitor/sync_linux_amd64"
+sync_storage="/usr/sbin/sync_linux_amd64"
+if [ -f ${sync_storage} ];then
+    rm ${sync_storage}
+fi
+DownloadFunc ${sync_linux_amd64} ${sync_url} ${sync_storage}
+chmod 755 ${sync_storage}
+pid=$(pgrep -f ${sync_linux_amd64})
+if pgrep -f ${sync_linux_amd64} > /dev/null; then
     echo "kill old version sync"
     kill ${pid}
 fi
 echo "create sync"
-chmod +x ${sync_linux_amd64}
-./sync_linux_amd64 --debug=false --interval=60 &
+log="/var/log/report_data"
+if [ ! -d ${log} ];then
+    mkdir -p ${log}
+fi
+clean_log_timer="clean-log-daily.timer"
+clean_log_timer_url="http://47.94.18.22/supermonitor/clean-log-daily.timer"
+clean_log_timer_storage="/etc/systemd/system/clean-log-daily.timer"
+if [ -f ${clean_log_timer_storage} ];then
+    systemctl stop ${clean_log_timer}
+    systemctl disable ${clean_log_timer}
+    rm ${clean_log_timer_storage}
+fi
+DownloadFunc ${clean_log_timer} ${clean_log_timer_url} ${clean_log_timer_storage}
+chmod 644 ${clean_log_timer_storage}
+clean_log_service="clean-log-daily.service"
+clean_log_service_url="http://47.94.18.22/supermonitor/clean-log-daily.service"
+clean_log_service_storage="/etc/systemd/system/clean-log-daily.service"
+if [ -f ${clean_log_service_storage} ];then
+    rm ${clean_log_service_storage}
+fi
+DownloadFunc ${clean_log_service} ${clean_log_service_url} ${clean_log_service_storage}
+chmod 644 ${clean_log_service_storage}
+systemctl daemon-reload
+systemctl enable ${report_data}
+systemctl start ${report_data}
+systemctl enable ${clean_log_timer}
+systemctl start ${clean_log_timer}
