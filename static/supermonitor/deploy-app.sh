@@ -21,7 +21,7 @@ REGISRTY="www.jmkbio.com/library"
 
 log(){
     log_info=$1
-    echo "${LOG_DATE}${LOG_TIME}: ${log_info} " >> ${SHELL_LOG}
+    echo "${LOG_DATE}${LOG_TIME}: ${log_info} " >> "${SHELL_LOG}"
 }
 shell_lock(){
     touch ${LOCK_FILE}
@@ -31,40 +31,40 @@ shell_unlock(){
 }
 code_get(){
     log "code_get";
-    if [ ! -d ${CODE_DIR} ];then
-      mkdir -p ${CODE_DIR}
+    if [ ! -d "${CODE_DIR}" ];then
+      mkdir -p "${CODE_DIR}"
     fi
-    if ls -A ${CODE_DIR} &> /dev/null;then
-      git clone ${CODE_URL} ${CODE_DIR}
+    if ls -A "${CODE_DIR}" &> /dev/null;then
+      git clone ${CODE_URL} "${CODE_DIR}"
     else
-      cd ${CODE_DIR}
+      cd "${CODE_DIR}" || exit 1
       git pull
     fi
 }
 code_build(){
     branch=$1
     log "code_build"
-    cd ${CODE_DIR} || exist 1
-    if git checkout $branch &> /dev/null;then
+    cd "${CODE_DIR}" || exist 1
+    if git checkout "${branch}" &> /dev/null;then
         ver=$(git rev-parse --short HEAD)
-        $IMAGE_REGISTRY="${APP_NAME}:${branch}-${ver}"
+        IMAGE_REGISTRY="${APP_NAME}:${branch}-${ver}"
         #docker build -t ${APP_NAME}:${IMAGE_TAG} .
-        docker build -t ${IMAGE_REGISTRY} .
+        docker build -t "${IMAGE_REGISTRY}" .
     fi
 }
 image_push(){
     log "image push"
     new_tag="${REGISRTY}/${IMAGE_REGISTRY}"
-    docker tag ${IMAGE_REGISTRY} ${new_tag}
-    docker push ${new_tag}
+    docker tag "${IMAGE_REGISTRY}" "${new_tag}"
+    docker push "${new_tag}"
 }
 main(){
 
     if [ -f ${LOCK_FILE} ];then
 	    echo "Deploy is running" && exit;
     fi
-    if [ ! -d ${CODE_DIR} ];then
-        mkdir -p ${BASE_DIR}/log
+    if [ ! -d "${CODE_DIR}" ];then
+        mkdir -p "${BASE_DIR}/log"
     fi
 
 	  shell_lock;
