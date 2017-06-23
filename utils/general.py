@@ -4,7 +4,8 @@ __author__ = 'Jon'
 一些平常的工具
 '''
 import re
-from constant import CLUSTER_DATE_FORMAT
+import random
+from constant import CLUSTER_DATE_FORMAT, USER_AGENTS
 
 def get_formats(contents):
     '''
@@ -45,3 +46,6 @@ def validate_ip(ip):
 
     if not match:
         raise ValueError("不是合法的IP地址")
+
+def choose_user_agent():
+    return random.choice(USER_AGENTS)

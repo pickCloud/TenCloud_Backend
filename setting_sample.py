@@ -27,3 +27,6 @@ settings['redis_port'] = 6379
 # 阿里access_key
 settings['aliyun_id'] = ''
 settings['aliyun_secret'] = ''
+
+# Git token
+settings['git_token'] = ''

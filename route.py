@@ -13,6 +13,7 @@ from handler.server.server import ServerNewHandler, ServerReport, ServerMigratin
                                   ServerStopHandler, ServerStartHandler, ServerRebootHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
                                     ProjectDetailHandler, ProjectUpdateHandler
+from handler.repository.repository import RepositoryHandler
 
 
 routes = [
@@ -47,5 +48,8 @@ routes = [
     (r'/api/project/new', ProjectNewHandler),
     (r'/api/project/del', ProjectDelHandler),
     (r'/api/project/(\d+)', ProjectDetailHandler),
-    (r'/api/project/update', ProjectUpdateHandler)
+    (r'/api/project/update', ProjectUpdateHandler),
+
+    (r'/api/repos', RepositoryHandler),
+
 ]

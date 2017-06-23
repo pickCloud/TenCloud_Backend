@@ -12,13 +12,13 @@ __author__ = 'Jon'
 import json
 import datetime
 from tornado.gen import coroutine
-from tornado.httputil import url_concat
+from tornado.httputil import url_concat, HTTPHeaders
 from tornado.httpclient import AsyncHTTPClient
 from concurrent.futures import ThreadPoolExecutor
 
 from utils.db import DB, REDIS
 from utils.log import LOG
-from utils.general import get_formats
+from utils.general import get_formats, choose_user_agent
 from constant import CLUSTER_DATE_FORMAT, CLUSTER_DATE_FORMAT_ESCAPE, POOL_COUNT, HTTP_TIMEOUT, ALIYUN_DOMAIN
 
 
@@ -149,23 +149,32 @@ class BaseService():
     # HTTP GET
     ############################################################################################
     @coroutine
-    def get(self, data=None, timeout=HTTP_TIMEOUT, host=ALIYUN_DOMAIN):
+    def get(self, data=None, host=ALIYUN_DOMAIN, timeout=HTTP_TIMEOUT, headers=None):
         '''
         如果必要可以添加kwargs, 比如headers
-        :param data:    e.g. dict(x=1, y=2)
-        :param timeout: e.g. 10
-        :param host:    e.g. 'http://host'
+        :param data:    dict e.g. dict(x=1, y=2)
+        :param host:    str  e.g. 'http://host'
+        :param timeout: int  e.g. 10
+        :param headers: dict e.g. dict(Authorization='')
         :return:        e.g. {'status': 0, 'message': 'success', 'data': {}}
 
         Usage::
             >>> uri, data = '/api', {'x': 1}
             >>> res = yield self.get(uri, data)
         '''
-        if not data: data = {}
-
         url = url_concat(host, data)
 
-        res = yield AsyncHTTPClient().fetch(url, request_timeout=timeout)
+        payload = {
+            'request_timeout': timeout,
+            'headers': {'User-Agent': choose_user_agent()}
+        }
+
+        if headers:
+            payload['headers'].update(headers)
+
+        payload['headers'] = HTTPHeaders(payload['headers'])
+
+        res = yield AsyncHTTPClient().fetch(url, **payload)
         data = json.loads(res.body.decode())
 
         return data
