@@ -17,3 +17,19 @@ class RepositoryHandler(BaseHandler):
         except:
             self.error()
             self.log.error(traceback.format_exc())
+
+
+class RepositoryBranchHandler(BaseHandler):
+    @coroutine
+    def get(self):
+        ''' 获取仓库的分支
+        '''
+        try:
+            repos_name = self.get_argument('repos_name', '').strip()
+
+            result = yield self.repos_service.fetch_branches(repos_name)
+
+            self.success(result)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())

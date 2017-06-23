@@ -28,7 +28,8 @@ class ProjectNewHandler(BaseHandler):
             参数:
                 {"name":        名称 str,
                  "description": 描述 str,
-                 "repos":  仓库 str}
+                 "repos_name":  仓库名称 str,
+                 "repos_url":   仓库url str}
         '''
         try:
             result = yield self.project_service.add(params=self.params)
@@ -77,9 +78,9 @@ class ProjectUpdateHandler(BaseHandler):
         '''
         try:
 
-            sets = ['name=%s', 'description=%s', 'repos=%s']
+            sets = ['name=%s', 'description=%s', 'repos_name=%s', 'repos_url=%s']
             conds = ['id=%s']
-            params = [self.params['name'], self.params['description'], self.params['repos'], self.params['id']]
+            params = [self.params['name'], self.params['description'], self.params['repos_name'], self.params['repos_url'], self.params['id']]
 
             yield self.project_service.update(sets=sets, conds=conds, params=params)
 

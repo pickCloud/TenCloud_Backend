@@ -126,3 +126,4 @@ INSTANCE_STATUS = {
 
 # Git相关url
 GIT_REPOS_URL = 'https://api.github.com/user/repos'
+GIT_BRANCH_URL = 'https://api.github.com/repos/{repos_name}/branches'
