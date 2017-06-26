@@ -29,18 +29,23 @@ class SSH:
             raise e
 
     def exec(self, cmd):
-        LOG.info('ssh cmd: %s' % cmd)
+        LOG.info('SSH command: %s' % cmd)
 
         stdin, stdout, stderr = self._client.exec_command(cmd)
-        result = stdout.read()
 
-        status = stdout.channel.recv_exit_status()
-        if status:
-            raise SSHError('cmd: %s | status: %s | rst: %s' % (cmd, status, result))
+        out = stdout.read()
+        LOG.debug("SSH received stdout: %s" % out)
 
-        LOG.info('ssh rst: %s' % result)
+        ret = stdout.channel.recv_exit_status()
+        LOG.debug("SSH exit status: %s" % ret)
 
-        return result
+        err = stderr.read()
+        LOG.debug("SSH received stderr:\n%s" % err)
+
+        if ret:
+            raise Exception("Error executing %s" % cmd)
+
+        return (out, err)
 
     def close(self):
         self._client.close()
