@@ -5,10 +5,10 @@ LOG_DATE=$(date "+%Y-%m-%d")
 LOG_TIME=$(date "+%H-%M-%S")
 
 #Code ENV
-APP_NAME="demo"
+APP_NAME=$1
 BASE_DIR="$HOME/deploy"
 CODE_DIR="${BASE_DIR}/code/${APP_NAME}"
-CODE_URL="git@github.com:lanarthur/test.git"
+CODE_URL=$2
 LOCK_FILE="/tmp/deploy.lock"
 
 #Shell env
@@ -18,6 +18,9 @@ SHELL_LOG="${BASE_DIR}/log/${SHELL_NAME}.log"
 # Docker
 IMAGE_REGISTRY=""
 REGISRTY="www.jmkbio.com/library"
+
+# args
+branch=$3
 
 log(){
     log_info=$1
@@ -42,7 +45,6 @@ code_get(){
     fi
 }
 code_build(){
-    branch=$1
     log "code_build"
     cd "${CODE_DIR}" || exist 1
     if git checkout "${branch}" &> /dev/null;then
@@ -69,9 +71,9 @@ main(){
 
 	  shell_lock;
 	  code_get;
-	  code_build $1;
+	  code_build ;
     image_push;
 	  shell_unlock;
 }
 
-main $1
+main
