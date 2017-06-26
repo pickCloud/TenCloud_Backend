@@ -14,10 +14,12 @@ import datetime
 from tornado.gen import coroutine
 from tornado.httputil import url_concat, HTTPHeaders
 from tornado.httpclient import AsyncHTTPClient
+from tornado.concurrent import run_on_executor
 from concurrent.futures import ThreadPoolExecutor
 
 from utils.db import DB, REDIS
 from utils.log import LOG
+from utils.ssh import SSH
 from utils.general import get_formats, choose_user_agent
 from constant import CLUSTER_DATE_FORMAT, CLUSTER_DATE_FORMAT_ESCAPE, POOL_COUNT, HTTP_TIMEOUT, ALIYUN_DOMAIN
 
@@ -178,3 +180,17 @@ class BaseService():
         data = json.loads(res.body.decode())
 
         return data
+
+    ############################################################################################
+    # SSH
+    ############################################################################################
+    @run_on_executor
+    def remote_ssh(self, params, cmd):
+        """ 远程控制主机
+        """
+        try:
+            ssh = SSH(hostname=params['public_ip'], username=params['username'], passwd=params['passwd'])
+            ssh.exec(cmd)
+            ssh.close()
+        except Exception as e:
+            return str(e)

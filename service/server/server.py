@@ -2,10 +2,8 @@ __author__ = 'Jon'
 
 import json
 from tornado.gen import coroutine, Task
-from tornado.concurrent import run_on_executor
 
 from service.base import BaseService
-from utils.ssh import SSH
 from utils.general import get_formats
 from utils.aliyun import Aliyun
 from constant import INSTANCE_STATUS, UNINSTALL_CMD, DEPLOYED
@@ -28,17 +26,6 @@ class ServerService(BaseService):
             sql = (base_sql % table) + suffix
             yield self.db.execute(sql, base_data + [content])
 
-    @run_on_executor
-    def remote_ssh(self, params, cmd):
-        """ 远程控制主机
-        """
-        try:
-            ssh = SSH(hostname=params['public_ip'], username=params['username'], passwd=params['passwd'])
-            ssh.exec(cmd)
-            ssh.close()
-        except Exception as e:
-            return str(e)
-
     @coroutine
     def save_server_account(self, params):
         sql = " INSERT INTO server_account(public_ip, username, passwd) " \
@@ -60,9 +47,26 @@ class ServerService(BaseService):
         yield self.db.execute(sql, params['id'])
 
     @coroutine
-    def _fetch_uninstall_info(self, server_id):
-        sql = "SELECT s.public_ip, sa.username, sa.passwd FROM server s JOIN server_account sa USING(public_ip) WHERE s.id=%s"
-        cur = yield self.db.execute(sql, server_id)
+    def fetch_ssh_login_info(self, params):
+        ''' 获取ssh登录信息, IP/用户名/密码
+        :param params: dict e.g. {'server_id': str, 'public_ip': str}
+        :return:
+        '''
+
+        sql = "SELECT s.public_ip, sa.username, sa.passwd FROM server s JOIN server_account sa USING(public_ip) WHERE "
+        conds, data = [], []
+
+        if params.get('server_id'):
+            conds.append('s.id=%s')
+            data.append(params['server_id'])
+
+        if params.get('public_ip'):
+            conds.append('s.public_ip=%s')
+            data.append(params['public_ip'])
+
+        sql += ' AND '.join(conds)
+
+        cur = yield self.db.execute(sql, data)
         data = cur.fetchone()
 
         data['passwd'] = Aes.decrypt(data['passwd'])
@@ -77,7 +81,7 @@ class ServerService(BaseService):
 
     @coroutine
     def _delete_server(self, server_id):
-        params = yield self._fetch_uninstall_info(server_id)
+        params = yield self.fetch_ssh_login_info({'server_id': server_id})
 
         yield self.remote_ssh(params, cmd=UNINSTALL_CMD)
 

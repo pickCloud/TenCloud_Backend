@@ -12,7 +12,7 @@ from handler.server.server import ServerNewHandler, ServerReport, ServerMigratin
                                   ServerDetailHandler, ServerPerformanceHandler, ServerUpdateHandler, \
                                   ServerStopHandler, ServerStartHandler, ServerRebootHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
-                                    ProjectDetailHandler, ProjectUpdateHandler
+                                    ProjectDetailHandler, ProjectUpdateHandler, ProjectImageCreationHandler
 from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler
 
 
@@ -49,6 +49,7 @@ routes = [
     (r'/api/project/del', ProjectDelHandler),
     (r'/api/project/(\d+)', ProjectDetailHandler),
     (r'/api/project/update', ProjectUpdateHandler),
+    (r'/api/project/image/creation', ProjectImageCreationHandler),
 
     # 项目相关之仓库
     (r'/api/repos', RepositoryHandler),

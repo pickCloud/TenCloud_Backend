@@ -4,32 +4,36 @@ __author__ = 'Jon'
 程序的常量
 '''
 
-# 时间格式
+#################################################################################################
+# 时间相关
+#################################################################################################
 CLUSTER_DATE_FORMAT = '%Y年%m月%d日'
 CLUSTER_DATE_FORMAT_ESCAPE = '%%Y年%%m月%%d日'
 IMAGEHUB_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
-# 添加主机的redis key
+
+#################################################################################################
+# redis相关
+#################################################################################################
 DEPLOYING = 'deploying'
 DEPLOYED  = 'deployed'
 DEPLOYED_FLAG = '1'
 
-# 线程池数量
-POOL_COUNT = 10
 
-# 密码加密的key
-AES_KEY = '01234^!@#$%56789'
-
-# 远程连接主机
+#################################################################################################
+# ssh相关
+#################################################################################################
 SSH_CONNECT_TIMEOUT = 30
 SERVER_HOST = '47.94.18.22'
-MONITOR_CMD = 'curl -sSL http://{host}/supermonitor/install.sh | sh'.format(host=SERVER_HOST)
-UNINSTALL_CMD = 'curl -sSL http://{host}/supermonitor/uninstall.sh | sh'.format(host=SERVER_HOST)
+MONITOR_CMD = 'curl -sSL http://{host}/supermonitor/install.sh | sh '.format(host=SERVER_HOST)
+UNINSTALL_CMD = 'curl -sSL http://{host}/supermonitor/uninstall.sh | sh '.format(host=SERVER_HOST)
+CREATE_IMAGE_CMD = 'curl -sSL http://{host}/supermonitor/deploy-app.sh | sh '.format(host=SERVER_HOST)
 
-# 阿里云的region列表
+
+#################################################################################################
+# 阿里云相关
+#################################################################################################
 ALIYUN_DOMAIN = 'http://ecs.aliyuncs.com/?'
-
-# 阿里云地区名称转换
 ALIYUN_REGION_NAME = {
     'cn-qingdao': '华北 1 （青岛）',
     'cn-beijing': '华北 2 （北京）',
@@ -48,10 +52,11 @@ ALIYUN_REGION_NAME = {
 }
 ALIYUN_REGION_LIST = ALIYUN_REGION_NAME.keys()
 
-# HTTP超时时间
-HTTP_TIMEOUT = 20
 
-# HTTP USER-AGENTS
+#################################################################################################
+# http相关
+#################################################################################################
+HTTP_TIMEOUT = 20
 USER_AGENTS = [
     'Mozilla/5.0 (Linux; U; Android 2.3.6; en-us; Nexus S Build/GRK39F) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1',
     'Avant Browser/1.2.789rel1 (http://www.avantbrowser.com)',
@@ -117,13 +122,22 @@ USER_AGENTS = [
     'Mozilla/5.0 (Linux; U; Android 1.6; en-us; SonyEricssonX10i Build/R1AA056) AppleWebKit/528.5  (KHTML, like Gecko) Version/3.1.2 Mobile Safari/525.20.1',
 ]
 
+
+#################################################################################################
+# git相关
+#################################################################################################
+GIT_REPOS_URL = 'https://api.github.com/user/repos'
+GIT_BRANCH_URL = 'https://api.github.com/repos/{repos_name}/branches'
+
+
+#################################################################################################
+# 其他
+#################################################################################################
 # 主机开机/关机/重启对应的状态
 INSTANCE_STATUS = {
     'StartInstance': 'Running',
     'StopInstance': 'Stopped',
     'RebootInstance': 'Running'
 }
-
-# Git相关url
-GIT_REPOS_URL = 'https://api.github.com/user/repos'
-GIT_BRANCH_URL = 'https://api.github.com/repos/{repos_name}/branches'
+POOL_COUNT = 10
+AES_KEY = '01234^!@#$%56789'
