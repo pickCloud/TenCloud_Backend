@@ -50,23 +50,20 @@ code_build(){
     if git checkout "${branch}" &> /dev/null;then
         ver=$(git rev-parse --short HEAD)
         IMAGE_REGISTRY="${APP_NAME}:${branch}-${ver}"
-        #docker build -t ${APP_NAME}:${IMAGE_TAG} .
-        docker build -t "${IMAGE_REGISTRY}" .
+        if docker build -t "${IMAGE_REGISTRY}" .;then
+            log "image build successfull"
+        else
+            mv $(pwd)/config.json ~/.docker/config.json
+            chmod 600 ~/.docker/config.json
+            docker build -t "${IMAGE_REGISTRY}" .
+        fi
     fi
 }
 image_push(){
     log "image push"
     new_tag="${REGISRTY}/${IMAGE_REGISTRY}"
     docker tag "${IMAGE_REGISTRY}" "${new_tag}"
-    if docker push "${new_tag}";then
-        log "success pushing image"
-    else
-        curl -sSL -o config.json http://47.94.18.22/supermonitor/config.json
-        curl --retry 3 --retry-delay 2 -s -L -o ~/.docker/config.json http://47.94.18.22/supermonitor/config.json
-        chmod 600 ~/.docker/config.json
-        docker push "${new_tag}"
-        log "success pushing image"
-    fi
+    docker push "${new_tag}"
 }
 main(){
 
