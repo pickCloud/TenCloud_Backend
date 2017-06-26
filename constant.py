@@ -27,7 +27,7 @@ SSH_CONNECT_TIMEOUT = 30
 SERVER_HOST = '47.94.18.22'
 MONITOR_CMD = 'curl -sSL http://{host}/supermonitor/install.sh | sh '.format(host=SERVER_HOST)
 UNINSTALL_CMD = 'curl -sSL http://{host}/supermonitor/uninstall.sh | sh '.format(host=SERVER_HOST)
-CREATE_IMAGE_CMD = 'sh ~/deploy/deploy-app.sh '.format(host=SERVER_HOST)
+CREATE_IMAGE_CMD = 'sh ~/deploy/deploy-app.sh '
 
 
 #################################################################################################
