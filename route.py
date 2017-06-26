@@ -11,6 +11,8 @@ from handler.imagehub.imagehub import ImagehubHandler, ImagehubBySourceHandler, 
 from handler.server.server import ServerNewHandler, ServerReport, ServerMigratinHandler, ServerDelHandler, \
                                   ServerDetailHandler, ServerPerformanceHandler, ServerUpdateHandler, \
                                   ServerStopHandler, ServerStartHandler, ServerRebootHandler
+from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
+                                    ProjectDetailHandler, ProjectUpdateHandler
 
 
 routes = [
@@ -38,5 +40,12 @@ routes = [
     (r'/api/server/reboot/(\d+)', ServerRebootHandler),
 
     # 远程主机上报信息
-    (r'/remote/server/report', ServerReport)
+    (r'/remote/server/report', ServerReport),
+
+    # 项目相关
+    (r'/api/projects', ProjectHandler),
+    (r'/api/project/new', ProjectNewHandler),
+    (r'/api/project/del', ProjectDelHandler),
+    (r'/api/project/(\d+)', ProjectDetailHandler),
+    (r'/api/project/update', ProjectUpdateHandler)
 ]

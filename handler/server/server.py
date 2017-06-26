@@ -11,6 +11,7 @@ from handler.base import BaseHandler
 from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG, ALIYUN_REGION_NAME
 from utils.general import validate_ip
 from utils.security import Aes
+from constant import MONITOR_CMD
 
 
 class ServerNewHandler(WebSocketHandler, BaseHandler):
@@ -65,7 +66,7 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
         self.period.start()
 
         self.params.update({'passwd': passwd})
-        err_msg = yield self.server_service.remote_deploy(self.params)
+        err_msg = yield self.server_service.remote_ssh(self.params, cmd=MONITOR_CMD)
 
         # 部署失败
         if err_msg:
