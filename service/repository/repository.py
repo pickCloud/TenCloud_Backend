@@ -15,7 +15,7 @@ class RepositoryService(BaseService):
         '''
         data = yield self.get(host=GIT_REPOS_URL, headers=self.headers)
 
-        result = [{'repos_url': d.get('clone_url', ''),
+        result = [{'repos_url': d.get('ssh_url', ''),
                    'repos_name': d.get('full_name', '')} for d in data]
 
         return result
