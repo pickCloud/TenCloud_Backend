@@ -15,6 +15,6 @@ class ProjectService(BaseService):
         :param params: dict e.g. {'prj_name': str, 'repos_url': str, 'branch_name': str, 'public_ip': str, 'username': str, 'passwd': str}
         '''
 
-        cmd = CREATE_IMAGE_CMD + ' '.join([params['prj_name'], params['repos_url'], params['branch_name']])
+        cmd = CREATE_IMAGE_CMD + ' -s ' + ' '.join([params['prj_name'], params['repos_url'], params['branch_name']])
 
         yield self.remote_ssh(params, cmd)
