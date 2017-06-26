@@ -35,14 +35,14 @@ class SSH:
             for line in data: LOG.info(line.strip())
 
     def exec(self, cmd):
-        LOG.info('SSH cmd: %s' % cmd)
+        LOG.info('SSH CMD: %s' % cmd)
 
         stdin, stdout, stderr = self._client.exec_command(cmd)
 
         out, err = stdout.readlines(), stderr.readlines()
 
-        self._log(out, 'out')
-        self._log(err, 'err')
+        self._log(out, 'OUT')
+        self._log(err, 'ERR')
 
         return (out, err)
 
