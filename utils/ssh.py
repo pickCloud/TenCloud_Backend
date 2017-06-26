@@ -12,7 +12,7 @@ class SSHError(Exception):
 class SSH:
     '''
     Usage::
-            >>> ssh = SSH()
+            >>> ssh = SSH(hostname=hostname, username=username, passwd=passwd)
             >>> ssh.exec('cmd')
             >>> ssh.close()
     '''
@@ -28,19 +28,23 @@ class SSH:
             self.close()
             raise e
 
+    def _log(self, data, msg):
+        if data:
+            LOG.info('SSH %s: ' % msg)
+
+            for line in data: LOG.info(line.strip())
+
     def exec(self, cmd):
-        LOG.info('ssh cmd: %s' % cmd)
+        LOG.info('SSH cmd: %s' % cmd)
 
         stdin, stdout, stderr = self._client.exec_command(cmd)
-        result = stdout.read()
 
-        status = stdout.channel.recv_exit_status()
-        if status:
-            raise SSHError('cmd: %s | status: %s | rst: %s' % (cmd, status, result))
+        out, err = stdout.readlines(), stderr.readlines()
 
-        LOG.info('ssh rst: %s' % result)
+        self._log(out, 'out')
+        self._log(err, 'err')
 
-        return result
+        return (out, err)
 
     def close(self):
         self._client.close()
