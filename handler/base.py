@@ -24,6 +24,7 @@ from service.cluster.cluster import ClusterService
 from service.imagehub.imagehub import ImagehubService
 from service.server.server import ServerService
 from service.project.project import ProjectService
+from service.repository.repository import RepositoryService
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -31,6 +32,7 @@ class BaseHandler(tornado.web.RequestHandler):
     imagehub_service = ImagehubService()
     server_service  = ServerService()
     project_service = ProjectService()
+    repos_service = RepositoryService()
 
     @property
     def db(self):
