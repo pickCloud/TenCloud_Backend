@@ -6,9 +6,9 @@ from tornado.concurrent import run_on_executor
 
 from service.base import BaseService
 from utils.ssh import SSH
-from utils.general import get_in_format
+from utils.general import get_formats
 from utils.aliyun import Aliyun
-from constant import MONITOR_CMD, INSTANCE_STATUS, UNINSTALL_CMD, DEPLOYED
+from constant import INSTANCE_STATUS, UNINSTALL_CMD, DEPLOYED
 from utils.security import Aes
 
 
@@ -29,12 +29,12 @@ class ServerService(BaseService):
             yield self.db.execute(sql, base_data + [content])
 
     @run_on_executor
-    def remote_deploy(self, params):
-        """ 远程部署主机
+    def remote_ssh(self, params, cmd):
+        """ 远程控制主机
         """
         try:
             ssh = SSH(hostname=params['public_ip'], username=params['username'], passwd=params['passwd'])
-            ssh.exec(MONITOR_CMD)
+            ssh.exec(cmd)
             ssh.close()
         except Exception as e:
             return str(e)
@@ -55,21 +55,19 @@ class ServerService(BaseService):
 
     @coroutine
     def migrate_server(self, params):
-        sql = " UPDATE server SET cluster_id=%s WHERE id IN (%s) " % (params['cluster_id'], get_in_format(params['id']))
+        sql = " UPDATE server SET cluster_id=%s WHERE id IN (%s) " % (params['cluster_id'], get_formats(params['id']))
 
         yield self.db.execute(sql, params['id'])
 
-    @run_on_executor
-    def _uninstall_monitor_service(self, public_ip):
-        sql = "SELECT username, passwd FROM server_account WHERE public_ip=%s"
-        cur = yield self.db.execute(sql, public_ip)
+    @coroutine
+    def _fetch_uninstall_info(self, server_id):
+        sql = "SELECT s.public_ip, sa.username, sa.passwd FROM server s JOIN server_account sa USING(public_ip) WHERE s.id=%s"
+        cur = yield self.db.execute(sql, server_id)
         data = cur.fetchone()
-        try:
-            ssh = SSH(hostname=public_ip, username=data['username'], passwd=Aes.decrypt(data['passwd']))
-            ssh.exec(UNINSTALL_CMD)
-            ssh.close()
-        except Exception as e:
-            return str(e)
+
+        data['passwd'] = Aes.decrypt(data['passwd'])
+
+        return data
 
     @coroutine
     def _delete_server_info(self, table, public_ip):
@@ -79,11 +77,14 @@ class ServerService(BaseService):
 
     @coroutine
     def _delete_server(self, server_id):
-        public_ip = yield self.fetch_public_ip(server_id)
-        yield self._uninstall_monitor_service(public_ip=public_ip)
+        params = yield self._fetch_uninstall_info(server_id)
+
+        yield self.remote_ssh(params, cmd=UNINSTALL_CMD)
+
         for table in ['server', 'server_account']:
-            yield self._delete_server_info(table=table, public_ip=public_ip)
-        yield Task(self.redis.hdel, DEPLOYED, public_ip)
+            yield self._delete_server_info(table, params['public_ip'])
+
+        yield Task(self.redis.hdel, DEPLOYED, params['public_ip'])
 
     @coroutine
     def delete_server(self, params):

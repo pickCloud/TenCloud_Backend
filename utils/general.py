@@ -6,13 +6,20 @@ __author__ = 'Jon'
 import re
 from constant import CLUSTER_DATE_FORMAT
 
-def get_in_format(contens):
+def get_formats(contents):
     '''
-    :param contens: e.g. [1, 2, 3]
+    :param contents: e.g. [1, 2, 3]
     :return: '%s, %s, %s'
     '''
-    return ','.join(['%s'] * len(contens))
+    return ','.join(['%s'] * len(contents))
 
+def get_in_formats(field, contents):
+    '''
+    :param field: e.g. id
+    :param contents: e.g. [1, 2, 3]
+    :return: 'id in (%s, %s, %s)'
+    '''
+    return '{field} in ({formats})'.format(field=field, formats=get_formats(contents))
 
 def change_db_time(data, format=CLUSTER_DATE_FORMAT):
     '''create_time/update_time 从datetime变成str

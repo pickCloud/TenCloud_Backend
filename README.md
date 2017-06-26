@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS `imagehub` (
   PRIMARY KEY (`id`)
 ) DEFAULT CHARSET=utf8mb4
 ```
-*镜像类型映射表
+* 镜像类型映射表
 ```
 CREATE TABLE IF NOT EXISTS `image_types` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS `image_types` (
 
 INSERT INTO image_types (type_id, name) VALUES (1, '操作系统'),(2, '数据库'),(3, '服务器');
 ```
-*镜像来源映射表
+* 镜像来源映射表
 ```
 CREATE TABLE IF NOT EXISTS `image_sources` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS `image_sources` (
 INSERT INTO image_sources (source_id, name) VALUES (1, 'Dockerhub'),(2, 'TenCom'),(3, '自定义');
 
 ```
-*镜像仓库测试数据
+* 镜像仓库测试数据
 ```
 INSERT INTO imagehub (name, url, versions, description, source, type, comments) VALUES ('Ubuntu','www.jmkbio.com','16.04',
 'Ubuntu是一个自由、开源、基于Debian的Linux发行版，发行周期为6个月，由 Canonical 公司和自由软件社区开发。 本镜像从Docker Hub 同步并由 DaoCloud 提供中文文档支持，用来帮助国内开发者更方便的使用 Docker 镜像。','2',
@@ -147,7 +147,7 @@ CREATE TABLE `instance` (
 );
 ```
 
-*cpu表
+* cpu表
 ```
 create table ten_dashboard.cpu (
 	id int auto_increment primary key,
@@ -158,7 +158,7 @@ create table ten_dashboard.cpu (
 create index ip_time on cpu (public_ip, created_time);
 ```
 
-*memory表
+* memory表
 ```
 create table ten_dashboard.memory (
 	id int auto_increment primary key,
@@ -169,7 +169,7 @@ create table ten_dashboard.memory (
 create index ip_time on memory (public_ip, created_time);
 ```
 
-*disk表
+* disk表
 ```
 create table ten_dashboard.disk (
 	id int auto_increment primary key,
@@ -178,6 +178,20 @@ create table ten_dashboard.disk (
 	content json null
 ) comment 'disk使用情况';
 create index ip_time on disk (public_ip, created_time);
+```
+
+* 项目表 project
+```
+CREATE TABLE `project` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '项目ID',
+  `name` varchar(128) NOT NULL COMMENT '项目名称',
+  `description` text COMMENT '项目描述',
+  `repos` varchar(1024) NOT NULL COMMENT '项目仓库地址',
+  `status` tinyint(4) DEFAULT '0' COMMENT '项目最新状态: 0 无, 1 构建成功, 2 部署成功, -1 构建失败, -2 部署失败',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+)
 ```
 ## 测试
 ```
