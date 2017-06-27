@@ -19,7 +19,6 @@ __author__ = 'Jon'
 import json
 import tornado.web
 
-from tornado.gen import coroutine
 from service.cluster.cluster import ClusterService
 from service.imagehub.imagehub import ImagehubService
 from service.server.server import ServerService
