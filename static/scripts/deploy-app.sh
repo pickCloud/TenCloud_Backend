@@ -37,7 +37,7 @@ code_get(){
     if [ ! -d "${CODE_DIR}" ];then
       mkdir -p "${CODE_DIR}"
     fi
-    if ls -A "${CODE_DIR}" &> /dev/null;then
+    if [ ! -d "${CODE_DIR}" ];then
       git clone ${CODE_URL} "${CODE_DIR}"
     else
       cd "${CODE_DIR}" || exit 1
@@ -53,7 +53,7 @@ code_build(){
         if docker build -t "${IMAGE_REGISTRY}" .;then
             log "image build successfull"
         else
-            mv $(pwd)/config.json ~/.docker/config.json
+            cp ${BASE_DIR}/config.json ~/.docker/config.json
             chmod 600 ~/.docker/config.json
             docker build -t "${IMAGE_REGISTRY}" .
         fi
@@ -67,7 +67,7 @@ image_push(){
 }
 main(){
 
-    if [ -f ${LOCK_FILE} ];then
+    if [ -f "${LOCK_FILE}" ];then
 	    echo "Deploy is running" && exit;
     fi
     if [ ! -d "${CODE_DIR}" ];then
