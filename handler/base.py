@@ -46,7 +46,6 @@ class BaseHandler(tornado.web.RequestHandler):
     def log(self):
         return self.application.log
 
-    @coroutine
     def prepare(self):
         ''' 获取请求的参数, json类型
 
