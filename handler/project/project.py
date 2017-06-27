@@ -5,6 +5,7 @@ import traceback
 from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.general import get_in_formats
+from setting import settings
 
 
 class ProjectHandler(BaseHandler):
@@ -28,7 +29,8 @@ class ProjectNewHandler(BaseHandler):
             参数:
                 {"name":        名称 str,
                  "description": 描述 str,
-                 "repos":  仓库 str}
+                 "repos_name":  仓库名称 str,
+                 "repos_url":   仓库url str}
         '''
         try:
             result = yield self.project_service.add(params=self.params)
@@ -76,12 +78,28 @@ class ProjectUpdateHandler(BaseHandler):
         ''' 更新
         '''
         try:
-
-            sets = ['name=%s', 'description=%s', 'repos=%s']
+            sets = ['name=%s', 'description=%s', 'repos_name=%s', 'repos_url=%s']
             conds = ['id=%s']
-            params = [self.params['name'], self.params['description'], self.params['repos'], self.params['id']]
+            params = [self.params['name'], self.params['description'], self.params['repos_name'], self.params['repos_url'], self.params['id']]
 
             yield self.project_service.update(sets=sets, conds=conds, params=params)
+
+            self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ProjectImageCreationHandler(BaseHandler):
+    @coroutine
+    def post(self):
+        ''' 构建仓库镜像
+        '''
+        try:
+            login_info = yield self.server_service.fetch_ssh_login_info({'public_ip': settings['ip_for_image_creation']})
+            self.params.update(login_info)
+
+            yield self.project_service.create_image(self.params)
 
             self.success()
         except:

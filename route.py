@@ -12,7 +12,8 @@ from handler.server.server import ServerNewHandler, ServerReport, ServerMigratin
                                   ServerDetailHandler, ServerPerformanceHandler, ServerUpdateHandler, \
                                   ServerStopHandler, ServerStartHandler, ServerRebootHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
-                                    ProjectDetailHandler, ProjectUpdateHandler
+                                    ProjectDetailHandler, ProjectUpdateHandler, ProjectImageCreationHandler
+from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler
 
 
 routes = [
@@ -39,7 +40,7 @@ routes = [
     (r'/api/server/start/(\d+)', ServerStartHandler),
     (r'/api/server/reboot/(\d+)', ServerRebootHandler),
 
-    # 远程主机上报信息
+    # 主机相关之远程主机上报信息
     (r'/remote/server/report', ServerReport),
 
     # 项目相关
@@ -47,5 +48,10 @@ routes = [
     (r'/api/project/new', ProjectNewHandler),
     (r'/api/project/del', ProjectDelHandler),
     (r'/api/project/(\d+)', ProjectDetailHandler),
-    (r'/api/project/update', ProjectUpdateHandler)
+    (r'/api/project/update', ProjectUpdateHandler),
+    (r'/api/project/image/creation', ProjectImageCreationHandler),
+
+    # 项目相关之仓库
+    (r'/api/repos', RepositoryHandler),
+    (r'/api/repos/branches', RepositoryBranchHandler),
 ]

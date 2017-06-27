@@ -186,12 +186,14 @@ CREATE TABLE `project` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '项目ID',
   `name` varchar(128) NOT NULL COMMENT '项目名称',
   `description` text COMMENT '项目描述',
-  `repos` varchar(1024) NOT NULL COMMENT '项目仓库地址',
+  `repos_name` varchar(128) NOT NULL DEFAULT '' COMMENT '项目仓库名称',
   `status` tinyint(4) DEFAULT '0' COMMENT '项目最新状态: 0 无, 1 构建成功, 2 部署成功, -1 构建失败, -2 部署失败',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-)
+  `repos_url` varchar(512) NOT NULL DEFAULT '' COMMENT '项目仓库地址',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `repos_url` (`repos_url`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 ## 测试
 ```
