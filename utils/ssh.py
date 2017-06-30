@@ -29,10 +29,7 @@ class SSH:
             raise e
 
     def _log(self, data, msg):
-        if data:
-            LOG.info('SSH %s: ' % msg)
-
-            for line in data: LOG.info(line.strip())
+        LOG.info('SSH {msg}:{rs}{data}'.format(msg=msg, rs='\n', data=''.join(data)))
 
     def exec(self, cmd):
         LOG.info('SSH CMD: %s' % cmd)
@@ -41,8 +38,10 @@ class SSH:
 
         out, err = stdout.readlines(), stderr.readlines()
 
-        self._log(out, 'OUT')
-        self._log(err, 'ERR')
+        if err:
+            self._log(err, 'ERR')
+        else:
+            self._log(out, 'OUT')
 
         return (out, err)
 
