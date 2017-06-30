@@ -15,7 +15,7 @@ IMAGEHUB_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 # redis相关
 #################################################################################################
 DEPLOYING = 'deploying'
-DEPLOYED = 'deployed'
+DEPLOYED  = 'deployed'
 DEPLOYED_FLAG = '1'
 
 #################################################################################################
@@ -26,9 +26,9 @@ SERVER_HOST = '47.94.18.22'
 MONITOR_CMD = 'curl -sSL http://{host}/supermonitor/install.sh | sh '.format(host=SERVER_HOST)
 UNINSTALL_CMD = 'curl -sSL http://{host}/supermonitor/uninstall.sh | sh '.format(host=SERVER_HOST)
 CREATE_IMAGE_CMD = 'sh ~/deploy/deploy-app.sh '
-IMAGE_INFO_CMD = 'docker images %s --format "{{.Tag}},{{.CreatedAt}}"'
-IMAGE_NAME = 'www.jmkbio.com'
-DEPLOY_CMD = 'docker login www.jmkbio.com -u {username} -p {password} && docker pull {image_name} && docker run --rm -P {image_name} '
+IMAGE_INFO_CMD = 'docker images %s --format "{{.Tag}},{{.CreatedAt}}｜sed -n 2,4p"'
+WWW_JMKBIO_COM = 'www.jmkbio.com'
+DEPLOY_CMD = 'docker login {repository} -u {username} -p {password} && docker pull {image_name} && docker run --rm -P {image_name} '
 
 #################################################################################################
 # 阿里云相关

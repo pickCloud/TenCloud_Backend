@@ -2,7 +2,7 @@ __author__ = 'Jon'
 
 from tornado.gen import coroutine
 from service.base import BaseService
-from constant import CREATE_IMAGE_CMD, IMAGE_INFO_CMD, IMAGE_NAME, DEPLOY_CMD
+from constant import CREATE_IMAGE_CMD, IMAGE_INFO_CMD, DEPLOY_CMD, WWW_JMKBIO_COM
 from setting import settings
 
 
@@ -22,9 +22,9 @@ class ProjectService(BaseService):
 
     @coroutine
     def deployment(self, params):
-        image_name = IMAGE_NAME + "/library/" + params['image_name']
-        cmd = DEPLOY_CMD.format(username=settings['deploy_username'], password=settings['deploy_password'],
-                                image_name=image_name)
+        image_name = WWW_JMKBIO_COM + "/library/" + params['image_name']
+        cmd = DEPLOY_CMD.format(repository=WWW_JMKBIO_COM, username=settings['deploy_username'],
+                                password=settings['deploy_password'], image_name=image_name)
         yield self.remote_ssh(params, cmd)
 
     @coroutine
@@ -34,4 +34,5 @@ class ProjectService(BaseService):
         """
         cmd = IMAGE_INFO_CMD % (params['prj_name'])
         out, err = yield self.remote_ssh(params, cmd)
-        return out, err
+        data = [i for i in out[:2]]
+        return data, err
