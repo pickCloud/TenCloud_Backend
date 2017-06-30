@@ -190,7 +190,8 @@ class BaseService():
         """
         try:
             ssh = SSH(hostname=params['public_ip'], username=params['username'], passwd=params['passwd'])
-            ssh.exec(cmd)
+            out, err = ssh.exec(cmd)
             ssh.close()
+            return out, err
         except Exception as e:
             return str(e)

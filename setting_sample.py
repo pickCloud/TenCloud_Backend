@@ -49,3 +49,5 @@ settings['git_token'] = ''
 # 构建部署配置
 #################################################################################################
 settings['ip_for_image_creation'] = ''
+settings['deploy_username'] = ''
+settings['deploy_password'] = ''

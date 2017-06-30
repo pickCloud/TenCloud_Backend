@@ -11,14 +11,12 @@ CLUSTER_DATE_FORMAT = '%Y年%m月%d日'
 CLUSTER_DATE_FORMAT_ESCAPE = '%%Y年%%m月%%d日'
 IMAGEHUB_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
-
 #################################################################################################
 # redis相关
 #################################################################################################
 DEPLOYING = 'deploying'
 DEPLOYED  = 'deployed'
 DEPLOYED_FLAG = '1'
-
 
 #################################################################################################
 # ssh相关
@@ -28,7 +26,9 @@ SERVER_HOST = '47.94.18.22'
 MONITOR_CMD = 'curl -sSL http://{host}/supermonitor/install.sh | sh '.format(host=SERVER_HOST)
 UNINSTALL_CMD = 'curl -sSL http://{host}/supermonitor/uninstall.sh | sh '.format(host=SERVER_HOST)
 CREATE_IMAGE_CMD = 'sh ~/deploy/deploy-app.sh '
-
+IMAGE_INFO_CMD = 'docker images %s --format "{{.Tag}},{{.CreatedAt}}" | sed -n 1,3p'
+REPOS_DOMAIN = 'www.jmkbio.com'
+DEPLOY_CMD = 'docker login {repository} -u {username} -p {password} && docker pull {image_name} && docker run --rm -P {image_name} '
 
 #################################################################################################
 # 阿里云相关
@@ -51,7 +51,6 @@ ALIYUN_REGION_NAME = {
     'me-east-1': '中东东部 1（迪拜）'
 }
 ALIYUN_REGION_LIST = ALIYUN_REGION_NAME.keys()
-
 
 #################################################################################################
 # http相关
@@ -122,13 +121,11 @@ USER_AGENTS = [
     'Mozilla/5.0 (Linux; U; Android 1.6; en-us; SonyEricssonX10i Build/R1AA056) AppleWebKit/528.5  (KHTML, like Gecko) Version/3.1.2 Mobile Safari/525.20.1',
 ]
 
-
 #################################################################################################
 # git相关
 #################################################################################################
 GIT_REPOS_URL = 'https://api.github.com/user/repos'
 GIT_BRANCH_URL = 'https://api.github.com/repos/{repos_name}/branches'
-
 
 #################################################################################################
 # 其他
