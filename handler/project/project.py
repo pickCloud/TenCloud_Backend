@@ -80,8 +80,7 @@ class ProjectUpdateHandler(BaseHandler):
         try:
             sets = ['name=%s', 'description=%s', 'repos_name=%s', 'repos_url=%s']
             conds = ['id=%s']
-            params = [self.params['name'], self.params['description'], self.params['repos_name'],
-                      self.params['repos_url'], self.params['id']]
+            params = [self.params['name'], self.params['description'],self.params['repos_name'],self.params['repos_url'], self.params['id']]
 
             yield self.project_service.update(sets=sets, conds=conds, params=params)
 

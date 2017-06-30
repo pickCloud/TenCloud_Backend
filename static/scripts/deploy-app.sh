@@ -35,9 +35,6 @@ shell_unlock(){
 code_get(){
     log "code_get";
     if [ ! -d "${CODE_DIR}" ];then
-      mkdir -p "${CODE_DIR}"
-    fi
-    if [ ! -d "${CODE_DIR}" ];then
       git clone ${CODE_URL} "${CODE_DIR}"
     else
       cd "${CODE_DIR}" || exit 1
