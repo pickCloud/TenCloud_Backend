@@ -109,8 +109,7 @@ class ProjectImageCreationHandler(BaseHandler):
         ''' 构建仓库镜像
         '''
         try:
-            login_info = yield self.server_service.fetch_ssh_login_info(
-                {'public_ip': settings['ip_for_image_creation']})
+            login_info = yield self.server_service.fetch_ssh_login_info({'public_ip': settings['ip_for_image_creation']})
             self.params.update(login_info)
             yield self.project_service.create_image(self.params)
             self.success()
@@ -127,8 +126,7 @@ class ProjectImageFindHandler(BaseHandler):
         """
         try:
             self.params.update({"prj_name": self.get_argument('prj_name')})
-            login_info = yield self.server_service.fetch_ssh_login_info(
-                {'public_ip': settings['ip_for_image_creation']})
+            login_info = yield self.server_service.fetch_ssh_login_info({'public_ip': settings['ip_for_image_creation']})
             self.params.update(login_info)
             data, err = yield self.project_service.find_image(self.params)
             if err:

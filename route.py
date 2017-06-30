@@ -4,16 +4,16 @@ __author__ = 'Jon'
 项目路由文件
 '''
 
-from handler.cluster.cluster import ClusterHandler, ClusterNewHandler, ClusterDelHandler, \
-    ClusterDetailHandler, ClusterUpdateHandler
+from handler.cluster.cluster import ClusterHandler, ClusterNewHandler, ClusterDelHandler,\
+                                    ClusterDetailHandler, ClusterUpdateHandler
 from handler.imagehub.imagehub import ImagehubHandler, ImagehubBySourceHandler, ImagehubByTypeHandler, \
-    ImagehubSearchHandler
+                                      ImagehubSearchHandler
 from handler.server.server import ServerNewHandler, ServerReport, ServerMigratinHandler, ServerDelHandler, \
-    ServerDetailHandler, ServerPerformanceHandler, ServerUpdateHandler, \
-    ServerStopHandler, ServerStartHandler, ServerRebootHandler
+                                  ServerDetailHandler, ServerPerformanceHandler, ServerUpdateHandler, \
+                                  ServerStopHandler, ServerStartHandler, ServerRebootHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
-    ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, ProjectImageCreationHandler, \
-    ProjectImageFindHandler
+                                    ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
+                                    ProjectImageCreationHandler, ProjectImageFindHandler
 from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler
 
 routes = [

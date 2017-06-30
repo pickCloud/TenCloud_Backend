@@ -27,7 +27,7 @@ MONITOR_CMD = 'curl -sSL http://{host}/supermonitor/install.sh | sh '.format(hos
 UNINSTALL_CMD = 'curl -sSL http://{host}/supermonitor/uninstall.sh | sh '.format(host=SERVER_HOST)
 CREATE_IMAGE_CMD = 'sh ~/deploy/deploy-app.sh '
 IMAGE_INFO_CMD = 'docker images %s --format "{{.Tag}},{{.CreatedAt}}｜sed -n 2,4p"'
-WWW_JMKBIO_COM = 'www.jmkbio.com'
+REPOS_DOMAIN = 'www.jmkbio.com'
 DEPLOY_CMD = 'docker login {repository} -u {username} -p {password} && docker pull {image_name} && docker run --rm -P {image_name} '
 
 #################################################################################################
