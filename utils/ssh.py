@@ -9,6 +9,7 @@ from constant import SSH_CONNECT_TIMEOUT
 class SSHError(Exception):
     pass
 
+
 class SSH:
     '''
     Usage::
@@ -16,6 +17,7 @@ class SSH:
             >>> ssh.exec('cmd')
             >>> ssh.close()
     '''
+
     def __init__(self, hostname=None, port=22, username=None, passwd=None, logpath='logs/sysdeploy.log'):
         paramiko.util.log_to_file(logpath)
 
@@ -23,7 +25,8 @@ class SSH:
         self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         try:
-            self._client.connect(hostname=hostname, port=port, username=username, password=passwd, timeout=SSH_CONNECT_TIMEOUT)
+            self._client.connect(hostname=hostname, port=port, username=username, password=passwd,
+                                 timeout=SSH_CONNECT_TIMEOUT)
         except Exception as e:
             self.close()
             raise e
@@ -44,7 +47,7 @@ class SSH:
         self._log(out, 'OUT')
         self._log(err, 'ERR')
 
-        return (out, err)
+        return out, err
 
     def close(self):
         self._client.close()

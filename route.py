@@ -5,16 +5,16 @@ __author__ = 'Jon'
 '''
 
 from handler.cluster.cluster import ClusterHandler, ClusterNewHandler, ClusterDelHandler, \
-                                    ClusterDetailHandler, ClusterUpdateHandler
+    ClusterDetailHandler, ClusterUpdateHandler
 from handler.imagehub.imagehub import ImagehubHandler, ImagehubBySourceHandler, ImagehubByTypeHandler, \
     ImagehubSearchHandler
 from handler.server.server import ServerNewHandler, ServerReport, ServerMigratinHandler, ServerDelHandler, \
-                                  ServerDetailHandler, ServerPerformanceHandler, ServerUpdateHandler, \
-                                  ServerStopHandler, ServerStartHandler, ServerRebootHandler
+    ServerDetailHandler, ServerPerformanceHandler, ServerUpdateHandler, \
+    ServerStopHandler, ServerStartHandler, ServerRebootHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
-                                    ProjectDetailHandler, ProjectUpdateHandler, ProjectImageCreationHandler
+    ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, ProjectImageCreationHandler, \
+    ProjectImageFindHandler
 from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler
-
 
 routes = [
     # 集群相关
@@ -49,7 +49,9 @@ routes = [
     (r'/api/project/del', ProjectDelHandler),
     (r'/api/project/(\d+)', ProjectDetailHandler),
     (r'/api/project/update', ProjectUpdateHandler),
+    (r'/api/project/deployment', ProjectDeploymentHandler),
     (r'/api/project/image/creation', ProjectImageCreationHandler),
+    (r'/api/project/image', ProjectImageFindHandler),
 
     # 项目相关之仓库
     (r'/api/repos', RepositoryHandler),

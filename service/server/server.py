@@ -55,7 +55,6 @@ class ServerService(BaseService):
 
         sql = "SELECT s.public_ip, sa.username, sa.passwd FROM server s JOIN server_account sa USING(public_ip) WHERE "
         conds, data = [], []
-
         if params.get('server_id'):
             conds.append('s.id=%s')
             data.append(params['server_id'])
