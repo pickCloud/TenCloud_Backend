@@ -37,5 +37,5 @@ class ProjectService(BaseService):
         """
 		cmd = IMAGE_INFO_CMD % (params['prj_name'])
 		out, err = yield self.remote_ssh(params, cmd)
-		data = [i for i in out[:2]]
+		data = [i for i in out]
 		return data, err
