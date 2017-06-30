@@ -24,10 +24,10 @@ class ProjectService(BaseService):
     def deployment(self, params):
         image_name = REPOS_DOMAIN + "/library/" + params['image_name']
         cmd = DEPLOY_CMD.format(
-                repository=REPOS_DOMAIN,
-                username=settings['deploy_username'],
-                password=settings['deploy_password'],
-                image_name=image_name)
+            repository=REPOS_DOMAIN,
+            username=settings['deploy_username'],
+            password=settings['deploy_password'],
+            image_name=image_name)
         yield self.remote_ssh(params, cmd)
 
     @coroutine
@@ -37,5 +37,5 @@ class ProjectService(BaseService):
         """
         cmd = IMAGE_INFO_CMD % (params['prj_name'])
         out, err = yield self.remote_ssh(params, cmd)
-        data = [i for i in out]
+        data = [i.split(',') for i in out]
         return data, err
