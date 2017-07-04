@@ -272,7 +272,7 @@ class ServerDockerContainersHandler(BaseHandler):
             data, err = yield self.server_service.get_docker_containers(id)
 
             if err:
-                self.error(err)
+                self.error()
                 return
 
             self.success(data)
