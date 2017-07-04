@@ -6,7 +6,7 @@ from tornado.gen import coroutine, Task
 from service.base import BaseService
 from utils.general import get_formats
 from utils.aliyun import Aliyun
-from constant import INSTANCE_STATUS, UNINSTALL_CMD, DEPLOYED
+from constant import INSTANCE_STATUS, UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD
 from utils.security import Aes
 
 
@@ -207,3 +207,13 @@ class ServerService(BaseService):
         sql = " UPDATE instance SET status=%s WHERE instance_id=%s "
 
         yield self.db.execute(sql, [status, instance_id])
+
+    @coroutine
+    def get_docker_containers(self, id):
+        params = yield self.fetch_ssh_login_info({'server_id': id})
+
+        out, err = yield self.remote_ssh(params, cmd=LIST_CONTAINERS_CMD)
+
+        data = [i.split(',') for i in out]
+
+        return data, err
