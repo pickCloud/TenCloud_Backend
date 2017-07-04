@@ -261,3 +261,21 @@ class ServerRebootHandler(BaseHandler):
         except:
             self.error()
             self.log.error(traceback.format_exc())
+
+
+class ServerDockerContainersHandler(BaseHandler):
+    @coroutine
+    def get(self, id):
+        ''' 获取主机里面的docker容器列表
+        '''
+        try:
+            data, err = yield self.server_service.get_docker_containers(id)
+
+            if err:
+                self.error(err)
+                return
+
+            self.success(data)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())

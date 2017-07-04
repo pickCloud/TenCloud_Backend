@@ -29,6 +29,7 @@ CREATE_IMAGE_CMD = 'sh ~/deploy/deploy-app.sh '
 IMAGE_INFO_CMD = 'docker images %s --format "{{.Tag}},{{.CreatedAt}}" | sed -n 1,3p'
 REPOS_DOMAIN = 'www.jmkbio.com'
 DEPLOY_CMD = 'docker login {repository} -u {username} -p {password} && docker pull {image_name} && docker run --rm -P {image_name} '
+LIST_CONTAINERS_CMD = 'docker ps -a --format "{{.ID}},{{.Names}},{{.Status}},{{.CreatedAt}}"'
 
 #################################################################################################
 # 阿里云相关
