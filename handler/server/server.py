@@ -204,6 +204,7 @@ class ServerPerformanceHandler(BaseHandler):
     def post(self):
         try:
             data = yield self.server_service.get_performance(self.params)
+
             self.success(data)
         except:
             self.error()

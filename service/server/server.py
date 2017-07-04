@@ -129,42 +129,31 @@ class ServerService(BaseService):
         return data
 
     @coroutine
-    def _get_memory(self, params):
-        memory_sql = """
-            SELECT created_time,content FROM memory 
-            WHERE public_ip=%s AND created_time>=%s AND created_time<=%s
-        """
-        cur = yield self.db.execute(memory_sql, params)
-        return [[x['created_time'], json.loads(x['content'])['percent']] for x in cur.fetchall()]
-
-    @coroutine
-    def _get_cpu(self, params):
-        cpu_sql = """
-            SELECT created_time,content FROM cpu
-            WHERE public_ip=%s AND created_time>=%s AND created_time<=%s
-        """
-        cur = yield self.db.execute(cpu_sql, params)
-        return [[x['created_time'], json.loads(x['content'])['percent']] for x in cur.fetchall()]
-
-    @coroutine
-    def _get_disk(self, params):
+    def _get_performance(self, table, params):
+        '''
+        :param table: cpu/memory/disk
+        :param params: {'public_ip': str, 'start_time': timestamp, 'end_time': timestamp}
+        '''
         sql = """
-            SELECT content FROM disk
-            WHERE public_ip=%s AND created_time<=%s ORDER BY created_time DESC LIMIT 1 
-        """
-        cur = yield self.db.execute(sql, params)
-        data = json.loads(cur.fetchone()['content'])
-        return [data['free'], data['total']]
+            SELECT created_time,content FROM {table}
+            WHERE public_ip=%s AND created_time>=%s AND created_time<=%s
+        """.format(table=table)
+
+        cur = yield self.db.execute(sql, [params['public_ip'], params['start_time'], params['end_time']])
+
+        return [[x['created_time'], json.loads(x['content'])] for x in cur.fetchall()]
 
     @coroutine
     def get_performance(self, params):
-        raw_data = {}
-        public_ip = yield self.fetch_public_ip(params['id'])
-        func_params = [public_ip, params['start_time'], params['end_time']]
-        raw_data['cpu'] = yield self._get_cpu(func_params)
-        raw_data['memory'] = yield self._get_memory(func_params)
-        raw_data['disk'] = yield self._get_disk([public_ip, params['end_time']])
-        return raw_data
+        params['public_ip'] = yield self.fetch_public_ip(params['id'])
+
+        data = {}
+
+        data['cpu'] = yield self._get_performance('cpu', params)
+        data['memory'] = yield self._get_performance('memory', params)
+        data['disk'] = yield self._get_performance('disk', params)
+
+        return data
 
     @coroutine
     def fetch_public_ip(self, server_id):
