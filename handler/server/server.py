@@ -204,6 +204,7 @@ class ServerPerformanceHandler(BaseHandler):
     def post(self):
         try:
             data = yield self.server_service.get_performance(self.params)
+
             self.success(data)
         except:
             self.error()
@@ -258,6 +259,24 @@ class ServerRebootHandler(BaseHandler):
             yield self.server_service.reboot_server(id)
 
             self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ServerDockerContainersHandler(BaseHandler):
+    @coroutine
+    def get(self, id):
+        ''' 获取主机里面的docker容器列表
+        '''
+        try:
+            data, err = yield self.server_service.get_docker_containers(id)
+
+            if err:
+                self.error()
+                return
+
+            self.success(data)
         except:
             self.error()
             self.log.error(traceback.format_exc())
