@@ -180,6 +180,17 @@ create table ten_dashboard.disk (
 create index ip_time on disk (public_ip, created_time);
 ```
 
+* net表
+```
+create table ten_dashboard.net (
+	id int auto_increment primary key,
+	public_ip varchar(15) not null,
+	created_time int(10) not null,
+	content json null
+) comment 'net使用情况';
+create index ip_time on net (public_ip, created_time);
+```
+
 * 项目表 project
 ```
 CREATE TABLE `project` (

@@ -21,7 +21,7 @@ class ServerService(BaseService):
         base_data = [params['public_ip'], params['time']]
         base_sql = 'INSERT INTO %s(public_ip, created_time,content)'
         suffix = ' values(%s,%s,%s)'
-        for table in ['cpu', 'memory', 'disk']:
+        for table in ['cpu', 'memory', 'disk', 'net']:
             content = json.dumps(params[table])
             sql = (base_sql % table) + suffix
             yield self.db.execute(sql, base_data + [content])
@@ -152,6 +152,7 @@ class ServerService(BaseService):
         data['cpu'] = yield self._get_performance('cpu', params)
         data['memory'] = yield self._get_performance('memory', params)
         data['disk'] = yield self._get_performance('disk', params)
+        data['net'] = yield self._get_performance('net', params)
 
         return data
 
