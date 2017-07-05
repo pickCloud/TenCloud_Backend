@@ -75,8 +75,3 @@ if __name__ == '__main__':
 
     from pprint import pprint
     pprint(instances)
-    #
-    # instance_id = 'i-uf6iq9x2bup1zli6hs9u'
-    #
-    # url = Aliyun.make_url({'Action': 'StartInstance', 'InstanceId': instance_id})
-    # print(requests.get(url).json())

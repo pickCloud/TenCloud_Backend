@@ -19,7 +19,6 @@ __author__ = 'Jon'
 import json
 import tornado.web
 
-from tornado.gen import coroutine
 from service.cluster.cluster import ClusterService
 from service.imagehub.imagehub import ImagehubService
 from service.server.server import ServerService
@@ -46,7 +45,6 @@ class BaseHandler(tornado.web.RequestHandler):
     def log(self):
         return self.application.log
 
-    @coroutine
     def prepare(self):
         ''' 获取请求的参数, json类型
 
