@@ -26,6 +26,15 @@ class ServerService(BaseService):
             sql = (base_sql % table) + suffix
             yield self.db.execute(sql, base_data + [content])
 
+        for (k, v) in params['docker'].items():
+            self._save_docker_report(base_data + [json.dumps(k)] + [json.dumps(v)])
+
+    @coroutine
+    def _save_docker_report(self, params):
+        sql = "INSERT INTO docker_stat(public_ip, created_time, container_name,  content)" \
+            "VALUES(%s, %s, %s, %s)"
+        yield self.db.execute(sql, params)
+
     @coroutine
     def save_server_account(self, params):
         sql = " INSERT INTO server_account(public_ip, username, passwd) " \

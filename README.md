@@ -191,6 +191,18 @@ create table ten_dashboard.net (
 create index ip_time on net (public_ip, created_time);
 ```
 
+* docker_stat表
+```
+create table ten_dashboard.docker_stat (
+	id int auto_increment primary key,
+	public_ip varchar(15) not null,
+	container_name varchar(255) not null,
+	created_time int(10) not null,
+	content json null
+) comment 'docker应用使用情况';
+create index ip_container_time on docker_stat (public_ip, container_name, created_time);
+```
+
 * 项目表 project
 ```
 CREATE TABLE `project` (
