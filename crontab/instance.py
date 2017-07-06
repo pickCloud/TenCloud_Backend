@@ -76,8 +76,10 @@ def main():
     obj = Instance()
 
     while True:
+        print('Start')
         yield obj.get()
         yield obj.save()
+        print('Save')
         time.sleep(1)
 
 
