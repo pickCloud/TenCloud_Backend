@@ -6,7 +6,7 @@ from tornado.gen import coroutine, Task
 from service.base import BaseService
 from utils.general import get_formats
 from utils.aliyun import Aliyun
-from constant import INSTANCE_STATUS, UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD
+from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD
 from utils.security import Aes
 
 
@@ -117,8 +117,8 @@ class ServerService(BaseService):
     def get_detail(self, id):
         ''' 获取主机详情
         '''
-        sql = " SELECT s.id, s.cluster_id, c.name AS cluster_name, s.name, i.region_id, s.public_ip, i.status AS machine_status, " \
-              "        s.business_status, i.cpu, i.memory, i.os_name, i.os_type, i.provider, i.create_time, i.expired_time, i.charge_type " \
+        sql = " SELECT s.id, s.cluster_id, c.name AS cluster_name, s.name, i.region_id, s.public_ip, i.status AS machine_status, i.region_id, " \
+              "        s.business_status, i.cpu, i.memory, i.os_name, i.os_type, i.provider, i.create_time, i.expired_time, i.charge_type, i.instance_id" \
               " FROM server s " \
               " JOIN instance i ON s.public_ip=i.public_ip " \
               " JOIN cluster c ON  s.cluster_id=c.id " \
@@ -189,13 +189,16 @@ class ServerService(BaseService):
         payload = Aliyun.add_sign(params)
 
         yield self.get(payload)
-        yield self.update_instance_status(INSTANCE_STATUS[cmd], instance_id)
 
     @coroutine
-    def update_instance_status(self, status, instance_id):
-        sql = " UPDATE instance SET status=%s WHERE instance_id=%s "
+    def get_instance_info(self, region_id):
+        ''' 阿里云没有提供用instance_id查询, 只能通过region_id
+        '''
+        payload = Aliyun.add_sign({'Action': 'DescribeInstances', 'RegionId': region_id})
 
-        yield self.db.execute(sql, [status, instance_id])
+        info = yield self.get(payload)
+
+        return info
 
     @coroutine
     def get_docker_containers(self, id):

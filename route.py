@@ -10,7 +10,8 @@ from handler.imagehub.imagehub import ImagehubHandler, ImagehubBySourceHandler, 
                                       ImagehubSearchHandler
 from handler.server.server import ServerNewHandler, ServerReport, ServerMigratinHandler, ServerDelHandler, \
                                   ServerDetailHandler, ServerPerformanceHandler, ServerUpdateHandler, \
-                                  ServerStopHandler, ServerStartHandler, ServerRebootHandler, ServerDockerContainersHandler
+                                  ServerStopHandler, ServerStartHandler, ServerRebootHandler, ServerDockerContainersHandler, \
+                                  ServerStatusHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
                                     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
                                     ProjectImageCreationHandler, ProjectImageFindHandler
@@ -39,6 +40,7 @@ routes = [
     (r'/api/server/stop/(\d+)', ServerStopHandler),
     (r'/api/server/start/(\d+)', ServerStartHandler),
     (r'/api/server/reboot/(\d+)', ServerRebootHandler),
+    (r'/api/server/([\w\W]+)/([\w\W]+)/status', ServerStatusHandler),
 
     (r'/api/server/docker/containers/(\d+)', ServerDockerContainersHandler),
 

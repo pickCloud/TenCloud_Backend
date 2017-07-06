@@ -131,11 +131,5 @@ GIT_BRANCH_URL = 'https://api.github.com/repos/{repos_name}/branches'
 #################################################################################################
 # 其他
 #################################################################################################
-# 主机开机/关机/重启对应的状态
-INSTANCE_STATUS = {
-    'StartInstance': 'Running',
-    'StopInstance': 'Stopped',
-    'RebootInstance': 'Running'
-}
 POOL_COUNT = 10
 AES_KEY = '01234^!@#$%56789'
