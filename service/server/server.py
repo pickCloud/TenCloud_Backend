@@ -27,7 +27,7 @@ class ServerService(BaseService):
             yield self.db.execute(sql, base_data + [content])
 
         for (k, v) in params['docker'].items():
-            self._save_docker_report(base_data + [json.dumps(k)] + [json.dumps(v)])
+            self._save_docker_report(base_data + [k] + [json.dumps(v)])
 
     @coroutine
     def _save_docker_report(self, params):
