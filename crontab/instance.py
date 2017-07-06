@@ -3,6 +3,7 @@ __author__ = 'Jon'
 '''获取阿里云的实例,并更新数据库
 '''
 import json
+import time
 from tornado.ioloop import IOLoop
 from tornado.gen import coroutine
 from tornado.httpclient import AsyncHTTPClient
@@ -73,8 +74,11 @@ class Instance:
 @coroutine
 def main():
     obj = Instance()
-    yield obj.get()
-    yield obj.save()
+
+    while True:
+        yield obj.get()
+        yield obj.save()
+        time.sleep(1)
 
 
 if __name__ == '__main__':
