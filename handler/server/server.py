@@ -172,7 +172,9 @@ class ServerDetailHandler(BaseHandler):
                 'address': ALIYUN_REGION_NAME.get(data['region_id']),
                 'public_ip': data['public_ip'],
                 'machine_status': data['machine_status'],
-                'business_status': data['business_status']
+                'business_status': data['business_status'],
+                'region_id': data['region_id'],
+                'instance_id': data['instance_id']
             }
 
             result['system_info'] = {
@@ -259,6 +261,25 @@ class ServerRebootHandler(BaseHandler):
             yield self.server_service.reboot_server(id)
 
             self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ServerStatusHandler(BaseHandler):
+    @coroutine
+    def get(self, region_id, instance_id):
+        ''' 查询主机的状态
+        '''
+        try:
+            data = yield self.server_service.get_instance_info(region_id)
+
+            for i in data.get('Instances', {}).get('Instance', []):
+                if i['InstanceId'] == instance_id:
+                    self.success(i.get('Status'))
+                    return
+
+            self.error('主机状态不存在')
         except:
             self.error()
             self.log.error(traceback.format_exc())
