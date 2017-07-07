@@ -136,7 +136,7 @@ class ServerService(BaseService):
         '''
         sql = """
             SELECT created_time,content FROM {table}
-            WHERE public_ip=%s AND created_time>=%s AND created_time<=%s
+            WHERE public_ip=%s AND created_time>=%s AND created_time<%s
         """.format(table=table)
 
         cur = yield self.db.execute(sql, [params['public_ip'], params['start_time'], params['end_time']])
