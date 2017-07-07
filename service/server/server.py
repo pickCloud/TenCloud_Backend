@@ -246,7 +246,7 @@ class ServerService(BaseService):
                                                 'output': content['block_output']}])
             
         data['cpu'] = cpu
-        data['mem'] = mem
+        data['memory'] = mem
         data['net'] = net
         data['block'] = block
         return data
