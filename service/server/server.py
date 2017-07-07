@@ -219,3 +219,34 @@ class ServerService(BaseService):
         data = [i.split(',') for i in out]
 
         return data, err
+
+    @coroutine
+    def get_docker_performance(self,params):
+        params['public_ip'] = yield self.fetch_public_ip(params['server_id'])
+
+        sql = """
+                  SELECT created_time, content from docker_stat
+                  WHERE public_ip=%s AND container_name=%s 
+                  AND created_time>= %s AND created_time < %s
+              """
+        cur = yield self.db.execute(sql, [params['public_ip'], params['container_name'],
+                                    params['start_time'], params['end_time']])
+        data = {}
+        cpu = []
+        mem = []
+        net = []
+        block = []
+        for x in cur.fetchall():
+            content = json.loads(x['content'])
+            cpu.append([x['created_time'], content['cpu']])
+            mem.append([x['created_time'], content['mem_percent']])
+            net.append([x['created_time'], {'input': content['net_input'],
+                                                'output': content['net_output']}])
+            block.append([x['created_time'], {'input': content['block_input'],
+                                                'output': content['block_output']}])
+            
+        data['cpu'] = cpu
+        data['mem'] = mem
+        data['net'] = net
+        data['block'] = block
+        return data
