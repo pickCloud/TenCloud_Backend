@@ -268,18 +268,13 @@ class ServerRebootHandler(BaseHandler):
 
 class ServerStatusHandler(BaseHandler):
     @coroutine
-    def get(self, region_id, instance_id):
+    def get(self, instance_id):
         ''' 查询主机的状态
         '''
         try:
-            data = yield self.server_service.get_instance_info(region_id)
+            data = yield self.server_service.get_instance_status(instance_id)
 
-            for i in data.get('Instances', {}).get('Instance', []):
-                if i['InstanceId'] == instance_id:
-                    self.success(i.get('Status'))
-                    return
-
-            self.error('主机状态不存在')
+            self.success(data)
         except:
             self.error()
             self.log.error(traceback.format_exc())

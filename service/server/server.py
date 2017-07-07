@@ -191,14 +191,14 @@ class ServerService(BaseService):
         yield self.get(payload)
 
     @coroutine
-    def get_instance_info(self, region_id):
-        ''' 阿里云没有提供用instance_id查询, 只能通过region_id
+    def get_instance_status(self, instance_id):
+        ''' 根据instance_id,查询当前主机开关状态
         '''
-        payload = Aliyun.add_sign({'Action': 'DescribeInstances', 'RegionId': region_id})
+        sql = " SELECT status FROM instance WHERE instance_id=%s "
+        cur = yield self.db.execute(sql, instance_id)
+        data = cur.fetchone()
 
-        info = yield self.get(payload)
-
-        return info
+        return data.get('status')
 
     @coroutine
     def get_docker_containers(self, id):
