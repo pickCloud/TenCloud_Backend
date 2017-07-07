@@ -238,8 +238,8 @@ class ServerService(BaseService):
         block = []
         for x in cur.fetchall():
             content = json.loads(x['content'])
-            cpu.append([x['created_time'], content['cpu']])
-            mem.append([x['created_time'], content['mem_percent']])
+            cpu.append([x['created_time'], {'percent':content['cpu']}])
+            mem.append([x['created_time'], {'percent':content['mem_percent']}])
             net.append([x['created_time'], {'input': content['net_input'],
                                                 'output': content['net_output']}])
             block.append([x['created_time'], {'input': content['block_input'],
