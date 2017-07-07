@@ -2,8 +2,12 @@ __author__ = 'Jon'
 
 '''获取阿里云的实例,并更新数据库
 '''
+import sys
 import json
 import time
+import logging
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+
 from tornado.ioloop import IOLoop
 from tornado.gen import coroutine
 from tornado.httpclient import AsyncHTTPClient
@@ -76,11 +80,11 @@ def main():
     obj = Instance()
 
     while True:
-        print('Start')
+        logging.info('+++Start+++')
         yield obj.get()
         yield obj.save()
-        print('Save')
-        time.sleep(1)
+        logging.info('++++End++++')
+        time.sleep(2)
 
 
 if __name__ == '__main__':

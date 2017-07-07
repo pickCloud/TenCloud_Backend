@@ -40,7 +40,7 @@ routes = [
     (r'/api/server/stop/(\d+)', ServerStopHandler),
     (r'/api/server/start/(\d+)', ServerStartHandler),
     (r'/api/server/reboot/(\d+)', ServerRebootHandler),
-    (r'/api/server/([\w\W]+)/([\w\W]+)/status', ServerStatusHandler),
+    (r'/api/server/([\w\W]+)/status', ServerStatusHandler),
 
     (r'/api/server/docker/containers/(\d+)', ServerDockerContainersHandler),
 
