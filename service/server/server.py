@@ -232,12 +232,21 @@ class ServerService(BaseService):
         cur = yield self.db.execute(sql, [params['public_ip'], params['container_name'],
                                     params['start_time'], params['end_time']])
         data = {}
-
+        cpu = []
+        mem = []
+        net = []
+        block = []
         for x in cur.fetchall():
-            data['cpu'] = [x['created_time'], json.loads(x['content'])['cpu']]
-            data['mem'] = [x['created_time'], json.loads(x['content'])['mem_percent']]
-            data['net'] = [x['created_time'], {'input': json.loads(x['content'])['net_input'],
-                                                'output': json.loads(x['content'])['net_output']}]
-            data['block'] = [x['created_time'], {'input': json.loads(x['content'])['block_input'],
-                                                'output':json.loads(x['content'])['block_output']}]
+            content = json.loads(x['content'])
+            cpu.append([x['created_time'], content['cpu']])
+            mem.append([x['created_time'], content['mem_percent']])
+            net.append([x['created_time'], {'input': content['net_input'],
+                                                'output': content['net_output']}])
+            block.append([x['created_time'], {'input': content['block_input'],
+                                                'output': content['block_output']}])
+            
+        data['cpu'] = cpu
+        data['mem'] = mem
+        data['net'] = net
+        data['block'] = block
         return data
