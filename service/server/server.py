@@ -6,7 +6,7 @@ from tornado.gen import coroutine, Task
 from service.base import BaseService
 from utils.general import get_formats
 from utils.aliyun import Aliyun
-from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD
+from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAINER_CMD, STOP_CONTAINER_CMD, DEL_CONTAINER_CMD
 from utils.security import Aes
 
 
@@ -206,6 +206,31 @@ class ServerService(BaseService):
 
         out, err = yield self.remote_ssh(params, cmd=LIST_CONTAINERS_CMD)
 
+        if err:
+            raise ValueError
+
         data = [i.split(',') for i in out]
 
-        return data, err
+        return data
+
+    @coroutine
+    def start_container(self, params):
+        yield self.operate_container(params, cmd=START_CONTAINER_CMD.format(container_id=params['container_id']))
+
+    @coroutine
+    def stop_container(self, params):
+        yield self.operate_container(params, cmd=STOP_CONTAINER_CMD.format(container_id=params['container_id']))
+
+    @coroutine
+    def del_container(self, params):
+        yield self.operate_container(params, cmd=DEL_CONTAINER_CMD.format(container_id=params['container_id']))
+
+    @coroutine
+    def operate_container(self, params, cmd):
+        login_info = yield self.fetch_ssh_login_info({'server_id': params['server_id']})
+
+        out, err = yield self.remote_ssh(login_info, cmd=cmd)
+
+        if err:
+            raise ValueError
+

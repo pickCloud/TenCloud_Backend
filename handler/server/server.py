@@ -280,17 +280,55 @@ class ServerStatusHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class ServerDockerContainersHandler(BaseHandler):
+class ServerContainersHandler(BaseHandler):
     @coroutine
     def get(self, id):
         ''' 获取主机里面的docker容器列表
         '''
         try:
-            data, err = yield self.server_service.get_docker_containers(id)
+            data = yield self.server_service.get_docker_containers(id)
 
-            if err:
-                self.error()
-                return
+            self.success(data)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ServerContainerStartHandler(BaseHandler):
+    @coroutine
+    def post(self):
+        ''' 启动容器
+        '''
+        try:
+            data = yield self.server_service.start_container(self.params)
+
+            self.success(data)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ServerContainerStopHandler(BaseHandler):
+    @coroutine
+    def post(self):
+        ''' 停止容器
+        '''
+        try:
+            data = yield self.server_service.stop_container(self.params)
+
+            self.success(data)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ServerContainerDelHandler(BaseHandler):
+    @coroutine
+    def post(self):
+        ''' 删除容器
+        '''
+        try:
+            data = yield self.server_service.del_container(self.params)
 
             self.success(data)
         except:
