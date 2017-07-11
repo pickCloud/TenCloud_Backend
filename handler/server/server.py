@@ -300,9 +300,9 @@ class ServerContainerStartHandler(BaseHandler):
         ''' 启动容器
         '''
         try:
-            data = yield self.server_service.start_container(self.params)
+            yield self.server_service.start_container(self.params)
 
-            self.success(data)
+            self.success()
         except:
             self.error()
             self.log.error(traceback.format_exc())
@@ -314,9 +314,9 @@ class ServerContainerStopHandler(BaseHandler):
         ''' 停止容器
         '''
         try:
-            data = yield self.server_service.stop_container(self.params)
+            yield self.server_service.stop_container(self.params)
 
-            self.success(data)
+            self.success()
         except:
             self.error()
             self.log.error(traceback.format_exc())
@@ -328,9 +328,9 @@ class ServerContainerDelHandler(BaseHandler):
         ''' 删除容器
         '''
         try:
-            data = yield self.server_service.del_container(self.params)
+            yield self.server_service.del_container(self.params)
 
-            self.success(data)
+            self.success()
         except:
             self.error()
             self.log.error(traceback.format_exc())
