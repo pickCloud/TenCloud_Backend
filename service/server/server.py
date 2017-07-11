@@ -249,15 +249,22 @@ class ServerService(BaseService):
 
         raw_out, err = yield self.remote_ssh(params, cmd=cmd)
         json_out = json.loads(raw_out[0])
-        data = {
+        data = dict()
+        data['runtime'] = {
             'Hostname': json_out['Config']['Hostname'],
+            'IP': params['public_ip'],
+            'Port': [key.split('/')[0] for key, _ in json_out['Config']['ExposedPorts'].items()],
+            'Address': "http://{ip}".format(ip=params['public_ip'])
+        }
+        data['container'] = {
             'WorkingDir': json_out['Config']['WorkingDir'],
-            'Port': [key for key, _ in json_out['Config']['ExposedPorts'].items()],
             'CMD': json_out['Config']['Cmd'][0],
             'Volumes': json_out['Config']['Volumes'],
             'VolumesFrom': json_out['HostConfig']['VolumesFrom'],
-            'Dns': json_out['HostConfig']['Dns'],
-            'Links': json_out['HostConfig']['Links'],
-            'PortBind': json_out['NetworkSettings']['Ports']
+        }
+        data['network'] = {
+                'Dns': json_out['HostConfig']['Dns'],
+                'Links': json_out['HostConfig']['Links'],
+                'PortBind': json_out['NetworkSettings']['Ports']
         }
         return data, err
