@@ -299,7 +299,7 @@ class ServerContainersHandler(BaseHandler):
         ''' 获取主机里面的docker容器列表
         '''
         try:
-            data = yield self.server_service.get_docker_containers(id)
+            data = yield self.server_service.get_containers(id)
 
             self.success(data)
         except:
@@ -313,8 +313,7 @@ class ServerContainersInfoHandler(BaseHandler):
         ''' 获取主机容器信息
         '''
         try:
-            param = {'server_id': server_id}
-            params = yield self.server_service.fetch_ssh_login_info(param)
+            params = yield self.server_service.fetch_ssh_login_info({'server_id': server_id})
             params.update({'container_id': container_id})
             data, err = yield self.server_service.get_container_info(params)
             if err:

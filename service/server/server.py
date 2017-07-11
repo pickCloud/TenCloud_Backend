@@ -211,7 +211,7 @@ class ServerService(BaseService):
         return data.get('status')
 
     @coroutine
-    def get_docker_containers(self, id):
+    def get_containers(self, id):
         params = yield self.fetch_ssh_login_info({'server_id': id})
 
         out, err = yield self.remote_ssh(params, cmd=LIST_CONTAINERS_CMD)
@@ -258,7 +258,8 @@ class ServerService(BaseService):
         data = {
             'cpu': [],
             'memory': [],
-            'net': []
+            'net': [],
+            'block': []
         }
         for x in cur.fetchall():
             content = json.loads(x['content'])
@@ -283,12 +284,14 @@ class ServerService(BaseService):
                 'IP': params['public_ip'],
                 'Port': [key.split('/')[0] for key, _ in json_out['Config']['ExposedPorts'].items()],
                 'Address': "http://{ip}".format(ip=params['public_ip'])
-            }, 'container': {
+            },
+            'container': {
                 'WorkingDir': json_out['Config']['WorkingDir'],
                 'CMD': json_out['Config']['Cmd'][0],
                 'Volumes': json_out['Config']['Volumes'],
                 'VolumesFrom': json_out['HostConfig']['VolumesFrom'],
-            }, 'network': {
+            },
+            'network': {
                 'Dns': json_out['HostConfig']['Dns'],
                 'Links': json_out['HostConfig']['Links'],
                 'PortBind': json_out['NetworkSettings']['Ports']

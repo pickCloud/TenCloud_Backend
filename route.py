@@ -19,6 +19,12 @@ from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDe
                                     ProjectImageCreationHandler, ProjectImageFindHandler
 from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler
 
+
+
+
+
+
+
 routes = [
     # 集群相关
     (r'/api/clusters', ClusterHandler),
@@ -45,13 +51,12 @@ routes = [
     (r'/api/server/([\w\W]+)/status', ServerStatusHandler),
 
 
-    (r'/api/server/container/performance', ServerDockerPerformanceHandler),
-    (r'/api/server/([\w\W]+)/container/([\w\W]+)', ServerContainersInfoHandler),
     (r'/api/server/containers/(\d+)', ServerContainersHandler),
+    (r'/api/server/container/performance', ServerDockerPerformanceHandler),
     (r'/api/server/container/start', ServerContainerStartHandler),
     (r'/api/server/container/stop', ServerContainerStopHandler),
     (r'/api/server/container/del', ServerContainerDelHandler),
-    (r'/api/server/docker/performance', ServerDockerPerformanceHandler),
+    (r'/api/server/([\w\W]+)/container/([\w\W]+)', ServerContainersInfoHandler),
 
 
     # 主机相关之远程主机上报信息
