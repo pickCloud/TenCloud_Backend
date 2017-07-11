@@ -11,7 +11,7 @@ from handler.imagehub.imagehub import ImagehubHandler, ImagehubBySourceHandler, 
 from handler.server.server import ServerNewHandler, ServerReport, ServerMigratinHandler, ServerDelHandler, \
                                   ServerDetailHandler, ServerPerformanceHandler, ServerUpdateHandler, \
                                   ServerStopHandler, ServerStartHandler, ServerRebootHandler, \
-                                  ServerStatusHandler, ServerDockerPerformanceHandler, ServerContainersHandler, \
+                                  ServerStatusHandler, ServerContainerPerformanceHandler, ServerContainersHandler, \
                                   ServerContainersInfoHandler, ServerContainerStartHandler, ServerContainerStopHandler,\
                                   ServerContainerDelHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
@@ -52,7 +52,7 @@ routes = [
 
 
     (r'/api/server/containers/(\d+)', ServerContainersHandler),
-    (r'/api/server/container/performance', ServerDockerPerformanceHandler),
+    (r'/api/server/container/performance', ServerContainerPerformanceHandler),
     (r'/api/server/container/start', ServerContainerStartHandler),
     (r'/api/server/container/stop', ServerContainerStopHandler),
     (r'/api/server/container/del', ServerContainerDelHandler),
