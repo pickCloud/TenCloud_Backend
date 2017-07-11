@@ -11,7 +11,7 @@ from handler.imagehub.imagehub import ImagehubHandler, ImagehubBySourceHandler, 
 from handler.server.server import ServerNewHandler, ServerReport, ServerMigratinHandler, ServerDelHandler, \
                                   ServerDetailHandler, ServerPerformanceHandler, ServerUpdateHandler, \
                                   ServerStopHandler, ServerStartHandler, ServerRebootHandler, ServerDockerContainersHandler, \
-                                  ServerStatusHandler, ServerDockerPerformanceHandler
+                                  ServerStatusHandler, ServerDockerPerformanceHandler, ServerContainersInfoHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
                                     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
                                     ProjectImageCreationHandler, ProjectImageFindHandler
@@ -42,9 +42,9 @@ routes = [
     (r'/api/server/reboot/(\d+)', ServerRebootHandler),
     (r'/api/server/([\w\W]+)/([\w\W]+)/status', ServerStatusHandler),
 
-    (r'/api/server/docker/performance', ServerDockerPerformanceHandler),
     (r'/api/server/docker/containers/(\d+)', ServerDockerContainersHandler),
-
+    (r'/api/server/container/performance', ServerDockerPerformanceHandler),
+    (r'/api/server/([\w\W]+)/container/([\w\W]+)', ServerContainersInfoHandler),
     # 主机相关之远程主机上报信息
     (r'/remote/server/report', ServerReport),
 

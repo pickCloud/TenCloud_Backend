@@ -6,7 +6,7 @@ from tornado.gen import coroutine, Task
 from service.base import BaseService
 from utils.general import get_formats
 from utils.aliyun import Aliyun
-from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD
+from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, CONTAINER_INFO_CMD
 from utils.security import Aes
 
 
@@ -232,21 +232,32 @@ class ServerService(BaseService):
         cur = yield self.db.execute(sql, [params['public_ip'], params['container_name'],
                                     params['start_time'], params['end_time']])
         data = {}
-        cpu = []
-        mem = []
-        net = []
-        block = []
         for x in cur.fetchall():
             content = json.loads(x['content'])
-            cpu.append([x['created_time'], {'percent':content['cpu']}])
-            mem.append([x['created_time'], {'percent':content['mem_percent']}])
-            net.append([x['created_time'], {'input': content['net_input'],
+            data['cpu'].append([x['created_time'], {'percent':content['cpu']}])
+            data['memory'].append([x['created_time'], {'percent':content['mem_percent']}])
+            data['net'].append([x['created_time'], {'input': content['net_input'],
                                                 'output': content['net_output']}])
-            block.append([x['created_time'], {'input': content['block_input'],
+            data['block'].append([x['created_time'], {'input': content['block_input'],
                                                 'output': content['block_output']}])
-            
-        data['cpu'] = cpu
-        data['memory'] = mem
-        data['net'] = net
-        data['block'] = block
+
         return data
+
+    @coroutine
+    def get_container_info(self, params):
+        cmd = CONTAINER_INFO_CMD % (params['container_id'])
+
+        raw_out, err = yield self.remote_ssh(params, cmd=cmd)
+        json_out = json.loads(raw_out[0])
+        data = {
+            'Hostname': json_out['Config']['Hostname'],
+            'WorkingDir': json_out['Config']['WorkingDir'],
+            'Port': [key for key, _ in json_out['Config']['ExposedPorts'].items()],
+            'CMD': json_out['Config']['Cmd'][0],
+            'Volumes': json_out['Config']['Volumes'],
+            'VolumesFrom': json_out['HostConfig']['VolumesFrom'],
+            'Dns': json_out['HostConfig']['Dns'],
+            'Links': json_out['HostConfig']['Links'],
+            'PortBind': json_out['NetworkSettings']['Ports']
+        }
+        return data, err

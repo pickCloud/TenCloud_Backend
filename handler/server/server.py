@@ -314,3 +314,21 @@ class ServerDockerContainersHandler(BaseHandler):
         except:
             self.error()
             self.log.error(traceback.format_exc())
+
+class ServerContainersInfoHandler(BaseHandler):
+    @coroutine
+    def get(self, server_id, container_id):
+        ''' 获取主机容器信息
+        '''
+        try:
+            param = {'server_id': server_id}
+            params = yield self.server_service.fetch_ssh_login_info(param)
+            params.update({'container_id': container_id})
+            data, err = yield self.server_service.get_container_info(params)
+            if err:
+                self.error(err)
+            else:
+                self.success(data)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
