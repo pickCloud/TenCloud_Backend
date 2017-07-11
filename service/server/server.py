@@ -280,23 +280,23 @@ class ServerService(BaseService):
         json_out = json.loads(raw_out[0])
         data = {
             'status': json_out['State'].get('Status', 'dead'),
+            'created': json_out['Created'],
             'runtime': {
-                'Hostname': json_out['Config'].get('Hostname', ""),
-                'IP': params['public_ip'],
-                'Port': [key.split('/')[0] for key in json_out['Config'].get('ExposedPorts', {}).keys()],
-                'Address': "http://{ip}".format(ip=params['public_ip'])
+                'hostname': json_out['Config'].get('Hostname', ""),
+                'ip': params['public_ip'],
+                'port': [key.split('/')[0] for key in json_out['Config'].get('ExposedPorts', {}).keys()],
+                'address': "http://{ip}".format(ip=params['public_ip'])
             },
             'container': {
-
-                'WorkingDir': json_out['Config'].get('WorkingDir', ''),
-                'CMD': (json_out['Config'].get('Cmd') or [''])[0], # 防止cmd为null
-                'Volumes': json_out['Config'].get('Volumes', ''),
-                'VolumesFrom': json_out['HostConfig'].get('VolumesFrom', ''),
+                'workingdir': json_out['Config'].get('WorkingDir', ''),
+                'cmd': (json_out['Config'].get('Cmd') or [''])[0],  # 防止cmd为null
+                'volumes': json_out['Config'].get('Volumes', ''),
+                'volumesfrom': json_out['HostConfig'].get('VolumesFrom', ''),
             },
             'network': {
-                'Dns': json_out['HostConfig'].get('Dns', ''),
-                'Links': json_out['HostConfig'].get('Links', ''),
-                'PortBind': json_out['NetworkSettings'].get('Ports', '')
+                'dns': json_out['HostConfig'].get('Dns', ''),
+                'links': json_out['HostConfig'].get('Links', ''),
+                'portbind': json_out['NetworkSettings'].get('Ports', '')
             }
         }
         return data, err
