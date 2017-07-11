@@ -279,6 +279,7 @@ class ServerService(BaseService):
         raw_out, err = yield self.remote_ssh(params, cmd=cmd)
         json_out = json.loads(raw_out[0])
         data = {
+            'status': json_out['State'].get('Status', 'dead'),
             'runtime': {
                 'Hostname': json_out['Config'].get('Hostname', ""),
                 'IP': params['public_ip'],
@@ -286,8 +287,9 @@ class ServerService(BaseService):
                 'Address': "http://{ip}".format(ip=params['public_ip'])
             },
             'container': {
+
                 'WorkingDir': json_out['Config'].get('WorkingDir', ''),
-                'CMD': json_out['Config'].get('Cmd', [])[0],
+                'CMD': (json_out['Config'].get('Cmd') or [''])[0], # 防止cmd为null
                 'Volumes': json_out['Config'].get('Volumes', ''),
                 'VolumesFrom': json_out['HostConfig'].get('VolumesFrom', ''),
             },
