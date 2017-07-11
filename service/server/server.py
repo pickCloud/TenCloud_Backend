@@ -1,6 +1,7 @@
 __author__ = 'Jon'
 
 import json
+from datetime import datetime
 from tornado.gen import coroutine, Task
 
 from service.base import BaseService
@@ -279,6 +280,7 @@ class ServerService(BaseService):
         raw_out, err = yield self.remote_ssh(params, cmd=cmd)
         json_out = json.loads(raw_out[0])
         data = {
+            'name': json_out['Name'],
             'status': json_out['State'].get('Status', 'dead'),
             'created': json_out['Created'],
             'runtime': {
