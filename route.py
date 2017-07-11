@@ -10,14 +10,20 @@ from handler.imagehub.imagehub import ImagehubHandler, ImagehubBySourceHandler, 
                                       ImagehubSearchHandler
 from handler.server.server import ServerNewHandler, ServerReport, ServerMigratinHandler, ServerDelHandler, \
                                   ServerDetailHandler, ServerPerformanceHandler, ServerUpdateHandler, \
-                                  ServerStopHandler, ServerStartHandler, ServerRebootHandler, ServerContainersHandler, \
-                                  ServerStatusHandler, ServerContainerStartHandler, ServerContainerStopHandler, \
-                                  ServerContainerDelHandler, ServerDockerPerformanceHandler
-
+                                  ServerStopHandler, ServerStartHandler, ServerRebootHandler, \
+                                  ServerStatusHandler, ServerContainerPerformanceHandler, ServerContainersHandler, \
+                                  ServerContainersInfoHandler, ServerContainerStartHandler, ServerContainerStopHandler,\
+                                  ServerContainerDelHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
                                     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
                                     ProjectImageCreationHandler, ProjectImageFindHandler
 from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler
+
+
+
+
+
+
 
 routes = [
     # 集群相关
@@ -44,11 +50,14 @@ routes = [
     (r'/api/server/reboot/(\d+)', ServerRebootHandler),
     (r'/api/server/([\w\W]+)/status', ServerStatusHandler),
 
+
     (r'/api/server/containers/(\d+)', ServerContainersHandler),
+    (r'/api/server/container/performance', ServerContainerPerformanceHandler),
     (r'/api/server/container/start', ServerContainerStartHandler),
     (r'/api/server/container/stop', ServerContainerStopHandler),
     (r'/api/server/container/del', ServerContainerDelHandler),
-    (r'/api/server/docker/performance', ServerDockerPerformanceHandler),
+    (r'/api/server/([\w\W]+)/container/([\w\W]+)', ServerContainersInfoHandler),
+
 
     # 主机相关之远程主机上报信息
     (r'/remote/server/report', ServerReport),

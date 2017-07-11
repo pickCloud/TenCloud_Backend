@@ -280,7 +280,7 @@ class ServerStatusHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class ServerDockerPerformanceHandler(BaseHandler):
+class ServerContainerPerformanceHandler(BaseHandler):
     @coroutine
     def post(self):
         ''' 获取主机里面的各个docker容器使用情况
@@ -299,9 +299,27 @@ class ServerContainersHandler(BaseHandler):
         ''' 获取主机里面的docker容器列表
         '''
         try:
-            data = yield self.server_service.get_docker_containers(id)
+            data = yield self.server_service.get_containers(id)
 
             self.success(data)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ServerContainersInfoHandler(BaseHandler):
+    @coroutine
+    def get(self, server_id, container_id):
+        ''' 获取主机容器信息
+        '''
+        try:
+            params = yield self.server_service.fetch_ssh_login_info({'server_id': server_id})
+            params.update({'container_id': container_id})
+            data, err = yield self.server_service.get_container_info(params)
+            if err:
+                self.error(err)
+            else:
+                self.success(data)
         except:
             self.error()
             self.log.error(traceback.format_exc())
@@ -347,3 +365,4 @@ class ServerContainerDelHandler(BaseHandler):
         except:
             self.error()
             self.log.error(traceback.format_exc())
+
