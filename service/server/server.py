@@ -6,7 +6,7 @@ from tornado.gen import coroutine, Task
 from service.base import BaseService
 from utils.general import get_formats
 from utils.aliyun import Aliyun
-from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, CONTAINER_INFO_CMD
+from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAINER_CMD, STOP_CONTAINER_CMD, DEL_CONTAINER_CMD, CONTAINER_INFO_CMD
 from utils.security import Aes
 
 
@@ -145,7 +145,7 @@ class ServerService(BaseService):
         '''
         sql = """
             SELECT created_time,content FROM {table}
-            WHERE public_ip=%s AND created_time>=%s AND created_time<=%s
+            WHERE public_ip=%s AND created_time>=%s AND created_time<%s
         """.format(table=table)
 
         cur = yield self.db.execute(sql, [params['public_ip'], params['start_time'], params['end_time']])
@@ -201,14 +201,14 @@ class ServerService(BaseService):
         yield self.get(payload)
 
     @coroutine
-    def get_instance_info(self, region_id):
-        ''' 阿里云没有提供用instance_id查询, 只能通过region_id
+    def get_instance_status(self, instance_id):
+        ''' 根据instance_id,查询当前主机开关状态
         '''
-        payload = Aliyun.add_sign({'Action': 'DescribeInstances', 'RegionId': region_id})
+        sql = " SELECT status FROM instance WHERE instance_id=%s "
+        cur = yield self.db.execute(sql, instance_id)
+        data = cur.fetchone()
 
-        info = yield self.get(payload)
-
-        return info
+        return data.get('status')
 
     @coroutine
     def get_docker_containers(self, id):
@@ -216,9 +216,33 @@ class ServerService(BaseService):
 
         out, err = yield self.remote_ssh(params, cmd=LIST_CONTAINERS_CMD)
 
+        if err:
+            raise ValueError
+
         data = [i.split(',') for i in out]
 
-        return data, err
+        return data
+
+    @coroutine
+    def start_container(self, params):
+        yield self.operate_container(params, cmd=START_CONTAINER_CMD.format(container_id=params['container_id']))
+
+    @coroutine
+    def stop_container(self, params):
+        yield self.operate_container(params, cmd=STOP_CONTAINER_CMD.format(container_id=params['container_id']))
+
+    @coroutine
+    def del_container(self, params):
+        yield self.operate_container(params, cmd=DEL_CONTAINER_CMD.format(container_id=params['container_id']))
+
+    @coroutine
+    def operate_container(self, params, cmd):
+        login_info = yield self.fetch_ssh_login_info({'server_id': params['server_id']})
+
+        _, err = yield self.remote_ssh(login_info, cmd=cmd)
+
+        if err:
+            raise ValueError
 
     @coroutine
     def get_docker_performance(self,params):
@@ -240,6 +264,7 @@ class ServerService(BaseService):
                                                 'output': content['net_output']}])
             data['block'].append([x['created_time'], {'input': content['block_input'],
                                                 'output': content['block_output']}])
+<<<<<<< HEAD
 
         return data
 
@@ -268,3 +293,11 @@ class ServerService(BaseService):
                 'PortBind': json_out['NetworkSettings']['Ports']
         }
         return data, err
+=======
+            
+        data['cpu'] = cpu
+        data['memory'] = mem
+        data['net'] = net
+        data['block'] = block
+        return data
+>>>>>>> master

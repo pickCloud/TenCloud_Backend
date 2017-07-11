@@ -268,18 +268,13 @@ class ServerRebootHandler(BaseHandler):
 
 class ServerStatusHandler(BaseHandler):
     @coroutine
-    def get(self, region_id, instance_id):
+    def get(self, instance_id):
         ''' 查询主机的状态
         '''
         try:
-            data = yield self.server_service.get_instance_info(region_id)
+            data = yield self.server_service.get_instance_status(instance_id)
 
-            for i in data.get('Instances', {}).get('Instance', []):
-                if i['InstanceId'] == instance_id:
-                    self.success(i.get('Status'))
-                    return
-
-            self.error('主机状态不存在')
+            self.success(data)
         except:
             self.error()
             self.log.error(traceback.format_exc())
@@ -298,23 +293,20 @@ class ServerDockerPerformanceHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class ServerDockerContainersHandler(BaseHandler):
+class ServerContainersHandler(BaseHandler):
     @coroutine
     def get(self, id):
         ''' 获取主机里面的docker容器列表
         '''
         try:
-            data, err = yield self.server_service.get_docker_containers(id)
-
-            if err:
-                self.error()
-                return
+            data = yield self.server_service.get_docker_containers(id)
 
             self.success(data)
         except:
             self.error()
             self.log.error(traceback.format_exc())
 
+<<<<<<< HEAD
 class ServerContainersInfoHandler(BaseHandler):
     @coroutine
     def get(self, server_id, container_id):
@@ -332,3 +324,46 @@ class ServerContainersInfoHandler(BaseHandler):
         except:
             self.error()
             self.log.error(traceback.format_exc())
+=======
+
+class ServerContainerStartHandler(BaseHandler):
+    @coroutine
+    def post(self):
+        ''' 启动容器
+        '''
+        try:
+            yield self.server_service.start_container(self.params)
+
+            self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ServerContainerStopHandler(BaseHandler):
+    @coroutine
+    def post(self):
+        ''' 停止容器
+        '''
+        try:
+            yield self.server_service.stop_container(self.params)
+
+            self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ServerContainerDelHandler(BaseHandler):
+    @coroutine
+    def post(self):
+        ''' 删除容器
+        '''
+        try:
+            yield self.server_service.del_container(self.params)
+
+            self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+>>>>>>> master
