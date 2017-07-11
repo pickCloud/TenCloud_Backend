@@ -255,7 +255,11 @@ class ServerService(BaseService):
               """
         cur = yield self.db.execute(sql, [params['public_ip'], params['container_name'],
                                     params['start_time'], params['end_time']])
-        data = {}
+        data = {
+            'cpu': [],
+            'memory': [],
+            'net': []
+        }
         for x in cur.fetchall():
             content = json.loads(x['content'])
             data['cpu'].append([x['created_time'], {'percent':content['cpu']}])
@@ -264,7 +268,6 @@ class ServerService(BaseService):
                                                 'output': content['net_output']}])
             data['block'].append([x['created_time'], {'input': content['block_input'],
                                                 'output': content['block_output']}])
-<<<<<<< HEAD
 
         return data
 
@@ -274,30 +277,22 @@ class ServerService(BaseService):
 
         raw_out, err = yield self.remote_ssh(params, cmd=cmd)
         json_out = json.loads(raw_out[0])
-        data = dict()
-        data['runtime'] = {
-            'Hostname': json_out['Config']['Hostname'],
-            'IP': params['public_ip'],
-            'Port': [key.split('/')[0] for key, _ in json_out['Config']['ExposedPorts'].items()],
-            'Address': "http://{ip}".format(ip=params['public_ip'])
-        }
-        data['container'] = {
-            'WorkingDir': json_out['Config']['WorkingDir'],
-            'CMD': json_out['Config']['Cmd'][0],
-            'Volumes': json_out['Config']['Volumes'],
-            'VolumesFrom': json_out['HostConfig']['VolumesFrom'],
-        }
-        data['network'] = {
+        data = {
+            'runtime': {
+                'Hostname': json_out['Config']['Hostname'],
+                'IP': params['public_ip'],
+                'Port': [key.split('/')[0] for key, _ in json_out['Config']['ExposedPorts'].items()],
+                'Address': "http://{ip}".format(ip=params['public_ip'])
+            }, 'container': {
+                'WorkingDir': json_out['Config']['WorkingDir'],
+                'CMD': json_out['Config']['Cmd'][0],
+                'Volumes': json_out['Config']['Volumes'],
+                'VolumesFrom': json_out['HostConfig']['VolumesFrom'],
+            }, 'network': {
                 'Dns': json_out['HostConfig']['Dns'],
                 'Links': json_out['HostConfig']['Links'],
                 'PortBind': json_out['NetworkSettings']['Ports']
+            }
         }
         return data, err
-=======
-            
-        data['cpu'] = cpu
-        data['memory'] = mem
-        data['net'] = net
-        data['block'] = block
-        return data
->>>>>>> master
+

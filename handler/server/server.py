@@ -306,7 +306,7 @@ class ServerContainersHandler(BaseHandler):
             self.error()
             self.log.error(traceback.format_exc())
 
-<<<<<<< HEAD
+
 class ServerContainersInfoHandler(BaseHandler):
     @coroutine
     def get(self, server_id, container_id):
@@ -324,7 +324,7 @@ class ServerContainersInfoHandler(BaseHandler):
         except:
             self.error()
             self.log.error(traceback.format_exc())
-=======
+
 
 class ServerContainerStartHandler(BaseHandler):
     @coroutine
@@ -366,4 +366,4 @@ class ServerContainerDelHandler(BaseHandler):
         except:
             self.error()
             self.log.error(traceback.format_exc())
->>>>>>> master
+
