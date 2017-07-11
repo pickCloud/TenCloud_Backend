@@ -239,12 +239,10 @@ class ServerService(BaseService):
     def operate_container(self, params, cmd):
         login_info = yield self.fetch_ssh_login_info({'server_id': params['server_id']})
 
-        out, err = yield self.remote_ssh(login_info, cmd=cmd)
+        _, err = yield self.remote_ssh(login_info, cmd=cmd)
 
         if err:
             raise ValueError
-
-        return data, err
 
     @coroutine
     def get_docker_performance(self,params):
