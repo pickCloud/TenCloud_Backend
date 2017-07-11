@@ -21,10 +21,19 @@ class ServerService(BaseService):
         base_data = [params['public_ip'], params['time']]
         base_sql = 'INSERT INTO %s(public_ip, created_time,content)'
         suffix = ' values(%s,%s,%s)'
-        for table in ['cpu', 'memory', 'disk']:
+        for table in ['cpu', 'memory', 'disk', 'net']:
             content = json.dumps(params[table])
             sql = (base_sql % table) + suffix
             yield self.db.execute(sql, base_data + [content])
+
+        for (k, v) in params['docker'].items():
+            self._save_docker_report(base_data + [k] + [json.dumps(v)])
+
+    @coroutine
+    def _save_docker_report(self, params):
+        sql = "INSERT INTO docker_stat(public_ip, created_time, container_name,  content)" \
+            "VALUES(%s, %s, %s, %s)"
+        yield self.db.execute(sql, params)
 
     @coroutine
     def save_server_account(self, params):
@@ -152,6 +161,7 @@ class ServerService(BaseService):
         data['cpu'] = yield self._get_performance('cpu', params)
         data['memory'] = yield self._get_performance('memory', params)
         data['disk'] = yield self._get_performance('disk', params)
+        data['net'] = yield self._get_performance('net', params)
 
         return data
 
@@ -234,3 +244,35 @@ class ServerService(BaseService):
         if err:
             raise ValueError
 
+        return data, err
+
+    @coroutine
+    def get_docker_performance(self,params):
+        params['public_ip'] = yield self.fetch_public_ip(params['server_id'])
+
+        sql = """
+                  SELECT created_time, content from docker_stat
+                  WHERE public_ip=%s AND container_name=%s 
+                  AND created_time>= %s AND created_time < %s
+              """
+        cur = yield self.db.execute(sql, [params['public_ip'], params['container_name'],
+                                    params['start_time'], params['end_time']])
+        data = {}
+        cpu = []
+        mem = []
+        net = []
+        block = []
+        for x in cur.fetchall():
+            content = json.loads(x['content'])
+            cpu.append([x['created_time'], {'percent':content['cpu']}])
+            mem.append([x['created_time'], {'percent':content['mem_percent']}])
+            net.append([x['created_time'], {'input': content['net_input'],
+                                                'output': content['net_output']}])
+            block.append([x['created_time'], {'input': content['block_input'],
+                                                'output': content['block_output']}])
+            
+        data['cpu'] = cpu
+        data['memory'] = mem
+        data['net'] = net
+        data['block'] = block
+        return data

@@ -12,7 +12,8 @@ from handler.server.server import ServerNewHandler, ServerReport, ServerMigratin
                                   ServerDetailHandler, ServerPerformanceHandler, ServerUpdateHandler, \
                                   ServerStopHandler, ServerStartHandler, ServerRebootHandler, ServerContainersHandler, \
                                   ServerStatusHandler, ServerContainerStartHandler, ServerContainerStopHandler, \
-                                  ServerContainerDelHandler
+                                  ServerContainerDelHandler, ServerDockerPerformanceHandler
+
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
                                     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
                                     ProjectImageCreationHandler, ProjectImageFindHandler
@@ -47,6 +48,7 @@ routes = [
     (r'/api/server/container/start', ServerContainerStartHandler),
     (r'/api/server/container/stop', ServerContainerStopHandler),
     (r'/api/server/container/del', ServerContainerDelHandler),
+    (r'/api/server/docker/performance', ServerDockerPerformanceHandler),
 
     # 主机相关之远程主机上报信息
     (r'/remote/server/report', ServerReport),

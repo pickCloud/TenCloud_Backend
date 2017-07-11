@@ -280,6 +280,19 @@ class ServerStatusHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
+class ServerDockerPerformanceHandler(BaseHandler):
+    @coroutine
+    def post(self):
+        ''' 获取主机里面的各个docker容器使用情况
+        '''
+        try:
+            data = yield self.server_service.get_docker_performance(self.params)
+            self.success(data)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
 class ServerContainersHandler(BaseHandler):
     @coroutine
     def get(self, id):
