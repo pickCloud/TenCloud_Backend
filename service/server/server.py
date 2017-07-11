@@ -280,21 +280,21 @@ class ServerService(BaseService):
         json_out = json.loads(raw_out[0])
         data = {
             'runtime': {
-                'Hostname': json_out['Config']['Hostname'],
+                'Hostname': json_out['Config'].get('Hostname', ""),
                 'IP': params['public_ip'],
-                'Port': [key.split('/')[0] for key, _ in json_out['Config']['ExposedPorts'].items()],
+                'Port': [key.split('/')[0] for key in json_out['Config'].get('ExposedPorts', {}).keys()],
                 'Address': "http://{ip}".format(ip=params['public_ip'])
             },
             'container': {
-                'WorkingDir': json_out['Config']['WorkingDir'],
-                'CMD': json_out['Config']['Cmd'][0],
-                'Volumes': json_out['Config']['Volumes'],
-                'VolumesFrom': json_out['HostConfig']['VolumesFrom'],
+                'WorkingDir': json_out['Config'].get('WorkingDir', ''),
+                'CMD': json_out['Config'].get('Cmd', [])[0],
+                'Volumes': json_out['Config'].get('Volumes', ''),
+                'VolumesFrom': json_out['HostConfig'].get('VolumesFrom', ''),
             },
             'network': {
-                'Dns': json_out['HostConfig']['Dns'],
-                'Links': json_out['HostConfig']['Links'],
-                'PortBind': json_out['NetworkSettings']['Ports']
+                'Dns': json_out['HostConfig'].get('Dns', ''),
+                'Links': json_out['HostConfig'].get('Links', ''),
+                'PortBind': json_out['NetworkSettings'].get('Ports', '')
             }
         }
         return data, err
