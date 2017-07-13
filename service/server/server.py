@@ -290,7 +290,7 @@ class ServerService(BaseService):
             },
             'container': {
                 'workingdir': json_out['Config'].get('WorkingDir', ''),
-                'cmd': "".join(x for x in json_out['Config'].get('Cmd') or ['']),  # 防止cmd为null
+                'cmd': ' '.join(x for x in json_out['Config'].get('Cmd') or ['']),  # 防止cmd为null
                 'volumes': json_out['Config'].get('Volumes', ''),
                 'volumesfrom': json_out['HostConfig'].get('VolumesFrom', ''),
             },
