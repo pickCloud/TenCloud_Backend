@@ -30,7 +30,8 @@ class ProjectNewHandler(BaseHandler):
                 {"name":        名称 str,
                  "description": 描述 str,
                  "repos_name":  仓库名称 str,
-                 "repos_url":   仓库url str}
+                 "repos_url":   仓库url str,
+                 "mode":        类型 int}
         '''
         try:
             result = yield self.project_service.add(params=self.params)
