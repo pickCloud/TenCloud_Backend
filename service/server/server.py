@@ -173,6 +173,13 @@ class ServerService(BaseService):
         return data['public_ip']
 
     @coroutine
+    def fetch_server_name(self, server_id):
+        sql = " SELECT name  FROM server WHERE id=%s "
+        cur = yield self.db.execute(sql, server_id)
+        data = cur.fetchone()
+        return data['name']
+
+    @coroutine
     def fetch_instance_id(self, server_id):
         sql = " SELECT i.instance_id as instance_id FROM instance i JOIN server s USING(public_ip) WHERE s.id=%s "
         cur = yield self.db.execute(sql, server_id)
@@ -283,7 +290,7 @@ class ServerService(BaseService):
             'status': json_out['State'].get('Status', 'dead'),
             'created': json_out['Created'],
             'runtime': {
-                'hostname': json_out['Config'].get('Hostname', ""),
+                'hostname': params['name'],
                 'ip': params['public_ip'],
                 'port': [key.split('/')[0] for key in json_out['Config'].get('ExposedPorts', {}).keys()],
                 'address': "http://{ip}".format(ip=params['public_ip'])
