@@ -283,7 +283,7 @@ class ServerService(BaseService):
             'status': json_out['State'].get('Status', 'dead'),
             'created': json_out['Created'],
             'runtime': {
-                'hostname': json_out['Config'].get('Hostname', ""),
+                'hostname': params['server_name'],
                 'ip': params['public_ip'],
                 'port': [key.split('/')[0] for key in json_out['Config'].get('ExposedPorts', {}).keys()],
                 'address': "http://{ip}".format(ip=params['public_ip'])
