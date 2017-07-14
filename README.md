@@ -226,7 +226,8 @@ curl http://localhost:8010/api/clusters
 
 ## apidoc
 ```
-1. 安装: npm install apidoc -g
-2. 生成: apidoc -f ".*\\.py$" -i . -o ./apidoc
-3. 查看: cd apidoc && python -m http.server
+0. 安装: npm install -g cnpm --registry=https://registry.npm.taobao.org
+        cnpm install apidoc -g
+1. 生成: apidoc -f ".*\\.py$" -i . -o ./apidoc
+2. 查看: cd apidoc && python -m http.server
 ```
