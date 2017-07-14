@@ -223,3 +223,10 @@ CREATE TABLE `project` (
 ```
 curl http://localhost:8010/api/clusters
 ```
+
+## apidoc
+```
+1. 安装: npm install apidoc -g
+2. 生成: apidoc -f ".*\\.py$" -i . -o ./apidoc
+3. 查看: cd apidoc && python -m http.server
+```
