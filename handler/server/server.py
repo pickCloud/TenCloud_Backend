@@ -314,8 +314,8 @@ class ServerContainersInfoHandler(BaseHandler):
         '''
         try:
             params = yield self.server_service.fetch_ssh_login_info({'server_id': server_id})
-            server_name = yield self.server_service.fetch_server_name(server_id)
-            params.update({'container_id': container_id, 'server_name': server_name})
+            server_name = yield self.server_service.select(fields='name', conds=['id=%s'], params=[server_id], ct=False, ut=False, one=True)
+            params.update({'container_id': container_id, 'server_name': server_name['name']})
             data, err = yield self.server_service.get_container_info(params)
             if err:
                 self.error(err)
