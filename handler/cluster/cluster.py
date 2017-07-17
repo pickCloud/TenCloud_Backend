@@ -70,10 +70,15 @@ class ClusterNewHandler(BaseHandler):
 class ClusterDelHandler(BaseHandler):
     @coroutine
     def post(self):
-        ''' 删除
-            参数:
-               id -> list
-        '''
+        """
+        @api {post} /api/cluster/update 删除集群
+        @apiName ClusterDelHandler
+        @apiGroup Cluster
+
+        @apiParam {Number} id ID
+
+        @apiUse Success
+        """
         try:
             ids = self.params['id']
 
@@ -88,8 +93,37 @@ class ClusterDelHandler(BaseHandler):
 class ClusterDetailHandler(BaseHandler):
     @coroutine
     def get(self, id):
-        ''' 详情
-        '''
+        """
+         @api {get} /api/clusters 集群详情
+         @apiName ClusterDetailHandler
+         @apiGroup Cluster
+
+         @apiParam {Number} id ID
+
+         @apiSuccessExample {json} Success-Response:
+             HTTP/1.1 200 OK
+             {
+                 "status": 0,
+                 "message": "success",
+                 "data": {
+                 "basic_info": {
+                     "id": int,
+                     "name": str,
+                     "description": str,
+                     "update_time": str
+                 },
+                 "server_list": [
+                     {
+                         "id": int,
+                         "name": str,
+                         "address": str,
+                         "public_ip": str,
+                         "machine_status": int,
+                         "business_status": int
+                     }
+                 ]
+             }
+         """
         try:
             id = int(id)
 

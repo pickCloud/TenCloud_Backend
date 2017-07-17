@@ -11,8 +11,29 @@ from setting import settings
 class ProjectHandler(BaseHandler):
     @coroutine
     def get(self):
-        ''' 获取列表
-        '''
+        """
+        @api {get} /api/projects 获取项目列表
+        @apiName ProjectHandler
+        @apiGroup Project
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "message": "success",
+                "data": [
+                {
+                    "id": int,
+                    "name": str,
+                    "description": str,
+                    "repos_name": str,
+                    "repos_url": str,
+                    "update_time": str,
+                    "status": str,
+                }
+                ]
+            }
+        """
         try:
             result = yield self.project_service.select(ct=False)
 
@@ -25,14 +46,29 @@ class ProjectHandler(BaseHandler):
 class ProjectNewHandler(BaseHandler):
     @coroutine
     def post(self):
-        ''' 新建
-            参数:
-                {"name":        名称 str,
-                 "description": 描述 str,
-                 "repos_name":  仓库名称 str,
-                 "repos_url":   仓库url str,
-                 "mode":        类型 int}
-        '''
+        """
+        @api {post} /api/project/new 创建新项目
+        @apiName ProjectNewHandler
+        @apiGroup Project
+
+        @apiParam {String} name 名称(必需小写字母，分隔符可选),
+        @apiParam {String} description 描述
+        @apiParam {String} repos_name 仓库名称
+        @apiParam {String} repos_url 仓库url
+        @apiParam {Number} mode 类型
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": {
+                    "id": int,
+                    "update_time": str
+                }
+            }
+        """
+
         try:
             result = yield self.project_service.add(params=self.params)
 
@@ -45,9 +81,15 @@ class ProjectNewHandler(BaseHandler):
 class ProjectDelHandler(BaseHandler):
     @coroutine
     def post(self):
-        ''' 删除
-            参数: {"id": list}
-        '''
+        """
+        @api {post} /api/project/del 项目删除
+        @apiName ProjectDelHandler
+        @apiGroup Project
+
+        @apiParam {number} id ID
+
+        @apiUse Success
+        """
         try:
             ids = self.params['id']
 
@@ -62,8 +104,33 @@ class ProjectDelHandler(BaseHandler):
 class ProjectDetailHandler(BaseHandler):
     @coroutine
     def get(self, id):
-        ''' 详情
-        '''
+        """
+        @api {get} /api/project/(\d+) 项目详情
+        @apiName ProjectDetailHandler
+        @apiGroup Project
+
+        @apiParam {Number} id ID
+
+        @apiSuccessExample {json} Success-Response
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "message": "success",
+                "data": [
+                {
+                    "description": str,
+                    "repos_name": str,
+                    "repos_url": str,
+                    "id": 2,
+                    "name": str,
+                    "create_time": str,
+                    "update_time": str,
+                    "status": str,
+                    "mode": str
+                }
+                ]
+            }
+        """
         try:
             result = yield self.project_service.select(conds=['id=%s'], params=[id])
 
@@ -76,8 +143,18 @@ class ProjectDetailHandler(BaseHandler):
 class ProjectUpdateHandler(BaseHandler):
     @coroutine
     def post(self):
-        ''' 更新
-        '''
+        """
+        @api {post} /api/project/update 更新项目
+        @apiName ProjectUpdateHandler
+        @apiGroup Project
+
+        @apiParam {String} name 名称
+        @apiParam {String} description 描述
+        @apiParam {String} repos_name 仓库名字
+        @apiParam {String} repos_url 仓库地址
+
+        @apiUse Success
+        """
         try:
             sets = ['name=%s', 'description=%s', 'repos_name=%s', 'repos_url=%s']
             conds = ['id=%s']
@@ -92,7 +169,15 @@ class ProjectUpdateHandler(BaseHandler):
 class ProjectDeploymentHandler(BaseHandler):
     @coroutine
     def post(self):
-        """ 部署镜像
+        """
+        @api {post} /api/project/deployment 部署镜像
+        @apiName ProjectDeploymentHandler
+        @apiGroup Project
+
+        @apiParam {String} image_name 镜像名称
+        @apiParam {String} public_ip 公共ip
+
+        @apiUse Success
         """
         try:
             login_info = yield self.server_service.fetch_ssh_login_info(self.params)
@@ -107,8 +192,17 @@ class ProjectDeploymentHandler(BaseHandler):
 class ProjectImageCreationHandler(BaseHandler):
     @coroutine
     def post(self):
-        ''' 构建仓库镜像
-        '''
+        """
+        @api {post} /api/project/image/creation 构建仓库镜像
+        @apiName ProjectImageCreationHandler
+        @apiGroup Project
+
+        @apiParam {String} prj_name 项目名称
+        @apiParam {String} repos_url 仓库地址
+        @apiParam {String} branch_name 分支名字
+
+        @apiUse Success
+        """
         try:
             login_info = yield self.server_service.fetch_ssh_login_info({'public_ip': settings['ip_for_image_creation']})
             self.params.update(login_info)
@@ -123,7 +217,19 @@ class ProjectImageFindHandler(BaseHandler):
     @coroutine
     def get(self):
         """
-        获取某一项目的所有镜像信息
+        @api {get} /api/project/image?prj_name=""  获取某一项目的所有镜像信息
+        @apiName ProjectImageFindHandler
+        @apiGroup Project
+
+        @apiParam {String} prj_name 项目名称
+
+        @apiSuccessExample Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": {}
+            }
         """
         try:
             self.params.update({"prj_name": self.get_argument('prj_name')})
