@@ -3,3 +3,4 @@
 logs
 setting.py
 Dashboard.iml
+static/apidoc/*

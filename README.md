@@ -214,6 +214,7 @@ CREATE TABLE `project` (
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `repos_url` varchar(512) NOT NULL DEFAULT '' COMMENT '项目仓库地址',
+  `mode` tinyint(4) DEFAULT '0' COMMENT '项目类型: 0 普通项目, 1 基础服务, 2 应用组件',
   PRIMARY KEY (`id`),
   UNIQUE KEY `repos_url` (`repos_url`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -221,4 +222,12 @@ CREATE TABLE `project` (
 ## 测试
 ```
 curl http://localhost:8010/api/clusters
+```
+
+## apidoc
+```
+0. 安装: npm install -g cnpm --registry=https://registry.npm.taobao.org
+        cnpm install apidoc -g
+1. 生成: apidoc -f ".*\\.py$" -i . -o ./static/apidoc
+2. 查看: cd static/apidoc && python -m http.server
 ```

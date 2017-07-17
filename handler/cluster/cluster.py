@@ -11,8 +11,22 @@ from utils.general import get_in_formats
 class ClusterHandler(BaseHandler):
     @coroutine
     def get(self):
-        ''' 获取列表
-        '''
+        """
+        @api {get} /api/clusters 获取集群列表
+        @apiName ClusterHandler
+        @apiGroup Cluster
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "message": "success",
+                "data": [
+                    {"id": int, "name": str, "description": str},
+                    ...
+                ]
+            }
+        """
         try:
             result = yield self.cluster_service.select()
 
@@ -25,11 +39,25 @@ class ClusterHandler(BaseHandler):
 class ClusterNewHandler(BaseHandler):
     @coroutine
     def post(self):
-        ''' 新建
-            参数:
-                {"name":        名称 str,
-                 "description": 描述 str}
-        '''
+        """
+        @api {post} /api/cluster/new 新建集群
+        @apiName ClusterNewHandler
+        @apiGroup Cluster
+
+        @apiParam {String} name 名称
+        @apiParam {String} description 描述
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "message": "success",
+                "data": {
+                    "id": int,
+                    "update_time": str
+                }
+            }
+        """
         try:
             result = yield self.cluster_service.add(self.params)
 
@@ -83,8 +111,17 @@ class ClusterDetailHandler(BaseHandler):
 class ClusterUpdateHandler(BaseHandler):
     @coroutine
     def post(self):
-        ''' 更新
-        '''
+        """
+        @api {post} /api/cluster/update 更新集群
+        @apiName ClusterUpdateHandler
+        @apiGroup Cluster
+
+        @apiParam {Number} id ID
+        @apiParam {String} name 名称
+        @apiParam {String} description 描述
+
+        @apiUse Success
+        """
         try:
             sets = ['name=%s', 'description=%s']
             conds = ['id=%s']

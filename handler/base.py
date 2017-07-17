@@ -16,6 +16,21 @@ __author__ = 'Jon'
         self.log.error(traceback.format_exc())
 '''
 
+#################################################################################
+# Handler共用的apiDefine
+#################################################################################
+"""
+@apiDefine Success
+@apiSuccessExample {json} Success-Response:
+    HTTP/1.1 200 OK
+    {
+        "status": 0,
+        "message": "success",
+        "data": {}
+    }
+"""
+
+
 import json
 import tornado.web
 

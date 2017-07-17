@@ -8,7 +8,7 @@ from setting import settings
 
 class ProjectService(BaseService):
     table = 'project'
-    fields = 'id, name, description, repos_name, repos_url'
+    fields = 'id, name, description, repos_name, repos_url, mode, status'
 
     @coroutine
     def create_image(self, params):
