@@ -71,7 +71,7 @@ class ClusterDelHandler(BaseHandler):
     @coroutine
     def post(self):
         """
-        @api {post} /api/cluster/update 删除集群
+        @api {post} /api/cluster/del 删除集群
         @apiName ClusterDelHandler
         @apiGroup Cluster
 
@@ -94,7 +94,7 @@ class ClusterDetailHandler(BaseHandler):
     @coroutine
     def get(self, id):
         """
-         @api {get} /api/clusters 集群详情
+         @api {get} /api/clusters/(\d+) 集群详情
          @apiName ClusterDetailHandler
          @apiGroup Cluster
 
@@ -121,6 +121,7 @@ class ClusterDetailHandler(BaseHandler):
                          "machine_status": int,
                          "business_status": int
                      }
+                        ...
                  ]
              }
          """
