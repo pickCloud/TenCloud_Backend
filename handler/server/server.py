@@ -100,6 +100,12 @@ class ServerReport(BaseHandler):
         @apiGroup Server
 
         @apiParam {String} public_ip 公共ip
+        @apiParam {Number} time 时间戳
+        @apiParam {map[Number]Object} docker 容器
+        @apiParam {Object} cpu CPU
+        @apiParam {Object} memory Memory
+        @apiParam {Object} disk Disk
+        @apiParam {Object} net Net
 
         @apiUse Success
         """
@@ -360,7 +366,7 @@ class ServerStartHandler(BaseHandler):
     @coroutine
     def get(self, id):
         """
-        @api {get} /api/server/start 开启主机
+        @api {get} /api/server/start/(\d+) 开启主机
         @apiName ServerStartHandler
         @apiGroup Server
 
@@ -585,7 +591,7 @@ class ServerContainerDelHandler(BaseHandler):
     @coroutine
     def post(self):
         """
-        @api {post} /api/server/container/dek 删除容器
+        @api {post} /api/server/container/del 删除容器
         @apiName ServerContainerDelHandler
         @apiGroup Server
 
