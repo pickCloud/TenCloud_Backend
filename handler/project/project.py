@@ -85,9 +85,10 @@ class ProjectUpdateHandler(BaseHandler):
         ''' 更新
         '''
         try:
-            sets = ['name=%s', 'description=%s', 'repos_name=%s', 'repos_url=%s']
+            sets = ['name=%s', 'description=%s', 'repos_name=%s', 'repos_url=%s', 'mode=%s']
             conds = ['id=%s']
-            params = [self.params['name'], self.params['description'], self.params['repos_name'], self.params['repos_url'],  self.params['id']]
+            params = [self.params['name'], self.params['description'], self.params['repos_name'], self.params['repos_url'], self.params['mode'],
+                      self.params['id']]
             yield self.project_service.update(sets=sets, conds=conds, params=params)
             self.success()
         except:
