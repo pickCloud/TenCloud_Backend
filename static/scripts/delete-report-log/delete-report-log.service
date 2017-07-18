@@ -1,0 +1,11 @@
+[Unit]
+Description=clean report data log 7 in mysql days ago
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/bin/bash /home/root/delete-report-log.sh;
+
+[Install]
+WantedBy=clean-log-daily.target

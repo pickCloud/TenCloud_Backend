@@ -1,0 +1,11 @@
+[Unit]
+Desciption= clean report data log in mysql 7 days ago
+
+[Timer]
+OnCalendar=*-*-* 00:00:00
+Persistent=true
+Unit=delete-report-log.service
+
+[Install]
+WantedBy=default.target
+
