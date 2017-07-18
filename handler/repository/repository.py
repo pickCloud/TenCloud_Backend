@@ -9,7 +9,7 @@ class RepositoryHandler(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {get} /api/repos 获取repos, 现在默认git并且token保存在setting, 以后可以支持更多并且使用数据库
+        @api {get} /api/repos 获取repos
         @apiName RepositoryHandler
         @apiGroup Repository
 
