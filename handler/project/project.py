@@ -31,6 +31,7 @@ class ProjectHandler(BaseHandler):
                     "update_time": str,
                     "status": str,
                 }
+                    ...
                 ]
             }
         """
@@ -86,7 +87,7 @@ class ProjectDelHandler(BaseHandler):
         @apiName ProjectDelHandler
         @apiGroup Project
 
-        @apiParam {number} id ID
+        @apiParam {number[]} id 项目id
 
         @apiUse Success
         """
@@ -109,7 +110,7 @@ class ProjectDetailHandler(BaseHandler):
         @apiName ProjectDetailHandler
         @apiGroup Project
 
-        @apiParam {Number} id ID
+        @apiParam {Number} id 项目id
 
         @apiSuccessExample {json} Success-Response
             HTTP/1.1 200 OK
@@ -128,6 +129,7 @@ class ProjectDetailHandler(BaseHandler):
                     "status": str,
                     "mode": str
                 }
+                    ...
                 ]
             }
         """

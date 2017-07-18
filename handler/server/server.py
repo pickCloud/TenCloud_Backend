@@ -94,6 +94,15 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
 class ServerReport(BaseHandler):
     @coroutine
     def post(self):
+        """
+        @api {post} /remote/server/report 监控上报
+        @apiName ServerReport
+        @apiGroup Server
+
+        @apiParam {String} public_ip 公共ip
+
+        @apiUse Success
+        """
         try:
             deploying_msg = yield Task(self.redis.hget, DEPLOYING, self.params['public_ip'])
 
@@ -124,12 +133,19 @@ class ServerReport(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class ServerMigratinHandler(BaseHandler):
+class ServerMigrationHandler(BaseHandler):
     @coroutine
     def post(self):
-        ''' 主机迁移
-            参数: id -> []
-        '''
+        """
+        @api {post} /api/server/migration 主机迁移
+        @apiName ServerMigrationHandler
+        @apiGroup Server
+
+        @apiParam {Number} cluster_id 集群id
+        @apiParam {Number[]} id 主机ID
+
+        @apiUse Success
+        """
         try:
             yield self.server_service.migrate_server(self.params)
 
@@ -142,9 +158,15 @@ class ServerMigratinHandler(BaseHandler):
 class ServerDelHandler(BaseHandler):
     @coroutine
     def post(self):
-        ''' 主机删除
-            参数: id -> []
-        '''
+        """
+        @api {post} /api/server/del 主机删除
+        @apiName ServerDelHandler
+        @apiGroup Server
+
+        @apiParam {Number[]} id 主机ID
+
+        @apiUse Success
+        """
         try:
             yield self.server_service.delete_server(self.params)
 
@@ -157,8 +179,50 @@ class ServerDelHandler(BaseHandler):
 class ServerDetailHandler(BaseHandler):
     @coroutine
     def get(self, id):
-        ''' 主机详情
-        '''
+        """
+        @api {get} /api/server/(\d+) 主机详情
+        @apiName ServerDetailHandler
+        @apiGroup Server
+
+        @apiParam {Number} id 主机ID
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+            "status": 0,
+            "msg": "success",
+            "data": {
+                "basic_info": {
+                    "id": int,
+                    "name": str,
+                    "cluster_id": int,
+                    "cluster_name": str,
+                    "address": str,
+                    "public_ip": str,
+                    "machine_status": str,
+                    "business_status": str,
+                    "region_id": str,
+                    "instance_id": str
+                },
+                "system_info": {
+                    "config": {
+                        "cpu": int,
+                        "memory": str,
+                        "os_name": str,
+                        "os_type": str
+                    }
+                },
+                "business_info": {
+                    "provider": str,
+                    "contract": {
+                        "create_time": str,
+                        "expired_time": str,
+                        "charge_type": str
+                    }
+                }
+            }
+            }
+        """
         try:
             data = yield self.server_service.get_detail(id)
 
@@ -204,6 +268,41 @@ class ServerDetailHandler(BaseHandler):
 class ServerPerformanceHandler(BaseHandler):
     @coroutine
     def post(self):
+        """
+        @api {post} /api/server/performance 主机性能
+        @apiName ServerPerformanceHandler
+        @apiGroup Server
+
+        @apiParam {Number} id 主机ID
+        @apiParam {Number} start_time 起始时间
+        @apiParam {Number} end_time 终止时间
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": {
+                    "cpu": [
+                        [1496390702, {"percent": int}],
+                        ...
+                    ],
+                    "memory": [
+                        [1496390702, {"total": int, "available": int, "free": int, "percent": int}],
+                        ...
+                    ],
+                    "disk": [
+                        [1496390702, {"total": int, "free": int, "percent": int}],
+                        ...
+                    ],
+                    "net": [
+                        [1496390702, {"input": int, "output": int}]
+                        ...
+                    ]
+                }
+            }
+        :return:
+        """
         try:
             data = yield self.server_service.get_performance(self.params)
 
@@ -216,6 +315,16 @@ class ServerPerformanceHandler(BaseHandler):
 class ServerUpdateHandler(BaseHandler):
     @coroutine
     def post(self):
+        """
+        @api {post} /api/server/update 主机信息更新
+        @apiName ServerUpdateHandler
+        @apiGroup Server
+
+        @apiParam {Number} id 主机id
+        @apiParam {String} name 主机名字
+
+        @apiUse Success
+        """
         try:
             yield self.server_service.update_server(self.params)
 
@@ -228,8 +337,16 @@ class ServerUpdateHandler(BaseHandler):
 class ServerStopHandler(BaseHandler):
     @coroutine
     def get(self, id):
-        ''' 停止主机
-        '''
+        """
+        @api {get} /api/server/stop/(\d+) 停止主机
+        @apiName ServerStopHandler
+        @apiGroup Server
+
+        @apiParam {Number} id 主机id
+
+        @apiUse Success
+
+        """
         try:
             yield self.server_service.stop_server(id)
 
@@ -242,8 +359,15 @@ class ServerStopHandler(BaseHandler):
 class ServerStartHandler(BaseHandler):
     @coroutine
     def get(self, id):
-        ''' 开启主机
-        '''
+        """
+        @api {get} /api/server/start 开启主机
+        @apiName ServerStartHandler
+        @apiGroup Server
+
+        @apiParam {Number} id 主机id
+
+        @apiUse Success
+        """
         try:
             yield self.server_service.start_server(id)
 
@@ -255,8 +379,15 @@ class ServerStartHandler(BaseHandler):
 class ServerRebootHandler(BaseHandler):
     @coroutine
     def get(self, id):
-        ''' 重启主机
-        '''
+        """
+        @api {get} /api/server/reboot/(\d+) 重启主机
+        @apiName ServerRebootHandler
+        @apiGroup Server
+
+        @apiParam {Number} id 主机id
+
+        @apiUse Success
+        """
         try:
             yield self.server_service.reboot_server(id)
 
@@ -269,8 +400,21 @@ class ServerRebootHandler(BaseHandler):
 class ServerStatusHandler(BaseHandler):
     @coroutine
     def get(self, instance_id):
-        ''' 查询主机的状态
-        '''
+        """
+        @api {get} /api/server/([\w\W]+)/status 查询实例状态
+        @apiName ServerStatusHandler
+        @apiGroup Server
+
+        @apiParam {Number} instance_id 实例id
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": "Running"
+            }
+        """
         try:
             data = yield self.server_service.get_instance_status(instance_id)
 
@@ -283,8 +427,38 @@ class ServerStatusHandler(BaseHandler):
 class ServerContainerPerformanceHandler(BaseHandler):
     @coroutine
     def post(self):
-        ''' 获取主机里面的各个docker容器使用情况
-        '''
+        """
+        @api {post} /api/server/container/performance 获取主机里面的各个docker容器使用情况
+        @apiName ServerContainerPerformanceHandler
+        @apiGroup Server
+
+        @apiParam {Number} server_id 主机id
+        @apiParam {String} container_name 容器名字
+        @apiParam {Number} start_time 起始时间
+        @apiParam {Number} end_time 终止时间
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": {
+                    "cpu": [
+                         {},
+                         ...
+                    ],
+                    "memory": [
+                        {},
+                        ...
+                    ],
+                    "disk": [
+                        {},
+                        ...
+                    ],
+                    "net":
+                }
+            }
+        """
         try:
             data = yield self.server_service.get_docker_performance(self.params)
             self.success(data)
@@ -296,8 +470,29 @@ class ServerContainerPerformanceHandler(BaseHandler):
 class ServerContainersHandler(BaseHandler):
     @coroutine
     def get(self, id):
-        ''' 获取主机里面的docker容器列表
-        '''
+        """
+        @api {get} /api/server/containers/(\d+) 获取主机里面的docker容器列表
+        @apiName ServerContainersHandler
+        @apiGroup Server
+
+        @apiParam {Number} id 主机id
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": [
+                    [
+                        "1a050e4d7e43", # container id
+                         "harbor-jobservice", # container name
+                        "Up 3 weeks", # status
+                        "2017-05-18 14:06:50 +0800 CST\n" # created_time
+                    ],
+                    ...
+                ]
+            }
+        """
         try:
             data = yield self.server_service.get_containers(id)
 
@@ -310,8 +505,24 @@ class ServerContainersHandler(BaseHandler):
 class ServerContainersInfoHandler(BaseHandler):
     @coroutine
     def get(self, server_id, container_id):
-        ''' 获取主机容器信息
-        '''
+        """
+        @api {get} /api/server/([\w\W]+)/container/([\w\W]+) 获取主机容器信息
+        @apiName ServerContainersInfoHandler
+        @apiGroup Server
+
+        @apiParam {Number} server_id 服务器id
+        @apiParam {Number} container_id 容器id
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": {
+                     ...
+                }
+            }
+        """
         try:
             params = yield self.server_service.fetch_ssh_login_info({'server_id': server_id})
             server_name = yield self.server_service.select(fields='name', conds=['id=%s'], params=[server_id], ct=False, ut=False, one=True)
@@ -329,8 +540,16 @@ class ServerContainersInfoHandler(BaseHandler):
 class ServerContainerStartHandler(BaseHandler):
     @coroutine
     def post(self):
-        ''' 启动容器
-        '''
+        """
+        @api {post} /api/server/container/start 启动容器
+        @apiName ServerContainerStartHandler
+        @apiGroup Server
+
+        @apiParam {Number} server_id 主机id
+        @apiParam {String} container_id 容器id
+
+        @apiUse Success
+        """
         try:
             yield self.server_service.start_container(self.params)
 
@@ -343,8 +562,16 @@ class ServerContainerStartHandler(BaseHandler):
 class ServerContainerStopHandler(BaseHandler):
     @coroutine
     def post(self):
-        ''' 停止容器
-        '''
+        """
+        @api {post} /api/server/container/stop 停止容器
+        @apiName ServerContainerStopHandler
+        @apiGroup Server
+
+        @apiParam {Number} server_id 主机id
+        @apiParam {String} container_id 容器id
+
+        @apiUse Success
+        """
         try:
             yield self.server_service.stop_container(self.params)
 
@@ -357,8 +584,16 @@ class ServerContainerStopHandler(BaseHandler):
 class ServerContainerDelHandler(BaseHandler):
     @coroutine
     def post(self):
-        ''' 删除容器
-        '''
+        """
+        @api {post} /api/server/container/dek 删除容器
+        @apiName ServerContainerDelHandler
+        @apiGroup Server
+
+        @apiParam {Number} server_id 主机id
+        @apiParam {String} container_id 容器id
+
+        @apiUse Success
+        """
         try:
             yield self.server_service.del_container(self.params)
 

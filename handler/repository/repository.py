@@ -20,6 +20,7 @@ class RepositoryHandler(BaseHandler):
                 "msg": "success",
                  "data":[
                      {"repos_name": str, "repos_url": str},
+                     ...
                   ]
              }
         """
@@ -49,6 +50,7 @@ class RepositoryBranchHandler(BaseHandler):
                 "msg": "success",
                 "data": [
                     {"branch_name": str},
+                    ...
                 ]
             }
         """

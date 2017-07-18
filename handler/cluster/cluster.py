@@ -75,7 +75,7 @@ class ClusterDelHandler(BaseHandler):
         @apiName ClusterDelHandler
         @apiGroup Cluster
 
-        @apiParam {Number} id ID
+        @apiParam {Number} id 集群id
 
         @apiUse Success
         """
@@ -98,7 +98,7 @@ class ClusterDetailHandler(BaseHandler):
          @apiName ClusterDetailHandler
          @apiGroup Cluster
 
-         @apiParam {Number} id ID
+         @apiParam {Number} id 集群id
 
          @apiSuccessExample {json} Success-Response:
              HTTP/1.1 200 OK
@@ -150,7 +150,7 @@ class ClusterUpdateHandler(BaseHandler):
         @apiName ClusterUpdateHandler
         @apiGroup Cluster
 
-        @apiParam {Number} id ID
+        @apiParam {Number} id 集群id
         @apiParam {String} name 名称
         @apiParam {String} description 描述
 
