@@ -202,6 +202,7 @@ class ProjectImageCreationHandler(BaseHandler):
         @apiParam {String} prj_name 项目名称
         @apiParam {String} repos_url 仓库地址
         @apiParam {String} branch_name 分支名字
+        @apiParam {String} version 版本号
 
         @apiUse Success
         """
@@ -214,6 +215,31 @@ class ProjectImageCreationHandler(BaseHandler):
             self.error()
             self.log.error(traceback.format_exc())
 
+
+class ProjectImageVersionListHandler(BaseHandler):
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/project/image/vlist 获取相关项目的所有版本
+        @apiName ProjectImageVListHandler
+        @apiGroup Project
+
+        @apiParam {String} prj_name 项目名字
+
+        @apiSuccessExample Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": {}
+            }
+        """
+        try:
+            data = yield self.project_service.find_image_version(self.get_argument('prj_name'))
+            self.success(data)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
 
 class ProjectImageFindHandler(BaseHandler):
     @coroutine

@@ -16,9 +16,14 @@ class ProjectService(BaseService):
         :param params: dict e.g. {'prj_name': str, 'repos_url': str, 'branch_name': str, 'public_ip': str, 'username': str, 'passwd': str}
         '''
 
-        cmd = CREATE_IMAGE_CMD + ' '.join([params['prj_name'], params['repos_url'], params['branch_name']])
+        cmd = CREATE_IMAGE_CMD + ' '.join([params['prj_name'], params['repos_url'], params['branch_name'], params['version']])
 
-        yield self.remote_ssh(params, cmd)
+        _, err = yield self.remote_ssh(params, cmd)
+        if err:
+            self.log.error(err)
+            return
+        yield self.insert_image(params)
+        return
 
     @coroutine
     def deployment(self, params):
@@ -29,6 +34,27 @@ class ProjectService(BaseService):
             password=settings['deploy_password'],
             image_name=image_name)
         yield self.remote_ssh(params, cmd)
+
+    @coroutine
+    def insert_image(self, params):
+        """
+        存储创建的镜像
+        """
+        sql = """
+              INSERT INTO images (name, version) values(%s, %s) 
+              """
+        yield self.db.execute(sql, [params['prj_name'], params['version']])
+
+    @coroutine
+    def find_image_version(self, params):
+        sql = """
+                SELECT version FROM images WHERE name=%s
+              """
+        cur = yield self.db.execute(sql, params)
+        data = [x['version'] for x in cur.fetchall()]
+
+        return data
+
 
     @coroutine
     def find_image(self, params):
