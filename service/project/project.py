@@ -19,10 +19,8 @@ class ProjectService(BaseService):
         cmd = CREATE_IMAGE_CMD + ' '.join([params['prj_name'], params['repos_url'], params['branch_name'], params['version']])
 
         _, err = yield self.remote_ssh(params, cmd)
-        if err:
-            self.log.error(err)
-            return
-        yield self.insert_image(params)
+        if not err:
+            yield self.insert_image(params)
         return
 
     @coroutine
