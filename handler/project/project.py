@@ -216,12 +216,12 @@ class ProjectImageCreationHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class ProjectImageVersionListHandler(BaseHandler):
+class ProjectVersionsHandler(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {get} /api/project/image/vlist 获取相关项目的所有版本
-        @apiName ProjectImageVListHandler
+        @api {get} /api/project/versions 获取相关项目的所有版本
+        @apiName ProjectVersionsHandler
         @apiGroup Project
 
         @apiParam {String} prj_name 项目名字

@@ -220,13 +220,14 @@ CREATE TABLE `project` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-* 镜像表 images
+* 项目版本表 images
 ```
 CREATE TABLE `images` (
     `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '镜像id',
-    `name` varchar(128) NOT NULL COMMENT '镜像名字',
-    `version` varchar(128) NOT NULL DEFAULT '' COMMENT '镜像名字',
+    `name` varchar(128) NOT NULL COMMENT '项目名字',
+    `version` varchar(128) NOT NULL DEFAULT '' COMMENT '项目版本',
     `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE INDEX name_version on images (name, version);
