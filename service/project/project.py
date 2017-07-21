@@ -18,8 +18,7 @@ class ProjectService(BaseService):
 
         cmd = CREATE_IMAGE_CMD + ' '.join([params['prj_name'], params['repos_url'], params['branch_name'], params['version']])
 
-        _, err = yield self.remote_ssh(params, cmd)
-        return err
+        yield self.remote_ssh(params, cmd)
 
     @coroutine
     def deployment(self, params):
