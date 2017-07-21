@@ -38,6 +38,7 @@ from service.cluster.cluster import ClusterService
 from service.imagehub.imagehub import ImagehubService
 from service.server.server import ServerService
 from service.project.project import ProjectService
+from service.project.project_versions import ProjectVersionService
 from service.repository.repository import RepositoryService
 
 
@@ -47,6 +48,7 @@ class BaseHandler(tornado.web.RequestHandler):
     server_service  = ServerService()
     project_service = ProjectService()
     repos_service = RepositoryService()
+    project_versions_service = ProjectVersionService()
 
     @property
     def db(self):

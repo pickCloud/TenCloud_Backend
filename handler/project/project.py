@@ -210,6 +210,7 @@ class ProjectImageCreationHandler(BaseHandler):
         @apiParam {String} prj_name 项目名称
         @apiParam {String} repos_url 仓库地址
         @apiParam {String} branch_name 分支名字
+        @apiParam {String} version 版本号
 
         @apiUse Success
         """
@@ -217,11 +218,38 @@ class ProjectImageCreationHandler(BaseHandler):
             login_info = yield self.server_service.fetch_ssh_login_info({'public_ip': settings['ip_for_image_creation']})
             self.params.update(login_info)
             yield self.project_service.create_image(self.params)
+            arg = {'name': self.params['prj_name'], 'version': self.params['version']}
+            yield self.project_versions_service.add(arg)
             self.success()
         except:
             self.error()
             self.log.error(traceback.format_exc())
 
+
+class ProjectVersionsHandler(BaseHandler):
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/project/versions 获取相关项目的所有版本
+        @apiName ProjectVersionsHandler
+        @apiGroup Project
+
+        @apiParam {String} prj_name 项目名字
+self.get_argument('prj_name')
+        @apiSuccessExample Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": []
+            }
+        """
+        try:
+            data = yield self.project_versions_service.select(fields='version', conds=['name=%s'], params=[self.get_argument('prj_name')], ct=False, ut=False)
+            self.success([x['version'] for x in data])
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
 
 class ProjectImageFindHandler(BaseHandler):
     @coroutine

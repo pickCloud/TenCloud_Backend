@@ -22,6 +22,9 @@ REGISRTY="www.jmkbio.com/library"
 # args
 branch=$3
 
+# version
+version=$4
+
 log(){
     log_info=$1
     echo "${LOG_DATE}${LOG_TIME}: ${log_info} " >> "${SHELL_LOG}"
@@ -45,8 +48,7 @@ code_build(){
     log "code_build"
     cd "${CODE_DIR}" || exist 1
     if git checkout "${branch}" &> /dev/null;then
-        ver=$(git rev-parse --short HEAD)
-        IMAGE_REGISTRY="${APP_NAME}:${branch}-${ver}"
+        IMAGE_REGISTRY="${APP_NAME}:${version}"
         if docker build -t "${IMAGE_REGISTRY}" .;then
             log "image build successfull"
         else

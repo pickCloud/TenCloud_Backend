@@ -101,9 +101,10 @@ class BaseService():
         fields = ','.join(params.keys())
         values = list(params.values())
 
-        sql = "INSERT INTO {table} ({fields}) VALUES ({formats})".format(table=self.table,
-                                                                         fields=fields,
-                                                                         formats=get_formats(values))
+        sql = """
+                INSERT INTO {table} ({fields}) VALUES ({formats})
+                ON DUPLICATE KEY UPDATE update_time=NOW()
+              """.format(table=self.table, fields=fields, formats=get_formats(values))
 
         cur = yield self.db.execute(sql, values)
 
