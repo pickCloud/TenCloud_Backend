@@ -228,9 +228,9 @@ class ProjectImageCreationHandler(BaseHandler):
 
 class ProjectVersionsHandler(BaseHandler):
     @coroutine
-    def get(self):
+    def get(self, prj_name):
         """
-        @api {get} /api/project/versions 获取相关项目的所有版本
+        @api {get} /api/project/([\w\W]+)/versions 获取相关项目的所有版本
         @apiName ProjectVersionsHandler
         @apiGroup Project
 
@@ -244,7 +244,7 @@ class ProjectVersionsHandler(BaseHandler):
             }
         """
         try:
-            data = yield self.project_versions_service.select(fields='version', conds=['name=%s'], params=[self.get_argument('prj_name')], ct=False, ut=False)
+            data = yield self.project_versions_service.select(fields='version', conds=['name=%s'], params=prj_name, ct=False, ut=False)
             self.success([x['version'] for x in data])
         except:
             self.error()
@@ -252,9 +252,9 @@ class ProjectVersionsHandler(BaseHandler):
 
 class ProjectImageFindHandler(BaseHandler):
     @coroutine
-    def get(self):
+    def get(self, prj_name):
         """
-        @api {get} /api/project/image?prj_name=""  获取某一项目的所有镜像信息
+        @api {get} /api/project/([\w\W]+)/image 获取某一项目的所有镜像信息
         @apiName ProjectImageFindHandler
         @apiGroup Project
 
@@ -269,7 +269,7 @@ class ProjectImageFindHandler(BaseHandler):
             }
         """
         try:
-            self.params.update({"prj_name": self.get_argument('prj_name')})
+            self.params.update({"prj_name": prj_name})
             login_info = yield self.server_service.fetch_ssh_login_info({'public_ip': settings['ip_for_image_creation']})
             self.params.update(login_info)
             data, err = yield self.project_service.find_image(self.params)
