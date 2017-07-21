@@ -238,7 +238,7 @@ self.get_argument('prj_name')
             }
         """
         try:
-            data = yield self.project_versions_service.select(fields='version', conds=['name=%s'],params=[self.get_argument('prj_name')],ct=False,ut=False, one=False)
+            data = yield self.project_versions_service.select(fields='version', conds=['name=%s'], params=[self.get_argument('prj_name')], ct=False, ut=False, one=False)
             self.success([x['version'] for x in data])
         except:
             self.error()
