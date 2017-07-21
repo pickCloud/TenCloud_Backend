@@ -77,7 +77,7 @@ class ServerService(BaseService):
         cur = yield self.db.execute(sql, data)
         data = cur.fetchone()
 
-        # data['passwd'] = Aes.decrypt(data['passwd'])
+        data['passwd'] = Aes.decrypt(data['passwd'])
 
         return data
 
