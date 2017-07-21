@@ -227,7 +227,6 @@ class ProjectVersionsHandler(BaseHandler):
         @apiGroup Project
 
         @apiParam {String} prj_name 项目名字
-self.get_argument('prj_name')
         @apiSuccessExample Success-Response:
             HTTP/1.1 200 OK
             {
