@@ -232,12 +232,15 @@ class ProjectVersionsHandler(BaseHandler):
             {
                 "status": 0,
                 "msg": "success",
-                "data": []
+                "data": [
+                    {"id": int, "version": str, "update_time": str},
+                    ...
+                ]
             }
         """
         try:
-            data = yield self.project_versions_service.select(fields='version', conds=['name=%s'], params=prj_name, ct=False, ut=False)
-            self.success([x['version'] for x in data])
+            data = yield self.project_versions_service.select(fields='id, version', conds=['name=%s'], params=prj_name, ct=False)
+            self.success(data)
         except:
             self.error()
             self.log.error(traceback.format_exc())
