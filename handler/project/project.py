@@ -260,7 +260,10 @@ class ProjectImageFindHandler(BaseHandler):
             {
                 "status": 0,
                 "msg": "success",
-                "data": {}
+                "data": [
+                    ["{Tag}", "{CreatedAt}"],
+                    ...
+                ]
             }
         """
         try:
