@@ -265,7 +265,10 @@ class ProjectImageFindHandler(BaseHandler):
             {
                 "status": 0,
                 "msg": "success",
-                "data": {}
+                "data": [
+                    {"repos": "infohub", "tag": "lastest", "image_id": "354ca49081a6", "created": "13 days ago", "size": "454 MB"},
+                    ...
+                ]
             }
         """
         try:
