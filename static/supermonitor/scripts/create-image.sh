@@ -47,11 +47,10 @@ code_get(){
 code_build(){
     log "code_build"
     cd "${CODE_DIR}" || exist 1
-    current_branch="`git branch 2>/dev/null | grep "^\*" | sed -e "s/^\*\ //"`"
+    current_branch=$(git branch 2>/dev/null | grep "^\*" | sed -e "s/^\*\ //")
     if [ ${current_branch} != ${branch} ];then
         git checkout "${branch}"
     fi
-
     IMAGE_REGISTRY="${APP_NAME}:${version}"
     if docker build -t "${IMAGE_REGISTRY}" .;then
         log "image build successfull"
