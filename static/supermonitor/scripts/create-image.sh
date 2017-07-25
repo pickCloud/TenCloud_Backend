@@ -76,7 +76,7 @@ main(){
 	  shell_lock;
 	  code_get;
 	  code_build ;
-    image_push;
+      image_push;
 	  shell_unlock;
 }
 
