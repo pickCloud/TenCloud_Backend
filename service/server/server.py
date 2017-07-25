@@ -73,7 +73,6 @@ class ServerService(BaseService):
             data.append(params['public_ip'])
 
         sql += ' AND '.join(conds)
-        self.log.info(sql)
         cur = yield self.db.execute(sql, data)
         data = cur.fetchone()
 

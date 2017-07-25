@@ -27,7 +27,8 @@ class ProjectService(BaseService):
             repository=REPOS_DOMAIN,
             username=settings['deploy_username'],
             password=settings['deploy_password'],
-            image_name=image_name)
+            image_name=image_name,
+            container_name=params['image_name'].replace(":", "-"))
         yield self.remote_ssh(params, cmd)
 
     @coroutine
