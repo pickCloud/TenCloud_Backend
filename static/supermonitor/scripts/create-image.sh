@@ -47,15 +47,18 @@ code_get(){
 code_build(){
     log "code_build"
     cd "${CODE_DIR}" || exist 1
-    if git checkout "${branch}" &> /dev/null;then
-        IMAGE_REGISTRY="${APP_NAME}:${version}"
-        if docker build -t "${IMAGE_REGISTRY}" .;then
-            log "image build successfull"
-        else
-            cp ${BASE_DIR}/config.json ~/.docker/config.json
-            chmod 600 ~/.docker/config.json
-            docker build -t "${IMAGE_REGISTRY}" .
-        fi
+    current_branch="`git branch 2>/dev/null | grep "^\*" | sed -e "s/^\*\ //"`"
+    if [ ${current_branch} != ${branch} ];then
+        git checkout "${branch}"
+    fi
+
+    IMAGE_REGISTRY="${APP_NAME}:${version}"
+    if docker build -t "${IMAGE_REGISTRY}" .;then
+        log "image build successfull"
+    else
+        cp ${BASE_DIR}/config.json ~/.docker/config.json
+        chmod 600 ~/.docker/config.json
+        docker build -t "${IMAGE_REGISTRY}" .
     fi
 }
 image_push(){
