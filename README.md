@@ -218,6 +218,8 @@ CREATE TABLE `project` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `repos_url` (`repos_url`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE project ADD COLUMN http_url varchar(512) NOT NULL DEFAULT '' COMMENT '项目在github的http地址'
 ```
 
 * 项目版本表 project_versions
