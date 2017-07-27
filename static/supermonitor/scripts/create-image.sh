@@ -65,6 +65,7 @@ image_push(){
     new_tag="${REGISRTY}/${IMAGE_REGISTRY}"
     docker tag "${IMAGE_REGISTRY}" "${new_tag}"
     docker push "${new_tag}"
+    rm ${LOCK_FILE}
 }
 main(){
 
