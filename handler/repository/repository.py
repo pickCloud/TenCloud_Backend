@@ -19,7 +19,7 @@ class RepositoryHandler(BaseHandler):
                 "status": 0,
                 "msg": "success",
                  "data":[
-                     {"repos_name": str, "repos_url": str},
+                     {"repos_name": str, "repos_url": str, "http_url": str},
                      ...
                   ]
              }

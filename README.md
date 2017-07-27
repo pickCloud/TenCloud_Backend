@@ -220,6 +220,7 @@ CREATE TABLE `project` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE project ADD COLUMN http_url varchar(512) NOT NULL DEFAULT '' COMMENT '项目在github的http地址'
+ALTER TABLE project ADD COLUMN image_name varchar(128) NOT NULL DEFAULT '' COMMENT '镜像名字'
 ```
 
 * 项目版本表 project_versions
