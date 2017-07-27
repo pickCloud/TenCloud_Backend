@@ -6,7 +6,6 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.general import get_in_formats
 from setting import settings
-from constant import FULL_DATE_FORMAT
 
 
 class ProjectHandler(BaseHandler):
@@ -72,7 +71,7 @@ class ProjectDetailHandler(BaseHandler):
         ''' 详情
         '''
         try:
-            result = yield self.project_service.select(conds=['id=%s'], params=[id], df=FULL_DATE_FORMAT)
+            result = yield self.project_service.select(conds=['id=%s'], params=[id])
 
             self.success(result)
         except:
