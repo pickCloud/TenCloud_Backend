@@ -72,6 +72,12 @@ class ProjectNewHandler(BaseHandler):
         """
 
         try:
+            is_duplicate_url = yield self.project_service.select(conds=['repos_url=%s'], params=[self.params['repos_url']], one=True)
+
+            if is_duplicate_url:
+                self.error('仓库url重复')
+                return
+
             result = yield self.project_service.add(params=self.params)
 
             self.success(result)
@@ -157,13 +163,24 @@ class ProjectUpdateHandler(BaseHandler):
         @apiParam {String} repos_name 仓库名字
         @apiParam {String} repos_url 仓库地址
         @apiParam {String} http_url 项目在github的仓库地址
+        @apiParam {String} mode 项目类型
 
         @apiUse Success
         """
         try:
-            sets = ['name=%s', 'description=%s', 'repos_name=%s', 'repos_url=%s', 'http_url=%s']
+
+            sets = ['name=%s', 'description=%s', 'repos_name=%s', 'repos_url=%s', 'http_url=%s', 'mode=%s']
             conds = ['id=%s']
-            params = [self.params['name'], self.params['description'], self.params['repos_name'], self.params['repos_url'], self.params['http_url'], self.params['id']]
+            params = [
+                    self.params['name'],
+                    self.params['description'],
+                    self.params['repos_name'],
+                    self.params['repos_url'],
+                    self.params['http_url'],
+                    self.params['mode'],
+                    self.params['id']
+                    ]
+
             yield self.project_service.update(sets=sets, conds=conds, params=params)
             self.success()
         except:

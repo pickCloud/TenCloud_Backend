@@ -21,7 +21,7 @@ from utils.db import DB, REDIS
 from utils.log import LOG
 from utils.ssh import SSH
 from utils.general import get_formats, choose_user_agent
-from constant import CLUSTER_DATE_FORMAT, CLUSTER_DATE_FORMAT_ESCAPE, POOL_COUNT, HTTP_TIMEOUT, ALIYUN_DOMAIN
+from constant import FULL_DATE_FORMAT, FULL_DATE_FORMAT_ESCAPE, POOL_COUNT, HTTP_TIMEOUT, ALIYUN_DOMAIN
 
 
 class BaseService():
@@ -67,7 +67,7 @@ class BaseService():
         sql = "SELECT {fields} ".format(fields=fields or self.fields)
 
         if df is None:
-            df = CLUSTER_DATE_FORMAT_ESCAPE if conds else CLUSTER_DATE_FORMAT
+            df = FULL_DATE_FORMAT_ESCAPE if conds else FULL_DATE_FORMAT
 
         if ct:
             sql += ", DATE_FORMAT(create_time, '%s') AS create_time" % df
@@ -95,7 +95,7 @@ class BaseService():
         :param params: hash 数据库字段:值, 可传{'name': 'foo', 'description': 'boo'}
         :return: {
             'id': cur.lastrowid,
-            'update_time': datetime.datetime.now().strftime(CLUSTER_DATE_FORMAT)
+            'update_time': datetime.datetime.now().strftime(FULL_DATE_FORMAT)
         }
         '''
         fields = ','.join(params.keys())
@@ -110,7 +110,7 @@ class BaseService():
 
         return {
             'id': cur.lastrowid,
-            'update_time': datetime.datetime.now().strftime(CLUSTER_DATE_FORMAT)
+            'update_time': datetime.datetime.now().strftime(FULL_DATE_FORMAT)
         }
 
     ############################################################################################
