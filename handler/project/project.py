@@ -52,8 +52,8 @@ class ProjectNewHandler(BaseHandler):
         @apiName ProjectNewHandler
         @apiGroup Project
 
-        @apiParam {String} name 名称(必需小写字母，分隔符可选),
-        @apiParam {String} image_name 镜像名字
+        @apiParam {String} name 名称
+        @apiParam {String} image_name 镜像名字 (必需小写字母，分隔符可选)
         @apiParam {String} description 描述
         @apiParam {String} repos_name 仓库名称
         @apiParam {String} repos_url 仓库url
@@ -223,6 +223,7 @@ class ProjectImageCreationHandler(BaseHandler):
         @apiName ProjectImageCreationHandler
         @apiGroup Project
 
+        @apiParam {String} prj_name 项目名字
         @apiParam {String} repos_url 仓库地址
         @apiParam {String} branch_name 分支名字
         @apiParam {String} version 版本号
@@ -235,7 +236,7 @@ class ProjectImageCreationHandler(BaseHandler):
             self.params.update(login_info)
             out, err = yield self.project_service.create_image(self.params)
             if not err:
-                arg = {'name': self.params['image_name'], 'version': self.params['version']}
+                arg = {'name': self.params['prj_name'], 'version': self.params['version']}
                 yield self.project_versions_service.add(arg)
             self.success(out)
         except:
@@ -251,7 +252,7 @@ class ProjectVersionsHandler(BaseHandler):
         @apiName ProjectVersionsHandler
         @apiGroup Project
 
-        @apiParam {String} image_name 项目名字
+        @apiParam {String} prj_name 项目名字
         @apiSuccessExample Success-Response:
             HTTP/1.1 200 OK
             {
@@ -278,7 +279,7 @@ class ProjectImageFindHandler(BaseHandler):
         @apiName ProjectImageFindHandler
         @apiGroup Project
 
-        @apiParam {String} image_name 项目名称
+        @apiParam {String} prj_name 项目名称
 
         @apiSuccessExample Success-Response:
             HTTP/1.1 200 OK

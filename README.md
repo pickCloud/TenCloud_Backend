@@ -227,7 +227,7 @@ ALTER TABLE project ADD COLUMN image_name varchar(128) NOT NULL DEFAULT '' COMME
 ```
 CREATE TABLE `project_versions` (
      `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '项目版本id',
-     `name` varchar(128) NOT NULL COMMENT '镜像名字',
+     `name` varchar(128) NOT NULL COMMENT '项目名字',
      `version` varchar(128) NOT NULL DEFAULT '' COMMENT '项目版本',
      `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
      `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
