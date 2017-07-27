@@ -179,7 +179,7 @@ class ProjectUpdateHandler(BaseHandler):
                     self.params['description'],
                     self.params['repos_name'],
                     self.params['repos_url'],
-                    self.params['http_image'],
+                    self.params['http_url'],
                     self.params['mode'],
                     self.params['image_name'],
                     self.params['id']
