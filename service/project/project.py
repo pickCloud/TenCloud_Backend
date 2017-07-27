@@ -8,7 +8,7 @@ from setting import settings
 
 class ProjectService(BaseService):
     table = 'project'
-    fields = 'id, name, description, repos_name, repos_url, http_url, mode, status'
+    fields = 'id, name, description, repos_name, repos_url, http_url, image_name, mode, status'
 
     @coroutine
     def create_image(self, params):
@@ -16,7 +16,7 @@ class ProjectService(BaseService):
         :param params: dict e.g. {'prj_name': str, 'repos_url': str, 'branch_name': str, 'public_ip': str, 'username': str, 'passwd': str}
         '''
 
-        cmd = CREATE_IMAGE_CMD + ' '.join([params['prj_name'], params['repos_url'], params['branch_name'], params['version']])
+        cmd = CREATE_IMAGE_CMD + ' '.join([params['image_name'], params['repos_url'], params['branch_name'], params['version']])
 
         out, err = yield self.remote_ssh(params, cmd)
         return out, err

@@ -53,6 +53,7 @@ class ProjectNewHandler(BaseHandler):
         @apiGroup Project
 
         @apiParam {String} name 名称(必需小写字母，分隔符可选),
+        @apiParam {String} image_name 镜像名字
         @apiParam {String} description 描述
         @apiParam {String} repos_name 仓库名称
         @apiParam {String} repos_url 仓库url
@@ -130,6 +131,7 @@ class ProjectDetailHandler(BaseHandler):
                     "repos_name": str,
                     "repos_url": str,
                     "http_url": str,
+                    "image_name": str,
                     "id": 2,
                     "name": str,
                     "create_time": str,
@@ -163,13 +165,14 @@ class ProjectUpdateHandler(BaseHandler):
         @apiParam {String} repos_name 仓库名字
         @apiParam {String} repos_url 仓库地址
         @apiParam {String} http_url 项目在github的仓库地址
+        @apiParam {String} image_name 镜像名字
         @apiParam {String} mode 项目类型
 
         @apiUse Success
         """
         try:
 
-            sets = ['name=%s', 'description=%s', 'repos_name=%s', 'repos_url=%s', 'http_url=%s', 'mode=%s']
+            sets = ['name=%s', 'description=%s', 'repos_name=%s', 'repos_url=%s', 'http_url=%s', 'mode=%s', 'image_name=%s']
             conds = ['id=%s']
             params = [
                     self.params['name'],
@@ -178,6 +181,7 @@ class ProjectUpdateHandler(BaseHandler):
                     self.params['repos_url'],
                     self.params['http_url'],
                     self.params['mode'],
+                    self.params['image_name'],
                     self.params['id']
                     ]
 
@@ -219,10 +223,10 @@ class ProjectImageCreationHandler(BaseHandler):
         @apiName ProjectImageCreationHandler
         @apiGroup Project
 
-        @apiParam {String} prj_name 项目名称
         @apiParam {String} repos_url 仓库地址
         @apiParam {String} branch_name 分支名字
         @apiParam {String} version 版本号
+        @apiParam {String} image_name 镜像名字
 
         @apiUse Success
         """
@@ -231,7 +235,7 @@ class ProjectImageCreationHandler(BaseHandler):
             self.params.update(login_info)
             out, err = yield self.project_service.create_image(self.params)
             if not err:
-                arg = {'name': self.params['prj_name'], 'version': self.params['version']}
+                arg = {'name': self.params['image_name'], 'version': self.params['version']}
                 yield self.project_versions_service.add(arg)
             self.success(out)
         except:
@@ -247,7 +251,7 @@ class ProjectVersionsHandler(BaseHandler):
         @apiName ProjectVersionsHandler
         @apiGroup Project
 
-        @apiParam {String} prj_name 项目名字
+        @apiParam {String} image_name 项目名字
         @apiSuccessExample Success-Response:
             HTTP/1.1 200 OK
             {
@@ -274,7 +278,7 @@ class ProjectImageFindHandler(BaseHandler):
         @apiName ProjectImageFindHandler
         @apiGroup Project
 
-        @apiParam {String} prj_name 项目名称
+        @apiParam {String} image_name 项目名称
 
         @apiSuccessExample Success-Response:
             HTTP/1.1 200 OK
