@@ -56,6 +56,7 @@ class ProjectNewHandler(BaseHandler):
         @apiParam {String} description 描述
         @apiParam {String} repos_name 仓库名称
         @apiParam {String} repos_url 仓库url
+        @apiParam {String} http_url 项目在github的http地址
         @apiParam {Number} mode 类型
 
         @apiSuccessExample {json} Success-Response:
@@ -122,6 +123,7 @@ class ProjectDetailHandler(BaseHandler):
                     "description": str,
                     "repos_name": str,
                     "repos_url": str,
+                    "http_url": str,
                     "id": 2,
                     "name": str,
                     "create_time": str,
@@ -154,13 +156,14 @@ class ProjectUpdateHandler(BaseHandler):
         @apiParam {String} description 描述
         @apiParam {String} repos_name 仓库名字
         @apiParam {String} repos_url 仓库地址
+        @apiParam {String} http_url 项目在github的仓库地址
 
         @apiUse Success
         """
         try:
-            sets = ['name=%s', 'description=%s', 'repos_name=%s', 'repos_url=%s']
+            sets = ['name=%s', 'description=%s', 'repos_name=%s', 'repos_url=%s', 'http_url=%s']
             conds = ['id=%s']
-            params = [self.params['name'], self.params['description'], self.params['repos_name'], self.params['repos_url'],  self.params['id']]
+            params = [self.params['name'], self.params['description'], self.params['repos_name'], self.params['repos_url'], self.params['http_url'], self.params['id']]
             yield self.project_service.update(sets=sets, conds=conds, params=params)
             self.success()
         except:
