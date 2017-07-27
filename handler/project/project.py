@@ -229,10 +229,11 @@ class ProjectImageCreationHandler(BaseHandler):
         try:
             login_info = yield self.server_service.fetch_ssh_login_info({'public_ip': settings['ip_for_image_creation']})
             self.params.update(login_info)
-            yield self.project_service.create_image(self.params)
-            arg = {'name': self.params['prj_name'], 'version': self.params['version']}
-            yield self.project_versions_service.add(arg)
-            self.success()
+            out, err = yield self.project_service.create_image(self.params)
+            if not err:
+                arg = {'name': self.params['prj_name'], 'version': self.params['version']}
+                yield self.project_versions_service.add(arg)
+            self.success(out)
         except:
             self.error()
             self.log.error(traceback.format_exc())
