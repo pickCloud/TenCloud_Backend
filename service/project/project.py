@@ -30,7 +30,11 @@ class ProjectService(BaseService):
             password=settings['deploy_password'],
             image_name=image_name,
             container_name=params['image_name'].replace(":", "-"))
-        yield self.remote_ssh(params, cmd)
+        log = dict()
+        for ip in params['infos']:
+            out, err = yield self.remote_ssh(ip, cmd)
+            log[ip['public_ip']] = {"output": out, "error": err}
+        return log
 
     @coroutine
     def find_image(self, params):

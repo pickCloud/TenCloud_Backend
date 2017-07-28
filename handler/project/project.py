@@ -201,15 +201,37 @@ class ProjectDeploymentHandler(BaseHandler):
         @apiGroup Project
 
         @apiParam {String} image_name 镜像名称
-        @apiParam {String} public_ip 公共ip
+        @apiParam {map[String]map[String]String} public_ips 公共ip
+        @apiParamExample {json} Request-Example:
+            {
+                "image_name":"infohub:0.0.1",
+                "ips": [
+                    {"public_ip":"192.168.56.10"},
+                    {"public_ip":"192.168.56.11"},
+                    ...
+                ]
+            }
 
-        @apiUse Success
+        @apiSuccessExample {json} Success-Response
+            HTTP/1.1 200 OK
+            {
+                "192.168.56.10":{
+                    "output": "output of this ip",
+                    "err": "error of this ip"
+                }
+                "192.168.56.11":{
+                    "output": "output of this ip",
+                    "err": "error of this ip"
+                }
+            }
         """
         try:
-            login_info = yield self.server_service.fetch_ssh_login_info(self.params)
-            self.params.update(login_info)
-            yield self.project_service.deployment(self.params)
-            self.success()
+            self.params["infos"] = []
+            for ip in self.params['ips']:
+                login_info = yield self.server_service.fetch_ssh_login_info(ip)
+                self.params['infos'].append(login_info)
+            log = yield self.project_service.deployment(self.params)
+            self.success(log)
         except:
             self.error()
             self.log.error(traceback.format_exc())
