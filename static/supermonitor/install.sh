@@ -17,7 +17,7 @@ fi
 }
 
 report_data="report_data.service"
-report_data_url=${base_url}+${report_data}
+report_data_url=${base_url}${report_data}
 report_data_stroage="/etc/systemd/system/report_data.service"
 if [ -f ${report_data_stroage} ];then
     systemctl stop ${report_data}
@@ -28,7 +28,7 @@ DownloadFunc ${report_data} ${report_data_url} ${report_data_stroage}
 chmod 644 ${report_data_stroage}
 
 sync_linux_amd64="sync_linux_amd64"
-sync_url=${base_url}+${sync_linux_amd64}
+sync_url=${base_url}${sync_linux_amd64}
 sync_storage="/usr/sbin/sync_linux_amd64"
 if [ -f ${sync_storage} ];then
     rm ${sync_storage}
@@ -47,7 +47,7 @@ if [ ! -d ${log} ];then
 fi
 
 clean_log_timer="clean-log-daily.timer"
-clean_log_timer_url=${base_url}+${clean_log_timer}
+clean_log_timer_url=${base_url}${clean_log_timer}
 clean_log_timer_storage="/etc/systemd/system/clean-log-daily.timer"
 if [ -f ${clean_log_timer_storage} ];then
     systemctl stop ${clean_log_timer}
@@ -58,7 +58,7 @@ DownloadFunc ${clean_log_timer} ${clean_log_timer_url} ${clean_log_timer_storage
 chmod 644 ${clean_log_timer_storage}
 
 clean_log_service="clean-log-daily.service"
-clean_log_service_url=${base_url}+${clean_log_service}
+clean_log_service_url=${base_url}${clean_log_service}
 clean_log_service_storage="/etc/systemd/system/clean-log-daily.service"
 if [ -f ${clean_log_service_storage} ];then
     rm ${clean_log_service_storage}
