@@ -25,11 +25,12 @@ SSH_CONNECT_TIMEOUT = 30
 SERVER_HOST = '47.94.18.22'
 MONITOR_CMD = 'curl -sSL http://{host}/supermonitor/install.sh | sh '.format(host=SERVER_HOST)
 UNINSTALL_CMD = 'curl -sSL http://{host}/supermonitor/uninstall.sh | sh '.format(host=SERVER_HOST)
-CREATE_IMAGE_CMD = 'sh ~/deploy/deploy-app.sh '
+CREATE_IMAGE_CMD = 'curl -sSL http://{host}/supermonitor/scripts/create-image.sh | sh -s '.format(host=SERVER_HOST)
 IMAGE_INFO_CMD = 'docker images %s --format "{{.Tag}},{{.CreatedAt}}" | sed -n 1,3p'
 REPOS_DOMAIN = 'www.jmkbio.com'
-DEPLOY_CMD = 'docker login {repository} -u {username} -p {password} && docker pull {image_name} && docker run --rm -P {image_name} '
+DEPLOY_CMD = 'docker login {repository} -u {username} -p {password} && docker pull {image_name} && docker run --rm -P --name {container_name} {image_name} '
 LIST_CONTAINERS_CMD = 'docker ps -a --format "{{.ID}},{{.Names}},{{.Status}},{{.CreatedAt}}"'
+CONTAINER_INFO_CMD = 'docker inspect --format "{{json .}}" %s'
 START_CONTAINER_CMD = 'docker start {container_id}'
 STOP_CONTAINER_CMD = 'docker stop {container_id}'
 DEL_CONTAINER_CMD = STOP_CONTAINER_CMD + ' && docker rm {container_id}'

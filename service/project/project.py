@@ -16,7 +16,7 @@ class ProjectService(BaseService):
         :param params: dict e.g. {'prj_name': str, 'repos_url': str, 'branch_name': str, 'public_ip': str, 'username': str, 'passwd': str}
         '''
 
-        cmd = CREATE_IMAGE_CMD + ' '.join([params['prj_name'], params['repos_url'], params['branch_name']])
+        cmd = CREATE_IMAGE_CMD + ' '.join([params['prj_name'], params['repos_url'], params['branch_name'], params['version']])
 
         yield self.remote_ssh(params, cmd)
 
@@ -27,7 +27,8 @@ class ProjectService(BaseService):
             repository=REPOS_DOMAIN,
             username=settings['deploy_username'],
             password=settings['deploy_password'],
-            image_name=image_name)
+            image_name=image_name,
+            container_name=params['image_name'].replace(":", "-"))
         yield self.remote_ssh(params, cmd)
 
     @coroutine

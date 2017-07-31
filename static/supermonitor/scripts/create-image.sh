@@ -22,6 +22,9 @@ REGISRTY="www.jmkbio.com/library"
 # args
 branch=$3
 
+# version
+version=$4
+
 log(){
     log_info=$1
     echo "${LOG_DATE}${LOG_TIME}: ${log_info} " >> "${SHELL_LOG}"
@@ -44,16 +47,17 @@ code_get(){
 code_build(){
     log "code_build"
     cd "${CODE_DIR}" || exist 1
-    if git checkout "${branch}" &> /dev/null;then
-        ver=$(git rev-parse --short HEAD)
-        IMAGE_REGISTRY="${APP_NAME}:${branch}-${ver}"
-        if docker build -t "${IMAGE_REGISTRY}" .;then
-            log "image build successfull"
-        else
-            cp ${BASE_DIR}/config.json ~/.docker/config.json
-            chmod 600 ~/.docker/config.json
-            docker build -t "${IMAGE_REGISTRY}" .
-        fi
+    current_branch=$(git branch 2>/dev/null | grep "^\*" | sed -e "s/^\*\ //")
+    if [ ${current_branch} != ${branch} ];then
+        git checkout "${branch}"
+    fi
+    IMAGE_REGISTRY="${APP_NAME}:${version}"
+    if docker build -t "${IMAGE_REGISTRY}" .;then
+        log "image build successfull"
+    else
+        cp ${BASE_DIR}/config.json ~/.docker/config.json
+        chmod 600 ~/.docker/config.json
+        docker build -t "${IMAGE_REGISTRY}" .
     fi
 }
 image_push(){
@@ -74,7 +78,7 @@ main(){
 	  shell_lock;
 	  code_get;
 	  code_build ;
-    image_push;
+      image_push;
 	  shell_unlock;
 }
 

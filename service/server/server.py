@@ -6,7 +6,7 @@ from tornado.gen import coroutine, Task
 from service.base import BaseService
 from utils.general import get_formats
 from utils.aliyun import Aliyun
-from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAINER_CMD, STOP_CONTAINER_CMD, DEL_CONTAINER_CMD
+from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAINER_CMD, STOP_CONTAINER_CMD, DEL_CONTAINER_CMD, CONTAINER_INFO_CMD
 from utils.security import Aes
 
 
@@ -73,7 +73,6 @@ class ServerService(BaseService):
             data.append(params['public_ip'])
 
         sql += ' AND '.join(conds)
-
         cur = yield self.db.execute(sql, data)
         data = cur.fetchone()
 
@@ -211,7 +210,7 @@ class ServerService(BaseService):
         return data.get('status')
 
     @coroutine
-    def get_docker_containers(self, id):
+    def get_containers(self, id):
         params = yield self.fetch_ssh_login_info({'server_id': id})
 
         out, err = yield self.remote_ssh(params, cmd=LIST_CONTAINERS_CMD)
@@ -255,22 +254,50 @@ class ServerService(BaseService):
               """
         cur = yield self.db.execute(sql, [params['public_ip'], params['container_name'],
                                     params['start_time'], params['end_time']])
-        data = {}
-        cpu = []
-        mem = []
-        net = []
-        block = []
+        data = {
+            'cpu': [],
+            'memory': [],
+            'net': [],
+            'block': []
+        }
         for x in cur.fetchall():
             content = json.loads(x['content'])
-            cpu.append([x['created_time'], {'percent':content['cpu']}])
-            mem.append([x['created_time'], {'percent':content['mem_percent']}])
-            net.append([x['created_time'], {'input': content['net_input'],
+            data['cpu'].append([x['created_time'], {'percent':content['cpu']}])
+            data['memory'].append([x['created_time'], {'percent':content['mem_percent']}])
+            data['net'].append([x['created_time'], {'input': content['net_input'],
                                                 'output': content['net_output']}])
-            block.append([x['created_time'], {'input': content['block_input'],
+            data['block'].append([x['created_time'], {'input': content['block_input'],
                                                 'output': content['block_output']}])
-            
-        data['cpu'] = cpu
-        data['memory'] = mem
-        data['net'] = net
-        data['block'] = block
+
         return data
+
+    @coroutine
+    def get_container_info(self, params):
+        cmd = CONTAINER_INFO_CMD % (params['container_id'])
+
+        raw_out, err = yield self.remote_ssh(params, cmd=cmd)
+        json_out = json.loads(raw_out[0])
+        data = {
+            'name': json_out['Name'],
+            'status': json_out['State'].get('Status', 'dead'),
+            'created': json_out['Created'],
+            'runtime': {
+                'hostname': params['server_name'],
+                'ip': params['public_ip'],
+                'port': [key.split('/')[0] for key in json_out['Config'].get('ExposedPorts', {}).keys()],
+                'address': "http://{ip}".format(ip=params['public_ip'])
+            },
+            'container': {
+                'workingdir': json_out['Config'].get('WorkingDir', ''),
+                'cmd': ' '.join(x for x in json_out['Config'].get('Cmd') or ['']),  # 防止cmd为null
+                'volumes': json_out['Config'].get('Volumes', ''),
+                'volumesfrom': json_out['HostConfig'].get('VolumesFrom', ''),
+            },
+            'network': {
+                'dns': json_out['HostConfig'].get('Dns', ''),
+                'links': json_out['HostConfig'].get('Links', ''),
+                'portbind': json_out['NetworkSettings'].get('Ports', '')
+            }
+        }
+        return data, err
+
