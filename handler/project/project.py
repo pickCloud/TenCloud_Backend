@@ -216,12 +216,12 @@ class ProjectDeploymentHandler(BaseHandler):
             HTTP/1.1 200 OK
             {
                 "192.168.56.10":{
-                    "output": "output of this ip",
-                    "err": "error of this ip"
+                    "output": String[],
+                    "err":  String[]
                 }
                 "192.168.56.11":{
-                    "output": "output of this ip",
-                    "err": "error of this ip"
+                    "output": String[],
+                    "err": String[]
                 }
             }
         """
