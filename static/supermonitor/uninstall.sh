@@ -6,6 +6,7 @@ if [ -f ${report_data_stroage} ];then
     systemctl disable ${report_data}
     rm ${report_data_stroage}
 fi
+
 sync_linux_amd64="sync_linux_amd64"
 pid=$(pgrep -f ${sync_linux_amd64})
 if pgrep -f ${sync_linux_amd64} > /dev/null; then
@@ -16,6 +17,7 @@ sync_storage="/usr/sbin/sync_linux_amd64"
 if [ -f ${sync_storage} ];then
     rm ${sync_storage}
 fi
+
 clean_log_timer="clean-log-daily.timer"
 clean_log_timer_storage="/etc/systemd/system/clean-log-daily.timer"
 if [ -f ${clean_log_timer_storage} ];then
@@ -27,6 +29,7 @@ clean_log_service_storage="/etc/systemd/system/clean-log-daily.service"
 if [ -f ${clean_log_service_storage} ];then
     rm ${clean_log_service_storage}
 fi
+
 log="/var/log/report_data"
 if [ -d ${log} ];then
     rm -rf ${log}
