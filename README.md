@@ -235,6 +235,7 @@ CREATE TABLE `project_versions` (
  )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE UNIQUE INDEX name_version on project_versions (name, version);
 
+ALTER TABLE project_versions ADD COLUMN log longtext COMMENT '构建日志';
 ```
 
 ## 测试

@@ -45,3 +45,13 @@ class ProjectService(BaseService):
         out, err = yield self.remote_ssh(params, cmd)
         data = [i.split(',') for i in out]
         return data, err
+
+    @coroutine
+    def insert_log(self, params):
+        sql = """
+                INSERT INTO project_versions (name, version, log) VALUES (%s, %s, %s) 
+                ON DUPLICATE key UPDATE log=%s, update_time=NOW()
+              """
+        arg = [params['name'], params['version'], params['log'], params['log']]
+        yield self.db.execute(sql, arg)
+
