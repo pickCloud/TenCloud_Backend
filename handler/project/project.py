@@ -284,17 +284,20 @@ class ProjectImageLogHandler(BaseHandler):
                 "status":0,
                 "msg": "success",
                 "data": {
-                    "out": String[],
-                    "err": String[],
+                    "log": {
+                        "err": String[],
+                        "out": String[],
+                    }
+                    "update_time": String,
                 }
             }
         """
         try:
             out = yield self.project_versions_service.select(
                                                             fields='log', conds=['name=%s', 'version=%s'],
-                                                            params=[prj_name, version], ct=False, ut=False,
-                                                            one=True)
-            self.success(json.loads(out['log']))
+                                                            params=[prj_name, version], ct=False, one=True)
+            data = {"log": json.loads(out['log']), "update_time": out['update_time']}
+            self.success(data)
         except:
             self.error()
             self.log.error(traceback.format_exc())
