@@ -7,7 +7,8 @@ from utils.general import validate_mobile, validate_auth_code, gen_random_digits
 from utils.decorator import is_login
 from utils.datetool import seconds_to_human
 from constant import AUTH_CODE, SMS_TIMEOUT, COOKIE_EXPIRES_DAYS, AUTH_CODE_ERROR_COUNT, AUTH_CODE_ERROR_COUNT_LIMIT, \
-                     LOGIN_LOCK, LOGIN_LOCK_TIMEOUT, SMS_LOCK, SMS_LOCK_TIMEOUT, SMS_LOCK_TIP
+                     AUTH_LOCK, AUTH_LOCK_TIMEOUT, AUTH_LOCK_TIP, AUTH_FAILURE_TIP, \
+                     SMS_SENDING_LOCK, SMS_SENDING_LOCK_TIMEOUT, SMS_SENDING_LOCK_TIP
 
 
 class UserSMSHandler(BaseHandler):
@@ -24,25 +25,25 @@ class UserSMSHandler(BaseHandler):
             # 参数认证
             validate_mobile(mobile)
 
-            # 检查sms_lock
-            sms_lock_key = SMS_LOCK.format(mobile=mobile)
+            # 检查sms_sending_lock
+            sms_sending_lock = SMS_SENDING_LOCK.format(mobile=mobile)
 
-            has_lock = yield Task(self.redis.get, sms_lock_key)
+            has_lock = yield Task(self.redis.get, sms_sending_lock)
             if has_lock:
-                self.error('一分钟内一个手机只能发送一次')
+                self.error(SMS_SENDING_LOCK_TIP)
                 return
 
             # 发送短信验证码
             auth_code = gen_random_digits()
 
-            yield Task(self.redis.setex, sms_lock_key, SMS_LOCK_TIMEOUT, '1')
+            yield Task(self.redis.setex, sms_sending_lock, SMS_SENDING_LOCK_TIMEOUT, '1')
             result = yield self.user_service.send_sms(mobile, auth_code)
 
             if result.get('err'):
                 self.error(result.get('err'))
                 return
 
-            # 保存auth_code
+            # 设置验证码有效期
             yield Task(self.redis.setex, AUTH_CODE.format(mobile=mobile, auth_code=auth_code), SMS_TIMEOUT, '1')
 
             self.log.info('mobile: {mobile}, auth_code: {auth_code}'.format(mobile=mobile, auth_code=auth_code))
@@ -52,7 +53,53 @@ class UserSMSHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class UserLoginHandler(BaseHandler):
+class NeedSMSMixin(BaseHandler):
+    """ 需要手机验证码操作的基类
+    """
+    def initialize(self):
+        self.auth_code_key = ''
+        self.auth_lock_key = ''
+        self.err_count_key = ''
+
+    @coroutine
+    def check(self, mobile, auth_code):
+        # 检查auth_lock
+        self.auth_lock_key = AUTH_LOCK.format(mobile=mobile)
+
+        has_lock = yield Task(self.redis.get, self.auth_lock_key)
+        if has_lock:
+            self.error(AUTH_LOCK_TIP)
+            return False
+
+        # 认证
+        self.auth_code_key = AUTH_CODE.format(mobile=mobile, auth_code=auth_code)
+        self.err_count_key = AUTH_CODE_ERROR_COUNT.format(mobile=mobile)
+
+        is_exist = yield Task(self.redis.get, self.auth_code_key)
+        if not is_exist:
+            err_count = yield Task(self.redis.get, self.err_count_key)
+            err_count = int(err_count) if err_count else 0
+            err_count += 1
+
+            if err_count >= AUTH_CODE_ERROR_COUNT_LIMIT:
+                yield Task(self.redis.setex, self.auth_lock_key, AUTH_LOCK_TIMEOUT, '1')
+                yield Task(self.redis.delete, self.err_count_key)
+                self.error(AUTH_LOCK_TIP)
+            else:
+                yield Task(self.redis.set, self.err_count_key, err_count)
+                self.error(AUTH_FAILURE_TIP.format(count=err_count))
+
+            return False
+
+        return True
+
+    @coroutine
+    def clean(self):
+        """ 清除auth_code && 登陆lock && 登陆错误次数
+        """
+        yield Task(self.redis.delete, self.auth_code_key, self.auth_lock_key, self.err_count_key)
+
+class UserLoginHandler(NeedSMSMixin):
     @coroutine
     def post(self):
         """
@@ -80,33 +127,9 @@ class UserLoginHandler(BaseHandler):
 
             mobile, auth_code = self.params['mobile'], self.params['auth_code']
 
-            # 检查login_lock
-            login_lock_key = LOGIN_LOCK.format(mobile=mobile)
+            is_ok = yield self.check(mobile, auth_code)
 
-            has_lock = yield Task(self.redis.get, login_lock_key)
-            if has_lock:
-                self.error(SMS_LOCK_TIP)
-                return
-
-            # auth_code真实性
-            auth_code_key = AUTH_CODE.format(mobile=mobile, auth_code=auth_code)
-            err_count_key = AUTH_CODE_ERROR_COUNT.format(mobile=mobile)
-
-            is_exist = yield Task(self.redis.get, auth_code_key)
-            if not is_exist:
-                err_count = yield Task(self.redis.get, err_count_key)
-                err_count = int(err_count) if err_count else 0
-                err_count += 1
-
-                if err_count >= AUTH_CODE_ERROR_COUNT_LIMIT:
-                    yield Task(self.redis.setex, login_lock_key, LOGIN_LOCK_TIMEOUT, '1')
-                    yield Task(self.redis.delete, err_count_key)
-                    self.error(SMS_LOCK_TIP)
-                else:
-                    yield Task(self.redis.set, err_count_key, err_count)
-                    self.error('登陆验证码错误{count}次'.format(count=err_count))
-
-                return
+            if not is_ok: return
 
             # 现在的登陆模式是手机+验证码，所以首次登陆，则插入数据
             data = yield self.user_service.select(conds=['mobile=%s'], params=[mobile], one=True)
@@ -120,8 +143,7 @@ class UserLoginHandler(BaseHandler):
             # 设置session
             yield self.set_session(data['id'], data)
 
-            # 清除auth_code && 登陆错误次数
-            yield Task(self.redis.delete, auth_code_key, login_lock_key, err_count_key)
+            yield self.clean()
 
             self.success()
         except Exception as e:
@@ -193,7 +215,6 @@ class UserUpdateHandler(BaseHandler):
         @apiParamExample {json} Request-Example:
             {
                 "name": str,
-                "mobile": str,
                 "email": str,
                 "image_url": str,
             }
@@ -205,18 +226,16 @@ class UserUpdateHandler(BaseHandler):
 
             new = {
                 'id': old['id'],
-                'name': self.params.get('name') or old['name'],
-                'mobile': self.params.get('mobile') or old['mobile'],
-                'email': self.params.get('email') or old['email'],
-                'image_url': self.params.get('image_url') or old['image_url'],
+                'name': self.params.get('name', '') or old['name'],
+                'email': self.params.get('email' '') or old['email'],
+                'image_url': self.params.get('image_url', '') or old['image_url'],
                 'create_time': old['create_time'],
                 'update_time': seconds_to_human()
             }
 
-            yield self.user_service.update(sets=['name=%s', 'mobile=%s', 'email=%s', 'image_url=%s'],
+            yield self.user_service.update(sets=['name=%s', 'email=%s', 'image_url=%s'],
                                            conds=['id=%s'],
-                                           params=[new['name'], new['mobile'], new['email'], new['image_url'], new['id']]
-                                           )
+                                           params=[new['name'], new['email'], new['image_url'], new['id']])
 
             yield self.set_session(new['id'], new)
 
