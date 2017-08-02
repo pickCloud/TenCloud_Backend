@@ -29,27 +29,35 @@ log(){
     log_info=$1
     echo "${LOG_DATE}${LOG_TIME}: ${log_info} " >> "${SHELL_LOG}"
 }
+
 shell_lock(){
     touch ${LOCK_FILE}
 }
+
 shell_unlock(){
     rm -f ${LOCK_FILE}
 }
+
 code_get(){
     log "code_get";
     if [ ! -d "${CODE_DIR}" ];then
       git clone ${CODE_URL} "${CODE_DIR}"
+      log "clone source code"
     else
       cd "${CODE_DIR}" || exit 1
       git pull
+      log "update local source code"
     fi
+    log "finish code_get"
 }
+
 code_build(){
     log "code_build"
     cd "${CODE_DIR}" || exist 1
     current_branch=$(git branch 2>/dev/null | grep "^\*" | sed -e "s/^\*\ //")
     if [ ${current_branch} != ${branch} ];then
         git checkout "${branch}"
+        log "checkout to correct branch"
     fi
     IMAGE_REGISTRY="${APP_NAME}:${version}"
     if docker build -t "${IMAGE_REGISTRY}" .;then
@@ -59,14 +67,25 @@ code_build(){
         chmod 600 ~/.docker/config.json
         docker build -t "${IMAGE_REGISTRY}" .
     fi
+    log "finish code_build"
 }
+
+remove_old_image(){
+    log "remove_old_image"
+    if docker images $1:$4 > /dev/null; then
+        docker rmi $1:$4
+    fi
+    log "finish remove_old_image"
+}
+
 image_push(){
     log "image push"
     new_tag="${REGISRTY}/${IMAGE_REGISTRY}"
     docker tag "${IMAGE_REGISTRY}" "${new_tag}"
     docker push "${new_tag}"
-    rm ${LOCK_FILE}
+    log "finish image push"
 }
+
 main(){
 
     if [ -f "${LOCK_FILE}" ];then
@@ -75,12 +94,16 @@ main(){
     if [ ! -d "${CODE_DIR}" ];then
         mkdir -p "${BASE_DIR}/log"
     fi
+    command -v docker >/dev/null 2>&1 || {
+        echo "docker not installed.  Aborting." && exit;
+    }
 
-	  shell_lock;
-	  code_get;
-	  code_build ;
-      image_push;
-	  shell_unlock;
+	shell_lock;
+	code_get;
+    remove_old_image;
+    code_build ;
+    image_push;
+    shell_unlock;
 }
 
 main

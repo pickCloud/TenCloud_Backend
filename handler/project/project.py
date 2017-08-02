@@ -1,6 +1,7 @@
 __author__ = 'Jon'
 
 import traceback
+import json
 
 from tornado.gen import coroutine
 from handler.base import BaseHandler
@@ -257,10 +258,46 @@ class ProjectImageCreationHandler(BaseHandler):
             login_info = yield self.server_service.fetch_ssh_login_info({'public_ip': settings['ip_for_image_creation']})
             self.params.update(login_info)
             out, err = yield self.project_service.create_image(self.params)
-            if not err:
-                arg = {'name': self.params['prj_name'], 'version': self.params['version']}
-                yield self.project_versions_service.add(arg)
+            log = {"out": out, "err": err}
+            arg = {'name': self.params['prj_name'], 'version': self.params['version'], 'log': json.dumps(log)}
+            yield self.project_service.insert_log(arg)
             self.success(out)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ProjectImageLogHandler(BaseHandler):
+    @coroutine
+    def get(self, prj_name, version):
+        """
+        @api {get} /api/project/([\w\W]+)/image/([\w\W]+)/log 获取相关项目的某一版本的构建日志
+        @apiName ProjectImageLogHandler
+        @apiGroup Project
+
+        @apiParam {String} prj_name 项目名字
+        @apiParam {String} version 版本
+
+        @apiSuccessExample Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status":0,
+                "msg": "success",
+                "data": {
+                    "log": {
+                        "err": String[],
+                        "out": String[],
+                    }
+                    "update_time": String,
+                }
+            }
+        """
+        try:
+            out = yield self.project_versions_service.select(
+                                                            fields='log', conds=['name=%s', 'version=%s'],
+                                                            params=[prj_name, version], ct=False, one=True)
+            data = {"log": json.loads(out['log']), "update_time": out['update_time']}
+            self.success(data)
         except:
             self.error()
             self.log.error(traceback.format_exc())
