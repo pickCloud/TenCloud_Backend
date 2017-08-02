@@ -5,10 +5,12 @@ import traceback
 from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.general import get_in_formats
+from utils.decorator import is_login
 from setting import settings
 
 
 class ProjectHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self):
         """
@@ -45,6 +47,7 @@ class ProjectHandler(BaseHandler):
 
 
 class ProjectNewHandler(BaseHandler):
+    @is_login
     @coroutine
     def post(self):
         """
@@ -86,6 +89,7 @@ class ProjectNewHandler(BaseHandler):
 
 
 class ProjectDelHandler(BaseHandler):
+    @is_login
     @coroutine
     def post(self):
         """
@@ -109,6 +113,7 @@ class ProjectDelHandler(BaseHandler):
 
 
 class ProjectDetailHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self, id):
         """
@@ -149,6 +154,7 @@ class ProjectDetailHandler(BaseHandler):
 
 
 class ProjectUpdateHandler(BaseHandler):
+    @is_login
     @coroutine
     def post(self):
         """
@@ -176,6 +182,7 @@ class ProjectUpdateHandler(BaseHandler):
 
 
 class ProjectDeploymentHandler(BaseHandler):
+    @is_login
     @coroutine
     def post(self):
         """
@@ -199,6 +206,7 @@ class ProjectDeploymentHandler(BaseHandler):
 
 
 class ProjectImageCreationHandler(BaseHandler):
+    @is_login
     @coroutine
     def post(self):
         """
@@ -226,6 +234,7 @@ class ProjectImageCreationHandler(BaseHandler):
 
 
 class ProjectVersionsHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self, prj_name):
         """
@@ -253,6 +262,7 @@ class ProjectVersionsHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 class ProjectImageFindHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self, prj_name):
         """

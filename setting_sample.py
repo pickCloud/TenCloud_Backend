@@ -51,3 +51,11 @@ settings['git_token'] = ''
 settings['ip_for_image_creation'] = ''
 settings['deploy_username'] = ''
 settings['deploy_password'] = ''
+
+
+#################################################################################################
+# 短信平台配置
+#################################################################################################
+settings['sms_account_sid'] = ''
+settings['sms_auth_token']  = ''
+settings['sms_from_number'] = ''
