@@ -16,7 +16,8 @@ from handler.server.server import ServerNewHandler, ServerReport, ServerMigratio
                                   ServerContainerDelHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
                                     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
-                                    ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler
+                                    ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler, \
+                                    ProjectImageLogHandler
 from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler
 
 
@@ -70,6 +71,7 @@ routes = [
     (r'/api/project/update', ProjectUpdateHandler),
     (r'/api/project/deployment', ProjectDeploymentHandler),
     (r'/api/project/image/creation', ProjectImageCreationHandler),
+    (r'/api/project/([\w\W]+)/image/([\w\W]+)/log', ProjectImageLogHandler),
     (r'/api/project/([\w\W]+)/image', ProjectImageFindHandler),
     (r'/api/project/([\w\W]+)/versions', ProjectVersionsHandler),
 
