@@ -1,6 +1,7 @@
 __author__ = 'Jon'
 
 import traceback
+import json
 
 from tornado.gen import coroutine
 from handler.base import BaseHandler
@@ -55,10 +56,12 @@ class ProjectNewHandler(BaseHandler):
         @apiName ProjectNewHandler
         @apiGroup Project
 
-        @apiParam {String} name 名称(必需小写字母，分隔符可选),
+        @apiParam {String} name 名称
+        @apiParam {String} image_name 镜像名字 (必需小写字母，分隔符可选)
         @apiParam {String} description 描述
         @apiParam {String} repos_name 仓库名称
         @apiParam {String} repos_url 仓库url
+        @apiParam {String} http_url 项目在github的http地址
         @apiParam {Number} mode 类型
 
         @apiSuccessExample {json} Success-Response:
@@ -133,6 +136,8 @@ class ProjectDetailHandler(BaseHandler):
                     "description": str,
                     "repos_name": str,
                     "repos_url": str,
+                    "http_url": str,
+                    "image_name": str,
                     "id": 2,
                     "name": str,
                     "create_time": str,
@@ -166,14 +171,27 @@ class ProjectUpdateHandler(BaseHandler):
         @apiParam {String} description 描述
         @apiParam {String} repos_name 仓库名字
         @apiParam {String} repos_url 仓库地址
+        @apiParam {String} http_url 项目在github的仓库地址
+        @apiParam {String} image_name 镜像名字
+        @apiParam {String} mode 项目类型
 
         @apiUse Success
         """
         try:
-            sets = ['name=%s', 'description=%s', 'repos_name=%s', 'repos_url=%s', 'mode=%s']
+
+            sets = ['name=%s', 'description=%s', 'repos_name=%s', 'repos_url=%s', 'http_url=%s', 'mode=%s', 'image_name=%s']
             conds = ['id=%s']
-            params = [self.params['name'], self.params['description'], self.params['repos_name'], self.params['repos_url'], self.params['mode'],
-                      self.params['id']]
+            params = [
+                    self.params['name'],
+                    self.params['description'],
+                    self.params['repos_name'],
+                    self.params['repos_url'],
+                    self.params['http_url'],
+                    self.params['mode'],
+                    self.params['image_name'],
+                    self.params['id']
+                    ]
+
             yield self.project_service.update(sets=sets, conds=conds, params=params)
             self.success()
         except:
@@ -191,15 +209,38 @@ class ProjectDeploymentHandler(BaseHandler):
         @apiGroup Project
 
         @apiParam {String} image_name 镜像名称
-        @apiParam {String} public_ip 公共ip
 
-        @apiUse Success
+        @apiParam {map[String]map[String]String} public_ips 公共ip
+        @apiParamExample {json} Request-Example:
+            {
+                "image_name":"infohub:0.0.1",
+                "ips": [
+                    {"public_ip":"192.168.56.10"},
+                    {"public_ip":"192.168.56.11"},
+                    ...
+                ]
+            }
+
+        @apiSuccessExample {json} Success-Response
+            HTTP/1.1 200 OK
+            {
+                "192.168.56.10":{
+                    "output": String[],
+                    "err":  String[]
+                }
+                "192.168.56.11":{
+                    "output": String[],
+                    "err": String[]
+                }
+            }
         """
         try:
-            login_info = yield self.server_service.fetch_ssh_login_info(self.params)
-            self.params.update(login_info)
-            yield self.project_service.deployment(self.params)
-            self.success()
+            self.params["infos"] = []
+            for ip in self.params['ips']:
+                login_info = yield self.server_service.fetch_ssh_login_info(ip)
+                self.params['infos'].append(login_info)
+            log = yield self.project_service.deployment(self.params)
+            self.success(log)
         except:
             self.error()
             self.log.error(traceback.format_exc())
@@ -214,20 +255,58 @@ class ProjectImageCreationHandler(BaseHandler):
         @apiName ProjectImageCreationHandler
         @apiGroup Project
 
-        @apiParam {String} prj_name 项目名称
+        @apiParam {String} prj_name 项目名字
         @apiParam {String} repos_url 仓库地址
         @apiParam {String} branch_name 分支名字
         @apiParam {String} version 版本号
+        @apiParam {String} image_name 镜像名字
 
         @apiUse Success
         """
         try:
             login_info = yield self.server_service.fetch_ssh_login_info({'public_ip': settings['ip_for_image_creation']})
             self.params.update(login_info)
-            yield self.project_service.create_image(self.params)
-            arg = {'name': self.params['prj_name'], 'version': self.params['version']}
-            yield self.project_versions_service.add(arg)
-            self.success()
+            out, err = yield self.project_service.create_image(self.params)
+            log = {"out": out, "err": err}
+            arg = {'name': self.params['prj_name'], 'version': self.params['version'], 'log': json.dumps(log)}
+            yield self.project_service.insert_log(arg)
+            self.success(out)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ProjectImageLogHandler(BaseHandler):
+    @coroutine
+    def get(self, prj_name, version):
+        """
+        @api {get} /api/project/([\w\W]+)/image/([\w\W]+)/log 获取相关项目的某一版本的构建日志
+        @apiName ProjectImageLogHandler
+        @apiGroup Project
+
+        @apiParam {String} prj_name 项目名字
+        @apiParam {String} version 版本
+
+        @apiSuccessExample Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status":0,
+                "msg": "success",
+                "data": {
+                    "log": {
+                        "err": String[],
+                        "out": String[],
+                    }
+                    "update_time": String,
+                }
+            }
+        """
+        try:
+            out = yield self.project_versions_service.select(
+                                                            fields='log', conds=['name=%s', 'version=%s'],
+                                                            params=[prj_name, version], ct=False, one=True)
+            data = {"log": json.loads(out['log']), "update_time": out['update_time']}
+            self.success(data)
         except:
             self.error()
             self.log.error(traceback.format_exc())

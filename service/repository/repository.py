@@ -14,9 +14,9 @@ class RepositoryService(BaseService):
         ''' git账号下的所有仓库
         '''
         data = yield self.get(host=GIT_REPOS_URL, headers=self.headers)
-
         result = [{'repos_url': d.get('ssh_url', ''),
-                   'repos_name': d.get('full_name', '')} for d in data]
+                   'repos_name': d.get('full_name', ''),
+                   'http_url': d.get('clone_url', '')} for d in data]
 
         return result
 

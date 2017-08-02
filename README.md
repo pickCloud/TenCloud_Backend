@@ -218,6 +218,9 @@ CREATE TABLE `project` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `repos_url` (`repos_url`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE project ADD COLUMN http_url varchar(512) NOT NULL DEFAULT '' COMMENT '项目在github的http地址'
+ALTER TABLE project ADD COLUMN image_name varchar(128) NOT NULL DEFAULT '' COMMENT '镜像名字'
 ```
 
 * 项目版本表 project_versions
@@ -231,7 +234,7 @@ CREATE TABLE `project_versions` (
      PRIMARY KEY (`id`)
  )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE UNIQUE INDEX name_version on project_versions (name, version);
-
+ALTER TABLE project_versions ADD COLUMN log longtext COMMENT '构建日志';
 ```
 
 * 用户表 user
