@@ -210,8 +210,14 @@ class ServerService(BaseService):
         return data.get('status')
 
     @coroutine
-    def get_containers(self, id):
-        params = yield self.fetch_ssh_login_info({'server_id': id})
+    def get_containers(self, params):
+
+        info = dict()
+        if params.get['server_id']:
+            info = yield self.fetch_ssh_login_info(params)
+        elif params.get['public_ip']:
+            info = yield self.fetch_ssh_login_info(params)
+        params.update(info)
 
         out, err = yield self.remote_ssh(params, cmd=LIST_CONTAINERS_CMD)
 
@@ -244,7 +250,7 @@ class ServerService(BaseService):
             raise ValueError
 
     @coroutine
-    def get_docker_performance(self,params):
+    def get_docker_performance(self, params):
         params['public_ip'] = yield self.fetch_public_ip(params['server_id'])
 
         sql = """

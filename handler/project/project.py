@@ -143,7 +143,8 @@ class ProjectDetailHandler(BaseHandler):
                     "create_time": str,
                     "update_time": str,
                     "status": str,
-                    "mode": str
+                    "mode": str,
+                    "deploy_ips": str[],
                 }
                     ...
                 ]
@@ -209,14 +210,16 @@ class ProjectDeploymentHandler(BaseHandler):
         @apiGroup Project
 
         @apiParam {String} image_name 镜像名称
+        @apiParam {map[String]map[String]String} ips 公共ip
+        @apiParam {String} project_id 项目id
 
-        @apiParam {map[String]map[String]String} public_ips 公共ip
         @apiParamExample {json} Request-Example:
             {
-                "image_name":"infohub:0.0.1",
+                "image_name": "infohub:0.0.1",
+                "project_id": "1",
                 "ips": [
-                    {"public_ip":"192.168.56.10"},
-                    {"public_ip":"192.168.56.11"},
+                    {"public_ip": "192.168.56.10"},
+                    {"public_ip": "192.168.56.11"},
                     ...
                 ]
             }
@@ -240,7 +243,48 @@ class ProjectDeploymentHandler(BaseHandler):
                 login_info = yield self.server_service.fetch_ssh_login_info(ip)
                 self.params['infos'].append(login_info)
             log = yield self.project_service.deployment(self.params)
+
+            arg = [json.dumps(self.params['ips']), self.params['project_id']]
+            yield self.project_service.update(sets=['deploy_ips=%s'], conds=['id=%s'], params=arg)
+
             self.success(log)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ProjectContainerInfoHanler(BaseHandler):
+    @coroutine
+    def get(self, containers):
+        """
+        @api {get} /api/project/container/([\\w\W]+) 项目容器列表
+        @apiName ProjectContainerInfoHanler
+        @apiGroup Project
+
+        @apiParam {String} containers 容器列表
+
+        @apiSuccessExample {json} Success-Response
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": [
+                    [
+                        "1a050e4d7e43", # container id
+                         "harbor-jobservice", # container name
+                        "Up 3 weeks", # status
+                        "2017-05-18 14:06:50 +0800 CST\n" # created_time
+                    ],
+                    ...
+                ]
+            }
+        """
+        try:
+            data = []
+            for ip in json.loads(containers):
+                info = yield self.server_service.get_containers(ip)
+                data.append(info)
+            self.success(data)
         except:
             self.error()
             self.log.error(traceback.format_exc())
