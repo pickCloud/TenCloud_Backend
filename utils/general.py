@@ -5,7 +5,9 @@ __author__ = 'Jon'
 '''
 import re
 import random
-from constant import FULL_DATE_FORMAT, USER_AGENTS
+import string
+import json
+from constant import USER_AGENTS
 
 def get_formats(contents):
     '''
@@ -22,12 +24,37 @@ def get_in_formats(field, contents):
     '''
     return '{field} in ({formats})'.format(field=field, formats=get_formats(contents))
 
-def validate_ip(ip):
-    rule = '\d+\.\d+\.\d+\.\d+'
-    match = re.match(rule, ip)
+def _validate(regex, value, err_msg):
+    pattern = re.compile(regex)
 
-    if not match:
-        raise ValueError("不是合法的IP地址")
+    if not pattern.match(value):
+        raise ValueError(err_msg)
+
+def validate_ip(ip):
+    regex = '\d+\.\d+\.\d+\.\d+'
+
+    _validate(regex, ip, '不是合法的IP地址')
+
+def validate_mobile(mobile):
+    regex = r'^1\d{10}$'
+
+    _validate(regex, mobile, '请输入11位手机号')
+
+def validate_auth_code(auth_code):
+    regex = r'\d{4}'
+
+    _validate(regex, auth_code, '请输入4位验证码')
+
+def gen_random_digits(length=6):
+    return ''.join(random.sample(string.digits, length))
 
 def choose_user_agent():
     return random.choice(USER_AGENTS)
+
+def json_loads(data):
+    ''' json can loads None '''
+    return json.loads(data) if data else {}
+
+def json_dumps(data):
+    ''' json can dumps None '''
+    return json.dumps(data) if data else '{}'

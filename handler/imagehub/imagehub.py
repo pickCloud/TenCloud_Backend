@@ -4,9 +4,11 @@ import traceback
 
 from tornado.gen import coroutine
 from handler.base import BaseHandler
+from utils.decorator import is_login
 
 
 class ImagehubHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self):
         ''' 获取镜像仓库列表
@@ -21,6 +23,7 @@ class ImagehubHandler(BaseHandler):
 
 
 class ImagehubBySourceHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self):
         ''' 通过来源获取镜像仓库列表
@@ -36,6 +39,7 @@ class ImagehubBySourceHandler(BaseHandler):
 
 
 class ImagehubByTypeHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self):
         ''' 通过类型获取镜像仓库列表
@@ -51,6 +55,7 @@ class ImagehubByTypeHandler(BaseHandler):
 
 
 class ImagehubSearchHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self):
         ''' 通过搜索获取镜像仓库列表

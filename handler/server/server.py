@@ -11,6 +11,7 @@ from handler.base import BaseHandler
 from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG, ALIYUN_REGION_NAME
 from utils.general import validate_ip
 from utils.security import Aes
+from utils.decorator import is_login
 from constant import MONITOR_CMD
 
 
@@ -140,6 +141,7 @@ class ServerReport(BaseHandler):
 
 
 class ServerMigrationHandler(BaseHandler):
+    @is_login
     @coroutine
     def post(self):
         """
@@ -162,6 +164,7 @@ class ServerMigrationHandler(BaseHandler):
 
 
 class ServerDelHandler(BaseHandler):
+    @is_login
     @coroutine
     def post(self):
         """
@@ -183,6 +186,7 @@ class ServerDelHandler(BaseHandler):
 
 
 class ServerDetailHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self, id):
         """
@@ -272,6 +276,7 @@ class ServerDetailHandler(BaseHandler):
 
 
 class ServerPerformanceHandler(BaseHandler):
+    @is_login
     @coroutine
     def post(self):
         """
@@ -319,6 +324,7 @@ class ServerPerformanceHandler(BaseHandler):
 
 
 class ServerUpdateHandler(BaseHandler):
+    @is_login
     @coroutine
     def post(self):
         """
@@ -341,6 +347,7 @@ class ServerUpdateHandler(BaseHandler):
 
 
 class ServerStopHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self, id):
         """
@@ -363,6 +370,7 @@ class ServerStopHandler(BaseHandler):
 
 
 class ServerStartHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self, id):
         """
@@ -383,6 +391,7 @@ class ServerStartHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 class ServerRebootHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self, id):
         """
@@ -404,6 +413,7 @@ class ServerRebootHandler(BaseHandler):
 
 
 class ServerStatusHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self, instance_id):
         """
@@ -431,6 +441,7 @@ class ServerStatusHandler(BaseHandler):
 
 
 class ServerContainerPerformanceHandler(BaseHandler):
+    @is_login
     @coroutine
     def post(self):
         """
@@ -474,6 +485,7 @@ class ServerContainerPerformanceHandler(BaseHandler):
 
 
 class ServerContainersHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self, id):
         """
@@ -509,6 +521,7 @@ class ServerContainersHandler(BaseHandler):
 
 
 class ServerContainersInfoHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self, server_id, container_id):
         """
@@ -544,6 +557,7 @@ class ServerContainersInfoHandler(BaseHandler):
 
 
 class ServerContainerStartHandler(BaseHandler):
+    @is_login
     @coroutine
     def post(self):
         """
@@ -566,6 +580,7 @@ class ServerContainerStartHandler(BaseHandler):
 
 
 class ServerContainerStopHandler(BaseHandler):
+    @is_login
     @coroutine
     def post(self):
         """
@@ -588,6 +603,7 @@ class ServerContainerStopHandler(BaseHandler):
 
 
 class ServerContainerDelHandler(BaseHandler):
+    @is_login
     @coroutine
     def post(self):
         """

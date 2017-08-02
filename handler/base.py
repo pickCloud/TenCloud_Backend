@@ -33,6 +33,7 @@ __author__ = 'Jon'
 
 import json
 import tornado.web
+from tornado.gen import coroutine, Task
 
 from service.cluster.cluster import ClusterService
 from service.imagehub.imagehub import ImagehubService
@@ -40,6 +41,10 @@ from service.server.server import ServerService
 from service.project.project import ProjectService
 from service.project.project_versions import ProjectVersionService
 from service.repository.repository import RepositoryService
+from service.user.user import UserService
+
+from constant import SESSION_TIMEOUT, SESSION_KEY
+from utils.general import json_dumps, json_loads
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -49,6 +54,7 @@ class BaseHandler(tornado.web.RequestHandler):
     project_service = ProjectService()
     repos_service = RepositoryService()
     project_versions_service = ProjectVersionService()
+    user_service = UserService()
 
     @property
     def db(self):
@@ -62,12 +68,19 @@ class BaseHandler(tornado.web.RequestHandler):
     def log(self):
         return self.application.log
 
+    @coroutine
     def prepare(self):
-        ''' 获取请求的参数, json类型
+        ''' 获取用户信息 && 获取请求的参数, json类型
 
             Usage:
+                >>> self.current_user['id']
                 >>> self.params['x']
         '''
+        user_id = self.get_secure_cookie('user_id')
+
+        if user_id:
+            self.current_user = yield self.get_session(user_id.decode('utf-8'))
+
         self.params = {}
 
         if self.request.headers.get("Content-Type", "").startswith("application/json") and self.request.body != "":
@@ -80,7 +93,13 @@ class BaseHandler(tornado.web.RequestHandler):
             try:
                 self.params[arg]
             except KeyError:
-                raise AttributeError('缺少 %s' % arg)
+                raise AttributeError('缺少参数 %s' % arg)
+
+    def strip(self, *args):
+        ''' 对self.params的一些参数进行strip
+        '''
+        for arg in args:
+            self.params[arg].strip()
 
     def success(self, data=None, message="success"):
         ''' 响应成功, 返回数据
@@ -92,3 +111,25 @@ class BaseHandler(tornado.web.RequestHandler):
         '''
         self.set_status(code, message)
         self.write({"status": 1, "message": message, "data": data})
+
+    @coroutine
+    def set_session(self, user_id, data):
+        ''' 添加/更新 Session
+        :param user_id: user表id
+        :param data:    dict，key对应user表的字段
+        '''
+        yield Task(self.redis.setex, SESSION_KEY.format(user_id=user_id), SESSION_TIMEOUT, json_dumps(data))
+
+    @coroutine
+    def get_session(self, user_id):
+        ''' 获取 Session
+        '''
+        data = yield Task(self.redis.get, SESSION_KEY.format(user_id=user_id))
+
+        return json_loads(data)
+
+    @coroutine
+    def del_session(self, user_id):
+        ''' 删除 Session
+        '''
+        yield Task(self.redis.delete, SESSION_KEY.format(user_id=user_id))

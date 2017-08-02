@@ -3,9 +3,11 @@ __author__ = 'Jon'
 import traceback
 from handler.base import BaseHandler
 from tornado.gen import coroutine
+from utils.decorator import is_login
 
 
 class RepositoryHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self):
         """
@@ -34,6 +36,7 @@ class RepositoryHandler(BaseHandler):
 
 
 class RepositoryBranchHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self):
         """

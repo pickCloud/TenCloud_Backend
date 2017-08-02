@@ -42,6 +42,7 @@ code_get(){
     log "code_get";
     if [ ! -d "${CODE_DIR}" ];then
       git clone ${CODE_URL} "${CODE_DIR}"
+
       log "clone source code"
     else
       cd "${CODE_DIR}" || exit 1
@@ -67,6 +68,7 @@ code_build(){
         chmod 600 ~/.docker/config.json
         docker build -t "${IMAGE_REGISTRY}" .
     fi
+
     log "finish code_build"
 }
 
@@ -83,6 +85,7 @@ image_push(){
     new_tag="${REGISRTY}/${IMAGE_REGISTRY}"
     docker tag "${IMAGE_REGISTRY}" "${new_tag}"
     docker push "${new_tag}"
+
     log "finish image push"
 }
 
@@ -94,6 +97,7 @@ main(){
     if [ ! -d "${CODE_DIR}" ];then
         mkdir -p "${BASE_DIR}/log"
     fi
+
     command -v docker >/dev/null 2>&1 || {
         echo "docker not installed.  Aborting." && exit;
     }

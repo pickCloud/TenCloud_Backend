@@ -19,6 +19,8 @@ from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDe
                                     ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler, \
                                     ProjectImageLogHandler, ProjectContainerInfoHanler
 from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler
+from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, UserUpdateHandler
+
 
 
 
@@ -79,4 +81,11 @@ routes = [
     # 项目相关之仓库
     (r'/api/repos', RepositoryHandler),
     (r'/api/repos/branches', RepositoryBranchHandler),
+
+    # 用户相关
+    (r'/api/user', UserDetailHandler),
+    (r'/api/user/update', UserUpdateHandler),
+    (r'/api/user/login', UserLoginHandler),
+    (r'/api/user/logout', UserLogoutHandler),
+    (r'/api/user/sms/(\d+)', UserSMSHandler)
 ]
