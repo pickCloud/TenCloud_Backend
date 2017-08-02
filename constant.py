@@ -17,6 +17,14 @@ IMAGEHUB_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 DEPLOYING = 'deploying'
 DEPLOYED  = 'deployed'
 DEPLOYED_FLAG = '1'
+AUTH_CODE = 'auth_code_{mobile}_{auth_code}'
+AUTH_CODE_ERROR_COUNT = 'auth_code_error_count_{mobile}'
+AUTH_CODE_ERROR_COUNT_LIMIT = 10
+LOGIN_LOCK = 'login_lock_{mobile}'
+LOGIN_LOCK_TIMEOUT = 7200 # 两个小时
+SMS_LOCK = 'sms_lock_{mobile}'
+SMS_LOCK_TIMEOUT = 60
+SESSION_KEY = 'session_{user_id}'
 
 #################################################################################################
 # ssh相关
@@ -131,6 +139,19 @@ USER_AGENTS = [
 #################################################################################################
 GIT_REPOS_URL = 'https://api.github.com/user/repos'
 GIT_BRANCH_URL = 'https://api.github.com/repos/{repos_name}/branches'
+
+#################################################################################################
+# SMS相关
+#################################################################################################
+SMS_TIP = '【Console.10】{code} 是您的控制台验证码'
+SMS_TIMEOUT = 600
+SMS_LOCK_TIP = '登陆验证码已连续错{count}次, 请二个小时后再次尝试'.format(count=AUTH_CODE_ERROR_COUNT_LIMIT)
+
+#################################################################################################
+# Session相关
+#################################################################################################
+COOKIE_EXPIRES_DAYS = 1
+SESSION_TIMEOUT = 86400 # 一天
 
 #################################################################################################
 # 其他

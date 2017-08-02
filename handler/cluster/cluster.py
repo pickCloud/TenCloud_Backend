@@ -6,9 +6,11 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from constant import ALIYUN_REGION_NAME
 from utils.general import get_in_formats
+from utils.decorator import is_login
 
 
 class ClusterHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self):
         """
@@ -37,6 +39,7 @@ class ClusterHandler(BaseHandler):
 
 
 class ClusterNewHandler(BaseHandler):
+    @is_login
     @coroutine
     def post(self):
         """
@@ -68,6 +71,7 @@ class ClusterNewHandler(BaseHandler):
 
 
 class ClusterDelHandler(BaseHandler):
+    @is_login
     @coroutine
     def post(self):
         """
@@ -91,6 +95,7 @@ class ClusterDelHandler(BaseHandler):
 
 
 class ClusterDetailHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self, id):
         """
@@ -144,6 +149,7 @@ class ClusterDetailHandler(BaseHandler):
 
 
 class ClusterUpdateHandler(BaseHandler):
+    @is_login
     @coroutine
     def post(self):
         """

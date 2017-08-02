@@ -30,6 +30,7 @@ class ProjectService(BaseService):
             password=settings['deploy_password'],
             image_name=image_name,
             container_name=params['image_name'].replace(":", "-"))
+        
         log = dict()
         for ip in params['infos']:
             out, err = yield self.remote_ssh(ip, cmd)
