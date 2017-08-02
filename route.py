@@ -16,7 +16,6 @@ from handler.server.server import ServerNewHandler, ServerReport, ServerMigratio
                                   ServerContainerDelHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
                                     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
-                                    ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler
                                     ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler, \
                                     ProjectImageLogHandler
 from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler
