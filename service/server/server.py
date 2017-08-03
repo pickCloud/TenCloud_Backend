@@ -212,11 +212,7 @@ class ServerService(BaseService):
     @coroutine
     def get_containers(self, params):
 
-        info = dict()
-        if params.get['server_id']:
-            info = yield self.fetch_ssh_login_info(params)
-        elif params.get['public_ip']:
-            info = yield self.fetch_ssh_login_info(params)
+        info = yield self.fetch_ssh_login_info(params)
         params.update(info)
 
         out, err = yield self.remote_ssh(params, cmd=LIST_CONTAINERS_CMD)
