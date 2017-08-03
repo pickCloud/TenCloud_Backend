@@ -512,7 +512,7 @@ class ServerContainersHandler(BaseHandler):
             }
         """
         try:
-            data = yield self.server_service.get_containers({"server_id": id})
+            data = yield self.server_service.get_containers({"server_id": str(id)})
 
             self.success(data)
         except:
