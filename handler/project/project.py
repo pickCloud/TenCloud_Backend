@@ -283,7 +283,7 @@ class ProjectContainerInfoHanler(BaseHandler):
             data = []
             for ip in json.loads(containers):
                 info = yield self.server_service.get_containers(ip)
-                data.append(info)
+                data.extend(info)
             self.success(data)
         except:
             self.error()
