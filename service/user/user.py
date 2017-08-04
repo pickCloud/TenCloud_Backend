@@ -4,7 +4,7 @@ from tornado.gen import coroutine
 from utils.sms import SMS
 from constant import SMS_TIP
 from qiniu import Auth
-from setting import ACCESS_KEY, SECRET_KEY, BUCKET_NAME, TOKEN_TIMEOUT
+from setting import settings
 
 class UserService(BaseService):
     table = 'user'
@@ -19,9 +19,9 @@ class UserService(BaseService):
 
     @coroutine
     def get_qiniu_token(self):
-        q = Auth(access_key=ACCESS_KEY, secret_key=SECRET_KEY)
-        token = q.upload_token(bucket=BUCKET_NAME, expires=TOKEN_TIMEOUT)
-        return token
+        q = Auth(access_key=settings['qiniu_access_key'], secret_key=settings['qiniu_secret_key'])
+        token = q.upload_token(bucket=settings['qiniu_bucket_name'], expires=settings['qiniu_token_timeout'])
+        return {'token': token, 'timeout': settings['qiniu_token_timeout']}
 
 
 

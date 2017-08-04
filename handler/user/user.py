@@ -259,13 +259,14 @@ class UserUploadToken(BaseHandler):
                 "status": 0,
                 "message": "success",
                 "data": {
-                    "token": str
+                    "token": str,
+                    "timeout": int,
                 }
             }
         """
         try:
-            token = yield self.user_service.get_qiniu_token()
-            self.success({'token': token})
+            data = yield self.user_service.get_qiniu_token()
+            self.success(data)
         except:
             self.error()
             self.log.error(traceback.format_exc())
