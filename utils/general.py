@@ -7,6 +7,7 @@ import re
 import random
 import string
 import json
+from hashlib import md5
 from constant import USER_AGENTS
 
 def get_formats(contents):
@@ -58,3 +59,9 @@ def json_loads(data):
 def json_dumps(data):
     ''' json can dumps None '''
     return json.dumps(data) if data else '{}'
+
+def gen_md5(fp):
+    m = md5()
+    m.update(fp)
+
+    return m.hexdigest()
