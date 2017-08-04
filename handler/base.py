@@ -42,6 +42,7 @@ from service.project.project import ProjectService
 from service.project.project_versions import ProjectVersionService
 from service.repository.repository import RepositoryService
 from service.user.user import UserService
+from service.user.sms import SMSService
 
 from constant import SESSION_TIMEOUT, SESSION_KEY
 from utils.general import json_dumps, json_loads
@@ -55,6 +56,8 @@ class BaseHandler(tornado.web.RequestHandler):
     repos_service = RepositoryService()
     project_versions_service = ProjectVersionService()
     user_service = UserService()
+    sms_service = SMSService()
+
 
     @property
     def db(self):

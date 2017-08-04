@@ -1,20 +1,11 @@
 from service.base import BaseService
 from tornado.concurrent import run_on_executor
-from utils.sms import SMS
-from constant import SMS_TIP
 from qiniu import Auth
 from setting import settings
 
 class UserService(BaseService):
     table = 'user'
     fields = 'id, mobile, email, name, image_url'
-
-    @run_on_executor
-    def send_sms(self, mobile, code):
-
-        result = SMS.send(to=mobile, body=SMS_TIP.format(code=code))
-
-        return result
 
     @run_on_executor
     def get_qiniu_token(self):

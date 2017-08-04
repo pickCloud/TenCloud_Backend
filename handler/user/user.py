@@ -37,7 +37,7 @@ class UserSMSHandler(BaseHandler):
             auth_code = gen_random_digits()
 
             yield Task(self.redis.setex, sms_sending_lock, SMS_SENDING_LOCK_TIMEOUT, '1')
-            result = yield self.user_service.send_sms(mobile, auth_code)
+            result = yield self.sms_service.send(mobile, auth_code)
 
             if result.get('err'):
                 self.error(result.get('err'))
