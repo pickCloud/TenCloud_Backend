@@ -19,7 +19,8 @@ from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDe
                                     ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler, \
                                     ProjectImageLogHandler, ProjectContainerInfoHanler
 from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler
-from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, UserUpdateHandler
+from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, \
+                              UserUpdateHandler, UserUploadToken
 
 
 
@@ -87,5 +88,7 @@ routes = [
     (r'/api/user/update', UserUpdateHandler),
     (r'/api/user/login', UserLoginHandler),
     (r'/api/user/logout', UserLogoutHandler),
-    (r'/api/user/sms/(\d+)', UserSMSHandler)
+    (r'/api/user/sms/(\d+)', UserSMSHandler),
+    (r'/api/user/token', UserUploadToken),
+
 ]
