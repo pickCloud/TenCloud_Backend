@@ -243,3 +243,31 @@ class UserUpdateHandler(BaseHandler):
         except:
             self.error()
             self.log.error(traceback.format_exc())
+
+
+class UserUploadToken(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/user/token 用户上传token
+        @apiName UserUploadToken
+        @apiGroup User
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "message": "success",
+                "data": {
+                    "token": str,
+                    "timeout": int,
+                }
+            }
+        """
+        try:
+            data = yield self.user_service.get_qiniu_token()
+            self.success(data)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
