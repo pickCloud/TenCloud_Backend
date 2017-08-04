@@ -246,6 +246,7 @@ class UserUpdateHandler(BaseHandler):
 
 
 class UserUploadToken(BaseHandler):
+    @is_login
     @coroutine
     def get(self):
         """

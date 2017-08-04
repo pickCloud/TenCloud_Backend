@@ -1,6 +1,5 @@
 from service.base import BaseService
 from tornado.concurrent import run_on_executor
-from tornado.gen import coroutine
 from utils.sms import SMS
 from constant import SMS_TIP
 from qiniu import Auth
@@ -17,7 +16,7 @@ class UserService(BaseService):
 
         return result
 
-    @coroutine
+    @run_on_executor
     def get_qiniu_token(self):
         q = Auth(access_key=settings['qiniu_access_key'], secret_key=settings['qiniu_secret_key'])
         token = q.upload_token(bucket=settings['qiniu_bucket_name'], expires=settings['qiniu_token_timeout'])
