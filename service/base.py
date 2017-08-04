@@ -36,7 +36,7 @@ class BaseService():
     # DB SELECT
     ############################################################################################
     @coroutine
-    def select(self, fields=None, conds=None, params=None, ct=True, ut=True, df=None, one=False):
+    def select(self, fields=None, conds=None, params=None, ct=True, ut=True, df=None, one=False, extra=None):
         '''
         :param fields 字段名, str类型, 默认为类变量fields, 可传'id, name, ...'
         :param conds  条件, list类型, 可传['id=%s', 'name=%s']
@@ -45,20 +45,21 @@ class BaseService():
         :param ut     是否获取更新时间, True/False
         :param df     创建时间/更新时间的字符串格式, 可传'%Y-%m-%d %H:%M:%S'
         :param one    是否一行, True/False
+        :param extra   额外
 
         Usage::
             >>> self.select(conds=['id=%s'], params=[1], ct=False)
 
         :return: [{'id': 1, ...}, ...]
         '''
-        sql_params = self._create_query(fields=fields, conds=conds, params=params, ct=ct, ut=ut, df=df)
+        sql_params = self._create_query(fields=fields, conds=conds, params=params, ct=ct, ut=ut, df=df, extra=extra)
         cur = yield self.db.execute(*sql_params)
 
         data = cur.fetchone() if one else cur.fetchall()
 
         return data
 
-    def _create_query(self, fields=None, conds=None, params=None, ct=True, ut=True, df=None):
+    def _create_query(self, fields=None, conds=None, params=None, ct=True, ut=True, df=None, extra=None):
         '''创建查询语句与参数, 供db.excute执行
            create_time, update_time比较特殊, 默认都有, 不需要时ct=False, ut=False
 
@@ -77,13 +78,13 @@ class BaseService():
 
         sql += 'FROM {table} '.format(table=self.table)
 
-        if not conds:
-            sql_params = [sql]
-        else:
+        if conds:
             sql += ' WHERE ' + ' AND '.join(conds)
 
-            sql_params = [sql, params]
+        if extra:
+            sql += extra
 
+        sql_params = [sql, params]
         return sql_params
 
     ############################################################################################
