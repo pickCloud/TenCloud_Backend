@@ -3,7 +3,7 @@ __author__ = 'Jon'
 import traceback
 from handler.base import BaseHandler
 from tornado.gen import coroutine, Task
-from utils.general import validate_mobile, validate_auth_code, gen_random_digits
+from utils.general import validate_mobile, validate_auth_code, gen_random_code
 from utils.decorator import is_login
 from utils.datetool import seconds_to_human
 from constant import AUTH_CODE, SMS_TIMEOUT, COOKIE_EXPIRES_DAYS, AUTH_CODE_ERROR_COUNT, AUTH_CODE_ERROR_COUNT_LIMIT, \
@@ -34,7 +34,7 @@ class UserSMSHandler(BaseHandler):
                 return
 
             # 发送短信验证码
-            auth_code = gen_random_digits()
+            auth_code = gen_random_code()
 
             yield Task(self.redis.setex, sms_sending_lock, SMS_SENDING_LOCK_TIMEOUT, '1')
             result = yield self.sms_service.send(mobile, auth_code)
