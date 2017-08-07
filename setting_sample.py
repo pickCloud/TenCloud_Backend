@@ -65,6 +65,7 @@ settings['sms_from_number'] = ''
 # 七牛
 #######################################
 settings['qiniu_bucket_name'] = ''
+settings['qiniu_bucket_url'] = ''
 settings['qiniu_token_timeout'] = 3600
 settings['qiniu_access_key'] = ''
 settings['qiniu_secret_key'] = ''

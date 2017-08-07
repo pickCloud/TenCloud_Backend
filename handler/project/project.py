@@ -144,7 +144,7 @@ class ProjectDetailHandler(BaseHandler):
                     "update_time": str,
                     "status": str,
                     "mode": str,
-                    "deploy_ips": str[],
+                    "deploy_ips": str,
                 }
                     ...
                 ]
@@ -284,6 +284,8 @@ class ProjectContainerInfoHanler(BaseHandler):
             data = []
             for ip in json.loads(containers):
                 info = yield self.server_service.get_containers(ip)
+                if not info:
+                    continue
                 info[3] = info[3].split('+')[0].strip()
                 server_id = yield self.server_service.fetch_server_id
                 info.extend(server_id)
