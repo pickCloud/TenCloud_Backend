@@ -224,11 +224,17 @@ class UserUpdateHandler(BaseHandler):
         try:
             old = self.current_user
 
+            image_url = self.params.get('image_url', '')
+            if image_url:
+                image_url = 'http://ou3t8uyol.bkt.clouddn.com/' + image_url
+            else:
+                image_url = old['image_url']
+
             new = {
                 'id': old['id'],
                 'name': self.params.get('name', '') or old['name'],
                 'email': self.params.get('email' '') or old['email'],
-                'image_url': self.params.get('image_url', '') or old['image_url'],
+                'image_url': image_url,
                 'create_time': old['create_time'],
                 'update_time': seconds_to_human()
             }
