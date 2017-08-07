@@ -37,7 +37,7 @@ class BaseService():
     # DB SELECT
     ############################################################################################
     @coroutine
-    def select(self, fields=None, conds=None, params=None, ct=True, ut=True, df=None, one=False, extra=None):
+    def select(self, fields=None, conds=None, params=None, ct=True, ut=True, df=None, one=False, extra=''):
         '''
         :param fields 字段名, str类型, 默认为类变量fields, 可传'id, name, ...'
         :param conds  条件, list类型, 可传['id=%s', 'name=%s']

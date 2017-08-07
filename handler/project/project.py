@@ -274,6 +274,7 @@ class ProjectContainerInfoHanler(BaseHandler):
                          "harbor-jobservice", # container name
                         "Up 3 weeks", # status
                         "2017-05-18 14:06:50" # created_time
+                        "server_id" # server_id
                     ],
                     ...
                 ]
@@ -284,6 +285,8 @@ class ProjectContainerInfoHanler(BaseHandler):
             for ip in json.loads(containers):
                 info = yield self.server_service.get_containers(ip)
                 info[3] = info[3].split('+')[0].strip()
+                server_id = yield self.server_service.fetch_server_id
+                info.extend(server_id)
                 data.extend(info)
             self.success(data)
         except:
