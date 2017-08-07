@@ -16,6 +16,7 @@ from tornado.httputil import url_concat, HTTPHeaders
 from tornado.httpclient import AsyncHTTPClient
 from tornado.concurrent import run_on_executor
 from concurrent.futures import ThreadPoolExecutor
+from urllib.parse import urlencode
 
 from utils.db import DB, REDIS
 from utils.log import LOG
@@ -178,9 +179,27 @@ class BaseService():
         payload['headers'] = HTTPHeaders(payload['headers'])
 
         res = yield AsyncHTTPClient().fetch(url, **payload)
-        data = json.loads(res.body.decode())
+        body = json.loads(res.body.decode())
 
-        return data
+        return body
+
+    @coroutine
+    def post(self, url, data=None, headers=None, timeout=HTTP_TIMEOUT):
+        if not data: data = {}
+
+        if not headers:
+            headers = {'User-Agent': choose_user_agent()}
+
+        res = yield AsyncHTTPClient().fetch(url,
+                                            method='POST',
+                                            body=urlencode(data),
+                                            headers=HTTPHeaders(headers),
+                                            request_timeout=timeout)
+
+        body = json.loads(res.body.decode())
+
+        return body
+
 
     ############################################################################################
     # SSH
