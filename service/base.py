@@ -59,7 +59,7 @@ class BaseService():
 
         return data
 
-    def _create_query(self, fields=None, conds=None, params=None, ct=True, ut=True, df=None, extra=None):
+    def _create_query(self, fields=None, conds=None, params=None, ct=True, ut=True, df=None, extra=''):
         '''创建查询语句与参数, 供db.excute执行
            create_time, update_time比较特殊, 默认都有, 不需要时ct=False, ut=False
 
@@ -78,13 +78,12 @@ class BaseService():
 
         sql += 'FROM {table} '.format(table=self.table)
 
-        if conds:
+        if not conds:
+            sql_params = [sql+extra]
+        else:
             sql += ' WHERE ' + ' AND '.join(conds)
+            sql_params = [sql+extra, params]
 
-        if extra:
-            sql += extra
-
-        sql_params = [sql, params]
         return sql_params
 
     ############################################################################################
