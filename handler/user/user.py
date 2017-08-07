@@ -9,6 +9,7 @@ from utils.datetool import seconds_to_human
 from constant import AUTH_CODE, SMS_TIMEOUT, COOKIE_EXPIRES_DAYS, AUTH_CODE_ERROR_COUNT, AUTH_CODE_ERROR_COUNT_LIMIT, \
                      AUTH_LOCK, AUTH_LOCK_TIMEOUT, AUTH_LOCK_TIP, AUTH_FAILURE_TIP, \
                      SMS_SENDING_LOCK, SMS_SENDING_LOCK_TIMEOUT, SMS_SENDING_LOCK_TIP
+from setting import settings
 
 
 class UserSMSHandler(BaseHandler):
@@ -224,17 +225,12 @@ class UserUpdateHandler(BaseHandler):
         try:
             old = self.current_user
 
-            image_url = self.params.get('image_url', '')
-            if image_url:
-                image_url = 'http://ou3t8uyol.bkt.clouddn.com/' + image_url
-            else:
-                image_url = old['image_url']
-
             new = {
                 'id': old['id'],
                 'name': self.params.get('name', '') or old['name'],
                 'email': self.params.get('email' '') or old['email'],
-                'image_url': image_url,
+                'image_url': settings['qiniu_bucket_url'] + self.params.get('image_url', '') \
+                             if self.params.get('image_url', '') else old['image_url'],
                 'create_time': old['create_time'],
                 'update_time': seconds_to_human()
             }
