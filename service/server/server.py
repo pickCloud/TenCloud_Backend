@@ -172,6 +172,13 @@ class ServerService(BaseService):
         return data['public_ip']
 
     @coroutine
+    def fetch_server_id(self, public_ip):
+        sql = " SELECT id as server_id FROM server WHERE public_ip=%s "
+        cur = yield self.db.execute(sql, public_ip)
+        data = cur.fetchone()
+        return data['server_id']
+
+    @coroutine
     def fetch_instance_id(self, server_id):
         sql = " SELECT i.instance_id as instance_id FROM instance i JOIN server s USING(public_ip) WHERE s.id=%s "
         cur = yield self.db.execute(sql, server_id)

@@ -273,7 +273,8 @@ class ProjectContainerInfoHanler(BaseHandler):
                         "1a050e4d7e43", # container id
                          "harbor-jobservice", # container name
                         "Up 3 weeks", # status
-                        "2017-05-18 14:06:50 +0800 CST\n" # created_time
+                        "2017-05-18 14:06:50" # created_time
+                        "server_id" # server_id
                     ],
                     ...
                 ]
@@ -283,6 +284,9 @@ class ProjectContainerInfoHanler(BaseHandler):
             data = []
             for ip in json.loads(containers):
                 info = yield self.server_service.get_containers(ip)
+                info[3] = info[3].split('+')[0].strip()
+                server_id = yield self.server_service.fetch_server_id
+                info.extend(server_id)
                 data.extend(info)
             self.success(data)
         except:
@@ -378,7 +382,7 @@ class ProjectVersionsHandler(BaseHandler):
             }
         """
         try:
-            data = yield self.project_versions_service.select(fields='id, version', conds=['name=%s'], params=prj_name, ct=False)
+            data = yield self.project_versions_service.select(fields='id, version', conds=['name=%s'], params=prj_name, ct=False, extra='order by update_time desc')
             self.success(data)
         except:
             self.error()
