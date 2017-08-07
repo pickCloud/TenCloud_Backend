@@ -210,12 +210,14 @@ class ProjectDeploymentHandler(BaseHandler):
         @apiGroup Project
 
         @apiParam {String} image_name 镜像名称
+        @apiParam {String} container_name 容器名字
         @apiParam {map[String]map[String]String} ips 公共ip
         @apiParam {String} project_id 项目id
 
         @apiParamExample {json} Request-Example:
             {
                 "image_name": "infohub:0.0.1",
+                "container_name": "infohub",
                 "project_id": "1",
                 "ips": [
                     {"public_ip": "192.168.56.10"},
@@ -238,6 +240,10 @@ class ProjectDeploymentHandler(BaseHandler):
             }
         """
         try:
+            yield self.project_service.update(sets='container_name=%s',
+                                              conds='id=%s',
+                                              params=[self.params['container_name'],self.params['project_id']])
+
             self.params["infos"] = []
             for ip in self.params['ips']:
                 login_info = yield self.server_service.fetch_ssh_login_info(ip)
@@ -262,6 +268,7 @@ class ProjectContainerInfoHanler(BaseHandler):
         @apiGroup Project
 
         @apiParam {String} containers 容器列表
+        @apiParam {String} container_name 容器名字
 
         @apiSuccessExample {json} Success-Response
             HTTP/1.1 200 OK
@@ -283,13 +290,16 @@ class ProjectContainerInfoHanler(BaseHandler):
         try:
             data = []
             for ip in json.loads(containers):
+                server_id = yield self.server_service.fetch_server_id(ip['public_ip'])
                 info = yield self.server_service.get_containers(ip)
                 if not info:
                     continue
-                info[3] = info[3].split('+')[0].strip()
-                server_id = yield self.server_service.fetch_server_id
-                info.extend(server_id)
-                data.extend(info)
+                one_ip = []
+                for i in info:
+                    i[3] = i[3].split('+')[0].strip()
+                    i.append(server_id)
+                    one_ip.extend(i)
+                data.append(one_ip)
             self.success(data)
         except:
             self.error()

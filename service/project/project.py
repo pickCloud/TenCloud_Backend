@@ -29,7 +29,7 @@ class ProjectService(BaseService):
             username=settings['deploy_username'],
             password=settings['deploy_password'],
             image_name=image_name,
-            container_name=params['image_name'].replace(":", "-"))
+            container_name=params['container_name'])
         
         log = dict()
         for ip in params['infos']:
