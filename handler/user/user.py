@@ -218,6 +218,7 @@ class UserUpdateHandler(BaseHandler):
                 "name": str,
                 "email": str,
                 "image_url": str,
+                "mobile": str,
             }
 
         @apiUse Success
@@ -231,13 +232,14 @@ class UserUpdateHandler(BaseHandler):
                 'email': self.params.get('email' '') or old['email'],
                 'image_url': settings['qiniu_bucket_url'] + self.params.get('image_url', '') \
                              if self.params.get('image_url', '') else old['image_url'],
+                'mobile': self.params.get('mobile', '') or old['mobile'],
                 'create_time': old['create_time'],
                 'update_time': seconds_to_human()
             }
 
-            yield self.user_service.update(sets=['name=%s', 'email=%s', 'image_url=%s'],
+            yield self.user_service.update(sets=['name=%s', 'email=%s', 'image_url=%s', 'mobile=%s'],
                                            conds=['id=%s'],
-                                           params=[new['name'], new['email'], new['image_url'], new['id']])
+                                           params=[new['name'], new['email'], new['image_url'], new['mobile'], new['id']])
 
             yield self.set_session(new['id'], new)
 

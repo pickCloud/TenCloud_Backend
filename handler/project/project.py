@@ -210,12 +210,14 @@ class ProjectDeploymentHandler(BaseHandler):
         @apiGroup Project
 
         @apiParam {String} image_name 镜像名称
+        @apiParam {String} container_name 容器名字
         @apiParam {map[String]map[String]String} ips 公共ip
         @apiParam {String} project_id 项目id
 
         @apiParamExample {json} Request-Example:
             {
                 "image_name": "infohub:0.0.1",
+                "container_name": "infohub",
                 "project_id": "1",
                 "ips": [
                     {"public_ip": "192.168.56.10"},
@@ -238,14 +240,14 @@ class ProjectDeploymentHandler(BaseHandler):
             }
         """
         try:
+
             self.params["infos"] = []
             for ip in self.params['ips']:
                 login_info = yield self.server_service.fetch_ssh_login_info(ip)
                 self.params['infos'].append(login_info)
             log = yield self.project_service.deployment(self.params)
-
-            arg = [json.dumps(self.params['ips']), self.params['project_id']]
-            yield self.project_service.update(sets=['deploy_ips=%s'], conds=['id=%s'], params=arg)
+            arg = [json.dumps(self.params['ips']), self.params['container_name'], self.params['project_id']]
+            yield self.project_service.update(sets=['deploy_ips=%s', 'container_name=%s'], conds=['id=%s'], params=arg)
 
             self.success(log)
         except:
@@ -253,15 +255,17 @@ class ProjectDeploymentHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class ProjectContainerInfoHanler(BaseHandler):
+class ProjectContainersListHanler(BaseHandler):
+    @is_login
     @coroutine
-    def get(self, containers):
+    def post(self):
         """
-        @api {get} /api/project/container/([\\w\W]+) 项目容器列表
-        @apiName ProjectContainerInfoHanler
+        @api {post} /api/project/containers/list 项目容器列表
+        @apiName ProjectContainersList
         @apiGroup Project
 
-        @apiParam {String} containers 容器列表
+        @apiParam {String} container_list 容器列表
+        @apiParam {String} container_name 容器名字
 
         @apiSuccessExample {json} Success-Response
             HTTP/1.1 200 OK
@@ -282,14 +286,20 @@ class ProjectContainerInfoHanler(BaseHandler):
         """
         try:
             data = []
-            for ip in json.loads(containers):
-                info = yield self.server_service.get_containers(ip)
+            for ip in json.loads(self.params['container_list']):
+                server_id = yield self.server_service.fetch_server_id(ip['public_ip'])
+                login_info = yield self.server_service.fetch_ssh_login_info(ip)
+                ip.update(login_info)
+                ip.update({'container_name': self.params['container_name']})
+                info = yield self.project_service.list_containers(ip)
                 if not info:
                     continue
-                info[3] = info[3].split('+')[0].strip()
-                server_id = yield self.server_service.fetch_server_id
-                info.extend(server_id)
-                data.extend(info)
+                one_ip = []
+                for i in info:
+                    i[3] = i[3].split('+')[0].strip()
+                    i.append(server_id)
+                    one_ip.extend(i)
+                data.append(one_ip)
             self.success(data)
         except:
             self.error()

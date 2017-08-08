@@ -222,6 +222,8 @@ CREATE TABLE `project` (
 ALTER TABLE project ADD COLUMN http_url varchar(512) NOT NULL DEFAULT '' COMMENT '项目在github的http地址'
 ALTER TABLE project ADD COLUMN image_name varchar(128) NOT NULL DEFAULT '' COMMENT '镜像名字'
 ALTER TABLE project ADD COLUMN deploy_ips varchar(128) NOT NULL DEFAULT '' COMMENT '部署的服务器列表'
+ALTER TABLE project ADD COLUMN container_name varchar(128) NOT NULL DEFAULT '' COMMENT '容器名字'
+
 ```
 
 * 项目版本表 project_versions
