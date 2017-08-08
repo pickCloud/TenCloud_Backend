@@ -46,8 +46,8 @@ def validate_auth_code(auth_code):
 
     _validate(regex, auth_code, '请输入4位验证码')
 
-def gen_random_digits(length=6):
-    return ''.join(random.sample(string.digits, length))
+def gen_random_code(length=6):
+    return ''.join(random.sample('123456789', length))
 
 def choose_user_agent():
     return random.choice(USER_AGENTS)

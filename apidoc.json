@@ -1,6 +1,6 @@
 {
     "name": "控制台API",
-    "version": "1.1.0",
+    "version": "0.0.0",
     "description": "status等于0, 表示成功; 否则, 失败",
     "title": "Console apiDoc",
     "url" : "http://47.94.18.22"

@@ -260,7 +260,7 @@ class ProjectContainersListHanler(BaseHandler):
     @coroutine
     def post(self):
         """
-        @api {get} /api/project/containers/list 项目容器列表
+        @api {post} /api/project/containers/list 项目容器列表
         @apiName ProjectContainersList
         @apiGroup Project
 
