@@ -240,18 +240,14 @@ class ProjectDeploymentHandler(BaseHandler):
             }
         """
         try:
-            yield self.project_service.update(sets='container_name=%s',
-                                              conds='id=%s',
-                                              params=[self.params['container_name'],self.params['project_id']])
 
             self.params["infos"] = []
             for ip in self.params['ips']:
                 login_info = yield self.server_service.fetch_ssh_login_info(ip)
                 self.params['infos'].append(login_info)
             log = yield self.project_service.deployment(self.params)
-
-            arg = [json.dumps(self.params['ips']), self.params['project_id']]
-            yield self.project_service.update(sets=['deploy_ips=%s'], conds=['id=%s'], params=arg)
+            arg = [json.dumps(self.params['ips']), self.params['container_name'], self.params['project_id']]
+            yield self.project_service.update(sets=['deploy_ips=%s', 'container_name=%s'], conds=['id=%s'], params=arg)
 
             self.success(log)
         except:
@@ -259,15 +255,16 @@ class ProjectDeploymentHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class ProjectContainerInfoHanler(BaseHandler):
+class ProjectContainersListHanler(BaseHandler):
+    @is_login
     @coroutine
-    def get(self, containers):
+    def post(self):
         """
-        @api {get} /api/project/container/([\\w\W]+) 项目容器列表
-        @apiName ProjectContainerInfoHanler
+        @api {get} /api/project/containers/list 项目容器列表
+        @apiName ProjectContainersList
         @apiGroup Project
 
-        @apiParam {String} containers 容器列表
+        @apiParam {String} container_list 容器列表
         @apiParam {String} container_name 容器名字
 
         @apiSuccessExample {json} Success-Response
@@ -289,9 +286,12 @@ class ProjectContainerInfoHanler(BaseHandler):
         """
         try:
             data = []
-            for ip in json.loads(containers):
+            for ip in json.loads(self.params['container_list']):
                 server_id = yield self.server_service.fetch_server_id(ip['public_ip'])
-                info = yield self.server_service.get_containers(ip)
+                login_info = yield self.server_service.fetch_ssh_login_info(ip)
+                ip.update(login_info)
+                ip.update({'container_name': self.params['container_name']})
+                info = yield self.project_service.list_containers(ip)
                 if not info:
                     continue
                 one_ip = []

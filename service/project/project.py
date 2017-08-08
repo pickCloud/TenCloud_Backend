@@ -4,6 +4,7 @@ from tornado.gen import coroutine
 from service.base import BaseService
 from constant import CREATE_IMAGE_CMD, IMAGE_INFO_CMD, DEPLOY_CMD, REPOS_DOMAIN
 from setting import settings
+from constant import LIST_CONTAINERS_CMD
 
 
 class ProjectService(BaseService):
@@ -47,6 +48,20 @@ class ProjectService(BaseService):
         data = [i.split(',') for i in out]
         return data, err
 
+
+    @coroutine
+    def list_containers(self, params):
+        sufix = '|grep {container_name} '.format(container_name=params['container_name'])
+        cmd = LIST_CONTAINERS_CMD+sufix
+        out, err = yield self.remote_ssh(params, cmd)
+
+        if err:
+            raise ValueError
+
+        data = [i.split(',') for i in out]
+
+        return data
+
     @coroutine
     def insert_log(self, params):
         sql = """
@@ -55,4 +70,3 @@ class ProjectService(BaseService):
               """
         arg = [params['name'], params['version'], params['log'], params['log']]
         yield self.db.execute(sql, arg)
-
