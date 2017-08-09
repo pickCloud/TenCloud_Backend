@@ -435,3 +435,28 @@ class ProjectImageFindHandler(BaseHandler):
             self.error()
             self.log.error(traceback.format_exc())
 
+
+class ProjectImageUpload(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/project/image/upload 镜像上传
+        @apiName ProjectImageUpload
+        @apiGroup Project
+
+        @apiParam {String} filename 文件名字
+        @apiParam {String} file_url 下载链接
+        @apiParam {String} version 版本
+
+        @apiUse Success
+        """
+        pass
+
+
+class ProjectImageDownload(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        pass
+
