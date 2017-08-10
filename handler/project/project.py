@@ -9,7 +9,7 @@ from utils.general import get_in_formats
 from utils.decorator import is_login
 from setting import settings
 from handler.user import user
-
+from constant import IMAGE_TYPE_UPLOAD
 
 class ProjectHandler(BaseHandler):
     @is_login
@@ -440,11 +440,13 @@ class ProjectImageFindHandler(BaseHandler):
 class ProjectImageUpload(user.FileUploadMixin):
     @is_login
     @coroutine
-    def get(self):
+    def get(self, prj_id):
         """
-        @api {post} /api/project/image/upload 镜像上传
+        @api {get} /api/project/([\w\W]+)/image/upload 镜像上传
         @apiName ProjectImageUpload
         @apiGroup Project
+
+        @apiParam {String} prj_id 项目id
 
         @apiUse Success
         """
@@ -454,6 +456,7 @@ class ProjectImageUpload(user.FileUploadMixin):
             filename = yield self.handle_file_upload()
             self.params.update({'filename': settings['store_path']+filename})
             yield self.project_service.load_image(self.params)
+            yield self.project_service.update(sets=['image_source=%d'], conds=['id=%s'], params=[IMAGE_TYPE_UPLOAD, prj_id])
             self.success()
         except:
             self.error()

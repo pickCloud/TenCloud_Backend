@@ -78,7 +78,7 @@ routes = [
     (r'/api/project/([\w\W]+)/image', ProjectImageFindHandler),
     (r'/api/project/([\w\W]+)/versions', ProjectVersionsHandler),
     (r'/api/project/containers/list', ProjectContainersListHanler),
-    (r'/api/project/image/upload', ProjectImageUpload),
+    (r'/api/project/([\w\W]+)/image/upload', ProjectImageUpload),
 
     # 项目相关之仓库
     (r'/api/repos', RepositoryHandler),
