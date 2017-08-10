@@ -8,6 +8,7 @@ from handler.base import BaseHandler
 from utils.general import get_in_formats
 from utils.decorator import is_login
 from setting import settings
+from handler.user import user
 
 
 class ProjectHandler(BaseHandler):
@@ -436,22 +437,27 @@ class ProjectImageFindHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class ProjectImageUpload(BaseHandler):
+class ProjectImageUpload(user.FileUploadMixin):
     @is_login
     @coroutine
-    def post(self):
+    def get(self):
         """
         @api {post} /api/project/image/upload 镜像上传
         @apiName ProjectImageUpload
         @apiGroup Project
 
-        @apiParam {String} filename 文件名字
-        @apiParam {String} file_url 下载链接
-        @apiParam {String} version 版本
-
         @apiUse Success
         """
-        pass
+        try:
+            login_info = yield self.server_service.fetch_ssh_login_info({'public_ip': settings['ip_for_image_upload']})
+            self.params.update(login_info)
+            filename = yield self.handle_file_upload()
+            self.params.update({'filename': settings['store_path']+filename})
+            yield self.project_service.load_image(self.params)
+            self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
 
 
 class ProjectImageDownload(BaseHandler):
