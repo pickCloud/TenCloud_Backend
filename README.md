@@ -210,7 +210,7 @@ CREATE TABLE `project` (
   `name` varchar(128) NOT NULL COMMENT '项目名称',
   `description` text COMMENT '项目描述',
   `repos_name` varchar(128) NOT NULL DEFAULT '' COMMENT '项目仓库名称',
-  `status` tinyint(4) DEFAULT '0' COMMENT '项目最新状态: 0 无, 1 构建成功, 2 部署成功, -1 构建失败, -2 部署失败',
+  `status` tinyint(4) DEFAULT '0' COMMENT '项目最新状态: 0 初创建, 1 构建中, 2 构建成功, 3 部署中， 4 部署成功, -2 构建失败, -4 部署失败',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `repos_url` varchar(512) NOT NULL DEFAULT '' COMMENT '项目仓库地址',

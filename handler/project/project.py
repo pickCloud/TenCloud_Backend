@@ -249,7 +249,6 @@ class ProjectDeploymentHandler(BaseHandler):
             log = yield self.project_service.deployment(self.params)
             arg = [json.dumps(self.params['ips']), self.params['container_name'], self.params['project_id']]
             yield self.project_service.update(sets=['deploy_ips=%s', 'container_name=%s'], conds=['id=%s'], params=arg)
-
             self.success(log)
         except:
             self.error()
@@ -440,7 +439,7 @@ class ProjectImageFindHandler(BaseHandler):
 class ProjectImageUpload(user.FileUploadMixin):
     @is_login
     @coroutine
-    def get(self):
+    def post(self):
         """
         @api {get} /api/project/image/upload 镜像上传
         @apiName ProjectImageUpload
@@ -451,7 +450,7 @@ class ProjectImageUpload(user.FileUploadMixin):
         """
         try:
             filename = yield self.handle_file_upload()
-            yield self.project_service.load_image(filename)
+            yield self.project_service.load_image(settings['store_path']+filename)
             self.success()
         except:
             self.error()

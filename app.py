@@ -12,6 +12,7 @@ from route import routes
 from setting import settings
 from utils.log import LOG
 from utils.db import DB, REDIS
+from constant import TORNADO_MAX_BODY_SIZE
 
 
 ####################################################################
@@ -35,7 +36,7 @@ class Application(tornado.web.Application):
 def main():
     try:
         app = Application()
-        app.listen(options.port)
+        app.listen(options.port, max_body_size=TORNADO_MAX_BODY_SIZE)
         LOG.info('Sever Listen {port}...'.format(port=options.port))
         tornado.ioloop.IOLoop.instance().start()
     except:
