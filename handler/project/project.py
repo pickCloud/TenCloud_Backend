@@ -450,7 +450,7 @@ class ProjectImageUpload(user.FileUploadMixin):
         """
         try:
             filename = yield self.handle_file_upload()
-            yield self.project_service.load_image(settings['store_path']+filename)
+            yield self.project_service.load_image(settings['store_path']+"/"+filename)
             self.success()
         except:
             self.error()
