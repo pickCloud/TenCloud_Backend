@@ -10,7 +10,11 @@ from setting import settings
 
 class ProjectService(BaseService):
     table = 'project'
-    fields = 'id, name, description, repos_name, repos_url, http_url, image_name, mode, status, deploy_ips, container_name，image_source'
+    fields = """
+                id, name, description, repos_name, 
+                repos_url, http_url, image_name, mode, status, 
+                deploy_ips, container_name, image_source
+            """
 
     @coroutine
     def create_image(self, params):
@@ -76,7 +80,7 @@ class ProjectService(BaseService):
     def load_image(self, filename):
         cmd = LOAD_IMAGE_FILE.format(filename=filename)+LOAD_IMAGE
         out = os.system(cmd)
-        if not out:
+        if out:
             raise ValueError
 
 
