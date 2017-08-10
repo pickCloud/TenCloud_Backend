@@ -79,6 +79,7 @@ class ProjectService(BaseService):
     @run_on_executor
     def load_image(self, filename):
         cmd = LOAD_IMAGE_FILE.format(filename=filename)+LOAD_IMAGE
+        self.log.info(cmd)
         out = os.system(cmd)
         if out:
             raise ValueError
