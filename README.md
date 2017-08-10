@@ -223,7 +223,7 @@ CREATE TABLE `project` (
   UNIQUE KEY `repos_url` (`repos_url`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-ALTER TABLE project ADD COLUMN image_source tinyint(4) NOT NULL DEFAULT '' COMMENT '镜像来源头：1 项目构建，2 本地上传， 3 云端下载'
+ALTER TABLE project ADD COLUMN image_source tinyint(4) NOT NULL DEFAULT '' COMMENT '镜像来源头：0 项目构建，1 本地上传， 2 云端下载'
 
 
 ```

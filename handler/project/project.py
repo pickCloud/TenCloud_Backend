@@ -9,7 +9,6 @@ from utils.general import get_in_formats
 from utils.decorator import is_login
 from setting import settings
 from handler.user import user
-from constant import IMAGE_TYPE_UPLOAD
 
 class ProjectHandler(BaseHandler):
     @is_login
@@ -64,6 +63,7 @@ class ProjectNewHandler(BaseHandler):
         @apiParam {String} repos_url 仓库url
         @apiParam {String} http_url 项目在github的http地址
         @apiParam {Number} mode 类型
+        @apiParam {Number} image_source 镜像来源
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -440,23 +440,18 @@ class ProjectImageFindHandler(BaseHandler):
 class ProjectImageUpload(user.FileUploadMixin):
     @is_login
     @coroutine
-    def get(self, prj_id):
+    def get(self):
         """
-        @api {get} /api/project/([\w\W]+)/image/upload 镜像上传
+        @api {get} /api/project/image/upload 镜像上传
         @apiName ProjectImageUpload
         @apiGroup Project
 
-        @apiParam {String} prj_id 项目id
 
         @apiUse Success
         """
         try:
-            login_info = yield self.server_service.fetch_ssh_login_info({'public_ip': settings['ip_for_image_upload']})
-            self.params.update(login_info)
             filename = yield self.handle_file_upload()
-            self.params.update({'filename': settings['store_path']+filename})
-            yield self.project_service.load_image(self.params)
-            yield self.project_service.update(sets=['image_source=%d'], conds=['id=%s'], params=[IMAGE_TYPE_UPLOAD, prj_id])
+            yield self.project_service.load_image(filename)
             self.success()
         except:
             self.error()

@@ -1,6 +1,8 @@
 __author__ = 'Jon'
 
+import os
 from tornado.gen import coroutine
+from tornado.concurrent import run_on_executor
 from service.base import BaseService
 from constant import CREATE_IMAGE_CMD, IMAGE_INFO_CMD, DEPLOY_CMD, REPOS_DOMAIN, LIST_CONTAINERS_CMD, LOAD_IMAGE_FILE, LOAD_IMAGE
 from setting import settings
@@ -70,12 +72,11 @@ class ProjectService(BaseService):
         arg = [params['name'], params['version'], params['log'], params['log']]
         yield self.db.execute(sql, arg)
 
-    @coroutine
-    def load_image(self, params):
-        cmd = LOAD_IMAGE_FILE.format(filename=params['filename'])+LOAD_IMAGE
-        self.log.info(cmd)
-        _, err = yield self.remote_ssh(params, cmd)
-        if err:
+    @run_on_executor
+    def load_image(self, filename):
+        cmd = LOAD_IMAGE_FILE.format(filename=filename)+LOAD_IMAGE
+        out = os.system(cmd)
+        if not out:
             raise ValueError
 
 
