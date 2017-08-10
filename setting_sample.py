@@ -76,3 +76,4 @@ settings['qiniu_secret_key'] = ''
 # 上传文件
 #################################################################################################
 settings['store_path'] = ''
+settings['ip_for_image_upload'] = ''

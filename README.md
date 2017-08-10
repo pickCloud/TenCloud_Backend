@@ -215,14 +215,16 @@ CREATE TABLE `project` (
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `repos_url` varchar(512) NOT NULL DEFAULT '' COMMENT '项目仓库地址',
   `mode` tinyint(4) DEFAULT '0' COMMENT '项目类型: 0 普通项目, 1 基础服务, 2 应用组件',
+  'http_url' varchar(512) NOT NULL DEFAULT '' COMMENT '项目在github的http地址',
+  'image_name' varchar(128) NOT NULL DEFAULT '' COMMENT '镜像名字',
+  'deploy_ips' varchar(128) NOT NULL DEFAULT '' COMMENT '部署的服务器列表',
+  'container_name' varchar(128) NOT NULL DEFAULT '' COMMENT '容器名字',
   PRIMARY KEY (`id`),
   UNIQUE KEY `repos_url` (`repos_url`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-ALTER TABLE project ADD COLUMN http_url varchar(512) NOT NULL DEFAULT '' COMMENT '项目在github的http地址'
-ALTER TABLE project ADD COLUMN image_name varchar(128) NOT NULL DEFAULT '' COMMENT '镜像名字'
-ALTER TABLE project ADD COLUMN deploy_ips varchar(128) NOT NULL DEFAULT '' COMMENT '部署的服务器列表'
-ALTER TABLE project ADD COLUMN container_name varchar(128) NOT NULL DEFAULT '' COMMENT '容器名字'
+ALTER TABLE project ADD COLUMN image_source tinyint(4) NOT NULL DEFAULT '' COMMENT '镜像来源头：0 项目构建，1 本地上传， 2 云端下载'
+
 
 ```
 

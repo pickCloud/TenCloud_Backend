@@ -8,7 +8,7 @@ from handler.base import BaseHandler
 from utils.general import get_in_formats
 from utils.decorator import is_login
 from setting import settings
-
+from handler.user import user
 
 class ProjectHandler(BaseHandler):
     @is_login
@@ -63,6 +63,7 @@ class ProjectNewHandler(BaseHandler):
         @apiParam {String} repos_url 仓库url
         @apiParam {String} http_url 项目在github的http地址
         @apiParam {Number} mode 类型
+        @apiParam {Number} image_source 镜像来源
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -434,4 +435,32 @@ class ProjectImageFindHandler(BaseHandler):
         except:
             self.error()
             self.log.error(traceback.format_exc())
+
+
+class ProjectImageUpload(user.FileUploadMixin):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/project/image/upload 镜像上传
+        @apiName ProjectImageUpload
+        @apiGroup Project
+
+
+        @apiUse Success
+        """
+        try:
+            filename = yield self.handle_file_upload()
+            yield self.project_service.load_image(filename)
+            self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ProjectImageDownload(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        pass
 

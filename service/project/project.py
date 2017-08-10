@@ -1,15 +1,16 @@
 __author__ = 'Jon'
 
+import os
 from tornado.gen import coroutine
+from tornado.concurrent import run_on_executor
 from service.base import BaseService
-from constant import CREATE_IMAGE_CMD, IMAGE_INFO_CMD, DEPLOY_CMD, REPOS_DOMAIN
+from constant import CREATE_IMAGE_CMD, IMAGE_INFO_CMD, DEPLOY_CMD, REPOS_DOMAIN, LIST_CONTAINERS_CMD, LOAD_IMAGE_FILE, LOAD_IMAGE
 from setting import settings
-from constant import LIST_CONTAINERS_CMD
 
 
 class ProjectService(BaseService):
     table = 'project'
-    fields = 'id, name, description, repos_name, repos_url, http_url, image_name, mode, status, deploy_ips, container_name'
+    fields = 'id, name, description, repos_name, repos_url, http_url, image_name, mode, status, deploy_ips, container_name，image_source'
 
     @coroutine
     def create_image(self, params):
@@ -70,3 +71,12 @@ class ProjectService(BaseService):
               """
         arg = [params['name'], params['version'], params['log'], params['log']]
         yield self.db.execute(sql, arg)
+
+    @run_on_executor
+    def load_image(self, filename):
+        cmd = LOAD_IMAGE_FILE.format(filename=filename)+LOAD_IMAGE
+        out = os.system(cmd)
+        if not out:
+            raise ValueError
+
+

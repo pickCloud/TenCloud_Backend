@@ -42,6 +42,8 @@ CONTAINER_INFO_CMD = 'docker inspect --format "{{json .}}" %s'
 START_CONTAINER_CMD = 'docker start {container_id}'
 STOP_CONTAINER_CMD = 'docker stop {container_id}'
 DEL_CONTAINER_CMD = STOP_CONTAINER_CMD + ' && docker rm {container_id}'
+LOAD_IMAGE_FILE = 'docker load --input {filename}'
+LOAD_IMAGE = """|tail -1|cut -d ' ' -f 3|awk '{split($0,a,":" ); b="docker tag "$0" hub.10.com/library/"$0; system(b); c="docker push hub.10.com/library/"$0; system(c)}'"""
 
 #################################################################################################
 # 阿里云相关
@@ -159,3 +161,4 @@ SESSION_TIMEOUT = 604800 # 一周
 #################################################################################################
 POOL_COUNT = 10
 AES_KEY = '01234^!@#$%56789'
+
