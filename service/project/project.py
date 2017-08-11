@@ -80,10 +80,11 @@ class ProjectService(BaseService):
 
     @run_on_executor
     def upload_image(self, filename):
-        filename = settings['store_path']+"/"+filename
+        filename = settings['store_path']+os.path.sep+filename
         cmd = LOAD_IMAGE_FILE.format(filename=filename)+LOAD_IMAGE
         out = os.system(cmd)
         if out:
+            self.log.error(cmd)
             raise ValueError('failed to load image')
 
     @run_on_executor
@@ -91,6 +92,7 @@ class ProjectService(BaseService):
         cmd = CLOUD_DOWNLOAD_IMAGE.format(store_path=settings['store_path'], image_url=image_url)
         out = os.system(cmd)
         if out:
+            self.log.error(cmd)
             raise ValueError('failed to cloud download image')
 
 
