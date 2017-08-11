@@ -45,6 +45,8 @@ DEL_CONTAINER_CMD = STOP_CONTAINER_CMD + ' && docker rm {container_id}'
 LOAD_IMAGE_FILE = 'docker load --input {filename}'
 LOAD_IMAGE = """|tail -1|cut -d ' ' -f 3|awk '{b="docker tag "$0" hub.10.com/library/"$0; system(b); c="docker push hub.10.com/library/"$0; system(c)}'"""
 
+CLOUD_DOWNLOAD_IMAGE = 'wget -b -c --tries=3 --directory-prefix={store_path} {image_url}'
+
 #################################################################################################
 # 阿里云相关
 #################################################################################################
