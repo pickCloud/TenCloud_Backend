@@ -441,7 +441,7 @@ class ProjectImageUpload(user.FileUploadMixin):
     @coroutine
     def post(self):
         """
-        @api {get} /api/project/image/upload 镜像上传
+        @api {post} /api/project/image/upload 镜像上传
         @apiName ProjectImageUpload
         @apiGroup Project
 
@@ -450,16 +450,31 @@ class ProjectImageUpload(user.FileUploadMixin):
         """
         try:
             filename = yield self.handle_file_upload()
-            yield self.project_service.load_image(settings['store_path']+"/"+filename)
+            yield self.project_service.upload_image(filename)
             self.success()
         except:
             self.error()
             self.log.error(traceback.format_exc())
 
 
-class ProjectImageDownload(BaseHandler):
+class ProjectImageCloudDownload(BaseHandler):
     @is_login
     @coroutine
     def post(self):
-        pass
+        """
+        @api {post} /api/project/image/cloud/download云端下载导入
+        @apiName ProjectImageDownload
+        @apiGroup Project
+
+        @apiParam {String} image_url 镜像下载地址
+
+        @apiUse Success
+        """
+        try:
+            yield self.project_service.cloud_download(self.params['image_url'])
+            yield self.project_service.upload_image(self.params['image_url'].split('\\')[-1])
+            self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
 

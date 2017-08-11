@@ -4,7 +4,9 @@ import os
 from tornado.gen import coroutine
 from tornado.concurrent import run_on_executor
 from service.base import BaseService
-from constant import CREATE_IMAGE_CMD, IMAGE_INFO_CMD, DEPLOY_CMD, REPOS_DOMAIN, LIST_CONTAINERS_CMD, LOAD_IMAGE_FILE, LOAD_IMAGE
+from constant import CREATE_IMAGE_CMD, IMAGE_INFO_CMD, DEPLOY_CMD, \
+                     REPOS_DOMAIN, LIST_CONTAINERS_CMD, LOAD_IMAGE_FILE,\
+                     LOAD_IMAGE, CLOUD_DOWNLOAD_IMAGE
 from setting import settings
 
 
@@ -77,11 +79,21 @@ class ProjectService(BaseService):
         yield self.db.execute(sql, arg)
 
     @run_on_executor
-    def load_image(self, filename):
+    def upload_image(self, filename):
+        filename = settings['store_path']+os.path.sep+filename
         cmd = LOAD_IMAGE_FILE.format(filename=filename)+LOAD_IMAGE
-        self.log.info(cmd)
         out = os.system(cmd)
         if out:
-            raise ValueError
+            self.log.error(cmd)
+            raise ValueError('failed to load image')
+
+    @run_on_executor
+    def cloud_download(self, image_url):
+        cmd = CLOUD_DOWNLOAD_IMAGE.format(store_path=settings['store_path'], image_url=image_url)
+        out = os.system(cmd)
+        if out:
+            self.log.error(cmd)
+            raise ValueError('failed to cloud download image')
+
 
 
