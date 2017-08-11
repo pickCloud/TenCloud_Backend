@@ -462,7 +462,7 @@ class ProjectImageCloudDownload(BaseHandler):
     @coroutine
     def post(self):
         """
-        @api {post} /api/project/image/cloud/download云端下载导入
+        @api {post} /api/project/image/cloud/download 云端下载导入
         @apiName ProjectImageDownload
         @apiGroup Project
 
