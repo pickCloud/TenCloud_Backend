@@ -68,7 +68,7 @@ class ProjectService(BaseService):
             conds.append('name=%s')
             arg.append(params['name'])
         sql += ' AND '.join(conds)
-        self.db.execute(sql, arg)
+        yield self.db.execute(sql, arg)
 
     @coroutine
     def list_containers(self, params):
