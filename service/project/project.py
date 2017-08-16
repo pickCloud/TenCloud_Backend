@@ -38,12 +38,14 @@ class ProjectService(BaseService):
             password=settings['deploy_password'],
             image_name=image_name,
             container_name=params['container_name'])
-        
+        has_err = False
         log = dict()
         for ip in params['infos']:
             out, err = yield self.remote_ssh(ip, cmd)
+            if err:
+                has_err = True
             log[ip['public_ip']] = {"output": out, "error": err}
-        return log
+        return {'log': log, 'has_err': has_err}
 
     @coroutine
     def find_image(self, params):
@@ -55,6 +57,18 @@ class ProjectService(BaseService):
         data = [i.split(',') for i in out]
         return data, err
 
+    @coroutine
+    def update_status(self, params):
+        sql = 'UPDATE {table} SET status=%s WHERE '.format(table=self.table)
+        conds, arg = [], [params['status']]
+        if params['id']:
+            conds.append('id=%s')
+            arg.append(params['id'])
+        if params['name']:
+            conds.append('name=%s')
+            arg.append(params['name'])
+        sql += ' AND '.join(conds)
+        self.db.execute(sql, arg)
 
     @coroutine
     def list_containers(self, params):
