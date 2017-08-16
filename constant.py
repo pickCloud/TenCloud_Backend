@@ -169,3 +169,17 @@ AES_KEY = '01234^!@#$%56789'
 ####################
 TORNADO_MAX_BODY_SIZE = 1*1024*1024*1024
 
+
+#######################
+# 项目状态
+# 0 初创建, 1 构建中, 2 构建成功, 3 部署中， 4 部署成功, -2 构建失败, -4 部署失败',
+####################
+PROJECT_STATUS = dict()
+PROJECT_STATUS['init'] = 0
+PROJECT_STATUS['building'] = 1
+PROJECT_STATUS['build-success'] = 2
+PROJECT_STATUS['deploying'] = 3
+PROJECT_STATUS['deploy-success'] = 4
+PROJECT_STATUS['build-failure'] = -2
+PROJECT_STATUS['deploy-failure'] = -4
+
