@@ -112,7 +112,7 @@ class ServerService(BaseService):
     def get_brief_list(self, cluster_id):
         ''' 集群详情中获取主机列表
         '''
-        sql = " SELECT s.id, s.name, s.public_ip, i.status AS machine_status, i.region_id AS address " \
+        sql = " SELECT s.id, s.name, s.public_ip, i.status AS machine_status, i.region_id AS address, i.provider AS provider " \
               " FROM server s " \
               " JOIN instance i USING(public_ip) " \
               " WHERE s.cluster_id=%s "
