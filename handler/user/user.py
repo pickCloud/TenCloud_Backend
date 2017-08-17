@@ -194,6 +194,8 @@ class UserDetailHandler(BaseHandler):
                     "image_url": str,
                     "create_time": str,
                     "update_time": str,
+                    "gender": int,
+                    "birthday": str
                 }
             }
         """
@@ -219,6 +221,8 @@ class UserUpdateHandler(BaseHandler):
                 "email": str,
                 "image_url": str,
                 "mobile": str,
+                "gender": int,
+                "birthday": str
             }
 
         @apiUse Success
@@ -234,12 +238,14 @@ class UserUpdateHandler(BaseHandler):
                              if self.params.get('image_url', '') else old['image_url'],
                 'mobile': self.params.get('mobile', '') or old['mobile'],
                 'create_time': old['create_time'],
-                'update_time': seconds_to_human()
+                'update_time': seconds_to_human(),
+                "gender": self.params.get('gender', '') or old['gender'],
+                'birthday': self.params.get('birthday') or old['birthday']
             }
 
-            yield self.user_service.update(sets=['name=%s', 'email=%s', 'image_url=%s', 'mobile=%s'],
+            yield self.user_service.update(sets=['name=%s', 'email=%s', 'image_url=%s', 'mobile=%s', 'gender=%s', 'birthday=%s'],
                                            conds=['id=%s'],
-                                           params=[new['name'], new['email'], new['image_url'], new['mobile'], new['id']])
+                                           params=[new['name'], new['email'], new['image_url'], new['mobile'], new['id'], new['gender'], new['birthday']])
 
             yield self.set_session(new['id'], new)
 
