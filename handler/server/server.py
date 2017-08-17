@@ -516,7 +516,7 @@ class ServerContainersHandler(BaseHandler):
 
             self.success(data)
         except:
-            self.error()
+            self.success()
             self.log.error(traceback.format_exc())
 
 
