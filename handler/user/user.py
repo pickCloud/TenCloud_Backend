@@ -195,7 +195,7 @@ class UserDetailHandler(BaseHandler):
                     "create_time": str,
                     "update_time": str,
                     "gender": int,
-                    "birthday": str
+                    "birthday": int
                 }
             }
         """
@@ -222,7 +222,7 @@ class UserUpdateHandler(BaseHandler):
                 "image_url": str,
                 "mobile": str,
                 "gender": int,
-                "birthday": str
+                "birthday": int
             }
 
         @apiUse Success
