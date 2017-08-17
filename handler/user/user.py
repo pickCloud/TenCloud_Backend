@@ -239,8 +239,8 @@ class UserUpdateHandler(BaseHandler):
                 'mobile': self.params.get('mobile', '') or old.get('mobile', ''),
                 'create_time': old['create_time'],
                 'update_time': seconds_to_human(),
-                "gender": self.params.get('gender', 3) or int(old.get('gender', 3)),
-                'birthday': self.params.get('birthday', 0) or int(old.get('birthday', 0))
+                "gender": self.params.get('gender') or int(old.get('gender', 3)),
+                'birthday': self.params.get('birthday') or int(old.get('birthday', 0))
             }
 
             yield self.user_service.update(sets=['name=%s', 'email=%s', 'image_url=%s', 'mobile=%s', 'gender=%s', 'birthday=%s'],
