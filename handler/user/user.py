@@ -232,15 +232,15 @@ class UserUpdateHandler(BaseHandler):
 
             new = {
                 'id': old['id'],
-                'name': self.params.get('name', '') or old['name'],
-                'email': self.params.get('email' '') or old['email'],
+                'name': self.params.get('name', '') or old.get('name', ''),
+                'email': self.params.get('email' '') or old.get('email', ''),
                 'image_url': settings['qiniu_bucket_url'] + self.params.get('image_url', '') \
-                             if self.params.get('image_url', '') else old['image_url'],
-                'mobile': self.params.get('mobile', '') or old['mobile'],
+                             if self.params.get('image_url', '') else old.get('image_url', ''),
+                'mobile': self.params.get('mobile', '') or old.get('mobile', ''),
                 'create_time': old['create_time'],
                 'update_time': seconds_to_human(),
-                "gender": self.params.get('gender', '') or old['gender'],
-                'birthday': self.params.get('birthday') or old['birthday']
+                "gender": self.params.get('gender', 3) or int(old.get('gender', 3)),
+                'birthday': self.params.get('birthday', 0) or int(old.get('birthday', 0))
             }
 
             yield self.user_service.update(sets=['name=%s', 'email=%s', 'image_url=%s', 'mobile=%s', 'gender=%s', 'birthday=%s'],
