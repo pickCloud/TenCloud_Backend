@@ -245,7 +245,7 @@ class UserUpdateHandler(BaseHandler):
 
             yield self.user_service.update(sets=['name=%s', 'email=%s', 'image_url=%s', 'mobile=%s', 'gender=%s', 'birthday=%s'],
                                            conds=['id=%s'],
-                                           params=[new['name'], new['email'], new['image_url'], new['mobile'], new['id'], new['gender'], new['birthday']])
+                                           params=[new['name'], new['email'], new['image_url'], new['mobile'], new['gender'], new['birthday'], new['id']])
 
             yield self.set_session(new['id'], new)
 
