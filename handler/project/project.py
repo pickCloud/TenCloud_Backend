@@ -86,12 +86,13 @@ class ProjectNewHandler(BaseHandler):
                 if is_duplicate_url:
                     self.error('仓库url重复')
                     return
-            result = yield self.project_service.add(params=self.params)
 
-            if self.params['image_source']:
-                arg = {'name': self.params['name'], 'version': self.params['version'], 'log': ''}
+            if self.params.get('image_source') and self.params.get('version'):
+                version = self.params.pop('version')
+                arg = {'name': self.params['name'], 'version': version, 'log': ''}
                 yield self.project_service.insert_log(arg)
 
+            result = yield self.project_service.add(params=self.params)
             self.success(result)
         except:
             self.error()
