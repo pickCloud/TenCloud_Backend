@@ -67,11 +67,11 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
         self.period.start()
 
         self.params.update({'passwd': passwd})
-        err_msg = yield self.server_service.remote_ssh(self.params, cmd=MONITOR_CMD)
+        _, err = yield self.server_service.remote_ssh(self.params, cmd=MONITOR_CMD)
 
         # 部署失败
-        if err_msg:
-            self.write_message(err_msg)
+        if err:
+            self.write_message(str(err))
             self.period.stop()
             self.close()
 
