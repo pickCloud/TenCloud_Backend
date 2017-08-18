@@ -10,7 +10,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 from tornado.ioloop import IOLoop
 from tornado.gen import coroutine
-from tornado.httpclient import AsyncHTTPClient
+from tornado.httpclient import AsyncHTTPClient, HTTPError
 from utils.aliyun import Aliyun
 from utils.db import DB
 from constant import ALIYUN_REGION_LIST, HTTP_TIMEOUT
@@ -81,10 +81,18 @@ def main():
 
     while True:
         logging.info('+++Start+++')
-        yield obj.get()
-        yield obj.save()
+        try:
+            yield obj.get()
+            yield obj.save()
+        except HTTPError as e:
+            err = 'STATUS: {status}, BODY: {body}, URL: {url}'.format(status=str(e), body=e.response.body,
+                                                                      url=e.response.effective_url)
+            print(err)
+        except Exception as e:
+            print(e)
         logging.info('++++End++++')
         time.sleep(2)
+
 
 
 if __name__ == '__main__':

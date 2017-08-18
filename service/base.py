@@ -13,7 +13,7 @@ import json
 import datetime
 from tornado.gen import coroutine
 from tornado.httputil import url_concat, HTTPHeaders
-from tornado.httpclient import AsyncHTTPClient
+from tornado.httpclient import AsyncHTTPClient, HTTPError
 from tornado.concurrent import run_on_executor
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlencode
@@ -178,7 +178,12 @@ class BaseService():
 
         payload['headers'] = HTTPHeaders(payload['headers'])
 
-        res = yield AsyncHTTPClient().fetch(url, **payload)
+        try:
+            res = yield AsyncHTTPClient().fetch(url, **payload)
+        except HTTPError as e:
+            err = 'STATUS: {status}, BODY: {body}, URL: {url}'.format(status=str(e), body=e.response.body, url=e.response.effective_url)
+            raise ValueError(err)
+
         body = json.loads(res.body.decode())
 
         return body
@@ -190,11 +195,15 @@ class BaseService():
         if not headers:
             headers = {'User-Agent': choose_user_agent()}
 
-        res = yield AsyncHTTPClient().fetch(url,
-                                            method='POST',
-                                            body=urlencode(data),
-                                            headers=HTTPHeaders(headers),
-                                            request_timeout=timeout)
+        try:
+            res = yield AsyncHTTPClient().fetch(url,
+                                                method='POST',
+                                                body=urlencode(data),
+                                                headers=HTTPHeaders(headers),
+                                                request_timeout=timeout)
+        except HTTPError as e:
+            err = 'STATUS: {status}, BODY: {body}, URL: {url}'.format(status=str(e), body=e.response.body, url=e.response.effective_url)
+            raise ValueError(err)
 
         body = json.loads(res.body.decode())
 
