@@ -30,7 +30,7 @@ SESSION_KEY = 'session_{user_id}'
 # ssh相关
 #################################################################################################
 SSH_CONNECT_TIMEOUT = 30
-SERVER_HOST = 'console.10.com'
+SERVER_HOST = 'c.10.com'
 MONITOR_CMD = 'curl -sSL http://{host}/supermonitor/install.sh | sh '.format(host=SERVER_HOST)
 UNINSTALL_CMD = 'curl -sSL http://{host}/supermonitor/uninstall.sh | sh '.format(host=SERVER_HOST)
 CREATE_IMAGE_CMD = 'curl -sSL http://{host}/supermonitor/scripts/create-image.sh | sh -s '.format(host=SERVER_HOST)
