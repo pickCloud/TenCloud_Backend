@@ -65,8 +65,7 @@ ALIYUN_REGION_NAME = {
     'us-west-1': '美国西部 1 （硅谷）',
     'us-east-1': '美国东部 1 （弗吉尼亚)',
     'eu-central-1': '欧洲中部 1（法兰克福）',
-    'me-east-1': '中东东部 1（迪拜）',
-    'ap-northeast-1a': '东京'
+    'me-east-1': '中东东部 1（迪拜）'
 }
 ALIYUN_REGION_LIST = ALIYUN_REGION_NAME.keys()
 
