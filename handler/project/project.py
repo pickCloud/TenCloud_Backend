@@ -257,9 +257,9 @@ class ProjectDeploymentHandler(BaseHandler):
                 self.params['infos'].append(login_info)
 
             log = yield self.project_service.deployment(self.params)
-            status = PROJECT_STATUS['deploy_success']
+            status = PROJECT_STATUS['deploy-success']
             if log['has_err']:
-                status = PROJECT_STATUS['deploy_failure']
+                status = PROJECT_STATUS['deploy-failure']
 
             arg = [json.dumps(self.params['ips']), self.params['container_name'], self.params['project_id'], status]
             yield self.project_service.update(
@@ -350,9 +350,9 @@ class ProjectImageCreationHandler(BaseHandler):
             arg = {'name': self.params['prj_name'], 'version': self.params['version'], 'log': json.dumps(log)}
             yield self.project_service.insert_log(arg)
 
-            params['status'] = PROJECT_STATUS['build_success']
+            params['status'] = PROJECT_STATUS['build-success']
             if err:
-                params['status'] = PROJECT_STATUS['build_failure']
+                params['status'] = PROJECT_STATUS['build-failure']
             yield self.project_service.update_status(params)
 
             self.success(out)
