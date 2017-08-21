@@ -17,7 +17,7 @@ SHELL_LOG="${BASE_DIR}/log/${SHELL_NAME}.log"
 
 # Docker
 IMAGE_REGISTRY=""
-REGISRTY="www.jmkbio.com/library"
+REGISRTY="hub.10.com/library"
 
 # args
 branch=$3
