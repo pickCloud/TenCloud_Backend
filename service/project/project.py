@@ -61,10 +61,10 @@ class ProjectService(BaseService):
     def update_status(self, params):
         sql = 'UPDATE {table} SET status=%s WHERE '.format(table=self.table)
         conds, arg = [], [params['status']]
-        if params['id']:
+        if params.get('id'):
             conds.append('id=%s')
             arg.append(params['id'])
-        if params['name']:
+        if params.get('name'):
             conds.append('name=%s')
             arg.append(params['name'])
         sql += ' AND '.join(conds)
