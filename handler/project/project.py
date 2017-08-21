@@ -340,7 +340,7 @@ class ProjectImageCreationHandler(BaseHandler):
         @apiUse Success
         """
         try:
-            params = {'name': self.params, 'status': PROJECT_STATUS['building']}
+            params = {'name': self.params['prj_name'], 'status': PROJECT_STATUS['building']}
             yield self.project_service.update_status(params)
 
             login_info = yield self.server_service.fetch_ssh_login_info({'public_ip': settings['ip_for_image_creation']})
