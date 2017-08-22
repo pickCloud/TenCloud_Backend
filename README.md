@@ -260,6 +260,20 @@ ALTER TABLE user ADD COLUMN gender tinyint(4) COMMENT '性别 0: 男性 1: 女�
 ALTER TABLE user ADD COLUMN birthday int(10) COMMENT '生日'
 ```
 
+* 文件表 filehub
+```
+CREATE TABLE `filehub` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `filename` varchar(128) NOT NULL DEFAULT '' COMMENT '文件名',
+  `size` int(11) unsigned DEFAULT '0' COMMENT '文件大小',
+  `url` varchar(128) NOT NULL DEFAULT '' COMMENT '文件url',
+  `owner` int(11) unsigned NOT NULL COMMENT '上传文件者，对应user表id',
+  `type` tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '0表示文件, 1表示文件夹',
+  `pid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '树形结构的父节点',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
 ## 测试
 ```
 curl http://localhost:8010/api/clusters
