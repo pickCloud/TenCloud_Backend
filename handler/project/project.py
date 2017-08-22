@@ -9,6 +9,7 @@ from utils.general import get_in_formats
 from utils.decorator import is_login
 from setting import settings
 from handler.user import user
+from constant import PROJECT_STATUS
 
 class ProjectHandler(BaseHandler):
     @is_login
@@ -64,6 +65,7 @@ class ProjectNewHandler(BaseHandler):
         @apiParam {String} http_url 项目在github的http地址
         @apiParam {Number} mode 类型
         @apiParam {Number} image_source 镜像来源
+        @apiParam {String} version 用于导入镜像或下载镜像的版本
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -78,14 +80,19 @@ class ProjectNewHandler(BaseHandler):
         """
 
         try:
-            is_duplicate_url = yield self.project_service.select(conds=['repos_url=%s'], params=[self.params['repos_url']], one=True)
+            if self.params.get('repos_url'):
+                is_duplicate_url = yield self.project_service.select(conds=['repos_url=%s'], params=[self.params['repos_url']], one=True)
 
-            if is_duplicate_url:
-                self.error('仓库url重复')
-                return
+                if is_duplicate_url:
+                    self.error('仓库url重复')
+                    return
+
+            if self.params.get('image_source') and self.params.get('version'):
+                version = self.params.pop('version')
+                arg = {'name': self.params['name'], 'version': version, 'log': ''}
+                yield self.project_service.insert_log(arg)
 
             result = yield self.project_service.add(params=self.params)
-
             self.success(result)
         except:
             self.error()
@@ -241,15 +248,24 @@ class ProjectDeploymentHandler(BaseHandler):
             }
         """
         try:
+            params = {'id': self.params['project_id'], 'status': PROJECT_STATUS['deploying']}
+            yield self.project_service.update_status(params)
 
             self.params["infos"] = []
             for ip in self.params['ips']:
                 login_info = yield self.server_service.fetch_ssh_login_info(ip)
                 self.params['infos'].append(login_info)
+
             log = yield self.project_service.deployment(self.params)
-            arg = [json.dumps(self.params['ips']), self.params['container_name'], self.params['project_id']]
-            yield self.project_service.update(sets=['deploy_ips=%s', 'container_name=%s'], conds=['id=%s'], params=arg)
-            self.success(log)
+            status = PROJECT_STATUS['deploy-success']
+            if log['has_err']:
+                status = PROJECT_STATUS['deploy-failure']
+
+            arg = [json.dumps(self.params['ips']), self.params['container_name'], self.params['project_id'], status]
+            yield self.project_service.update(
+                                            sets=['deploy_ips=%s', 'container_name=%s', 'status=%s'],
+                                            conds=['id=%s'], params=arg)
+            self.success(log['log'])
         except:
             self.error()
             self.log.error(traceback.format_exc())
@@ -324,12 +340,21 @@ class ProjectImageCreationHandler(BaseHandler):
         @apiUse Success
         """
         try:
+            params = {'name': self.params['prj_name'], 'status': PROJECT_STATUS['building']}
+            yield self.project_service.update_status(params)
+
             login_info = yield self.server_service.fetch_ssh_login_info({'public_ip': settings['ip_for_image_creation']})
             self.params.update(login_info)
             out, err = yield self.project_service.create_image(self.params)
             log = {"out": out, "err": err}
             arg = {'name': self.params['prj_name'], 'version': self.params['version'], 'log': json.dumps(log)}
             yield self.project_service.insert_log(arg)
+
+            params['status'] = PROJECT_STATUS['build-success']
+            if err:
+                params['status'] = PROJECT_STATUS['build-failure']
+            yield self.project_service.update_status(params)
+
             self.success(out)
         except:
             self.error()
@@ -462,7 +487,7 @@ class ProjectImageCloudDownload(BaseHandler):
     @coroutine
     def post(self):
         """
-        @api {post} /api/project/image/cloud/download云端下载导入
+        @api {post} /api/project/image/cloud/download 云端下载导入
         @apiName ProjectImageDownload
         @apiGroup Project
 

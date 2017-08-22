@@ -6,7 +6,7 @@ from setting import settings
 
 class UserService(BaseService):
     table = 'user'
-    fields = 'id, mobile, email, name, image_url'
+    fields = 'id, mobile, email, name, image_url, gender, birthday'
 
     @run_on_executor
     def get_qiniu_token(self):

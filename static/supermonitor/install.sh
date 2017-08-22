@@ -1,6 +1,10 @@
 #!/bin/sh
 
-base_url="http://console.10.com/supermonitor/"
+base_url="http://c.10.com/supermonitor/"
+
+echoerr() {
+    echo "$@" 1>&2;
+}
 
 DownloadFunc() {
     name=${1}
@@ -9,7 +13,7 @@ DownloadFunc() {
   curl --retry 3 --retry-delay 2 -s -L -o ${stroage} ${url}
   ret=$?
   if [ ${ret} -ne 0 ];then
-    echo "failed to download ${name}"
+    echoerr "failed to download ${name}"
     exit 1
   else
     echo "success to download ${name}"
