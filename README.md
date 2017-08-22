@@ -255,6 +255,9 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `mobile` (`mobile`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE user ADD COLUMN gender tinyint(4) COMMENT '性别 0: 男性 1: 女性'
+ALTER TABLE user ADD COLUMN birthday int(10) COMMENT '生日'
 ```
 
 * 文件表 filehub

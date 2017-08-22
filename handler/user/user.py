@@ -194,6 +194,8 @@ class UserDetailHandler(BaseHandler):
                     "image_url": str,
                     "create_time": str,
                     "update_time": str,
+                    "gender": int,
+                    "birthday": int
                 }
             }
         """
@@ -219,6 +221,8 @@ class UserUpdateHandler(BaseHandler):
                 "email": str,
                 "image_url": str,
                 "mobile": str,
+                "gender": int,
+                "birthday": int
             }
 
         @apiUse Success
@@ -228,18 +232,20 @@ class UserUpdateHandler(BaseHandler):
 
             new = {
                 'id': old['id'],
-                'name': self.params.get('name', '') or old['name'],
-                'email': self.params.get('email' '') or old['email'],
+                'name': self.params.get('name', '') or old.get('name', ''),
+                'email': self.params.get('email' '') or old.get('email', ''),
                 'image_url': settings['qiniu_bucket_url'] + self.params.get('image_url', '') \
-                             if self.params.get('image_url', '') else old['image_url'],
-                'mobile': self.params.get('mobile', '') or old['mobile'],
+                             if self.params.get('image_url', '') else old.get('image_url', ''),
+                'mobile': self.params.get('mobile', '') or old.get('mobile', ''),
                 'create_time': old['create_time'],
-                'update_time': seconds_to_human()
+                'update_time': seconds_to_human(),
+                "gender": self.params.get('gender') or int(old.get('gender', 3)),
+                'birthday': self.params.get('birthday') or int(old.get('birthday', 0))
             }
 
-            yield self.user_service.update(sets=['name=%s', 'email=%s', 'image_url=%s', 'mobile=%s'],
+            yield self.user_service.update(sets=['name=%s', 'email=%s', 'image_url=%s', 'mobile=%s', 'gender=%s', 'birthday=%s'],
                                            conds=['id=%s'],
-                                           params=[new['name'], new['email'], new['image_url'], new['mobile'], new['id']])
+                                           params=[new['name'], new['email'], new['image_url'], new['mobile'], new['gender'], new['birthday'], new['id']])
 
             yield self.set_session(new['id'], new)
 
