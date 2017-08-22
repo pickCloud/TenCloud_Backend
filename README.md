@@ -267,6 +267,8 @@ CREATE TABLE `filehub` (
   `owner` int(11) unsigned NOT NULL COMMENT '上传文件者，对应user表id',
   `type` tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '0表示文件, 1表示文件夹',
   `pid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '树形结构的父节点',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
