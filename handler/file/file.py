@@ -8,7 +8,7 @@ from utils.decorator import is_login
 class FileListHandler(BaseHandler):
     @is_login
     @coroutine
-    def post(self, start_index):
+    def post(self):
         """
         @api {post} /api/file/list 文件分页
         @apiName FileListHandler
