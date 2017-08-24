@@ -36,3 +36,14 @@ class FileService(BaseService):
         arg = [hash]
         cur = yield self.db.execute(sql, arg)
         return cur.fetchone()
+
+    @coroutine
+    def seg_page(self, params):
+        sql = """SELECT id, filename, size, qiniu_id, owner, mime, hash, type, pid, create_time, update_time 
+                FROM %s LIMIT %s,%s
+              """
+        start_page = (params['now_page'] - 1) * params['page_number'] + 1
+        arg = [self.table, start_page, start_page+params['page_number']]
+        cur = yield self.db.execute(sql, arg)
+        data = cur.fetchall()
+        return data
