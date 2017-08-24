@@ -47,3 +47,10 @@ class FileService(BaseService):
         cur = yield self.db.execute(sql, arg)
         data = cur.fetchall()
         return data
+
+    @coroutine
+    def total_pages(self):
+        sql = 'SELECT COUNT(*) FROM %s'
+        cur = yield self.db.execute(sql, [self.table])
+        data = cur.fetchone()
+        return data
