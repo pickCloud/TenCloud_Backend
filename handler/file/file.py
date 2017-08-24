@@ -74,7 +74,7 @@ class FileTotalHandler(BaseHandler):
         """
         try:
             data = yield self.file_service.total_pages()
-            self.success(data['count(*)'])
+            self.success(data)
         except:
             self.error()
             self.log.error(traceback.format_exc())
