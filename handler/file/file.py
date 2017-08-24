@@ -5,6 +5,75 @@ from handler.base import BaseHandler
 from utils.decorator import is_login
 
 
+class FileListHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self, start_index):
+        """
+        @api {post} /api/file/list
+        @apiName FileListHandler
+        @apiGroup File
+
+        @apiParam {Number} now_page 当前页面
+        @apiParam {Number} page_number 每页返回条数
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "message": "success",
+                "data": {
+                    "now_page": int,
+                    "files": [
+                        {
+                            "id": int,
+                            "filename": str,
+                            "size": str,
+                            "qiniu_id": str,
+                            "owner": str,
+                            "mime": str,
+                            "hash": str,
+                            "type": int, 0为文件，1为文件夹， 当为1时，部分字段为空
+                            "pid": int,
+                            "create_time": str,
+                            "update_time": str,
+                        }
+                            ...
+                    ]
+                }
+            }
+        """
+        try:
+            data = yield self.file_service.seg_page(self.params)
+            resp = {
+                'now_page': self.params['now_page'],
+                'files': data
+            }
+            self.success(resp)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class FileTotalHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/file/pages
+        @apiName FileTotal
+        @apiGroup File
+
+        @apiUse Success
+        """
+        try:
+            data = yield self.file_service.select(fields='count(*)', ct=False, ut=False, one=True)
+            self.success(data['COUNT(*)'])
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
 class FileInfoHandler(BaseHandler):
     @is_login
     @coroutine
@@ -13,7 +82,9 @@ class FileInfoHandler(BaseHandler):
         @api {get} /api/file/([\w\W]+)
         @apiName FileInfo
         @apiGroup File
+
         @apiParam {Number} file_id 文件id
+
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
             {
@@ -41,7 +112,6 @@ class FileInfoHandler(BaseHandler):
         except:
             self.error()
             self.log.error(traceback.format_exc())
-        pass
 
 
 class FileUploadHandler(BaseHandler):
@@ -141,7 +211,9 @@ class FileDownloadHandler(BaseHandler):
         @api {get} /api/file/([\w\W]+)/download 文件下载
         @apiName FileDownload
         @apiGroup File
+
         @apiParam {Number} file_id 文件id
+        
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
             {
