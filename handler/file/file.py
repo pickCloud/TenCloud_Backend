@@ -23,6 +23,7 @@ class FileListHandler(BaseHandler):
                 "status": 0,
                 "message": "success",
                 "data": {
+                    "now_page": int,
                     "files": [
                         {
                             "id": int,
@@ -44,7 +45,11 @@ class FileListHandler(BaseHandler):
         """
         try:
             data = yield self.file_service.seg_page(self.params)
-            self.success(data)
+            resp = {
+                'now_page': self.params['now_page'],
+                'files': data
+            }
+            self.success(resp)
         except:
             self.error()
             self.log.error(traceback.format_exc())
