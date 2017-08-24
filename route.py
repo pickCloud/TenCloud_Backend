@@ -23,7 +23,7 @@ from handler.repository.repository import RepositoryHandler, RepositoryBranchHan
 from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, \
                               UserUpdateHandler, UserUploadToken
 from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
-                                FileDeleteHandler, FileDirCreateHandler
+                                FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
 
 
 
@@ -99,6 +99,8 @@ routes = [
     #文件上传
     (r'/api/file/upload', FileUploadHandler),
     (r'/api/file/update', FileUpdateHandler),
+    (r'/api/file/list', FileListHandler),
+    (r'/api/file/pages', FileTotalHandler),
     (r'/api/file/([\w\W]+)/download', FileDownloadHandler),
     (r'/api/file/([\w\W]+)/delete', FileDeleteHandler),
     (r'/api/file/dir/create', FileDirCreateHandler),
