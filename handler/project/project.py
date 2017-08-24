@@ -261,7 +261,7 @@ class ProjectDeploymentHandler(BaseHandler):
             if log['has_err']:
                 status = PROJECT_STATUS['deploy-failure']
 
-            arg = [json.dumps(self.params['ips']), self.params['container_name'], self.params['project_id'], status]
+            arg = [json.dumps(self.params['ips']), self.params['container_name'], status, self.params['project_id']]
             yield self.project_service.update(
                                             sets=['deploy_ips=%s', 'container_name=%s', 'status=%s'],
                                             conds=['id=%s'], params=arg)
