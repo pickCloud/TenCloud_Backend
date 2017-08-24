@@ -149,7 +149,7 @@ class FileUploadHandler(BaseHandler):
                 'filename': '',
                 'size': 0,
                 'qiniu_id': '',
-                'owner': self.current_user['id'],
+                'owner': self.current_user['name'],
                 'mime': '',
                 'hash': self.params['hash'],
                 'type': 0,
@@ -260,7 +260,7 @@ class FileDirCreateHandler(BaseHandler):
                 'type': 1,
                 'size': 0,
                 'qiniu_id': '',
-                'owner': self.current_user['id'],
+                'owner': self.current_user['name'],
                 'mime': '',
                 'hash': '',
             }
