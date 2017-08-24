@@ -41,7 +41,6 @@ class FileInfoHandler(BaseHandler):
         except:
             self.error()
             self.log.error(traceback.format_exc())
-        pass
 
 
 class FileUploadHandler(BaseHandler):
