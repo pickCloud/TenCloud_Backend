@@ -10,7 +10,7 @@ class FileListHandler(BaseHandler):
     @coroutine
     def post(self, start_index):
         """
-        @api {post} /api/file/list
+        @api {post} /api/file/list 文件分页
         @apiName FileListHandler
         @apiGroup File
 
@@ -60,15 +60,21 @@ class FileTotalHandler(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {get} /api/file/pages
+        @api {get} /api/file/pages 总页数
         @apiName FileTotal
         @apiGroup File
 
-        @apiUse Success
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "message": "successs",
+                "data": int
+            }
         """
         try:
-            data = yield self.file_service.select(fields='count(*)', ct=False, ut=False, one=True)
-            self.success(data['COUNT(*)'])
+            data = yield self.file_service.total_pages()
+            self.success(data['count(*)'])
         except:
             self.error()
             self.log.error(traceback.format_exc())
@@ -79,7 +85,7 @@ class FileInfoHandler(BaseHandler):
     @coroutine
     def get(self, file_id):
         """
-        @api {get} /api/file/([\w\W]+)
+        @api {get} /api/file/([\w\W]+) 文件详细信息
         @apiName FileInfo
         @apiGroup File
 
@@ -213,7 +219,7 @@ class FileDownloadHandler(BaseHandler):
         @apiGroup File
 
         @apiParam {Number} file_id 文件id
-        
+
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
             {
@@ -238,7 +244,7 @@ class FileDirCreateHandler(BaseHandler):
     @coroutine
     def post(self):
         """
-        @api {post} /api/file/([\w\W+)/dir/([\w\W]+)/
+        @api {post} /api/file/([\w\W+)/dir/([\w\W]+)/ 创建目录
         @apiName FileDirCreate
         @apiGroup File
 
@@ -270,7 +276,7 @@ class FileDeleteHandler(BaseHandler):
     @coroutine
     def get(self, file_id):
         """
-        @api {get} /api/file/([\w\W]+)/delete
+        @api {get} /api/file/([\w\W]+)/delete 文件删除
         @apiName FileDelete
         @apiGroup File
 
