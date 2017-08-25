@@ -42,10 +42,9 @@ class FileService(BaseService):
         sql = """SELECT id, filename, size, qiniu_id, owner, mime, hash, type, pid, DATE_FORMAT(create_time, %s ) as create_time, DATE_FORMAT(update_time, %s) as update_time FROM {table} LIMIT %s, %s
               """.format(table=self.table)
         start_page = (params['now_page'] - 1) * params['page_number']
-        arg = [FULL_DATE_FORMAT, FULL_DATE_FORMAT, start_page, start_page+params['page_number']]
+        arg = [FULL_DATE_FORMAT, FULL_DATE_FORMAT, start_page, params['page_number']]
         cur = yield self.db.execute(sql, arg)
         data = cur.fetchall()
-        self.log.info(data)
         return data
 
     @coroutine
