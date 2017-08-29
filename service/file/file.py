@@ -3,7 +3,7 @@ from qiniu import Auth
 from tornado.gen import coroutine
 from tornado.concurrent import run_on_executor
 from service.base import BaseService
-from constant import QINIU_POLICY, FULL_DATE_FORMAT
+from constant import QINIU_POLICY, FULL_DATE_FORMAT, UPLOAD_STATUS
 from setting import settings
 
 
@@ -33,23 +33,50 @@ class FileService(BaseService):
     @coroutine
     def check_file_exist(self, hash):
         sql = "SELECT size, qiniu_id, mime FROM {table} WHERE hash=%s".format(table=self.table)
-        arg = [hash]
-        cur = yield self.db.execute(sql, arg)
-        return cur.fetchone()
+        cur = yield self.db.execute(sql, [hash])
+        cur.fetchone()
+        return
+
+    @coroutine
+    def batch_upload(self, params):
+        arg = {
+            'filename': '',
+            'size': 0,
+            'qiniu_id': '',
+            'owner': params['name'],
+            'mime': '',
+            'hash': params['hash'],
+            'type': 0,
+            'pid': params['pid'],
+            'upload_status': UPLOAD_STATUS['unupload']
+        }
+        resp = {'file_status': 0, 'token': '', 'file_id': ''}
+        data = yield self.check_file_exist(params['hash'])
+        if data:
+            resp['file_status'] = 1
+            arg['filename'] = data['filename']
+            arg['size'] = data['size']
+            arg['qiniu_id'] = data['qiniu_id']
+            arg['mime'] = data['mime']
+        else:
+            resp['token'] = yield self.upload_token()
+        add_result = yield self.add(arg)
+        resp['file_id'] = add_result['id']
+        return resp
 
     @coroutine
     def seg_page(self, params):
-        sql = """SELECT id, filename, size, qiniu_id, owner, mime, hash, type, pid, DATE_FORMAT(create_time, %s ) as create_time, DATE_FORMAT(update_time, %s) as update_time FROM {table} LIMIT %s, %s
+        sql = """SELECT id, filename, size, qiniu_id, owner, mime, hash, type, pid, DATE_FORMAT(create_time, %s ) as create_time, DATE_FORMAT(update_time, %s) as update_time WHERE pid = %s AND file_status = %s FROM {table} LIMIT %s, %s
               """.format(table=self.table)
         start_page = (params['now_page'] - 1) * params['page_number']
-        arg = [FULL_DATE_FORMAT, FULL_DATE_FORMAT, start_page, params['page_number']]
+        arg = [FULL_DATE_FORMAT, FULL_DATE_FORMAT, params['pid'], UPLOAD_STATUS['uploaded'], start_page, params['page_number']]
         cur = yield self.db.execute(sql, arg)
         data = cur.fetchall()
         return data
 
     @coroutine
-    def total_pages(self):
-        sql = "SELECT count(*) FROM {table}".format(table=self.table)
-        cur = yield self.db.execute(sql)
+    def total_pages(self, pid):
+        sql = "SELECT count(*) FROM {table} WHERE pid = %s AND file_status = %s".format(table=self.table)
+        cur = yield self.db.execute(sql, [pid, UPLOAD_STATUS['uploaded']])
         data = cur.fetchone()
         return data['count(*)']

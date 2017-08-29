@@ -3,6 +3,7 @@ import traceback
 from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login
+from constant import  UPLOAD_STATUS
 
 
 class FileListHandler(BaseHandler):
@@ -14,6 +15,7 @@ class FileListHandler(BaseHandler):
         @apiName FileListHandler
         @apiGroup File
 
+        @apiParam {Number} file_id
         @apiParam {Number} now_page 当前页面
         @apiParam {Number} page_number 每页返回条数
 
@@ -22,9 +24,7 @@ class FileListHandler(BaseHandler):
             {
                 "status": 0,
                 "message": "success",
-                "data": {
-                    "now_page": int,
-                    "files": [
+                "data": [
                         {
                             "id": int,
                             "filename": str,
@@ -40,16 +40,11 @@ class FileListHandler(BaseHandler):
                         }
                             ...
                     ]
-                }
             }
         """
         try:
             data = yield self.file_service.seg_page(self.params)
-            resp = {
-                'now_page': self.params['now_page'],
-                'files': data
-            }
-            self.success(resp)
+            self.success(data)
         except:
             self.error()
             self.log.error(traceback.format_exc())
@@ -58,11 +53,13 @@ class FileListHandler(BaseHandler):
 class FileTotalHandler(BaseHandler):
     @is_login
     @coroutine
-    def get(self):
+    def get(self, file_id):
         """
-        @api {get} /api/file/pages 总页数
+        @api {get} /api/file/([\w\W]+)/pages 总页数
         @apiName FileTotal
         @apiGroup File
+
+        @apiParam {Number} file_id
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -73,7 +70,7 @@ class FileTotalHandler(BaseHandler):
             }
         """
         try:
-            data = yield self.file_service.total_pages()
+            data = yield self.file_service.total_pages(file_id)
             self.success(data)
         except:
             self.error()
@@ -130,42 +127,38 @@ class FileUploadHandler(BaseHandler):
 
         @apiParam {String} hash 文件hash
         @apiParam {Number} pid 上一级目录id
+        @apiParamExample {json} Request-Example:
+            {
+                file_infos: [
+                    {
+                        "hash": str,
+                        "pid": int,
+                    }
+                    ...
+                ]
+            }
 
          @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK:
             {
                 "status": 0,
                 "message": "success",
-                "data": {
-                    "file_status": int 文件状态，0:未存在，1:已存在
-                    "file_id": int,
-                    "token": str, 当file_status为1时，为空字段
-                }
+                "data": [
+                    {
+                        "file_status": int 文件状态，0:未存在，1:已存在
+                        "file_id": int,
+                        "token": str, 当file_status为1时，为空字段
+                    }
+                        ...
+                ]
             }
         """
         try:
-            arg = {
-                'filename': '',
-                'size': 0,
-                'qiniu_id': '',
-                'owner': self.current_user['name'],
-                'mime': '',
-                'hash': self.params['hash'],
-                'type': 0,
-                'pid': self.params['pid']
-            }
-            resp = {'file_status': 0, 'token': '', 'file_id': ''}
-            data = yield self.file_service.check_file_exist(self.params['hash'])
-            if data:
-                resp['file_status'] = 1
-                arg['filename'] = data['filename']
-                arg['size'] = data['size']
-                arg['qiniu_id'] = data['qiniu_id']
-                arg['mime'] = data['mime']
-            else:
-                resp['token'] = yield self.file_service.upload_token()
-            add_result = yield self.file_service.add(arg)
-            resp['file_id'] = add_result['id']
+            resp = []
+            for arg in self.params['file_infos']:
+                arg.update({'name': self.current_user['name']})
+                data = yield self.file_service.batch_upload(arg)
+                resp.append(data)
             self.success(resp)
         except:
             self.error()
@@ -195,10 +188,11 @@ class FileUpdateHandler(BaseHandler):
                     self.params.get('size'),
                     self.params.get('qiniu_id'),
                     self.params.get('mime'),
+                    UPLOAD_STATUS['uploaded'],
                     self.params['file_id']
             ]
             yield self.file_service.update(
-                                            sets=['filename=%s', 'size=%s', 'qiniu_id=%s', 'mime=%s'],
+                                            sets=['filename=%s', 'size=%s', 'qiniu_id=%s', 'mime=%s', 'upload_status=%s'],
                                             conds=['id=%s'],
                                             params=arg
                                         )
