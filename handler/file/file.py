@@ -211,9 +211,9 @@ class FileUpdateHandler(BaseHandler):
 class FileDownloadHandler(BaseHandler):
     @is_login
     @coroutine
-    def get(self, file_id):
+    def post(self):
         """
-        @api {get} /api/file/download 文件下载
+        @api {post} /api/file/download 文件下载
         @apiName FileDownload
         @apiGroup File
 
