@@ -102,7 +102,7 @@ routes = [
     (r'/api/file/list', FileListHandler),
     (r'/api/file/pages', FileTotalHandler),
     (r'/api/file/([\w\W]+)/download', FileDownloadHandler),
-    (r'/api/file/([\w\W]+)/delete', FileDeleteHandler),
+    (r'/api/file/delete', FileDeleteHandler),
     (r'/api/file/dir/create', FileDirCreateHandler),
     (r'/api/file/([\w\W]+)', FileInfoHandler)
 ]
