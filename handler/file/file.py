@@ -110,7 +110,6 @@ class FileInfoHandler(BaseHandler):
                     "update_time": str,
                 }
             }
-        :return:
         """
         try:
             data = yield self.file_service.select(conds=['id=%s'], params=[file_id], one=True)
@@ -218,7 +217,7 @@ class FileDownloadHandler(BaseHandler):
         @apiName FileDownload
         @apiGroup File
 
-        @apiParam {Number} file_id 文件id
+        @apiParam {Number} file_ids 文件id
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -226,14 +225,19 @@ class FileDownloadHandler(BaseHandler):
                 "status": 0,
                 "message": "success",
                 "data": {
-                    "url": str,
+                    "urls": []str,
                 }
             }
         """
         try:
-            data = yield self.file_service.select(fields='qiniu_id', conds=['id=%s'], params=[file_id], ut=False, ct=False, one=True)
-            url = yield self.file_service.private_download_url(qiniu_id=data['qiniu_id'])
-            self.success({'url': url})
+            sym = ("%s, " * len(self.params['file_ids'])).rstrip(' ,')
+            arg = "id in (" + sym + ")"
+            data = yield self.file_service.select(fields='qiniu_id', conds=arg, params=[self.params['file_ids']], ut=False, ct=False, one=True)
+            urls = []
+            for i in data:
+                url = yield self.file_service.private_download_url(qiniu_id=i['qiniu_id'])
+                urls.append(url)
+            self.success({'urls': urls})
         except:
             self.error()
             self.log.error(traceback.format_exc())
@@ -244,14 +248,32 @@ class FileDirCreateHandler(BaseHandler):
     @coroutine
     def post(self):
         """
-        @api {post} /api/file/([\w\W+)/dir/([\w\W]+)/ 创建目录
+        @api {post} /api/file/dir/create 创建目录
         @apiName FileDirCreate
         @apiGroup File
 
         @apiParam {Number} pid 上一级目录id
         @apiParam {String} dir_name 目录名字
 
-        @apiUse Success
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "message": "success",
+                "data": {
+                    "id": int,
+                    "filename": str,
+                    "size": str,
+                    "qiniu_id": str,
+                    "owner": str,
+                    "mime": str,
+                    "hash": str,
+                    "type": int, 0为文件，1为文件夹， 当为1时，部分字段为空
+                    "pid": int,
+                    "create_time": str,
+                    "update_time": str,
+                }
+            }
         """
         try:
             arg = {
@@ -265,7 +287,8 @@ class FileDirCreateHandler(BaseHandler):
                 'hash': '',
             }
             data = yield self.file_service.add(arg)
-            self.success(data['id'])
+            resp = yield self.file_service.select(conds=['id=%s'], params=[data['id']])
+            self.success(resp)
         except:
             self.error()
             self.log.error(traceback.format_exc())
@@ -274,18 +297,20 @@ class FileDirCreateHandler(BaseHandler):
 class FileDeleteHandler(BaseHandler):
     @is_login
     @coroutine
-    def get(self, file_id):
+    def post(self):
         """
-        @api {get} /api/file/([\w\W]+)/delete 文件删除
+        @api {post} /api/file/delete 文件删除
         @apiName FileDelete
         @apiGroup File
 
-        @apiParam {Number} file_id
+        @apiParam {Number} file_ids
 
         @apiUse Success
         """
         try:
-            yield self.file_service.delete(conds=['id=%s'], params=[file_id])
+            sym = ("%s, " * len(self.params['file_ids'])).rstrip(' ,')
+            arg = "id in (" + sym + ")"
+            yield self.file_service.delete(conds=arg, params=[self.params['file_ids']])
         except:
             self.error()
             self.log.error(traceback.format_exc())

@@ -74,7 +74,7 @@ code_build(){
 
 remove_old_image(){
     log "remove_old_image"
-    if docker images $1:$4 > /dev/null; then
+    if docker images $1":"$4 > /dev/null; then
         docker rmi $1:$4
     fi
     log "finish remove_old_image"
