@@ -279,6 +279,7 @@ class FileDirCreateHandler(BaseHandler):
                 'owner': self.current_user['name'],
                 'mime': '',
                 'hash': '',
+                'upload_status': UPLOAD_STATUS['uploaded']
             }
             data = yield self.file_service.add(arg)
             resp = yield self.file_service.select(conds=['id=%s'], params=[data['id']])

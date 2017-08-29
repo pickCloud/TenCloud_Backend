@@ -66,17 +66,17 @@ class FileService(BaseService):
 
     @coroutine
     def seg_page(self, params):
-        sql = """SELECT id, filename, size, qiniu_id, owner, mime, hash, type, pid, DATE_FORMAT(create_time, %s ) as create_time, DATE_FORMAT(update_time, %s) as update_time WHERE pid = %s AND file_status = %s FROM {table} LIMIT %s, %s
+        sql = """SELECT id, filename, size, qiniu_id, owner, mime, hash, type, pid, DATE_FORMAT(create_time, %s ) as create_time, DATE_FORMAT(update_time, %s) as update_time FROM {table} WHERE pid = %s AND upload_status = %s LIMIT %s, %s
               """.format(table=self.table)
         start_page = (params['now_page'] - 1) * params['page_number']
-        arg = [FULL_DATE_FORMAT, FULL_DATE_FORMAT, params['pid'], UPLOAD_STATUS['uploaded'], start_page, params['page_number']]
+        arg = [FULL_DATE_FORMAT, FULL_DATE_FORMAT, params['file_id'], UPLOAD_STATUS['uploaded'], start_page, params['page_number']]
         cur = yield self.db.execute(sql, arg)
         data = cur.fetchall()
         return data
 
     @coroutine
     def total_pages(self, pid):
-        sql = "SELECT count(*) FROM {table} WHERE pid = %s AND file_status = %s".format(table=self.table)
+        sql = "SELECT count(*) FROM {table} WHERE pid = %s AND upload_status = %s".format(table=self.table)
         cur = yield self.db.execute(sql, [pid, UPLOAD_STATUS['uploaded']])
         data = cur.fetchone()
         return data['count(*)']
