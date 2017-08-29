@@ -186,3 +186,11 @@ PROJECT_STATUS['deploying'] = 3
 PROJECT_STATUS['deploy-success'] = 4
 PROJECT_STATUS['build-failure'] = -2
 PROJECT_STATUS['deploy-failure'] = -4
+
+#################################################################################################
+# 文件上传状态
+# 0 未上传, 1 上传成功
+#################################################################################################
+UPLOAD_STATUS = dict()
+UPLOAD_STATUS['unupload'] = 0
+UPLOAD_STATUS['uploaded'] = 1
