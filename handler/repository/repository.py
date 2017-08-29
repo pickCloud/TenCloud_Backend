@@ -66,3 +66,14 @@ class RepositoryBranchHandler(BaseHandler):
         except:
             self.error()
             self.log.error(traceback.format_exc())
+
+
+class GithubOauthCallbackHandler(BaseHandler):
+    def get(self):
+        try:
+            code = self.get_argument('code')
+            print('code: {code}'.format(code=code))
+
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
