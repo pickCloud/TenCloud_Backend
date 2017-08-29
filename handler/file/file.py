@@ -211,9 +211,9 @@ class FileUpdateHandler(BaseHandler):
 class FileDownloadHandler(BaseHandler):
     @is_login
     @coroutine
-    def get(self, file_id):
+    def post(self):
         """
-        @api {get} /api/file/([\w\W]+)/download 文件下载
+        @api {post} /api/file/download 文件下载
         @apiName FileDownload
         @apiGroup File
 
@@ -232,7 +232,7 @@ class FileDownloadHandler(BaseHandler):
         try:
             sym = ("%s, " * len(self.params['file_ids'])).rstrip(' ,')
             arg = "id in (" + sym + ")"
-            data = yield self.file_service.select(fields='qiniu_id', conds=arg, params=[self.params['file_ids']], ut=False, ct=False, one=True)
+            data = yield self.file_service.select(fields='qiniu_id', conds=[arg], params=[self.params['file_ids']], ut=False, ct=False, one=True)
             urls = []
             for i in data:
                 url = yield self.file_service.private_download_url(qiniu_id=i['qiniu_id'])
@@ -310,7 +310,7 @@ class FileDeleteHandler(BaseHandler):
         try:
             sym = ("%s, " * len(self.params['file_ids'])).rstrip(' ,')
             arg = "id in (" + sym + ")"
-            yield self.file_service.delete(conds=arg, params=[self.params['file_ids']])
+            yield self.file_service.delete(conds=[arg], params=[self.params['file_ids']])
         except:
             self.error()
             self.log.error(traceback.format_exc())
