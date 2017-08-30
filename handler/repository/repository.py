@@ -69,6 +69,7 @@ class RepositoryBranchHandler(BaseHandler):
 
 
 class GithubOauthCallbackHandler(BaseHandler):
+    @coroutine
     def get(self):
         try:
             code = self.get_argument('code')

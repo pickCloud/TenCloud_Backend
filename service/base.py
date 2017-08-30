@@ -193,7 +193,10 @@ class BaseService():
         if not data: data = {}
 
         if not headers:
-            headers = {'User-Agent': choose_user_agent()}
+            headers = {
+                'User-Agent': choose_user_agent(),
+                'Accept': 'application/json'
+            }
 
         try:
             res = yield AsyncHTTPClient().fetch(url,
