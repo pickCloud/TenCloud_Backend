@@ -15,7 +15,7 @@ APP_NAME=$1
 BASE_DIR="$HOME/deploy"
 CODE_DIR="${BASE_DIR}/code/${APP_NAME}"
 CODE_URL=$2
-LOCK_FILE="/tmp/"${version}"deploy.lock"
+LOCK_FILE="/tmp/"${APP_NAME}"-"${version}".lock"
 
 #Shell env
 SHELL_NAME="deploy-app.sh"
@@ -74,8 +74,8 @@ code_build(){
 
 remove_old_image(){
     log "remove_old_image"
-    if docker images $1":"$4 > /dev/null; then
-        docker rmi $1:$4
+    if docker images ${APP_NAME}":"${version} > /dev/null; then
+        docker rmi ${APP_NAME}":"${version}
     fi
     log "finish remove_old_image"
 }

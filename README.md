@@ -278,6 +278,7 @@ CREATE TABLE `filehub` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE filehub ADD COLUMN upload_status tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '文件上传状态, 0未上传，1上传成功'
+ALTER TABLE filehub ADD COLUMN url varchar(128) NOT NULL DEFAULT '' COMMENT '下载地址'
 ```
 
 ## 测试

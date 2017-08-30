@@ -9,7 +9,7 @@ from setting import settings
 
 class FileService(BaseService):
     table = 'filehub'
-    fields = 'id, filename, size, qiniu_id, owner, mime, hash, type, pid'
+    fields = 'id, filename, size, qiniu_id, owner, mime, hash, type, pid, url'
 
     def __init__(self, ak, sk):
         super().__init__()
@@ -32,10 +32,9 @@ class FileService(BaseService):
 
     @coroutine
     def check_file_exist(self, hash):
-        sql = "SELECT size, qiniu_id, mime FROM {table} WHERE hash=%s".format(table=self.table)
+        sql = "SELECT filename, size, qiniu_id, mime, upload_status, url FROM {table} WHERE hash=%s".format(table=self.table)
         cur = yield self.db.execute(sql, [hash])
-        cur.fetchone()
-        return
+        return cur.fetchone()
 
     @coroutine
     def batch_upload(self, params):
@@ -43,12 +42,13 @@ class FileService(BaseService):
             'filename': '',
             'size': 0,
             'qiniu_id': '',
-            'owner': params['name'],
+            'owner': params['owner'],
             'mime': '',
             'hash': params['hash'],
             'type': 0,
             'pid': params['pid'],
-            'upload_status': UPLOAD_STATUS['unupload']
+            'upload_status': UPLOAD_STATUS['unupload'],
+            'url': ''
         }
         resp = {'file_status': 0, 'token': '', 'file_id': ''}
         data = yield self.check_file_exist(params['hash'])
@@ -58,6 +58,8 @@ class FileService(BaseService):
             arg['size'] = data['size']
             arg['qiniu_id'] = data['qiniu_id']
             arg['mime'] = data['mime']
+            arg['upload_status'] = data['upload_status']
+            arg['url'] = data['url']
         else:
             resp['token'] = yield self.upload_token()
         add_result = yield self.add(arg)
@@ -66,17 +68,30 @@ class FileService(BaseService):
 
     @coroutine
     def seg_page(self, params):
-        sql = """SELECT id, filename, size, qiniu_id, owner, mime, hash, type, pid, DATE_FORMAT(create_time, %s ) as create_time, DATE_FORMAT(update_time, %s) as update_time WHERE pid = %s AND file_status = %s FROM {table} LIMIT %s, %s
+        sql = """
+                SELECT id, filename, size, qiniu_id, owner, mime, hash, type, pid, DATE_FORMAT(create_time, %s ) 
+                as create_time, DATE_FORMAT(update_time, %s) as update_time 
+                FROM {table} 
+                WHERE pid = %s AND owner = %s AND upload_status = %s 
+                LIMIT %s, %s
               """.format(table=self.table)
         start_page = (params['now_page'] - 1) * params['page_number']
-        arg = [FULL_DATE_FORMAT, FULL_DATE_FORMAT, params['pid'], UPLOAD_STATUS['uploaded'], start_page, params['page_number']]
+        arg = [
+                FULL_DATE_FORMAT,
+                FULL_DATE_FORMAT,
+                params['file_id'],
+                params['owner'],
+                UPLOAD_STATUS['uploaded'],
+                start_page,
+                params['page_number']
+        ]
         cur = yield self.db.execute(sql, arg)
         data = cur.fetchall()
         return data
 
     @coroutine
     def total_pages(self, pid):
-        sql = "SELECT count(*) FROM {table} WHERE pid = %s AND file_status = %s".format(table=self.table)
+        sql = "SELECT count(*) FROM {table} WHERE pid = %s AND upload_status = %s".format(table=self.table)
         cur = yield self.db.execute(sql, [pid, UPLOAD_STATUS['uploaded']])
         data = cur.fetchone()
         return data['count(*)']
