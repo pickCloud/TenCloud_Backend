@@ -72,7 +72,9 @@ class GithubOauthCallbackHandler(BaseHandler):
     def get(self):
         try:
             code = self.get_argument('code')
-            print('code: {code}'.format(code=code))
+            token = yield self.repos_service.fetch_token(code)
+
+            print('token: {token}'.format(token=token))
 
         except:
             self.error()
