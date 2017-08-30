@@ -3,7 +3,8 @@ import traceback
 from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login
-from constant import  UPLOAD_STATUS
+from utils.general import get_in_formats
+from constant import UPLOAD_STATUS, SERVER_HOST
 
 
 class FileListHandler(BaseHandler):
@@ -35,6 +36,7 @@ class FileListHandler(BaseHandler):
                             "hash": str,
                             "type": int, 0为文件，1为文件夹， 当为1时，部分字段为空
                             "pid": int,
+                            "url": str,
                             "create_time": str,
                             "update_time": str,
                         }
@@ -43,6 +45,7 @@ class FileListHandler(BaseHandler):
             }
         """
         try:
+            self.params.update({'owner': self.current_user['id']})
             data = yield self.file_service.seg_page(self.params)
             self.success(data)
         except:
@@ -103,6 +106,7 @@ class FileInfoHandler(BaseHandler):
                     "hash": str,
                     "type": int, 0为文件，1为文件夹， 当为1时，部分字段为空
                     "pid": int,
+                    "url": str
                     "create_time": str,
                     "update_time": str,
                 }
@@ -156,7 +160,7 @@ class FileUploadHandler(BaseHandler):
         try:
             resp = []
             for arg in self.params['file_infos']:
-                arg.update({'name': self.current_user['name']})
+                arg.update({'owner': self.current_user['id']})
                 data = yield self.file_service.batch_upload(arg)
                 resp.append(data)
             self.success(resp)
@@ -189,10 +193,18 @@ class FileUpdateHandler(BaseHandler):
                     self.params.get('qiniu_id'),
                     self.params.get('mime'),
                     UPLOAD_STATUS['uploaded'],
+                    'http://' + SERVER_HOST + '/api/file/download/' + self.params.get('qiniu_id'),
                     self.params['file_id']
             ]
             yield self.file_service.update(
-                                            sets=['filename=%s', 'size=%s', 'qiniu_id=%s', 'mime=%s', 'upload_status=%s'],
+                                            sets=[
+                                                    'filename=%s',
+                                                    'size=%s',
+                                                    'qiniu_id=%s',
+                                                    'mime=%s',
+                                                    'upload_status=%s',
+                                                    'url=%s'
+                                            ],
                                             conds=['id=%s'],
                                             params=arg
                                         )
@@ -205,33 +217,31 @@ class FileUpdateHandler(BaseHandler):
 class FileDownloadHandler(BaseHandler):
     @is_login
     @coroutine
-    def post(self):
+    def get(self, file_id):
         """
-        @api {post} /api/file/download 文件下载
+        @api {get} /api/file/download/([\w\W+]) 文件下载
         @apiName FileDownload
         @apiGroup File
 
-        @apiParam {Number} file_ids 文件id
+        @apiParam {Number} file_id 文件id
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
             {
-                "status": 0,
-                "message": "success",
-                "data": {
-                    "urls": []str,
-                }
+              跳转到七牛下载页面
             }
         """
         try:
-            sym = ("%s, " * len(self.params['file_ids'])).rstrip(' ,')
-            arg = "id in (" + sym + ")"
-            data = yield self.file_service.select(fields='qiniu_id', conds=[arg], params=self.params['file_ids'], ut=False, ct=False)
-            urls = []
-            for i in data:
-                url = yield self.file_service.private_download_url(qiniu_id=i['qiniu_id'])
-                urls.append(url)
-            self.success({'urls': urls})
+            data = yield self.file_service.select(
+                                                fields='qiniu_id',
+                                                conds=['id=%s'],
+                                                params=[file_id],
+                                                ut=False,
+                                                ct=False,
+                                                one=True
+                                                )
+            url = yield self.file_service.private_download_url(qiniu_id=data['qiniu_id'])
+            self.redirect(url=url, permanent=False, status=302)
         except:
             self.error()
             self.log.error(traceback.format_exc())
@@ -264,6 +274,7 @@ class FileDirCreateHandler(BaseHandler):
                     "hash": str,
                     "type": int, 0为文件，1为文件夹， 当为1时，部分字段为空
                     "pid": int,
+                    "url: str,
                     "create_time": str,
                     "update_time": str,
                 }
@@ -276,7 +287,7 @@ class FileDirCreateHandler(BaseHandler):
                 'type': 1,
                 'size': 0,
                 'qiniu_id': '',
-                'owner': self.current_user['name'],
+                'owner': self.current_user['id'],
                 'mime': '',
                 'hash': '',
                 'upload_status': UPLOAD_STATUS['uploaded']
@@ -303,8 +314,7 @@ class FileDeleteHandler(BaseHandler):
         @apiUse Success
         """
         try:
-            sym = ("%s, " * len(self.params['file_ids'])).rstrip(' ,')
-            arg = "id in (" + sym + ")"
+            arg = get_in_formats(field='id', contents=self.params['file_ids'])
             yield self.file_service.delete(conds=[arg], params=self.params['file_ids'])
             self.success()
         except:
