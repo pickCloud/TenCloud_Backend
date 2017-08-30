@@ -101,7 +101,7 @@ routes = [
     (r'/api/file/update', FileUpdateHandler),
     (r'/api/file/list', FileListHandler),
     (r'/api/file/([\w\W]+)/pages', FileTotalHandler),
-    (r'/api/file/download/([\w\W+])', FileDownloadHandler),
+    (r'/api/file/download/([\w\W]+)', FileDownloadHandler),
     (r'/api/file/delete', FileDeleteHandler),
     (r'/api/file/dir/create', FileDirCreateHandler),
     (r'/api/file/([\w\W]+)', FileInfoHandler)

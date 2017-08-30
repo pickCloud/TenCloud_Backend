@@ -232,15 +232,7 @@ class FileDownloadHandler(BaseHandler):
             }
         """
         try:
-            data = yield self.file_service.select(
-                                                fields='qiniu_id',
-                                                conds=['id=%s'],
-                                                params=[file_id],
-                                                ut=False,
-                                                ct=False,
-                                                one=True
-                                                )
-            url = yield self.file_service.private_download_url(qiniu_id=data['qiniu_id'])
+            url = yield self.file_service.private_download_url(qiniu_id=file_id)
             self.redirect(url=url, permanent=False, status=302)
         except:
             self.error()

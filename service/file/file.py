@@ -9,7 +9,7 @@ from setting import settings
 
 class FileService(BaseService):
     table = 'filehub'
-    fields = 'id, filename, size, qiniu_id, owner, mime, hash, type, pid, url'
+    fields = 'id, filename, size, qiniu_id, owner, mime, hash, type, pid, url, upload_status'
 
     def __init__(self, ak, sk):
         super().__init__()
@@ -69,8 +69,8 @@ class FileService(BaseService):
     @coroutine
     def seg_page(self, params):
         sql = """
-                SELECT id, filename, size, qiniu_id, owner, mime, hash, type, pid, DATE_FORMAT(create_time, %s ) 
-                as create_time, DATE_FORMAT(update_time, %s) as update_time 
+                SELECT id, filename, size, qiniu_id, owner, mime, hash, type, pid, url, upload_status, 
+                DATE_FORMAT(create_time, %s ) as create_time, DATE_FORMAT(update_time, %s) as update_time 
                 FROM {table} 
                 WHERE pid = %s AND owner = %s AND upload_status = %s 
                 LIMIT %s, %s
@@ -91,7 +91,7 @@ class FileService(BaseService):
 
     @coroutine
     def total_pages(self, pid):
-        sql = "SELECT count(*) FROM {table} WHERE pid = %s AND upload_status = %s".format(table=self.table)
+        sql = "SELECT count(*) as number FROM {table} WHERE pid = %s AND upload_status = %s".format(table=self.table)
         cur = yield self.db.execute(sql, [pid, UPLOAD_STATUS['uploaded']])
         data = cur.fetchone()
-        return data['count(*)']
+        return data['number']
