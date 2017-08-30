@@ -7,12 +7,14 @@ from constant import GIT_REPOS_URL, GIT_BRANCH_URL, GIT_FETCH_TOKEN_URL
 
 
 class RepositoryService(BaseService):
-    headers = {'Authorization': 'token {}'.format(settings['git_token'])}
+    headers = {'Authorization': 'token {token}'}
 
     @coroutine
-    def fetch_repos(self):
+    def fetch_repos(self, token):
         ''' git账号下的所有仓库
         '''
+        self.headers['Authorization'] = self.headers['Authorization'].format(token=token)
+
         data = yield self.get(host=GIT_REPOS_URL, headers=self.headers)
         result = [{'repos_url': d.get('ssh_url', ''),
                    'repos_name': d.get('full_name', ''),
@@ -21,9 +23,11 @@ class RepositoryService(BaseService):
         return result
 
     @coroutine
-    def fetch_branches(self, repos_name):
+    def fetch_branches(self, repos_name, token):
         ''' 根据repos_name获取所有分支
         '''
+        self.headers['Authorization'] = self.headers['Authorization'].format(token=token)
+
         data = yield self.get(host=GIT_BRANCH_URL.format(repos_name=repos_name), headers=self.headers)
 
         result = [{'branch_name': d.get('name')} for d in data]
