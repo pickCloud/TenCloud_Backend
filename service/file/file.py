@@ -73,6 +73,7 @@ class FileService(BaseService):
                 DATE_FORMAT(f.create_time, %s ) as create_time, DATE_FORMAT(f.update_time, %s) as update_time 
                 FROM {filehub} as f, {user} as u
                 WHERE f.pid = %s AND f.upload_status = %s AND f.owner = u.id
+                ORDER BY f.create_time DESC
                 LIMIT %s, %s
               """.format(filehub=self.table, user='user')
         start_page = (params['now_page'] - 1) * params['page_number']

@@ -303,14 +303,40 @@ class FileDeleteHandler(BaseHandler):
 
         @apiParam {Number} file_ids
 
-        @apiUse Success
+        @apiSuccessExample {json} Success-Example:
+            HTTP/1.1 200 OK
+            {
+                 "status": 0,
+                "message": "success",
+                "data": {
+                    "file_ids": []int,
+                }
+            }
         """
         try:
-            arg = get_in_formats(field='id', contents=self.params['file_ids'])
-            yield self.file_service.delete(
-                                            conds=[arg, 'owner=%s'],
-                                            params=[self.params['file_ids'], self.current_user['id']]
-                                            )
+            ids = get_in_formats(field='id', contents=self.params['file_ids'])
+            params = self.params['file_ids'] + [self.current_user['id']]
+            files = yield self.file_service.select(
+                                                    fields='id',
+                                                    conds=[ids, 'owner=%s'],
+                                                    params=params,
+                                                    ct=False, ut=False
+                                                    )
+            correct_ids = []
+            for file in files:
+                if file['id'] in self.params['file_ids']:
+                    correct_ids.append(file['id'])
+                    continue
+            incorrect_ids = [x for x in self.params['file_ids'] if x not in correct_ids]
+            if correct_ids:
+                arg = get_in_formats(field='id', contents=correct_ids)
+                yield self.file_service.delete(
+                                            conds=[arg],
+                                            params=correct_ids
+                )
+            if incorrect_ids:
+                self.error(data={'file_ids': incorrect_ids})
+                return
             self.success()
         except:
             self.error()
