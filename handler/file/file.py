@@ -325,7 +325,7 @@ class FileDeleteHandler(BaseHandler):
             correct_ids = []
             for file in files:
                 if str(file['id']) in self.params['file_ids']:
-                    correct_ids.append(file['id'])
+                    correct_ids.append(str(file['id']))
                     continue
             incorrect_ids = [x for x in self.params['file_ids'] if x not in correct_ids]
             if correct_ids:
