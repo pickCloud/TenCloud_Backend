@@ -45,7 +45,6 @@ class FileListHandler(BaseHandler):
             }
         """
         try:
-            self.params.update({'owner': self.current_user['id']})
             data = yield self.file_service.seg_page(self.params)
             self.success(data)
         except:
@@ -194,7 +193,8 @@ class FileUpdateHandler(BaseHandler):
                     self.params.get('mime'),
                     UPLOAD_STATUS['uploaded'],
                     'http://' + SERVER_HOST + '/api/file/download/' + self.params.get('qiniu_id'),
-                    self.params['file_id']
+                    self.params['file_id'],
+                    self.current_user['id']
             ]
             yield self.file_service.update(
                                             sets=[
@@ -205,7 +205,7 @@ class FileUpdateHandler(BaseHandler):
                                                     'upload_status=%s',
                                                     'url=%s'
                                             ],
-                                            conds=['id=%s'],
+                                            conds=['id=%s', 'owner=%s'],
                                             params=arg
                                         )
             self.success()
@@ -307,7 +307,10 @@ class FileDeleteHandler(BaseHandler):
         """
         try:
             arg = get_in_formats(field='id', contents=self.params['file_ids'])
-            yield self.file_service.delete(conds=[arg], params=self.params['file_ids'])
+            yield self.file_service.delete(
+                                            conds=[arg, 'owner=%s'],
+                                            params=[self.params['file_ids'], self.current_user['id']]
+                                            )
             self.success()
         except:
             self.error()

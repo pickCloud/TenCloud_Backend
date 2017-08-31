@@ -69,18 +69,17 @@ class FileService(BaseService):
     @coroutine
     def seg_page(self, params):
         sql = """
-                SELECT id, filename, size, qiniu_id, owner, mime, hash, type, pid, url, upload_status, 
-                DATE_FORMAT(create_time, %s ) as create_time, DATE_FORMAT(update_time, %s) as update_time 
-                FROM {table} 
-                WHERE pid = %s AND owner = %s AND upload_status = %s 
+                SELECT f.id, f.filename, f.size, f.qiniu_id, u.name, f.mime, f.hash, f.type, f.pid, f.url, f.upload_status, 
+                DATE_FORMAT(f.create_time, %s ) as create_time, DATE_FORMAT(f.update_time, %s) as update_time 
+                FROM {filehub} as f, {user} as u
+                WHERE f.pid = %s AND f.upload_status = %s AND f.owner = u.id
                 LIMIT %s, %s
-              """.format(table=self.table)
+              """.format(filehub=self.table, user='user')
         start_page = (params['now_page'] - 1) * params['page_number']
         arg = [
                 FULL_DATE_FORMAT,
                 FULL_DATE_FORMAT,
                 params['file_id'],
-                params['owner'],
                 UPLOAD_STATUS['uploaded'],
                 start_page,
                 params['page_number']
