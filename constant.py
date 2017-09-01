@@ -194,3 +194,4 @@ PROJECT_STATUS['deploy-failure'] = -4
 UPLOAD_STATUS = dict()
 UPLOAD_STATUS['unupload'] = 0
 UPLOAD_STATUS['uploaded'] = 1
+DISK_DOWNLOAD_URL = 'https://' + SERVER_HOST + '/api/file/download/'

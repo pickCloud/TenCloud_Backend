@@ -4,7 +4,7 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login
 from utils.general import get_in_formats
-from constant import UPLOAD_STATUS, SERVER_HOST
+from constant import UPLOAD_STATUS
 
 
 class FileListHandler(BaseHandler):
@@ -192,7 +192,6 @@ class FileUpdateHandler(BaseHandler):
                     self.params.get('qiniu_id'),
                     self.params.get('mime'),
                     UPLOAD_STATUS['uploaded'],
-                    'http://' + SERVER_HOST + '/api/file/download/' + self.params.get('qiniu_id'),
                     self.params['file_id'],
                     self.current_user['id']
             ]
@@ -203,7 +202,6 @@ class FileUpdateHandler(BaseHandler):
                                                     'qiniu_id=%s',
                                                     'mime=%s',
                                                     'upload_status=%s',
-                                                    'url=%s'
                                             ],
                                             conds=['id=%s', 'owner=%s'],
                                             params=arg
