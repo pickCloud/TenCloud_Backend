@@ -3,7 +3,7 @@ from qiniu import Auth
 from tornado.gen import coroutine
 from tornado.concurrent import run_on_executor
 from service.base import BaseService
-from constant import QINIU_POLICY, FULL_DATE_FORMAT, UPLOAD_STATUS
+from constant import QINIU_POLICY, FULL_DATE_FORMAT, UPLOAD_STATUS, DISK_DOWNLOAD_URL
 from setting import settings
 
 
@@ -48,7 +48,6 @@ class FileService(BaseService):
             'type': 0,
             'pid': params['pid'],
             'upload_status': UPLOAD_STATUS['unupload'],
-            'url': ''
         }
         resp = {'file_status': 0, 'token': '', 'file_id': ''}
         data = yield self.check_file_exist(params['hash'])
@@ -59,7 +58,6 @@ class FileService(BaseService):
             arg['qiniu_id'] = data['qiniu_id']
             arg['mime'] = data['mime']
             arg['upload_status'] = data['upload_status']
-            arg['url'] = data['url']
         else:
             resp['token'] = yield self.upload_token()
         add_result = yield self.add(arg)
@@ -69,13 +67,14 @@ class FileService(BaseService):
     @coroutine
     def seg_page(self, params):
         sql = """
-                SELECT f.id, f.filename, f.size, f.qiniu_id, u.name, f.mime, f.hash, f.type, f.pid, f.url, f.upload_status, 
-                DATE_FORMAT(f.create_time, %s ) as create_time, DATE_FORMAT(f.update_time, %s) as update_time 
+                SELECT f.id, f.filename, f.size, f.qiniu_id, u.name, f.mime, f.hash, f.type, f.pid, 
+                CONCAT('{uri}', f.qiniu_id) as url, f.upload_status, 
+                DATE_FORMAT(f.create_time, %s) as create_time, DATE_FORMAT(f.update_time, %s) as update_time 
                 FROM {filehub} as f, {user} as u
                 WHERE f.pid = %s AND f.upload_status = %s AND f.owner = u.id
                 ORDER BY f.create_time DESC
                 LIMIT %s, %s
-              """.format(filehub=self.table, user='user')
+              """.format(filehub=self.table, user='user', uri=DISK_DOWNLOAD_URL)
         start_page = (params['now_page'] - 1) * params['page_number']
         arg = [
                 FULL_DATE_FORMAT,
