@@ -315,19 +315,20 @@ class FileDeleteHandler(BaseHandler):
         """
         try:
             ids = get_in_formats(field='id', contents=self.params['file_ids'])
-            params = self.params['file_ids'] + [self.current_user['id']]
             files = yield self.file_service.select(
-                                                    fields='id',
-                                                    conds=[ids, 'owner=%s'],
-                                                    params=params,
+                                                    fields='id, owner',
+                                                    conds=[ids],
+                                                    params=self.params['file_ids'],
                                                     ct=False, ut=False
                                                     )
             correct_ids = []
+            incorrect_ids = []
             for file in files:
-                if str(file['id']) in self.params['file_ids']:
-                    correct_ids.append(str(file['id']))
+                if int(file['owner']) == self.current_user['id']:
+                    correct_ids.append(file['id'])
                     continue
-            incorrect_ids = [x for x in self.params['file_ids'] if x not in correct_ids]
+                incorrect_ids.append(file['id'])
+
             if correct_ids:
                 arg = get_in_formats(field='id', contents=correct_ids)
                 yield self.file_service.delete(
