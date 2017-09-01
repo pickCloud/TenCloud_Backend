@@ -324,7 +324,7 @@ class FileDeleteHandler(BaseHandler):
             correct_ids = []
             incorrect_ids = []
             for file in files:
-                if int(file['owner']) == self.current_user['id']:
+                if file['owner'] == self.current_user['id']:
                     correct_ids.append(file['id'])
                     continue
                 incorrect_ids.append(file['id'])
