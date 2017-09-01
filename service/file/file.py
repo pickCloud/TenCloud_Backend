@@ -32,7 +32,7 @@ class FileService(BaseService):
 
     @coroutine
     def check_file_exist(self, hash):
-        sql = "SELECT filename, size, qiniu_id, mime, upload_status, url FROM {table} WHERE hash=%s".format(table=self.table)
+        sql = "SELECT filename, size, qiniu_id, mime, upload_status FROM {table} WHERE hash=%s".format(table=self.table)
         cur = yield self.db.execute(sql, [hash])
         return cur.fetchone()
 
