@@ -37,6 +37,7 @@ class FileListHandler(BaseHandler):
                             "type": int, 0为文件，1为文件夹， 当为1时，部分字段为空
                             "pid": int,
                             "url": str,
+                            "thumb":str,
                             "create_time": str,
                             "update_time": str,
                         }
@@ -224,7 +225,7 @@ class FileDownloadHandler(BaseHandler):
         @apiParam {Number} file_id 文件id
 
         @apiSuccessExample {json} Success-Response:
-            HTTP/1.1 200 OK
+            HTTP/1.1 302 OK
             {
               跳转到七牛下载页面
             }
