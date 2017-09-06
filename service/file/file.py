@@ -19,7 +19,7 @@ class FileService(BaseService):
     def upload_token(self, key):
         saveas = '{bucket}:{key}'.format(bucket=settings['qiniu_file_bucket'], key=key)
         saveas_key = urlsafe_base64_encode(saveas)
-        policy = copy.copy(QINIU_POLICY)
+        policy = QINIU_POLICY.copy()
         policy['persistentOps'] = QINIU_THUMB + '|saveas/' + saveas_key
         token = self.qiniu.upload_token(bucket=settings['qiniu_file_bucket'],
                                         expires=settings['qiniu_token_timeout'],

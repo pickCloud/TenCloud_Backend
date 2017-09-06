@@ -164,9 +164,12 @@ SESSION_TIMEOUT = 604800 # 一周
 POOL_COUNT = 10
 AES_KEY = '01234^!@#$%56789'
 QINIU_POLICY = {
-    'returnBody': '{"filename":$(fname), "size":$(fsize), "type": $(mimeType), "key": $(key)}',
-    "persistentOps": '',
-    "persistentPipeline": ''
+    "returnBody":
+        """
+        {"filename": $(fname), "size": $(fsize), "type": $(mimeType), "key": $(key)}
+        """,
+    "persistentOps": "",
+    "persistentPipeline": ""
 }
 QINIU_THUMB = 'imageView2/1/w/50/h/50/format/webp/q/75|imageslim'
 
