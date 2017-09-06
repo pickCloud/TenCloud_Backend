@@ -25,6 +25,7 @@ AUTH_LOCK_TIMEOUT = 7200 # 两个小时
 SMS_SENDING_LOCK = 'sms_sending_lock_{mobile}'
 SMS_SENDING_LOCK_TIMEOUT = 60 # 一分钟
 SESSION_KEY = 'session_{user_id}'
+GIT_TOKEN = 'git_token'
 
 #################################################################################################
 # ssh相关
@@ -68,6 +69,54 @@ ALIYUN_REGION_NAME = {
     'me-east-1': '中东东部 1（迪拜）'
 }
 ALIYUN_REGION_LIST = ALIYUN_REGION_NAME.keys()
+
+#################################################################################################
+# 腾讯云相关
+#################################################################################################
+QCLOUD_DOMAIN = 'https://cvm.api.qcloud.com/v2/index.php?'
+QCLOUD_HOST = QCLOUD_DOMAIN[8:-1]
+QCLOUD_REGION_NAME = {
+    'ap-guangzhou': '华南地区（广州）',
+    'ap-shenzhen-fsi': '华南地区（深圳金融）',
+    'ap-shanghai': '华东地区（上海）',
+    'ap-shanghai-fsi': '华东地区（上海金融）',
+    'ap-beijing': '华北地区（北京）',
+    'ap-hongkong': '东南亚地区（香港）',
+    'ap-singapore': '东南亚地区（新加坡）',
+    'na-toronto': '北美地区（多伦多）',
+    'na-siliconvalley': '美国西部（硅谷）'
+}
+QCLOUD_REGION_LIST = QCLOUD_REGION_NAME.keys()
+
+QCLOUD_STATUS = {
+    1: '故障',
+    2: '运行中',
+    3: '创建中',
+    4: '已关机',
+    5: '已退还',
+    6: '退还中',
+    7: '重启中',
+    8: '开机中',
+    9: '关机中',
+    10: '密码重置中',
+    11: '格式化中',
+    12: '镜像制作中',
+    13: '带宽设置中',
+    14: '重装系统中',
+    15: '域名绑定中',
+    16: '域名解绑中',
+    17: '负载均衡绑定中',
+    18: '负载均衡解绑中',
+    19: '升级中',
+    20: '密钥下发中',
+}
+
+QCLOUD_PAYMODE = {
+    0: '按月结算的后付费',
+    1: '包年包月',
+    2: '按流量',
+    3: '按带宽'
+}
 
 #################################################################################################
 # http相关
@@ -143,6 +192,7 @@ USER_AGENTS = [
 #################################################################################################
 GIT_REPOS_URL = 'https://api.github.com/user/repos'
 GIT_BRANCH_URL = 'https://api.github.com/repos/{repos_name}/branches'
+GIT_FETCH_TOKEN_URL = 'https://github.com/login/oauth/access_token'
 
 #################################################################################################
 # SMS相关

@@ -19,7 +19,7 @@ from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDe
                                     ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler, \
                                     ProjectImageLogHandler, ProjectContainersListHanler, ProjectImageUpload, \
                                     ProjectImageCloudDownload
-from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler
+from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler, GithubOauthCallbackHandler
 from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, \
                               UserUpdateHandler, UserUploadToken
 from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
@@ -87,6 +87,7 @@ routes = [
     # 项目相关之仓库
     (r'/api/repos', RepositoryHandler),
     (r'/api/repos/branches', RepositoryBranchHandler),
+    (r'/api/github/oauth/callback', GithubOauthCallbackHandler),
 
     # 用户相关
     (r'/api/user', UserDetailHandler),
