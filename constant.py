@@ -194,10 +194,6 @@ PROJECT_STATUS['build-failure'] = -2
 PROJECT_STATUS['deploy-failure'] = -4
 
 #################################################################################################
-# 文件上传状态
-# 0 未上传, 1 上传成功
+# 文件上传
 #################################################################################################
-UPLOAD_STATUS = dict()
-UPLOAD_STATUS['unupload'] = 0
-UPLOAD_STATUS['uploaded'] = 1
 DISK_DOWNLOAD_URL = 'https://' + SERVER_HOST + '/api/file/download/'

@@ -4,7 +4,6 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login
 from utils.general import get_in_formats
-from constant import UPLOAD_STATUS
 
 
 class FileListHandler(BaseHandler):
@@ -178,6 +177,7 @@ class FileUpdateHandler(BaseHandler):
         @apiName FileUpdate
         @apiGroup File
 
+        @apiParam {Number} status 当为0时，下述字段不为空；为1时，代表上传失败，删除记录，除file_id外，其余为空
         @apiParam {Number} file_id
         @apiParam {String} filename
         @apiParam {Number} size
@@ -187,12 +187,15 @@ class FileUpdateHandler(BaseHandler):
         @apiUse Success
         """
         try:
+            if self.params['status'] == 1:
+                yield self.file_service.delete(conds='id=%s', params=[self.params['file_id']])
+                self.success()
+                return
             arg = [
                     self.params.get('filename'),
                     self.params.get('size'),
                     self.params.get('qiniu_id'),
                     self.params.get('mime'),
-                    UPLOAD_STATUS['uploaded'],
                     self.params['file_id'],
                     self.current_user['id']
             ]
@@ -202,7 +205,6 @@ class FileUpdateHandler(BaseHandler):
                                                     'size=%s',
                                                     'qiniu_id=%s',
                                                     'mime=%s',
-                                                    'upload_status=%s',
                                             ],
                                             conds=['id=%s', 'owner=%s'],
                                             params=arg
@@ -281,7 +283,6 @@ class FileDirCreateHandler(BaseHandler):
                 'owner': self.current_user['id'],
                 'mime': '',
                 'hash': '',
-                'upload_status': UPLOAD_STATUS['uploaded']
             }
             data = yield self.file_service.add(arg)
             resp = yield self.file_service.select(conds=['id=%s'], params=[data['id']])
