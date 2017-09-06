@@ -2,7 +2,7 @@ from qiniu import Auth, urlsafe_base64_encode
 from tornado.gen import coroutine
 from tornado.concurrent import run_on_executor
 from service.base import BaseService
-from constant import QINIU_POLICY, FULL_DATE_FORMAT, UPLOAD_STATUS, DISK_DOWNLOAD_URL, QINIU_THUMB
+from constant import QINIU_POLICY, FULL_DATE_FORMAT, DISK_DOWNLOAD_URL, QINIU_THUMB
 from setting import settings
 
 
