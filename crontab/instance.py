@@ -11,9 +11,24 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 from tornado.ioloop import IOLoop
 from tornado.gen import coroutine
 from tornado.httpclient import AsyncHTTPClient, HTTPError
+from tornado_mysql import pools, cursors
 from utils.aliyun import Aliyun
+from utils.qcloud import Qcloud
 from utils.db import DB
-from constant import ALIYUN_REGION_LIST, HTTP_TIMEOUT
+from constant import ALIYUN_REGION_LIST, HTTP_TIMEOUT, QCLOUD_REGION_LIST, QCLOUD_STATUS, QCLOUD_PAYMODE
+from setting import settings
+
+DB = pools.Pool(
+        dict(host=settings['mysql_host'],
+             port=settings['mysql_port'],
+             user=settings['mysql_user'],
+             passwd=settings['mysql_password'],
+             db=settings['mysql_database'],
+             cursorclass=cursors.DictCursor,
+             charset=settings['mysql_charset']),
+        max_idle_connections=1,
+        max_recycle_sec=120
+     )
 
 class Instance:
     def __init__(self):
@@ -22,7 +37,7 @@ class Instance:
         self.instance_num = 0
 
     @coroutine
-    def get(self):
+    def get_aliyun(self):
         for region in ALIYUN_REGION_LIST:
             url = Aliyun.make_url({'Action': 'DescribeInstances', 'RegionId': region})
 
@@ -47,6 +62,34 @@ class Instance:
                                   j.get('DeviceAvailable', ''),
                                   j.get('InternetChargeType', ''),
                                   'aliyun'])
+                self.instance_num += 1
+
+    @coroutine
+    def get_qcloud(self):
+        for region in QCLOUD_REGION_LIST:
+            url = Qcloud.make_url({'Action': 'DescribeInstances', 'Limit': 100, 'Region': region})
+
+            res = yield AsyncHTTPClient().fetch(url, request_timeout=HTTP_TIMEOUT)
+            info = json.loads(res.body.decode())
+
+            for j in info.get('instanceSet', []):
+                self.data.extend([j.get('instanceId'),
+                                  j.get('instanceName', ''),
+                                  region,
+                                  j.get('HostName', ''),
+                                  j.get('unImgId', ''),
+                                  QCLOUD_STATUS.get(j.get('status', ''), ''),
+                                  j.get('lanIp', ''),
+                                  (j.get('wanIpSet') or [''])[0],
+                                  j.get('cpu', 0),
+                                  j.get('mem', 0),
+                                  j.get('os', ''),
+                                  j.get('OSType', 'linux'),
+                                  j.get('createTime', ''),
+                                  j.get('deadlineTime', ''),
+                                  j.get('DeviceAvailable', 1),
+                                  QCLOUD_PAYMODE.get(j.get('networkPayMode', ''), ''),
+                                  'qcloud'])
                 self.instance_num += 1
 
     @coroutine
@@ -82,7 +125,8 @@ def main():
     while True:
         logging.info('+++Start+++')
         try:
-            yield obj.get()
+            yield obj.get_aliyun()
+            yield obj.get_qcloud()
             yield obj.save()
         except HTTPError as e:
             err = 'STATUS: {status}, BODY: {body}, URL: {url}'.format(status=str(e), body=e.response.body,
