@@ -214,8 +214,14 @@ SESSION_TIMEOUT = 604800 # 一周
 POOL_COUNT = 10
 AES_KEY = '01234^!@#$%56789'
 QINIU_POLICY = {
-    'returnBody': '{"filename":$(fname), "size":$(fsize), "type": $(mimeType), "key": $(key)}'
+    "returnBody":
+        """
+        {"filename": $(fname), "size": $(fsize), "type": $(mimeType), "key": $(key)}
+        """,
+    "persistentOps": "",
+    "persistentPipeline": ""
 }
+QINIU_THUMB = 'imageView2/1/w/50/h/50/format/webp/q/75|imageslim'
 
 
 #################################################################################################
@@ -238,10 +244,6 @@ PROJECT_STATUS['build-failure'] = -2
 PROJECT_STATUS['deploy-failure'] = -4
 
 #################################################################################################
-# 文件上传状态
-# 0 未上传, 1 上传成功
+# 文件上传
 #################################################################################################
-UPLOAD_STATUS = dict()
-UPLOAD_STATUS['unupload'] = 0
-UPLOAD_STATUS['uploaded'] = 1
 DISK_DOWNLOAD_URL = 'https://' + SERVER_HOST + '/api/file/download/'
