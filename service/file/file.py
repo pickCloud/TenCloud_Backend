@@ -47,7 +47,7 @@ class FileService(BaseService):
     @coroutine
     def batch_upload(self, params):
         arg = {
-            'filename': '',
+            'filename': params['filename'],
             'size': 0,
             'qiniu_id': '',
             'owner': params['owner'],
@@ -58,9 +58,8 @@ class FileService(BaseService):
         }
         resp = {'file_status': 0, 'token': '', 'file_id': ''}
         data = yield self.check_file_exist(params['hash'])
-        if data:
+        if data and arg['filename'] == data['filename']:
             resp['file_status'] = 1
-            arg['filename'] = data['filename']
             arg['size'] = data['size']
             arg['qiniu_id'] = data['qiniu_id']
             arg['mime'] = data['mime']

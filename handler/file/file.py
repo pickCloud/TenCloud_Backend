@@ -128,12 +128,14 @@ class FileUploadHandler(BaseHandler):
         @apiName FileUpload
         @apiGroup File
 
+        @apiParam {String} filename 文件名
         @apiParam {String} hash 文件hash
         @apiParam {Number} pid 上一级目录id
         @apiParamExample {json} Request-Example:
             {
                 file_infos: [
                     {
+                        "filename": str,
                         "hash": str,
                         "pid": int,
                     }
@@ -179,7 +181,6 @@ class FileUpdateHandler(BaseHandler):
 
         @apiParam {Number} status 当为0时，下述字段不为空；为1时，代表上传失败，删除记录，除file_id外，其余为空
         @apiParam {Number} file_id
-        @apiParam {String} filename
         @apiParam {Number} size
         @apiParam {String} mime
         @apiParam {String} qiniu_id
@@ -192,7 +193,6 @@ class FileUpdateHandler(BaseHandler):
                 self.success()
                 return
             arg = [
-                    self.params.get('filename'),
                     self.params.get('size'),
                     self.params.get('qiniu_id'),
                     self.params.get('mime'),
@@ -201,7 +201,6 @@ class FileUpdateHandler(BaseHandler):
             ]
             yield self.file_service.update(
                                             sets=[
-                                                    'filename=%s',
                                                     'size=%s',
                                                     'qiniu_id=%s',
                                                     'mime=%s',
