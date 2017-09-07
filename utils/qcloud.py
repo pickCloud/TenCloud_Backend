@@ -8,13 +8,16 @@ import hmac
 import urllib.parse
 import binascii
 import requests
-from constant import QCLOUD_DOMAIN, QCLOUD_HOST, QCLOUD_REGION_LIST
+from constant import QCLOUD_DOMAIN, QCLOUD_HOST, QCLOUD_REGION_LIST, QCLOUD_VERSION
 
 from setting import settings
 
 class Qcloud:
     domain = QCLOUD_DOMAIN
 
+    #################################################################################################
+    # 生成url
+    #################################################################################################
     @staticmethod
     def _sign(s):
         hashed = hmac.new(bytes(settings['qcloud_secret'], 'latin-1'), bytes(s, 'latin-1'), hashlib.sha1)
@@ -57,16 +60,40 @@ class Qcloud:
 
         return url
 
+    #################################################################################################
+    # 生成各种命令所需要的参数
+    #################################################################################################
+    @classmethod
+    def _common(cls, action, data):
+        return {'Action': action, 'instanceIds.0': data['instance_id'], 'Region': data['region_id']}
+
+    @classmethod
+    def stop(cls, data):
+        return cls._common('StopInstances', data)
+
+    @classmethod
+    def start(cls, data):
+        return cls._common('StartInstances', data)
+
+    @classmethod
+    def reboot(cls, data):
+        return cls._common('RestartInstances', data)
+
 
 if __name__ == '__main__':
     instances = list()
-
-    for region in QCLOUD_REGION_LIST:
-        url = Qcloud.make_url({'Action': 'DescribeInstances', 'Limit': 100, 'Region': region})
-        info = requests.get(url, timeout=3).json()
-
-        for j in info.get('instanceSet', []):
-            instances.append(j)
-
+    #
+    # for region in QCLOUD_REGION_LIST:
+    #     url = Qcloud.make_url({'Action': 'DescribeInstances', 'Limit': 100, 'Region': region})
+    #     info = requests.get(url, timeout=3).json()
+    #
+    #     for j in info.get('instanceSet', []):
+    #         instances.append(j)
+    #
     from pprint import pprint
     pprint(instances)
+
+    url = Qcloud.make_url({'Action': 'RestartInstances', 'instanceIds.0': 'qcvm89c880fbaf392972dbb536cd55d0d99d', 'Region': 'ap-guangzhou'})
+    pprint(url)
+    info = requests.get(url, timeout=3).json()
+    pprint(info)

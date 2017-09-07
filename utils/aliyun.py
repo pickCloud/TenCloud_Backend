@@ -14,6 +14,9 @@ from setting import settings
 class Aliyun:
     domain = ALIYUN_DOMAIN
 
+    #################################################################################################
+    # 生成url
+    #################################################################################################
     @staticmethod
     def _sign(s):
         h = hmac.new(key=(settings['aliyun_secret'] + '&').encode('utf-8'), digestmod=hashlib.sha1)
@@ -63,6 +66,24 @@ class Aliyun:
 
         return url
 
+    #################################################################################################
+    # 生成各种命令所需要的参数
+    #################################################################################################
+    @classmethod
+    def _common(cls, action, data):
+        return {'Action': action, 'InstanceId': data['instance_id']}
+
+    @classmethod
+    def stop(cls, data):
+        return cls._common('StopInstance', data)
+
+    @classmethod
+    def start(cls, data):
+        return cls._common('StartInstance', data)
+
+    @classmethod
+    def reboot(cls, data):
+        return cls._common('StartInstance', data)
 
 
 if __name__ == '__main__':

@@ -15,7 +15,7 @@ from tornado_mysql import pools, cursors
 from utils.aliyun import Aliyun
 from utils.qcloud import Qcloud
 from utils.db import DB
-from constant import ALIYUN_REGION_LIST, HTTP_TIMEOUT, QCLOUD_REGION_LIST, QCLOUD_STATUS, QCLOUD_PAYMODE
+from constant import ALIYUN_REGION_LIST, HTTP_TIMEOUT, QCLOUD_REGION_LIST, QCLOUD_STATUS, QCLOUD_PAYMODE, ALIYUN_NAME, QCLOUD_NAME
 from setting import settings
 
 DB = pools.Pool(
@@ -61,7 +61,7 @@ class Instance:
                                   j.get('ExpiredTime', ''),
                                   j.get('DeviceAvailable', ''),
                                   j.get('InternetChargeType', ''),
-                                  'aliyun'])
+                                  ALIYUN_NAME])
                 self.instance_num += 1
 
     @coroutine
@@ -89,7 +89,7 @@ class Instance:
                                   j.get('deadlineTime', ''),
                                   j.get('DeviceAvailable', 1),
                                   QCLOUD_PAYMODE.get(j.get('networkPayMode', ''), ''),
-                                  'qcloud'])
+                                  QCLOUD_NAME])
                 self.instance_num += 1
 
     @coroutine

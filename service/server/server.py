@@ -6,7 +6,9 @@ from tornado.gen import coroutine, Task
 from service.base import BaseService
 from utils.general import get_formats
 from utils.aliyun import Aliyun
-from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAINER_CMD, STOP_CONTAINER_CMD, DEL_CONTAINER_CMD, CONTAINER_INFO_CMD
+from utils.qcloud import Qcloud
+from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAINER_CMD, STOP_CONTAINER_CMD, \
+                     DEL_CONTAINER_CMD, CONTAINER_INFO_CMD, ALIYUN_NAME, QCLOUD_NAME
 from utils.security import Aes
 
 
@@ -179,32 +181,44 @@ class ServerService(BaseService):
         return data['server_id']
 
     @coroutine
-    def fetch_instance_id(self, server_id):
-        sql = " SELECT i.instance_id as instance_id FROM instance i JOIN server s USING(public_ip) WHERE s.id=%s "
+    def fetch_instance_info(self, server_id):
+        sql = " SELECT i.* FROM instance i JOIN server s USING(public_ip) WHERE s.id=%s "
         cur = yield self.db.execute(sql, server_id)
-        data = cur.fetchone()
-        return data['instance_id']
+        info = cur.fetchone()
+        return info
+
+    def _produce_cloud(self, provider):
+        clouds = {
+            ALIYUN_NAME: Aliyun,
+            QCLOUD_NAME: Qcloud
+        }
+
+        return clouds[provider]
 
     @coroutine
     def stop_server(self, id):
-        yield self.operate_server(id, 'StopInstance')
+        yield self._operate_server(id, 'stop')
 
     @coroutine
     def start_server(self, id):
-        yield self.operate_server(id, 'StartInstance')
+        yield self._operate_server(id, 'start')
 
     @coroutine
     def reboot_server(self, id):
-        yield self.operate_server(id, 'RebootInstance')
+        yield self._operate_server(id, 'reboot')
 
     @coroutine
-    def operate_server(self, id, cmd):
-        instance_id = yield self.fetch_instance_id(id)
+    def _operate_server(self, id, cmd):
+        info = yield self.fetch_instance_info(id)
+        from pprint import pprint
+        pprint(info)
 
-        params = {'Action': cmd, 'InstanceId': instance_id}
-        payload = Aliyun.add_sign(params)
+        cloud = self._produce_cloud(info['provider'])
 
-        yield self.get(payload)
+        params = getattr(cloud, cmd)(info)
+        payload = cloud.add_sign(params)
+
+        result = yield self.get(payload, host=cloud.domain)
 
     @coroutine
     def get_instance_status(self, instance_id):
