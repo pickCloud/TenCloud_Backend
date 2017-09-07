@@ -16,7 +16,7 @@ from utils.aliyun import Aliyun
 from utils.qcloud import Qcloud
 from utils.db import DB
 from constant import ALIYUN_REGION_LIST, HTTP_TIMEOUT, QCLOUD_REGION_LIST, QCLOUD_STATUS, QCLOUD_PAYMODE, ALIYUN_NAME, \
-                     QCLOUD_NAME, ALIYUN_REGION_NAME, QCLOUD_REGION_NAME
+                     QCLOUD_NAME, ALIYUN_REGION_NAME, QCLOUD_REGION_NAME, ALIYUN_STATUS
 from setting import settings
 
 DB = pools.Pool(
@@ -51,7 +51,7 @@ class Instance:
                                   ALIYUN_REGION_NAME.get(j.get('RegionId', ''), j.get('RegionId', '')),
                                   j.get('HostName', ''),
                                   j.get('ImageId', ''),
-                                  j.get('Status', ''),
+                                  ALIYUN_STATUS.get(j.get('Status', ''), j.get('Status', '')),
                                   (j.get('InnerIpAddress', {}).get('IpAddress') or [''])[0],
                                   (j.get('PublicIpAddress', {}).get('IpAddress') or [''])[0],
                                   j.get('Cpu', 0),
@@ -79,7 +79,7 @@ class Instance:
                                   QCLOUD_REGION_NAME.get(region, region),
                                   j.get('HostName', ''),
                                   j.get('unImgId', ''),
-                                  QCLOUD_STATUS.get(j.get('status', ''), ''),
+                                  QCLOUD_STATUS.get(j.get('status', ''), j.get('status', '')),
                                   j.get('lanIp', ''),
                                   (j.get('wanIpSet') or [''])[0],
                                   j.get('cpu', 0),
