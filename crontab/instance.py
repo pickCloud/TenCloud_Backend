@@ -15,7 +15,8 @@ from tornado_mysql import pools, cursors
 from utils.aliyun import Aliyun
 from utils.qcloud import Qcloud
 from utils.db import DB
-from constant import ALIYUN_REGION_LIST, HTTP_TIMEOUT, QCLOUD_REGION_LIST, QCLOUD_STATUS, QCLOUD_PAYMODE, ALIYUN_NAME, QCLOUD_NAME
+from constant import ALIYUN_REGION_LIST, HTTP_TIMEOUT, QCLOUD_REGION_LIST, QCLOUD_STATUS, QCLOUD_PAYMODE, ALIYUN_NAME, \
+                     QCLOUD_NAME, ALIYUN_REGION_NAME, QCLOUD_REGION_NAME
 from setting import settings
 
 DB = pools.Pool(
@@ -47,7 +48,7 @@ class Instance:
             for j in info['Instances']['Instance']:
                 self.data.extend([j.get('InstanceId'),
                                   j.get('InstanceName', ''),
-                                  j.get('RegionId'),
+                                  ALIYUN_REGION_NAME.get(j.get('RegionId', ''), j.get('RegionId', '')),
                                   j.get('HostName', ''),
                                   j.get('ImageId', ''),
                                   j.get('Status', ''),
@@ -75,7 +76,7 @@ class Instance:
             for j in info.get('instanceSet', []):
                 self.data.extend([j.get('instanceId'),
                                   j.get('instanceName', ''),
-                                  region,
+                                  QCLOUD_REGION_NAME.get(region, region),
                                   j.get('HostName', ''),
                                   j.get('unImgId', ''),
                                   QCLOUD_STATUS.get(j.get('status', ''), ''),
