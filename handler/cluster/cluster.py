@@ -136,9 +136,6 @@ class ClusterDetailHandler(BaseHandler):
             basic_info = yield self.cluster_service.select(conds=['id=%s'], params=[id], ct=False)
             server_list = yield self.server_service.get_brief_list(id)
 
-            for s in server_list:
-                s['address'] = ALIYUN_REGION_NAME.get(s['address'])
-
             self.success({
                 'basic_info': basic_info,
                 'server_list': server_list

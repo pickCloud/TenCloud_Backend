@@ -8,7 +8,7 @@ import hmac
 import urllib.parse
 import binascii
 import requests
-from constant import QCLOUD_DOMAIN, QCLOUD_HOST, QCLOUD_REGION_LIST, QCLOUD_VERSION
+from constant import QCLOUD_DOMAIN, QCLOUD_HOST, QCLOUD_REGION_LIST
 
 from setting import settings
 
@@ -93,7 +93,7 @@ if __name__ == '__main__':
     from pprint import pprint
     pprint(instances)
 
-    url = Qcloud.make_url({'Action': 'RestartInstances', 'instanceIds.0': 'qcvm89c880fbaf392972dbb536cd55d0d99d', 'Region': 'ap-guangzhou'})
-    pprint(url)
-    info = requests.get(url, timeout=3).json()
-    pprint(info)
+    # url = Qcloud.make_url({'Action': 'RestartInstances', 'instanceIds.0': 'qcvm89c880fbaf392972dbb536cd55d0d99d', 'Region': 'ap-guangzhou'})
+    # pprint(url)
+    # info = requests.get(url, timeout=3).json()
+    # pprint(info)

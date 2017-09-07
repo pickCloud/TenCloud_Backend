@@ -69,6 +69,8 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
         self.params.update({'passwd': passwd})
         _, err = yield self.server_service.remote_ssh(self.params, cmd=MONITOR_CMD)
 
+        err = [e for e in err if 'symlink' not in e]
+
         # 部署失败
         if err:
             self.write_message(str(err))

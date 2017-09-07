@@ -32,9 +32,9 @@ GIT_TOKEN = 'git_token'
 #################################################################################################
 SSH_CONNECT_TIMEOUT = 30
 SERVER_HOST = 'c.10.com'
-MONITOR_CMD = 'curl -sSL http://{host}/supermonitor/install.sh | sh '.format(host=SERVER_HOST)
-UNINSTALL_CMD = 'curl -sSL http://{host}/supermonitor/uninstall.sh | sh '.format(host=SERVER_HOST)
-CREATE_IMAGE_CMD = 'curl -sSL http://{host}/supermonitor/scripts/create-image.sh | sh -s '.format(host=SERVER_HOST)
+MONITOR_CMD = 'curl -sSL https://{host}/supermonitor/install.sh | sh '.format(host=SERVER_HOST)
+UNINSTALL_CMD = 'curl -sSL https://{host}/supermonitor/uninstall.sh | sh '.format(host=SERVER_HOST)
+CREATE_IMAGE_CMD = 'curl -sSL https://{host}/supermonitor/scripts/create-image.sh | sh -s '.format(host=SERVER_HOST)
 IMAGE_INFO_CMD = 'docker images %s --format "{{.Tag}},{{.CreatedAt}}" | sed -n 1,3p'
 REPOS_DOMAIN = 'hub.10.com'
 DEPLOY_CMD = 'docker login {repository} -u {username} -p {password} && docker pull {image_name} && docker run -P --name {container_name} {image_name} '
