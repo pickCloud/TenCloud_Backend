@@ -1,6 +1,6 @@
 #!/bin/sh
 
-base_url="http://c.10.com/supermonitor/"
+base_url="https://c.10.com/supermonitor/"
 
 echoerr() {
     echo "$@" 1>&2;

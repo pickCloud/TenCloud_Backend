@@ -51,6 +51,7 @@ CLOUD_DOWNLOAD_IMAGE = 'wget -b -c --tries=3 --directory-prefix={store_path} {im
 #################################################################################################
 # 阿里云相关
 #################################################################################################
+ALIYUN_NAME = 'aliyun'
 ALIYUN_DOMAIN = 'http://ecs.aliyuncs.com/?'
 ALIYUN_REGION_NAME = {
     'cn-qingdao': '华北 1 （青岛）',
@@ -73,6 +74,7 @@ ALIYUN_REGION_LIST = ALIYUN_REGION_NAME.keys()
 #################################################################################################
 # 腾讯云相关
 #################################################################################################
+QCLOUD_NAME = 'qcloud'
 QCLOUD_DOMAIN = 'https://cvm.api.qcloud.com/v2/index.php?'
 QCLOUD_HOST = QCLOUD_DOMAIN[8:-1]
 QCLOUD_REGION_NAME = {
