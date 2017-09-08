@@ -127,16 +127,16 @@ class ServerService(BaseService):
                         SELECT dd.public_ip, dd.content, dd.created_time
                         FROM disk dd
                         JOIN(
-                            SELECT public_ip, max(created_time) as created_time
+                            SELECT public_ip, max(created_time) AS created_time
                             FROM disk
                             GROUP BY public_ip
-                        ) AS d using(created_time)
+                        ) AS d ON dd.public_ip = d.public_ip AND dd.created_time = d.created_time
                     ) AS ddd using(public_ip)
                     WHERE s.cluster_id = %s
                 ) AS ss
-                LEFT JOIN cpu AS c ON ss.report_time = c.created_time
-                LEFT JOIN net AS n ON ss.report_time = n.created_time
-                LEFT JOIN memory AS m ON ss.report_time = m.created_time
+                LEFT JOIN cpu AS c ON ss.public_ip = c.public_ip AND ss.report_time = c.created_time
+                LEFT JOIN net AS n ON ss.public_ip = n.public_ip AND ss.report_time = n.created_time
+                LEFT JOIN memory AS m ON ss.public_ip = m.public_ip AND ss.report_time = m.created_time
             ) sss
             LEFT JOIN instance AS i ON sss.public_ip = i.public_ip        
         """
