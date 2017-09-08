@@ -4,12 +4,18 @@
 LOG_DATE=$(date "+%Y-%m-%d")
 LOG_TIME=$(date "+%H-%M-%S")
 
+# version
+version=$4
+
+# args
+branch=$3
+
 #Code ENV
 APP_NAME=$1
 BASE_DIR="$HOME/deploy"
 CODE_DIR="${BASE_DIR}/code/${APP_NAME}"
 CODE_URL=$2
-LOCK_FILE="/tmp/deploy.lock"
+LOCK_FILE="/tmp/"${APP_NAME}"-"${version}".lock"
 
 #Shell env
 SHELL_NAME="deploy-app.sh"
@@ -18,12 +24,6 @@ SHELL_LOG="${BASE_DIR}/log/${SHELL_NAME}.log"
 # Docker
 IMAGE_REGISTRY=""
 REGISRTY="hub.10.com/library"
-
-# args
-branch=$3
-
-# version
-version=$4
 
 log(){
     log_info=$1
@@ -60,7 +60,7 @@ code_build(){
         git checkout "${branch}"
         log "checkout to correct branch"
     fi
-    IMAGE_REGISTRY="${APP_NAME}:${version}"
+    IMAGE_REGISTRY=${APP_NAME}":"${version}
     if docker build -t "${IMAGE_REGISTRY}" .;then
         log "image build successfull"
     else
@@ -74,8 +74,8 @@ code_build(){
 
 remove_old_image(){
     log "remove_old_image"
-    if docker images $1:$4 > /dev/null; then
-        docker rmi $1:$4
+    if docker images ${APP_NAME}":"${version} > /dev/null; then
+        docker rmi ${APP_NAME}":"${version}
     fi
     log "finish remove_old_image"
 }

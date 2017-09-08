@@ -43,19 +43,22 @@ from service.project.project_versions import ProjectVersionService
 from service.repository.repository import RepositoryService
 from service.user.user import UserService
 from service.user.sms import SMSService
+from service.file.file import FileService
 
 from constant import SESSION_TIMEOUT, SESSION_KEY
 from utils.general import json_dumps, json_loads
+from setting import settings
 
 
 class BaseHandler(tornado.web.RequestHandler):
     cluster_service = ClusterService()
     imagehub_service = ImagehubService()
-    server_service  = ServerService()
+    server_service = ServerService()
     project_service = ProjectService()
     repos_service = RepositoryService()
     project_versions_service = ProjectVersionService()
     user_service = UserService()
+    file_service = FileService(ak=settings['qiniu_access_key'], sk=settings['qiniu_secret_key'])
     sms_service = SMSService()
 
 

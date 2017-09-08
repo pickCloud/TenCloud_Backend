@@ -22,6 +22,8 @@ from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDe
 from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler, GithubOauthCallbackHandler
 from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, \
                               UserUpdateHandler, UserUploadToken
+from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
+                                FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
 
 
 
@@ -95,4 +97,13 @@ routes = [
     (r'/api/user/sms/(\d+)', UserSMSHandler),
     (r'/api/user/token', UserUploadToken),
 
+    #文件上传
+    (r'/api/file/upload', FileUploadHandler),
+    (r'/api/file/update', FileUpdateHandler),
+    (r'/api/file/list', FileListHandler),
+    (r'/api/file/([\w\W]+)/pages', FileTotalHandler),
+    (r'/api/file/download/([\w\W]+)', FileDownloadHandler),
+    (r'/api/file/delete', FileDeleteHandler),
+    (r'/api/file/dir/create', FileDirCreateHandler),
+    (r'/api/file/([\w\W]+)', FileInfoHandler)
 ]

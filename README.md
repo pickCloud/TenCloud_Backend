@@ -266,14 +266,19 @@ CREATE TABLE `filehub` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `filename` varchar(128) NOT NULL DEFAULT '' COMMENT '文件名',
   `size` int(11) unsigned DEFAULT '0' COMMENT '文件大小',
-  `url` varchar(128) NOT NULL DEFAULT '' COMMENT '文件url',
+  `qiniu_id` varchar(128) NOT NULL DEFAULT '' COMMENT '文件在七牛的id',
   `owner` int(11) unsigned NOT NULL COMMENT '上传文件者，对应user表id',
+  `mime` varchar(64) NOT NULL DEFAULT '' COMMENT '文件类型',
+  `hash` varchar(128) NOT NULL DEFAULT '' COMMENT '文件hash',    
   `type` tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '0表示文件, 1表示文件夹',
   `pid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '树形结构的父节点',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE filehub ADD COLUMN upload_status tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '文件上传状态, 0未上传，1上传成功'
+ALTER TABLE filehub ADD COLUMN url varchar(128) NOT NULL DEFAULT '' COMMENT '下载地址'
 ```
 
 ## 测试
