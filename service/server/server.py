@@ -115,31 +115,30 @@ class ServerService(BaseService):
         ''' 集群详情中获取主机列表
         '''
         sql = """
-                  SELECT
-                    ss.*,
-                    cpu.content AS cpu_content,
-                    net.content AS net_content,
-                    memory.content AS memory_content
-                  FROM
-                    (SELECT
-                      s.id, s.name, s.public_ip,
-                      i.status AS machine_status, i.region_id AS address, i.provider AS provider,
-                      ddd.content AS disk_content, ddd.created_time AS report_time
-                      FROM server s
-                        JOIN
-                          (SELECT dd.public_ip, dd.content, dd.created_time FROM disk dd
-                            JOIN
-                            (SELECT public_ip, max(created_time) as created_time FROM disk GROUP BY public_ip
-                            ) AS d using(created_time)
-                          ) AS ddd using(public_ip)
-                        JOIN instance i USING(public_ip)
-                        WHERE s.cluster_id=%s
-                    ) AS ss, cpu, net, memory
-                  WHERE
-                    ss.report_time = cpu.created_time AND
-                    ss.report_time = net.created_time AND
-                    ss.report_time = memory.created_time
-                  """
+            SELECT sss.id, sss.name, sss.public_ip, sss.cpu_content, sss.net_content, sss.memory_content, i.provider, i.instance_name, i.region_id AS address, i.status AS machine_status
+            FROM(
+            SELECT ss.*, c.content AS cpu_content, n.content AS net_content, m.content AS memory_content
+            FROM
+            (
+            SELECT s.*, ddd.content AS disk_content, ddd.created_time AS report_time
+            FROM server s
+            JOIN(
+            SELECT dd.public_ip, dd.content, dd.created_time
+            FROM disk dd
+            JOIN(
+                    SELECT public_ip, max(created_time) as created_time
+                    FROM disk
+                    GROUP BY public_ip
+            ) AS d using(created_time)
+            ) AS ddd using(public_ip)
+            WHERE s.cluster_id = %s
+            ) AS ss
+            LEFT JOIN cpu AS c ON ss.report_time = c.created_time
+            LEFT JOIN net AS n ON ss.report_time = n.created_time
+            LEFT JOIN memory AS m ON ss.report_time = m.created_time
+            ) sss
+            LEFT JOIN instance AS i ON sss.public_ip = i.public_ip        
+        """
         cur = yield self.db.execute(sql, cluster_id)
         data = cur.fetchall()
         return data
