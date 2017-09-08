@@ -4,7 +4,6 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login
 from utils.general import get_in_formats
-from constant import UPLOAD_STATUS, SERVER_HOST
 
 
 class FileListHandler(BaseHandler):
@@ -37,6 +36,7 @@ class FileListHandler(BaseHandler):
                             "type": int, 0为文件，1为文件夹， 当为1时，部分字段为空
                             "pid": int,
                             "url": str,
+                            "thumb":str,
                             "create_time": str,
                             "update_time": str,
                         }
@@ -128,12 +128,14 @@ class FileUploadHandler(BaseHandler):
         @apiName FileUpload
         @apiGroup File
 
+        @apiParam {String} filename 文件名
         @apiParam {String} hash 文件hash
         @apiParam {Number} pid 上一级目录id
         @apiParamExample {json} Request-Example:
             {
                 file_infos: [
                     {
+                        "filename": str,
                         "hash": str,
                         "pid": int,
                     }
@@ -177,8 +179,8 @@ class FileUpdateHandler(BaseHandler):
         @apiName FileUpdate
         @apiGroup File
 
+        @apiParam {Number} status 当为0时，下述字段不为空；为1时，代表上传失败，删除记录，除file_id外，其余为空
         @apiParam {Number} file_id
-        @apiParam {String} filename
         @apiParam {Number} size
         @apiParam {String} mime
         @apiParam {String} qiniu_id
@@ -186,24 +188,22 @@ class FileUpdateHandler(BaseHandler):
         @apiUse Success
         """
         try:
+            if self.params['status'] == 1:
+                yield self.file_service.delete(conds='id=%s', params=[self.params['file_id']])
+                self.success()
+                return
             arg = [
-                    self.params.get('filename'),
                     self.params.get('size'),
                     self.params.get('qiniu_id'),
                     self.params.get('mime'),
-                    UPLOAD_STATUS['uploaded'],
-                    'http://' + SERVER_HOST + '/api/file/download/' + self.params.get('qiniu_id'),
                     self.params['file_id'],
                     self.current_user['id']
             ]
             yield self.file_service.update(
                                             sets=[
-                                                    'filename=%s',
                                                     'size=%s',
                                                     'qiniu_id=%s',
                                                     'mime=%s',
-                                                    'upload_status=%s',
-                                                    'url=%s'
                                             ],
                                             conds=['id=%s', 'owner=%s'],
                                             params=arg
@@ -226,7 +226,7 @@ class FileDownloadHandler(BaseHandler):
         @apiParam {Number} file_id 文件id
 
         @apiSuccessExample {json} Success-Response:
-            HTTP/1.1 200 OK
+            HTTP/1.1 302 OK
             {
               跳转到七牛下载页面
             }
@@ -282,7 +282,6 @@ class FileDirCreateHandler(BaseHandler):
                 'owner': self.current_user['id'],
                 'mime': '',
                 'hash': '',
-                'upload_status': UPLOAD_STATUS['uploaded']
             }
             data = yield self.file_service.add(arg)
             resp = yield self.file_service.select(conds=['id=%s'], params=[data['id']])
@@ -315,19 +314,20 @@ class FileDeleteHandler(BaseHandler):
         """
         try:
             ids = get_in_formats(field='id', contents=self.params['file_ids'])
-            params = self.params['file_ids'] + [self.current_user['id']]
             files = yield self.file_service.select(
-                                                    fields='id',
-                                                    conds=[ids, 'owner=%s'],
-                                                    params=params,
+                                                    fields='id, owner',
+                                                    conds=[ids],
+                                                    params=self.params['file_ids'],
                                                     ct=False, ut=False
                                                     )
             correct_ids = []
+            incorrect_ids = []
             for file in files:
-                if str(file['id']) in self.params['file_ids']:
-                    correct_ids.append(str(file['id']))
+                if file['owner'] == self.current_user['id']:
+                    correct_ids.append(file['id'])
                     continue
-            incorrect_ids = [x for x in self.params['file_ids'] if x not in correct_ids]
+                incorrect_ids.append(file['id'])
+
             if correct_ids:
                 arg = get_in_formats(field='id', contents=correct_ids)
                 yield self.file_service.delete(
