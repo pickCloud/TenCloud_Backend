@@ -227,7 +227,7 @@ AES_KEY = '01234^!@#$%56789'
 QINIU_POLICY = {
     "returnBody":
         """
-        {"filename": $(fname), "size": $(fsize), "type": $(mimeType), "key": $(key)}
+        {"size": $(fsize), "type": $(mimeType), "key": $(key)}
         """,
     "persistentOps": "",
     "persistentPipeline": ""
