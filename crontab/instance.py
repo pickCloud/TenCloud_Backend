@@ -14,7 +14,6 @@ from tornado.httpclient import AsyncHTTPClient, HTTPError
 from tornado_mysql import pools, cursors
 from utils.aliyun import Aliyun
 from utils.qcloud import Qcloud
-from utils.db import DB
 from constant import ALIYUN_REGION_LIST, HTTP_TIMEOUT, QCLOUD_REGION_LIST, QCLOUD_STATUS, QCLOUD_PAYMODE, ALIYUN_NAME, \
                      QCLOUD_NAME, ALIYUN_REGION_NAME, QCLOUD_REGION_NAME, ALIYUN_STATUS
 from setting import settings
@@ -83,7 +82,7 @@ class Instance:
                                   j.get('lanIp', ''),
                                   (j.get('wanIpSet') or [''])[0],
                                   j.get('cpu', 0),
-                                  j.get('mem', 0),
+                                  j.get('mem', 0) * 1024,
                                   j.get('os', ''),
                                   j.get('OSType', 'linux'),
                                   j.get('createTime', ''),
