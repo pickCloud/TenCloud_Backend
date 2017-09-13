@@ -164,7 +164,7 @@ def main():
         except Exception as e:
             print(e)
         logging.warning('++++End++++')
-        time.sleep(2)
+        time.sleep(1)
 
 
 
