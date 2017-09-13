@@ -115,7 +115,8 @@ class ServerService(BaseService):
         ''' 集群详情中获取主机列表
         '''
         sql = """
-            SELECT sss.id, sss.name, sss.public_ip, sss.cpu_content, sss.net_content, sss.memory_content, sss.report_time,
+            SELECT sss.id, sss.name, sss.public_ip, sss.cpu_content,
+                   sss.net_content, sss.memory_content, sss.disk_content, sss.report_time,
                    i.provider, i.instance_name, i.region_id AS address, i.status AS machine_status
             FROM(
                 SELECT ss.*, c.content AS cpu_content, n.content AS net_content, m.content AS memory_content
