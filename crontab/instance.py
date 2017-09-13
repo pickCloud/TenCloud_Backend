@@ -6,7 +6,7 @@ import sys
 import json
 import time
 import logging
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.WARN)
 
 from tornado.ioloop import IOLoop
 from tornado.gen import coroutine
@@ -14,8 +14,10 @@ from tornado.httpclient import AsyncHTTPClient, HTTPError
 from tornado_mysql import pools, cursors
 from utils.aliyun import Aliyun
 from utils.qcloud import Qcloud
+from utils.zcloud import Zcloud
 from constant import ALIYUN_REGION_LIST, HTTP_TIMEOUT, QCLOUD_REGION_LIST, QCLOUD_STATUS, QCLOUD_PAYMODE, ALIYUN_NAME, \
-                     QCLOUD_NAME, ALIYUN_REGION_NAME, QCLOUD_REGION_NAME, ALIYUN_STATUS
+                     QCLOUD_NAME, ALIYUN_REGION_NAME, QCLOUD_REGION_NAME, ALIYUN_STATUS, ZCLOUD_REGION_LIST, ZCLOUD_STATUS, \
+                     ZCLOUD_TYPE, ZCLOUD_NAME, ZCLOUD_REGION_NAME
 from setting import settings
 
 DB = pools.Pool(
@@ -92,6 +94,32 @@ class Instance:
                                   QCLOUD_NAME])
                 self.instance_num += 1
 
+    def get_zcloud(self):
+        for region in ZCLOUD_REGION_LIST:
+            instances = Zcloud.get_instances(region)
+
+            for j in instances:
+                self.data.extend([j.get('InstanceId'),
+                                  '',
+                                  ZCLOUD_REGION_NAME.get(j.get('Placement', {}).get('AvailabilityZone', '')[:-1], j.get('Placement', {}).get('AvailabilityZone', '')),
+                                  '',
+                                  j.get('ImageId', ''),
+                                  ZCLOUD_STATUS.get(j.get('State', {}).get('Name'), ''),
+                                  j.get('PrivateIpAddress', ''),
+                                  j.get('PublicIpAddress', ''),
+                                  ZCLOUD_TYPE.get(j.get('InstanceType'), [0])[0],
+                                  ZCLOUD_TYPE.get(j.get('InstanceType'), [0])[1] * 1024,
+                                  '',
+                                  'linux',
+                                  '',
+                                  '',
+                                  1,
+                                  '',
+                                  ZCLOUD_NAME
+                                  ])
+                self.instance_num += 1
+
+
     @coroutine
     def save(self):
         sql = " INSERT INTO instance(instance_id, instance_name, region_id, hostname, image_id, status, inner_ip," \
@@ -123,10 +151,11 @@ def main():
     obj = Instance()
 
     while True:
-        logging.info('+++Start+++')
+        logging.warning('+++Start+++')
         try:
             yield obj.get_aliyun()
             yield obj.get_qcloud()
+            yield obj.get_zcloud()
             yield obj.save()
         except HTTPError as e:
             err = 'STATUS: {status}, BODY: {body}, URL: {url}'.format(status=str(e), body=e.response.body,
@@ -134,7 +163,7 @@ def main():
             print(err)
         except Exception as e:
             print(e)
-        logging.info('++++End++++')
+        logging.warning('++++End++++')
         time.sleep(2)
 
 
