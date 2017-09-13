@@ -140,6 +140,7 @@ class ServerService(BaseService):
                 LEFT JOIN memory AS m ON ss.public_ip = m.public_ip AND ss.report_time = m.created_time
             ) sss
             LEFT JOIN instance AS i ON sss.public_ip = i.public_ip
+            ORDER BY i.provider
         """
         cur = yield self.db.execute(sql, cluster_id)
         data = cur.fetchall()
