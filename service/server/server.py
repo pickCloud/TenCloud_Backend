@@ -162,18 +162,20 @@ class ServerService(BaseService):
 
     @coroutine
     def _get_performance(self, table, params):
+        data = []
         '''
         :param table: cpu/memory/disk
         :param params: {'public_ip': str, 'start_time': timestamp, 'end_time': timestamp}
         '''
         sql = """
             SELECT created_time,content FROM {table}
-            WHERE public_ip=%s AND created_time>=%s AND created_time<%s
+            WHERE public_ip=%s AND created_time>=%s AND created_time<%s LIMIT 1
         """.format(table=table)
-
-        cur = yield self.db.execute(sql, [params['public_ip'], params['start_time'], params['end_time']])
-
-        return [[x['created_time'], json.loads(x['content'])] for x in cur.fetchall()]
+        step = (params['end_time'] - params['start_time']) // 8
+        for i in range(params['start_time'], params['end_time'], step):
+            cur = yield self.db.execute(sql, [params['public_ip'], (i - step), i])
+            data.extend([[x['created_time'], json.loads(x['content'])] for x in cur.fetchone()])
+        return data
 
     @coroutine
     def get_performance(self, params):

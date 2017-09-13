@@ -281,6 +281,33 @@ ALTER TABLE filehub ADD COLUMN upload_status tinyint(2) unsigned NOT NULL DEFAUL
 ALTER TABLE filehub DROP COLUMN upload_status
 ```
 
+* 机器记录24小时维护表 server_log_24h
+```
+CREATE TABLE `server_log_24h` (
+    `id` int(11) unsigned NOT NULL AUTO_INCREMENT PRIMARY_KEY,
+    `public_ip` varchar(15) not null,
+    `created_time` int(10) not null,
+    `cpu_log` json null,
+    `disk_log` json null,
+    `memory_log` json null,
+    `net_log`  json null
+)
+create index ip on server_log_24h public_ip;
+```
+
+* 机器记录24小时维护表 server_log_7d
+```
+CREATE TABLE `server_log_7d` (
+    `id` int(11) unsigned NOT NULL AUTO_INCREMENT PRIMARY_KEY,
+    `public_ip` varchar(15) not null,
+    `created_time` int(10) not null,
+    `cpu_log` json null,
+    `disk_log` json null,
+    `memory_log` json null,
+    `net_log`  json null
+)
+create index ip on server_log_7d public_ip;
+```
 ## 测试
 ```
 curl http://localhost:8010/api/clusters

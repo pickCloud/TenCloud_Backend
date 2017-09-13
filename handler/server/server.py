@@ -289,6 +289,8 @@ class ServerPerformanceHandler(BaseHandler):
         @apiParam {Number} id 主机ID
         @apiParam {Number} start_time 起始时间
         @apiParam {Number} end_time 终止时间
+        @apiParam {Number} now_page 当前页面
+        @apiParam {Number} page_number 每页返回条数
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
