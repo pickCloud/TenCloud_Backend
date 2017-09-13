@@ -51,7 +51,7 @@ CLOUD_DOWNLOAD_IMAGE = 'wget -b -c --tries=3 --directory-prefix={store_path} {im
 #################################################################################################
 # 阿里云相关
 #################################################################################################
-ALIYUN_NAME = 'aliyun'
+ALIYUN_NAME = '阿里云'
 ALIYUN_DOMAIN = 'http://ecs.aliyuncs.com/?'
 ALIYUN_REGION_NAME = {
     'cn-qingdao': '华北 1 （青岛）',
@@ -83,7 +83,7 @@ ALIYUN_STATUS = {
 #################################################################################################
 # 腾讯云相关
 #################################################################################################
-QCLOUD_NAME = 'qcloud'
+QCLOUD_NAME = '腾讯云'
 QCLOUD_DOMAIN = 'https://cvm.api.qcloud.com/v2/index.php?'
 QCLOUD_HOST = QCLOUD_DOMAIN[8:-1]
 QCLOUD_REGION_NAME = {
@@ -129,6 +129,93 @@ QCLOUD_PAYMODE = {
     3: '按带宽'
 }
 
+#################################################################################################
+# 亚马逊云相关
+#################################################################################################
+ZCLOUD_NAME = '亚马逊云'
+ZCLOUD_DOMAIN = 'https://ec2.amazonaws.com?'
+ZCLOUD_HOST = ZCLOUD_DOMAIN[8:-1]
+ZCLOUD_REGION_NAME = {
+    'us-east-1': '美国东部 (弗吉尼亚北部) ',
+    'us-east-2': '美国东部（俄亥俄）',
+    'us-west-1': '美国西部（加利福尼亚北部）',
+    'us-west-2': '美国西部（俄勒冈）',
+    'ca-central-1': '加拿大（中部）',
+    'eu-west-1': '欧洲 (爱尔兰)',
+    'eu-central-1': '欧洲 (法兰克福) ',
+    'eu-west-2': '欧洲 (伦敦) ',
+    'ap-northeast-1': '亚太地区（东京）',
+    'ap-northeast-2': '亚太地区域（首尔）',
+    'ap-southeast-1': '亚太地区（新加坡）',
+    'ap-southeast-2': '亚太地区（悉尼）',
+    'ap-south-1': '亚太地区域（孟买）',
+    'sa-east-1': '南美洲（圣保罗）'
+}
+ZCLOUD_REGION_LIST = ZCLOUD_REGION_NAME.keys()
+
+ZCLOUD_TYPE = {
+    # cpu, memory
+    't2.nano': [1, 0.5],
+    't2.micro': [1, 1],
+    't2.small': [1, 2],
+    't2.medium': [2, 4],
+    't2.large': [2, 8],
+    't2.xlarge': [4, 16],
+    't2.2xlarge': [8, 32],
+    'm4.large': [2, 8],
+    'm4.xlarge': [4, 16],
+    'm4.2xlarge': [8, 32],
+    'm4.4xlarge': [16, 64],
+    'm4.10xlarge': [40, 160],
+    'm4.16xlarge': [64, 256],
+    'm3.medium': [1, 3.75],
+    'm3.large': [2, 7.5],
+    'm3.xlarge': [4, 15],
+    'm3.2xlarge': [8, 30],
+    'c4.large': [2, 3.75],
+    'c4.xlarge': [4, 7.5],
+    'c4.2xlarge': [8, 15],
+    'c4.4xlarge': [16, 30],
+    'c4.8xlarge': [36, 60],
+    'c3.large': [2, 3.75],
+    'c3.xlarge': [4, 7.5],
+    'c3.2xlarge': [8, 15],
+    'c3.4xlarge': [16, 30],
+    'c3.8xlarge': [32, 60],
+    'x1.32xlarge': [128, 1952],
+    'x1.16xlarge': [64, 976],
+    'r4.large': [2, 15.25],
+    'r4.xlarge': [4, 30.5],
+    'r4.2xlarge': [8, 61],
+    'r4.4xlarge': [16, 122],
+    'r4.8xlarge': [32, 244],
+    'r4.16xlarge': [64, 488],
+    'r3.large': [2, 15.25],
+    'r3.xlarge': [4, 30.5],
+    'r3.2xlarge': [8, 61],
+    'r3.4xlarge': [16, 122],
+    'r3.8xlarge': [32, 244],
+    'i3.large': [2, 15.25],
+    'i3.xlarge': [4, 30.5],
+    'i3.2xlarge': [8, 61],
+    'i3.4xlarge': [16, 122],
+    'i3.8xlarge': [32, 244],
+    'i3.16xlarge': [64, 488],
+    'd2.xlarge': [4, 30.5],
+    'd2.2xlarge': [8, 61],
+    'd2.4xlarge': [16, 122],
+    'd2.8xlarge': [32, 244]
+}
+
+ZCLOUD_STATUS = {
+    'pending': '准备中',
+    'stopped': '已停止',
+    'running': '运行中',
+    'stopping': '停止中',
+    'terminated': '已释放',
+    'shutting-down': '释放中',
+    'rebooting': '重启中'
+}
 #################################################################################################
 # http相关
 #################################################################################################

@@ -231,15 +231,13 @@ class ServerService(BaseService):
     @coroutine
     def _operate_server(self, id, cmd):
         info = yield self.fetch_instance_info(id)
-        from pprint import pprint
-        pprint(info)
 
         cloud = self._produce_cloud(info['provider'])
 
         params = getattr(cloud, cmd)(info)
         payload = cloud.add_sign(params)
 
-        result = yield self.get(payload, host=cloud.domain)
+        yield self.get(payload, host=cloud.domain)
 
     @coroutine
     def get_instance_status(self, instance_id):
