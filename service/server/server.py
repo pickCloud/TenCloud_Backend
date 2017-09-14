@@ -168,8 +168,9 @@ class ServerService(BaseService):
         :param params: {'public_ip': str, 'start_time': timestamp, 'end_time': timestamp}
         """
         id_sql = """
-                SELECT id FROM {table} ORDER BY created_time DESC
+                SELECT id FROM {table} 
                 WHERE public_ip=%s AND created_time>=%s AND created_time<%s
+                ORDER BY created_time DESC
                 """.format(table=table)
         cur = yield self.db.execute(id_sql, [params['public_ip'], params['start_time'], params['end_time']])
         ids = [i['id'] for i in cur.fetchall()]
