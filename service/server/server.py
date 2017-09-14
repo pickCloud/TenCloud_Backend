@@ -10,7 +10,7 @@ from utils.qcloud import Qcloud
 from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAINER_CMD, STOP_CONTAINER_CMD, \
                      DEL_CONTAINER_CMD, CONTAINER_INFO_CMD, ALIYUN_NAME, QCLOUD_NAME
 from utils.security import Aes
-
+from utils.general import get_in_formats
 
 class ServerService(BaseService):
     table = 'server'
@@ -176,10 +176,11 @@ class ServerService(BaseService):
         ids = [i['id'] for i in cur.fetchall()]
         choose_id = [ids[i] for i in range(0, len(ids), (len(ids)//7))]
 
+        ids = get_in_formats(field='id', contents=choose_id)
         sql = """
               SELECT created_time,content FROM {table}
-              WHERE id in (%s)
-              """.format(table=table)
+              WHERE {ids}
+              """.format(table=table, ids=ids)
         cur = yield self.db.execute(sql, choose_id)
 
         data = [[x['created_time'], json.loads(x['content'])] for x in cur.fetchall()]
