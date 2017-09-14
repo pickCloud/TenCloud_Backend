@@ -289,6 +289,9 @@ class ServerPerformanceHandler(BaseHandler):
         @apiParam {Number} id 主机ID
         @apiParam {Number} start_time 起始时间
         @apiParam {Number} end_time 终止时间
+        @apiParam {Number} type 0: 机器详情 1: 正常 2: 按时平均 3: 按天平均
+        @apiParam {Number} now_page 当前页面
+        @apiParam {Number} page_number 每页返回条数
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -318,7 +321,6 @@ class ServerPerformanceHandler(BaseHandler):
         """
         try:
             data = yield self.server_service.get_performance(self.params)
-
             self.success(data)
         except:
             self.error()

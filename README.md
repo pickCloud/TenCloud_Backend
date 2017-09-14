@@ -281,6 +281,35 @@ ALTER TABLE filehub ADD COLUMN upload_status tinyint(2) unsigned NOT NULL DEFAUL
 ALTER TABLE filehub DROP COLUMN upload_status
 ```
 
+* 机器记录时平均维护表 server_log_hour
+```
+CREATE TABLE `server_log_hour` (
+    `id` int(11) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `public_ip` varchar(15) not null,
+    `start_time` int(10) not null,
+    `end_time` int(10) not null,
+    `cpu_log` json not null default '',
+    `disk_log` json not null default '',
+    `memory_log` json not null default '',
+    `net_log`  json not null default ''
+)
+create index ip_time on server_log_hour (public_ip, created_time);
+```
+
+* 机器记录天平均维护表 server_log_day
+```
+CREATE TABLE `server_log_day` (
+    `id` int(11) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `public_ip` varchar(15) not null,
+    `start_time` int(10) not null,
+    `end_time` int(10) not null,
+    `cpu_log` json not null default '',
+    `disk_log` json not null default '',
+    `memory_log` json not null default '',
+    `net_log`  json not null default ''
+)
+create index ip_time on server_log_day (public_ip, created_time);
+```
 ## 测试
 ```
 curl http://localhost:8010/api/clusters
