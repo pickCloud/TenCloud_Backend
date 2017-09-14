@@ -175,7 +175,11 @@ class ServerService(BaseService):
         ids = [i['id'] for i in cur.fetchall()]
         if not ids:
             return []
-        choose_id = [ids[i] for i in range(0, len(ids), (len(ids)//7))]
+        step = len(ids)//7
+        choose_id = ids
+
+        if step:
+            choose_id = [ids[i] for i in range(0, len(ids), step)]
 
         ids = get_in_formats(field='id', contents=choose_id)
         sql = """
