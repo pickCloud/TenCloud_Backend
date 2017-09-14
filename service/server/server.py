@@ -162,19 +162,25 @@ class ServerService(BaseService):
 
     @coroutine
     def _get_performance(self, table, params):
-        data = []
-        '''
+        """
         :param table: cpu/memory/disk
         :param params: {'public_ip': str, 'start_time': timestamp, 'end_time': timestamp}
-        '''
+        """
+        id_sql = """
+                SELECT id FROM {table} ORDER BY created_time DESC
+                WHERE public_ip=%s AND created_time>=%s AND created_time<%s
+                """.format(table=table)
+        cur = yield self.db.execute(id_sql, [params['public_ip'], params['start_time'], params['end_time']])
+        ids = [i['id'] for i in cur.fetchall()]
+        choose_id = [ids[i] for i in range(0, len(ids), (len(ids)//8))]
+
         sql = """
-            SELECT created_time,content FROM {table}
-            WHERE public_ip=%s AND created_time>=%s AND created_time<%s LIMIT 1
-        """.format(table=table)
-        step = (params['end_time'] - params['start_time']) // 8
-        for i in range(params['start_time'], params['end_time'], step):
-            cur = yield self.db.execute(sql, [params['public_ip'], (i - step), i])
-            data.extend([[x['created_time'], json.loads(x['content'])] for x in cur.fetchone()])
+              SELECT created_time,content FROM {table}
+              WHERE id in (%s)
+              """.format(table=table)
+        cur = yield self.db.execute(sql, choose_id)
+
+        data = [[x['created_time'], json.loads(x['content'])] for x in cur.fetchone()]
         return data
 
     @coroutine
