@@ -173,6 +173,8 @@ class ServerService(BaseService):
                 """.format(table=table)
         cur = yield self.db.execute(id_sql, [params['public_ip'], params['start_time'], params['end_time']])
         ids = [i['id'] for i in cur.fetchall()]
+        if not ids:
+            return []
         choose_id = [ids[i] for i in range(0, len(ids), (len(ids)//7))]
 
         ids = get_in_formats(field='id', contents=choose_id)
