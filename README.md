@@ -288,10 +288,10 @@ CREATE TABLE `server_log_hour` (
     `public_ip` varchar(15) not null,
     `start_time` int(10) not null,
     `end_time` int(10) not null,
-    `cpu_log` json not null default '',
-    `disk_log` json not null default '',
-    `memory_log` json not null default '',
-    `net_log`  json not null default ''
+    `cpu_log` json not null,
+    `disk_log` json not null,
+    `memory_log` json not null,
+    `net_log`  json not null 
 )
 create index ip_time on server_log_hour (public_ip, created_time);
 ```
@@ -303,10 +303,10 @@ CREATE TABLE `server_log_day` (
     `public_ip` varchar(15) not null,
     `start_time` int(10) not null,
     `end_time` int(10) not null,
-    `cpu_log` json not null default '',
-    `disk_log` json not null default '',
-    `memory_log` json not null default '',
-    `net_log`  json not null default ''
+    `cpu_log` json not null,
+    `disk_log` json not null,
+    `memory_log` json not null,
+    `net_log`  json not null
 )
 create index ip_time on server_log_day (public_ip, created_time);
 ```
