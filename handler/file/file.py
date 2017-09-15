@@ -4,6 +4,7 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login
 from utils.general import get_in_formats
+from constant import MAX_PAGE_NUMBER
 
 
 class FileListHandler(BaseHandler):
@@ -17,7 +18,7 @@ class FileListHandler(BaseHandler):
 
         @apiParam {Number} file_id
         @apiParam {Number} now_page 当前页面
-        @apiParam {Number} page_number 每页返回条数
+        @apiParam {Number} page_number 每页返回条数，小于100条
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -45,6 +46,9 @@ class FileListHandler(BaseHandler):
             }
         """
         try:
+            if self.params['page_number'] > MAX_PAGE_NUMBER:
+                self.error(message='over limit page number')
+                return
             data = yield self.file_service.seg_page(self.params)
             self.success(data)
         except:

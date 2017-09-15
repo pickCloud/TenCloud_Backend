@@ -210,12 +210,40 @@ class ServerService(BaseService):
         ]
         for table in ['cpu', 'disk', 'memory', 'net']:
             sql = """
-                SELECT created_time,content FROM {table}
+                SELECT created_time, content FROM {table}
                 WHERE public_ip=%s AND created_time>=%s AND created_time<%s 
                 LIMIT %s, %s
             """.format(table=table)
             cur = yield self.db.execute(sql, arg)
             data[table] = [[x['created_time'], json.loads(x['content'])] for x in cur.fetchall()]
+        return data
+
+    @coroutine
+    def _get_performance_avg(self, table, params):
+        start_page = (params['now_page'] - 1) * params['page_number']
+        arg = [
+            params['public_ip'],
+            params['start_time'],
+            params['end_time'],
+            start_page,
+            params['page_number']
+        ]
+        sql = """
+                SELECT end_time,cpu_log, disk_log, memory_log, net_log
+                FROM {table}
+                WHERE public_ip=%s AND created_time>=%s AND created_time<%s 
+                LIMIT %s, %s
+            """.format(table=table)
+        cur = yield self.db.execute(sql, arg)
+        data = [
+            [
+                x['created_time'],
+                json.loads(x['cpu_log']),
+                json.loads(x['disk_log']),
+                json.loads(x['memory_log']),
+                json.loads(x['net_log'])
+            ]
+            for x in cur.fetchall()]
         return data
 
     @coroutine
@@ -231,9 +259,9 @@ class ServerService(BaseService):
         elif params['type'] == 1:
             data = yield self._get_performance_page(params)
         elif params['type'] == 2:
-            pass
-        elif params['type'] ==3:
-            pass
+            data = yield self._get_performance_avg('server_log_hour', params)
+        elif params['type'] == 3:
+            data = yield self._get_performance_avg('server_log_day', params)
         return data
 
     @coroutine
