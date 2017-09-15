@@ -159,7 +159,6 @@ class ServerLog:
             self._save(ip=ip, table=self.table_hour)
 
     def save_day(self):
-        self.day_time()
         for ip in self.ips:
             self._save(ip=ip, table=self.table_day)
 
@@ -188,5 +187,5 @@ def avg_day():
 if __name__ == '__main__':
     if sys.argv[1] == 'hour':
         avg_hour()
-    if sys.argv[1] == 'day':
+    elif sys.argv[1] == 'day':
         avg_day()

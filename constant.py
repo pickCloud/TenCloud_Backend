@@ -345,3 +345,6 @@ PROJECT_STATUS['deploy-failure'] = -4
 # 文件上传
 #################################################################################################
 DISK_DOWNLOAD_URL = 'https://' + SERVER_HOST + '/api/file/download/'
+
+# 分页时，单页面最大100条
+MAX_PAGE_NUMBER = 100
