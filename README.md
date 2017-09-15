@@ -293,7 +293,7 @@ CREATE TABLE `server_log_hour` (
     `memory_log` json not null,
     `net_log`  json not null 
 )
-create index ip_time on server_log_hour (public_ip, created_time);
+create index ip_time on server_log_hour (public_ip, start_time, end_time);
 ```
 
 * 机器记录天平均维护表 server_log_day
@@ -308,7 +308,7 @@ CREATE TABLE `server_log_day` (
     `memory_log` json not null,
     `net_log`  json not null
 )
-create index ip_time on server_log_day (public_ip, created_time);
+create index ip_time on server_log_day (public_ip, start_time, end_time);
 ```
 ## 测试
 ```

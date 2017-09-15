@@ -1,17 +1,20 @@
 import json
 import time
 import statistics
+import sys
+import datetime
 import pymysql.cursors
+from setting import settings
 
-db = pymysql.connect(host='192.168.56.10',
-                     user='root',
-                     password='hga1016xm.',
-                     db='ten_dashboard',
-                     charset='utf8mb4',
+db = pymysql.connect(host=settings['mysql_host'],
+                     user=settings['mysql_user'],
+                     password=settings['mysql_password'],
+                     db=settings['mysql_database'],
+                     charset=settings['mysql_charset'],
                      cursorclass=pymysql.cursors.DictCursor)
 
 
-class server_log:
+class ServerLog:
 
     table_hour = 'server_log_hour'
     table_day = 'server_log_day'
@@ -20,46 +23,47 @@ class server_log:
         self.data = {}
         self.db = db
         self.ips = self.get_public_ip()
-        self.end_time = int(time.time())
-        # default one hour avg
-        self.start_time = self.end_time - 3600
+        self.end_time = 0
+        self.start_time = 0
 
-    def day_time(self):
+    def time_hour(self):
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:00:00")
+        now_tuple = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S").timetuple()
+        self.end_time = int(time.mktime(now_tuple))
+        self.start_time = self.end_time - 3600
+        return
+
+    def time_day(self):
+        now = datetime.datetime.now().strftime("%Y-%m-%d")
+        now_tuple = datetime.datetime.strptime(now, "%Y-%m-%d").timetuple()
+        self.end_time = int(time.mktime(now_tuple))
         self.start_time = self.end_time - 86400
         return
 
     def get_public_ip(self):
-        ips = []
-        try:
-            with self.db.cursor() as cur:
-                sql = """
-                    SELECT public_ip FROM server
-                    """
-                cur.execute(sql)
-                ips = cur.fetchall()
-        finally:
-            self.db.close()
+        with self.db.cursor() as cur:
+            sql = """
+                SELECT public_ip FROM server
+                """
+            cur.execute(sql)
+            ips = cur.fetchall()
         return ips
 
     def get_data(self, ip, table):
-        data = []
-        try:
-            with self.db.cursor() as cur:
-                arg = [
-                    ip,
-                    self.start_time,
-                    self.end_time,
-                ]
-                sql = """
-                    SELECT content
-                    FROM {table}
-                    WHERE public_ip = %s AND created_time > %s
-                        AND created_time < %s
-                    """.format(table=table)
-                cur.execute(sql, arg)
-                data = cur.fetchall()
-        finally:
-            self.db.close()
+        with self.db.cursor() as cur:
+            arg = [
+                ip,
+                self.start_time,
+                self.end_time,
+            ]
+            sql = """
+                SELECT content
+                FROM {table}
+                WHERE public_ip = %s AND created_time > %s
+                    AND created_time < %s
+                """.format(table=table)
+            cur.execute(sql, arg)
+            data = cur.fetchall()
         return data
 
     def cal_cpu(self, ip):
@@ -160,12 +164,21 @@ class server_log:
             self._save(ip=ip, table=self.table_day)
 
 
-def main():
-    server = server_log()
+def avg_hour():
+    server = ServerLog()
+    server.time_hour()
+    server.cal()
     print("#### start sync server performance log ####")
     print("#### start sync hour ####")
     server.save_hour()
     print("#### end sync hour ####")
+    print("#### end sync server performance log ####")
+
+
+def avg_day():
+    server = ServerLog()
+    server.time_day()
+    server.cal()
     print("#### start sync day ####")
     server.save_day()
     print("#### end sync day ####")
@@ -173,4 +186,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    if sys.argv[1] == 'hour':
+        avg_hour()
+    if sys.argv[1] == 'day':
+        avg_day()

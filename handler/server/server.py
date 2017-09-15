@@ -320,6 +320,9 @@ class ServerPerformanceHandler(BaseHandler):
         :return:
         """
         try:
+            if self.params['page_number'] > 100:
+                self.error(message='over limit page number')
+                return
             data = yield self.server_service.get_performance(self.params)
             self.success(data)
         except:

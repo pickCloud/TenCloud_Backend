@@ -45,6 +45,9 @@ class FileListHandler(BaseHandler):
             }
         """
         try:
+            if self.params['page_number'] > 100:
+                self.error(message='over limit page number')
+                return
             data = yield self.file_service.seg_page(self.params)
             self.success(data)
         except:
