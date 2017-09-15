@@ -194,7 +194,7 @@ class ServerService(BaseService):
 
     @coroutine
     def _get_performance_page(self, params):
-        data = {}
+        data = []
         start_page = (params['now_page'] - 1) * params['page_number']
         arg = [
             params['public_ip'],
@@ -202,7 +202,7 @@ class ServerService(BaseService):
             params['page_number']
         ]
         sql = """
-            SELECT c.created_time, c.content AS  cpu, d.content AS disk, m.content AS memory, n.content AS net
+            SELECT c.created_time AS created_time, c.content AS  cpu, d.content AS disk, m.content AS memory, n.content AS net
             FROM cpu AS c
             JOIN disk AS  d ON c.public_ip=d.public_ip
             JOIN memory AS m ON c.public_ip=m.public_ip
@@ -211,15 +211,15 @@ class ServerService(BaseService):
             LIMIT %s, %s
         """
         cur = yield self.db.execute(sql, arg)
-        data = [
-            [
-                x['created_time'],
-                json.loads(x['cpu']),
-                json.loads(x['disk']),
-                json.loads(x['memory']),
-                json.loads(x['net']),
-            ]
-            for x in cur.fetchall()]
+        for i in cur.fetchall():
+            one_record = {
+                'created_time': i['created_time'],
+                'cpu': json.loads(i['cpu']),
+                'disk': json.loads(i['disk']),
+                'memory':json.loads(i['memory']),
+                'net': json.loads(i['net']),
+            }
+            data.append(one_record)
         return data
 
     @coroutine
