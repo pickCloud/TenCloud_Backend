@@ -194,28 +194,32 @@ class ServerService(BaseService):
 
     @coroutine
     def _get_performance_page(self, params):
-
-        """
-        :param table: cpu/memory/disk
-        :param params: {'public_ip': str, 'start_time': timestamp, 'end_time': timestamp}
-        """
         data = {}
         start_page = (params['now_page'] - 1) * params['page_number']
         arg = [
             params['public_ip'],
-            params['start_time'],
-            params['end_time'],
             start_page,
             params['page_number']
         ]
-        for table in ['cpu', 'disk', 'memory', 'net']:
-            sql = """
-                SELECT created_time, content FROM {table}
-                WHERE public_ip=%s AND created_time>=%s AND created_time<%s 
-                LIMIT %s, %s
-            """.format(table=table)
-            cur = yield self.db.execute(sql, arg)
-            data[table] = [[x['created_time'], json.loads(x['content'])] for x in cur.fetchall()]
+        sql = """
+            SELECT c.created_time, c.content AS  cpu, d.content AS disk, m.content AS memory, n.content AS net
+            FROM cpu AS c
+            JOIN disk AS  d ON c.public_ip=d.public_ip
+            JOIN memory AS m ON c.public_ip=m.public_ip
+            JOIN net AS  n ON c.public_ip=n.public_ip
+            WHERE c.public_ip=%s  
+            LIMIT %s, %s
+        """
+        cur = yield self.db.execute(sql, arg)
+        data = [
+            [
+                x['created_time'],
+                json.loads(x['cpu']),
+                json.loads(x['disk']),
+                json.loads(x['memory']),
+                json.loads(x['net']),
+            ]
+            for x in cur.fetchall()]
         return data
 
     @coroutine

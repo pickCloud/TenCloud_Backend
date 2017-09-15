@@ -20,7 +20,7 @@ class ServerLog:
     table_day = 'server_log_day'
 
     def __init__(self):
-        self.data = {}
+        self.data = []
         self.db = db
         self.ips = self.get_public_ip()
         self.end_time = 0
@@ -47,7 +47,7 @@ class ServerLog:
                 """
             cur.execute(sql)
             ips = cur.fetchall()
-        return ips
+        return [x['public_ip'] for x in ips]
 
     def get_data(self, ip, table):
         with self.db.cursor() as cur:
@@ -59,8 +59,7 @@ class ServerLog:
             sql = """
                 SELECT content
                 FROM {table}
-                WHERE public_ip = %s AND created_time > %s
-                    AND created_time < %s
+                WHERE public_ip = %s AND created_time >= %s AND created_time < %s
                 """.format(table=table)
             cur.execute(sql, arg)
             data = cur.fetchall()
@@ -93,7 +92,7 @@ class ServerLog:
             total.append(content['total'])
             free.append(content['free'])
             percent.append(content['percent'])
-            avaible.append(content['availble'])
+            avaible.append(content['available'])
         total_avg = statistics.mean(total)
         free_avg = statistics.mean(free)
         percent_avg = statistics.mean(percent)
@@ -102,65 +101,64 @@ class ServerLog:
             'total': total_avg,
             'free': free_avg,
             'percent': percent_avg,
-            'avaible': avaible_avg
+            'available': avaible_avg
         }
 
     def cal_net(self, ip):
         recv, send = [], []
         for x in self.get_data(ip=ip, table='net'):
             content = json.loads(x['content'])
-            recv = content['recv_speed']
-            send = content['send_speed']
+            recv.append(content['input'])
+            send.append(content['output'])
         recv_avg = statistics.mean(recv)
         send_avg = statistics.mean(send)
-        return {'recv_speed': recv_avg, 'send_speed': send_avg}
+        return {'input': recv_avg, 'output': send_avg}
 
     def cal(self):
-        cpu, disk, memory, net = {}, {}, {}, {}
         for ip in self.ips:
-            cpu[ip] = self.cal_cpu(ip=ip)
-            disk[ip] = self.cal_disk(ip=ip)
-            memory[ip] = self.cal_memory(ip=ip)
-            net[ip] = self.cal_net(ip=ip)
-        self.data = {
-            'cpu': cpu,
-            'disk': disk,
-            'memory': memory,
-            'net': net
-        }
+            one_ip = {
+                'ip': ip,
+                'cpu': json.dumps(self.cal_cpu(ip=ip)),
+                'disk': json.dumps(self.cal_disk(ip=ip)),
+                'memory': json.dumps(self.cal_memory(ip=ip)),
+                'net': json.dumps(self.cal_net(ip=ip))
+            }
+            self.data.append(one_ip)
         return
 
-    def _save(self, ip, table):
-        try:
-            with self.db.cursor() as cursor:
-                arg = [
-                    ip,
-                    self.start_time,
-                    self.end_time,
-                    self.data['cpu'],
-                    self.data['disk'],
-                    self.data['memory'],
-                    self.data['net']
-                ]
-                sql = """
-                        INSERT INTO {table} (
-                            public_ip, start_time,
-                            end_time, cpu_log,
-                            disk_log, memory_log, net_log)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    """.format(table=table)
-                cursor.execute(sql, arg)
-            self.db.commit()
-        finally:
-            self.db.close()
+    def _save(self, params, table):
+        with self.db.cursor() as cursor:
+            arg = [
+                params['ip'],
+                self.start_time,
+                self.end_time,
+                params['cpu'],
+                params['disk'],
+                params['memory'],
+                params['net']
+            ]
+            sql = """
+                    INSERT INTO {table} set
+                        public_ip=%s,
+                        start_time=%s,
+                        end_time=%s,
+                        cpu_log=%s,
+                        disk_log=%s,
+                        memory_log=%s,
+                        net_log=%s
+                """.format(table=table)
+            cursor.execute(sql, arg)
+        self.db.commit()
 
     def save_hour(self):
-        for ip in self.ips:
-            self._save(ip=ip, table=self.table_hour)
+        for ip in self.data:
+            self._save(params=ip, table=self.table_hour)
+        self.db.close()
 
     def save_day(self):
-        for ip in self.ips:
-            self._save(ip=ip, table=self.table_day)
+        for ip in self.data:
+            self._save(params=ip, table=self.table_day)
+        self.db.close()
 
 
 def avg_hour():
