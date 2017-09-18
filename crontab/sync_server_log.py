@@ -70,7 +70,7 @@ class ServerLog:
         for x in self.get_data(ip=ip, table='cpu'):
             content = json.loads(x['content'])
             data.append(content['percent'])
-        avg = statistics.mean(data)
+        avg = "%.2f" % (statistics.mean(data))
         return {'percent': avg}
 
     def cal_disk(self, ip):
@@ -80,9 +80,9 @@ class ServerLog:
             total.append(content['total'])
             free.append(content['free'])
             percent.append(content['percent'])
-        total_avg = statistics.mean(total)
-        free_avg = statistics.mean(free)
-        percent_avg = statistics.mean(percent)
+        total_avg = "%.2f" % (statistics.mean(total))
+        free_avg = "%.2f" % (statistics.mean(free))
+        percent_avg = "%.2f" % (statistics.mean(percent))
         return {'total': total_avg, 'free': free_avg, 'percent': percent_avg}
 
     def cal_memory(self, ip):
@@ -93,10 +93,10 @@ class ServerLog:
             free.append(content['free'])
             percent.append(content['percent'])
             avaible.append(content['available'])
-        total_avg = statistics.mean(total)
-        free_avg = statistics.mean(free)
-        percent_avg = statistics.mean(percent)
-        avaible_avg = statistics.mean(avaible)
+        total_avg = "%.2f" % (statistics.mean(total))
+        free_avg = "%.2f" % (statistics.mean(free))
+        percent_avg = "%.2f" % (statistics.mean(percent))
+        avaible_avg = "%.2f" % (statistics.mean(avaible))
         return {
             'total': total_avg,
             'free': free_avg,
@@ -110,8 +110,8 @@ class ServerLog:
             content = json.loads(x['content'])
             recv.append(content['input'])
             send.append(content['output'])
-        recv_avg = statistics.mean(recv)
-        send_avg = statistics.mean(send)
+        recv_avg = "%.2f" % (statistics.mean(recv))
+        send_avg = "%.2f" % (statistics.mean(send))
         return {'input': recv_avg, 'output': send_avg}
 
     def cal(self):
