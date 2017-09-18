@@ -235,7 +235,7 @@ class ServerService(BaseService):
         sql = """
                 SELECT end_time,cpu_log, disk_log, memory_log, net_log
                 FROM {table}
-                WHERE public_ip=%s AND created_time>=%s AND created_time<%s 
+                WHERE public_ip=%s AND start_time>=%s AND end_time<=%s 
                 LIMIT %s, %s
             """.format(table=table)
         cur = yield self.db.execute(sql, arg)
