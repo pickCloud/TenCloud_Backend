@@ -198,6 +198,8 @@ class ServerService(BaseService):
         start_page = (params['now_page'] - 1) * params['page_number']
         arg = [
             params['public_ip'],
+            params['start_time'],
+            params['end_time'],
             start_page,
             params['page_number']
         ]
@@ -207,7 +209,7 @@ class ServerService(BaseService):
             JOIN disk AS  d ON c.public_ip=d.public_ip
             JOIN memory AS m ON c.public_ip=m.public_ip
             JOIN net AS  n ON c.public_ip=n.public_ip
-            WHERE c.public_ip=%s  
+            WHERE c.public_ip=%s  AND c.created_time>=%s AND c.created_time<%s
             LIMIT %s, %s
         """
         cur = yield self.db.execute(sql, arg)
