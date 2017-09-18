@@ -224,6 +224,7 @@ class ServerService(BaseService):
 
     @coroutine
     def _get_performance_avg(self, table, params):
+        data = []
         start_page = (params['now_page'] - 1) * params['page_number']
         arg = [
             params['public_ip'],
@@ -239,15 +240,15 @@ class ServerService(BaseService):
                 LIMIT %s, %s
             """.format(table=table)
         cur = yield self.db.execute(sql, arg)
-        data = [
-            [
-                x['created_time'],
-                json.loads(x['cpu_log']),
-                json.loads(x['disk_log']),
-                json.loads(x['memory_log']),
-                json.loads(x['net_log'])
-            ]
-            for x in cur.fetchall()]
+        for i in cur.fetchall():
+            one_record = {
+                'created_time': i['end_time'],
+                'cpu': json.loads(i['cpu_log']),
+                'disk': json.loads(i['disk_log']),
+                'memory': json.loads(i['memory_log']),
+                'net': json.loads(i['net_log']),
+            }
+            data.append(one_record)
         return data
 
     @coroutine
