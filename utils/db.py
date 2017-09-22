@@ -14,7 +14,7 @@ DB = pools.Pool(
              db=settings['mysql_database'],
              cursorclass=cursors.DictCursor,
              charset=settings['mysql_charset']),
-        max_idle_connections=16,
+        max_idle_connections=4,
         max_recycle_sec=120
      )
 
