@@ -291,7 +291,8 @@ USER_AGENTS = [
 GIT_REPOS_URL = 'https://api.github.com/user/repos'
 GIT_BRANCH_URL = 'https://api.github.com/repos/{repos_name}/branches'
 GIT_FETCH_TOKEN_URL = 'https://github.com/login/oauth/access_token'
-
+GIT_FETCH_CODE_URL = 'http://github.com/login/oauth/authorize'
+GIT_CALLBACK = 'https://' + SERVER_HOST + '/api/github/oauth/callback'
 #################################################################################################
 # SMS相关
 #################################################################################################

@@ -1,9 +1,10 @@
 __author__ = 'Jon'
 
+from urllib.parse import urlencode
 from tornado.gen import coroutine
 from service.base import BaseService
 from setting import settings
-from constant import GIT_REPOS_URL, GIT_BRANCH_URL, GIT_FETCH_TOKEN_URL
+from constant import GIT_REPOS_URL, GIT_BRANCH_URL, GIT_FETCH_TOKEN_URL, GIT_CALLBACK, GIT_FETCH_CODE_URL
 
 
 class RepositoryService(BaseService):
@@ -49,3 +50,18 @@ class RepositoryService(BaseService):
         result = yield self.post(GIT_FETCH_TOKEN_URL, params)
 
         return result.get('access_token')
+
+    @coroutine
+    def auth_callback(self):
+        original_path = self.request.protocol + "://" + self.request.host + self.request.uri
+        redirect_uri = GIT_CALLBACK + '?' + urlencode(
+                {'redirect_uri': original_path}
+        )
+        params = {
+            'client_id': settings['git_client_id'],
+            'scope': settings['git_scope'],
+            'state': settings['git_state'],
+            'redirect_uri': redirect_uri
+        }
+        url = GIT_FETCH_CODE_URL + '?' + urlencode(params)
+        return url

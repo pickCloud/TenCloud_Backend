@@ -26,12 +26,22 @@ class RepositoryHandler(BaseHandler):
                      ...
                   ]
              }
+            @apiErrorExample {json} Error-Response:
+                HTTP/1.1 401 Unauthorized
+                {
+                    "status": 0,
+                    "msg": "require token",
+                    "data": {
+                        "url": str
+                    }
+                }
         """
         try:
             token = yield Task(self.redis.hget, GIT_TOKEN, self.current_user['id'])
 
             if not token:
-                self.error('Require token!')
+                url = yield self.repos_service.auth_callback()
+                self.error(message='Require token!', code=401, data={'url': url})
                 return
 
             result = yield self.repos_service.fetch_repos(token)
@@ -63,12 +73,23 @@ class RepositoryBranchHandler(BaseHandler):
                     ...
                 ]
             }
+
+        @apiErrorExample {json} Error-Response:
+             HTTP/1.1 401 Unauthorized
+            {
+                "status": 0,
+                "msg": "require token",
+                "data": {
+                   "url": str
+                }
+            }
         """
         try:
             token = yield Task(self.redis.hget, GIT_TOKEN, self.current_user['id'])
 
             if not token:
-                self.error('Require token!')
+                url = yield self.repos_service.auth_callback()
+                self.error(message='Require token!', code=401, data={'url': url})
                 return
 
             repos_name = self.get_argument('repos_name', '').strip()
@@ -82,7 +103,6 @@ class RepositoryBranchHandler(BaseHandler):
 
 
 class GithubOauthCallbackHandler(BaseHandler):
-    @is_login
     @coroutine
     def get(self):
         try:
@@ -90,8 +110,8 @@ class GithubOauthCallbackHandler(BaseHandler):
             token = yield self.repos_service.fetch_token(code)
 
             yield Task(self.redis.hset, GIT_TOKEN, self.current_user['id'], token)
-
-            self.success()
+            url = self.get_argument('redirect_uri')
+            self.redirect(url=url, permanent=False, status=302)
         except:
             self.error()
             self.log.error(traceback.format_exc())
