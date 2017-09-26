@@ -13,7 +13,7 @@ settings = dict()
 settings['port'] = 8010
 settings['debug'] = True
 settings['cookie_secret'] = 'D+quO3NETEi+LhjQi7DhnhHqiN9RkUNqpl8HpS+uv84='
-settings['login_url'] = 'https://c.10.com/#/login'
+settings['login_url'] = '/#/login'
 
 
 #################################################################################################
