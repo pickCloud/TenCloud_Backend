@@ -390,7 +390,7 @@ class ProjectImageLogHandler(BaseHandler):
             out = yield self.project_versions_service.select(
                                                             fields='log', conds=['name=%s', 'version=%s'],
                                                             params=[prj_name, version], ct=False, one=True)
-            data = {"log": json.loads(out.get('out') or ''), "update_time": out['update_time']}
+            data = {"log": json.loads(out.get['log']), "update_time": out['update_time']}
             self.success(data)
         except:
             self.error()
