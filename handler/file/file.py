@@ -193,7 +193,7 @@ class FileUpdateHandler(BaseHandler):
         """
         try:
             if self.params['status'] == 1:
-                yield self.file_service.delete(conds='id=%s', params=[self.params['file_id']])
+                yield self.file_service.delete(conds=['id=%s'], params=[self.params['file_id']])
                 self.success()
                 return
             arg = [
