@@ -250,7 +250,8 @@ class ServerDetailHandler(BaseHandler):
                 'machine_status': data['machine_status'],
                 'business_status': data['business_status'],
                 'region_id': data['region_id'],
-                'instance_id': data['instance_id']
+                'instance_id': data['instance_id'],
+                'created_time': data['server_created_time']
             }
 
             result['system_info'] = {

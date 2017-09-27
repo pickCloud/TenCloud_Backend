@@ -419,7 +419,7 @@ class ProjectVersionsHandler(BaseHandler):
             }
         """
         try:
-            data = yield self.project_versions_service.select(fields='id, version', conds=['name=%s'], params=prj_name, ct=False, extra='order by update_time desc')
+            data = yield self.project_versions_service.select(fields='id, version', conds=['name=%s'], params=[prj_name], ct=False, extra='order by update_time desc')
             self.success(data)
         except:
             self.error()
