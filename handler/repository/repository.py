@@ -39,7 +39,8 @@ class RepositoryHandler(BaseHandler):
         try:
             token = yield Task(self.redis.hget, GIT_TOKEN, self.current_user['id'])
             if not token:
-                url = yield self.repos_service.auth_callback()
+                original_path = self.request.protocol + "://" + self.request.host + self.request.uri
+                url = yield self.repos_service.auth_callback(original_path)
                 self.error(message='Require token!', code=401, data={'url': url})
                 return
 
