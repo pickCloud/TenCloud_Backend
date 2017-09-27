@@ -150,12 +150,16 @@ class ServerService(BaseService):
     def get_detail(self, id):
         ''' 获取主机详情
         '''
-        sql = " SELECT s.id, s.cluster_id, c.name AS cluster_name, s.name, i.region_id, s.public_ip, i.status AS machine_status, i.region_id, " \
-              "        s.business_status, i.cpu, i.memory, i.os_name, i.os_type, i.provider, i.create_time, i.expired_time, i.charge_type, i.instance_id" \
-              " FROM server s " \
-              " JOIN instance i ON s.public_ip=i.public_ip " \
-              " JOIN cluster c ON  s.cluster_id=c.id " \
-              " WHERE s.id=%s "
+        sql = """ 
+                SELECT s.id, s.cluster_id, s.create_time AS server_created_time , c.name AS cluster_name, 
+                       s.name, i.region_id, s.public_ip, i.status AS machine_status, i.region_id, 
+                       s.business_status, i.cpu, i.memory, i.os_name, i.os_type, i.provider, i.create_time, i.expired_time, 
+                       i.charge_type, i.instance_id
+                FROM server s 
+                JOIN instance i ON s.public_ip=i.public_ip 
+                JOIN cluster c ON  s.cluster_id=c.id 
+                WHERE s.id=%s 
+              """
         cur = yield self.db.execute(sql, id)
         data = cur.fetchone()
 
