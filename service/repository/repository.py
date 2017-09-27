@@ -52,8 +52,7 @@ class RepositoryService(BaseService):
         return result.get('access_token')
 
     @coroutine
-    def auth_callback(self):
-        original_path = self.request.protocol + "://" + self.request.host + self.request.uri
+    def auth_callback(self, original_path):
         redirect_uri = GIT_CALLBACK + '?' + urlencode(
                 {'redirect_uri': original_path}
         )
