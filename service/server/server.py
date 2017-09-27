@@ -8,7 +8,7 @@ from utils.general import get_formats
 from utils.aliyun import Aliyun
 from utils.qcloud import Qcloud
 from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAINER_CMD, STOP_CONTAINER_CMD, \
-                     DEL_CONTAINER_CMD, CONTAINER_INFO_CMD, ALIYUN_NAME, QCLOUD_NAME
+                     DEL_CONTAINER_CMD, CONTAINER_INFO_CMD, ALIYUN_NAME, QCLOUD_NAME, FULL_DATE_FORMAT
 from utils.security import Aes
 from utils.general import get_in_formats
 
@@ -151,7 +151,7 @@ class ServerService(BaseService):
         ''' 获取主机详情
         '''
         sql = """ 
-                SELECT s.id, s.cluster_id, s.create_time AS server_created_time , c.name AS cluster_name, 
+                SELECT s.id, s.cluster_id, DATE_FORMAT(s.create_time, %s) AS server_created_time , c.name AS cluster_name, 
                        s.name, i.region_id, s.public_ip, i.status AS machine_status, i.region_id, 
                        s.business_status, i.cpu, i.memory, i.os_name, i.os_type, i.provider, i.create_time, i.expired_time, 
                        i.charge_type, i.instance_id
@@ -160,7 +160,7 @@ class ServerService(BaseService):
                 JOIN cluster c ON  s.cluster_id=c.id 
                 WHERE s.id=%s 
               """
-        cur = yield self.db.execute(sql, id)
+        cur = yield self.db.execute(sql, [FULL_DATE_FORMAT, id])
         data = cur.fetchone()
 
         return data
