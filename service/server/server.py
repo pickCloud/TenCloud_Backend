@@ -117,7 +117,7 @@ class ServerService(BaseService):
         sql = """
             SELECT sss.id, sss.name, sss.public_ip, sss.cpu_content,
                    sss.net_content, sss.memory_content, sss.disk_content, sss.report_time,
-                   i.provider, i.instance_name, i.region_id AS address, i.status AS machine_status
+                   i.provider, i.instance_name, i.region_name AS address, i.status AS machine_status
             FROM(
                 SELECT ss.*, c.content AS cpu_content, n.content AS net_content, m.content AS memory_content
                 FROM
@@ -150,7 +150,7 @@ class ServerService(BaseService):
     def get_detail(self, id):
         ''' 获取主机详情
         '''
-        sql = " SELECT s.id, s.cluster_id, c.name AS cluster_name, s.name, i.region_id, s.public_ip, i.status AS machine_status, i.region_id, " \
+        sql = " SELECT s.id, s.cluster_id, c.name AS cluster_name, s.name, i.region_name, s.public_ip, i.status AS machine_status, i.region_id, " \
               "        s.business_status, i.cpu, i.memory, i.os_name, i.os_type, i.provider, i.create_time, i.expired_time, i.charge_type, i.instance_id" \
               " FROM server s " \
               " JOIN instance i ON s.public_ip=i.public_ip " \

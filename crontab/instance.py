@@ -51,6 +51,7 @@ class Instance:
             for j in info['Instances']['Instance']:
                 self.data.extend([j.get('InstanceId'),
                                   j.get('InstanceName', ''),
+                                  j.get('RegionId', ''),
                                   ALIYUN_REGION_NAME.get(j.get('RegionId', ''), j.get('RegionId', '')),
                                   j.get('HostName', ''),
                                   j.get('ImageId', ''),
@@ -79,6 +80,7 @@ class Instance:
             for j in info.get('instanceSet', []):
                 self.data.extend([j.get('instanceId'),
                                   j.get('instanceName', ''),
+                                  region,
                                   QCLOUD_REGION_NAME.get(region, region),
                                   j.get('HostName', ''),
                                   j.get('unImgId', ''),
@@ -104,6 +106,7 @@ class Instance:
             for j in instances:
                 self.data.extend([j.get('InstanceId'),
                                   '',
+                                  j.get('Placement', {}).get('AvailabilityZone', '')[:-1],
                                   ZCLOUD_REGION_NAME.get(j.get('Placement', {}).get('AvailabilityZone', '')[:-1], j.get('Placement', {}).get('AvailabilityZone', '')),
                                   '',
                                   j.get('ImageId', ''),
@@ -125,7 +128,7 @@ class Instance:
 
     @coroutine
     def save(self):
-        sql = " INSERT INTO instance(instance_id, instance_name, region_id, hostname, image_id, status, inner_ip," \
+        sql = " INSERT INTO instance(instance_id, instance_name, region_id, region_name, hostname, image_id, status, inner_ip," \
               " public_ip, cpu, memory, os_name, os_type, create_time, expired_time, is_available, charge_type, provider) " \
               " VALUES "
 
@@ -133,6 +136,7 @@ class Instance:
 
         sql += " ON DUPLICATE KEY UPDATE instance_name=VALUES(instance_name), " \
                "                         region_id=VALUES(region_id)," \
+               "                         region_name=VALUES(region_name)," \
                "                         hostname=VALUES(hostname), " \
                "                         image_id=VALUES(image_id), " \
                "                         status=VALUES(status), " \
