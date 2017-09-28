@@ -310,6 +310,19 @@ CREATE TABLE `server_log_day` (
 )
 create index ip_time on server_log_day (public_ip, start_time, end_time);
 ```
+
+* 机器操作记录 server_operation
+```
+CREATE TABLE `server_operation` (
+    `id` int(11) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `public_ip` varchar(15) NOT NULL,
+    `user_id`  int(11) unsigned NOT NULL,
+    `operation` tinyint(4) unsigned NOT NULL DEFAULT 3 COMMENT '0:开机, 1:关机 2:重启',
+    `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)
+create index ip on server_operation (public_ip);
+```
 ## 测试
 ```
 curl http://localhost:8010/api/clusters
