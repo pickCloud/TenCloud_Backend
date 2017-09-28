@@ -367,7 +367,12 @@ class ServerStopHandler(BaseHandler):
         """
         try:
             yield self.server_service.stop_server(id)
-
+            public_ip = yield self.server_service.fetch_public_ip(id)
+            yield self.server_operation_service.add(params={
+                                                        'user_id': self.current_user['id'],
+                                                        'public_ip': public_ip,
+                                                        'operation': 1
+            })
             self.success()
         except:
             self.error()
@@ -389,7 +394,12 @@ class ServerStartHandler(BaseHandler):
         """
         try:
             yield self.server_service.start_server(id)
-
+            public_ip = yield self.server_service.fetch_public_ip(id)
+            yield self.server_operation_service.add(params={
+                                                        'user_id': self.current_user['id'],
+                                                        'public_ip': public_ip,
+                                                        'operation': 0
+            })
             self.success()
         except:
             self.error()
@@ -410,7 +420,12 @@ class ServerRebootHandler(BaseHandler):
         """
         try:
             yield self.server_service.reboot_server(id)
-
+            public_ip = yield self.server_service.fetch_public_ip(id)
+            yield self.server_operation_service.add(params={
+                                                        'user_id': self.current_user['id'],
+                                                        'public_ip': public_ip,
+                                                        'operation': 2
+            })
             self.success()
         except:
             self.error()
@@ -625,6 +640,41 @@ class ServerContainerDelHandler(BaseHandler):
             yield self.server_service.del_container(self.params)
 
             self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+class ServerOperationHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self, server_id):
+        """
+        @api {get} /api/server/([\w\W]+)/operation
+        @apiName ServerOperationHandler
+        @apiGroup Server
+
+        @apiParam {Number} server_id 主机id
+
+        @apiSuccessExample {json} Success-Response:
+         HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": [
+                    {
+                        "created_time": str,
+                        "operation" : int 0:开机, 1:关机, 2:重启
+                        "machine_status": str,
+                        "user": str
+                    }
+                    ...
+                ]
+            }
+        """
+        try:
+            public_ip = yield self.server_service.fetch_public_ip(server_id)
+            data = yield self.server_operation_service.get_server_operation(public_ip)
+            self.success(data)
         except:
             self.error()
             self.log.error(traceback.format_exc())

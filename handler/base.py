@@ -44,6 +44,7 @@ from service.repository.repository import RepositoryService
 from service.user.user import UserService
 from service.user.sms import SMSService
 from service.file.file import FileService
+from service.server.server_operation import ServerOperationService
 
 from constant import SESSION_TIMEOUT, SESSION_KEY
 from utils.general import json_dumps, json_loads
@@ -60,6 +61,7 @@ class BaseHandler(tornado.web.RequestHandler):
     user_service = UserService()
     file_service = FileService(ak=settings['qiniu_access_key'], sk=settings['qiniu_secret_key'])
     sms_service = SMSService()
+    server_operation_service = ServerOperationService()
 
 
     @property
