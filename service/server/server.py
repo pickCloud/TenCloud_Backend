@@ -8,9 +8,9 @@ from utils.general import get_formats
 from utils.aliyun import Aliyun
 from utils.qcloud import Qcloud
 from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAINER_CMD, STOP_CONTAINER_CMD, \
-                     DEL_CONTAINER_CMD, CONTAINER_INFO_CMD, ALIYUN_NAME, QCLOUD_NAME
+                     DEL_CONTAINER_CMD, CONTAINER_INFO_CMD, ALIYUN_NAME, QCLOUD_NAME, FULL_DATE_FORMAT
 from utils.security import Aes
-
+from utils.general import get_in_formats
 
 class ServerService(BaseService):
     table = 'server'
@@ -150,43 +150,129 @@ class ServerService(BaseService):
     def get_detail(self, id):
         ''' 获取主机详情
         '''
-        sql = " SELECT s.id, s.cluster_id, c.name AS cluster_name, s.name, i.region_name, s.public_ip, i.status AS machine_status, i.region_id, " \
-              "        s.business_status, i.cpu, i.memory, i.os_name, i.os_type, i.provider, i.create_time, i.expired_time, i.charge_type, i.instance_id" \
-              " FROM server s " \
-              " JOIN instance i ON s.public_ip=i.public_ip " \
-              " JOIN cluster c ON  s.cluster_id=c.id " \
-              " WHERE s.id=%s "
-        cur = yield self.db.execute(sql, id)
+        sql = """ 
+                SELECT s.id, s.cluster_id, DATE_FORMAT(s.create_time, %s) AS server_created_time , c.name AS cluster_name, 
+                       s.name, s.public_ip, i.status AS machine_status, i.region_id, i.region_name,
+                       s.business_status, i.cpu, i.memory, i.os_name, i.os_type, i.provider, i.create_time, i.expired_time, 
+                       i.charge_type, i.instance_id
+                FROM server s 
+                JOIN instance i ON s.public_ip=i.public_ip 
+                JOIN cluster c ON  s.cluster_id=c.id 
+                WHERE s.id=%s 
+              """
+        cur = yield self.db.execute(sql, [FULL_DATE_FORMAT, id])
         data = cur.fetchone()
 
         return data
 
     @coroutine
     def _get_performance(self, table, params):
-        '''
+        """
         :param table: cpu/memory/disk
         :param params: {'public_ip': str, 'start_time': timestamp, 'end_time': timestamp}
-        '''
+        """
+        id_sql = """
+                SELECT id FROM {table} 
+                WHERE public_ip=%s AND created_time>=%s AND created_time<%s
+                ORDER BY created_time DESC
+                """.format(table=table)
+        cur = yield self.db.execute(id_sql, [params['public_ip'], params['start_time'], params['end_time']])
+        ids = [i['id'] for i in cur.fetchall()]
+        if not ids:
+            return []
+        step = len(ids)//7
+        choose_id = ids
+
+        if step:
+            choose_id = [ids[i] for i in range(0, len(ids), step)]
+
+        ids = get_in_formats(field='id', contents=choose_id)
         sql = """
-            SELECT created_time,content FROM {table}
-            WHERE public_ip=%s AND created_time>=%s AND created_time<%s
-        """.format(table=table)
+              SELECT created_time,content FROM {table}
+              WHERE {ids}
+              """.format(table=table, ids=ids)
+        cur = yield self.db.execute(sql, choose_id)
 
-        cur = yield self.db.execute(sql, [params['public_ip'], params['start_time'], params['end_time']])
+        data = [[x['created_time'], json.loads(x['content'])] for x in cur.fetchall()]
+        return data
 
-        return [[x['created_time'], json.loads(x['content'])] for x in cur.fetchall()]
+    @coroutine
+    def _get_performance_page(self, params):
+        data = []
+        start_page = (params['now_page'] - 1) * params['page_number']
+        arg = [
+            params['public_ip'],
+            params['start_time'],
+            params['end_time'],
+            start_page,
+            params['page_number']
+        ]
+        sql = """
+            SELECT c.created_time AS created_time, c.content AS  cpu, d.content AS disk, m.content AS memory, n.content AS net
+            FROM cpu AS c
+            JOIN disk AS  d ON c.public_ip=d.public_ip
+            JOIN memory AS m ON c.public_ip=m.public_ip
+            JOIN net AS  n ON c.public_ip=n.public_ip
+            WHERE c.public_ip=%s  AND c.created_time>=%s AND c.created_time<%s
+            LIMIT %s, %s
+        """
+        cur = yield self.db.execute(sql, arg)
+        for i in cur.fetchall():
+            one_record = {
+                'created_time': i['created_time'],
+                'cpu': json.loads(i['cpu']),
+                'disk': json.loads(i['disk']),
+                'memory':json.loads(i['memory']),
+                'net': json.loads(i['net']),
+            }
+            data.append(one_record)
+        return data
+
+    @coroutine
+    def _get_performance_avg(self, table, params):
+        data = []
+        start_page = (params['now_page'] - 1) * params['page_number']
+        arg = [
+            params['public_ip'],
+            params['start_time'],
+            params['end_time'],
+            start_page,
+            params['page_number']
+        ]
+        sql = """
+                SELECT end_time,cpu_log, disk_log, memory_log, net_log
+                FROM {table}
+                WHERE public_ip=%s AND start_time>=%s AND end_time<=%s 
+                LIMIT %s, %s
+            """.format(table=table)
+        cur = yield self.db.execute(sql, arg)
+        for i in cur.fetchall():
+            one_record = {
+                'created_time': i['end_time'],
+                'cpu': json.loads(i['cpu_log']),
+                'disk': json.loads(i['disk_log']),
+                'memory': json.loads(i['memory_log']),
+                'net': json.loads(i['net_log']),
+            }
+            data.append(one_record)
+        return data
 
     @coroutine
     def get_performance(self, params):
         params['public_ip'] = yield self.fetch_public_ip(params['id'])
 
         data = {}
-
-        data['cpu'] = yield self._get_performance('cpu', params)
-        data['memory'] = yield self._get_performance('memory', params)
-        data['disk'] = yield self._get_performance('disk', params)
-        data['net'] = yield self._get_performance('net', params)
-
+        if params['type'] == 0:
+            data['cpu'] = yield self._get_performance('cpu', params)
+            data['memory'] = yield self._get_performance('memory', params)
+            data['disk'] = yield self._get_performance('disk', params)
+            data['net'] = yield self._get_performance('net', params)
+        elif params['type'] == 1:
+            data = yield self._get_performance_page(params)
+        elif params['type'] == 2:
+            data = yield self._get_performance_avg('server_log_hour', params)
+        elif params['type'] == 3:
+            data = yield self._get_performance_avg('server_log_day', params)
         return data
 
     @coroutine

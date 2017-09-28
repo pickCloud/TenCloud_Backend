@@ -291,7 +291,8 @@ USER_AGENTS = [
 GIT_REPOS_URL = 'https://api.github.com/user/repos'
 GIT_BRANCH_URL = 'https://api.github.com/repos/{repos_name}/branches'
 GIT_FETCH_TOKEN_URL = 'https://github.com/login/oauth/access_token'
-
+GIT_FETCH_CODE_URL = 'http://github.com/login/oauth/authorize'
+GIT_CALLBACK = 'https://' + SERVER_HOST + '/api/github/oauth/callback'
 #################################################################################################
 # SMS相关
 #################################################################################################
@@ -345,3 +346,6 @@ PROJECT_STATUS['deploy-failure'] = -4
 # 文件上传
 #################################################################################################
 DISK_DOWNLOAD_URL = 'https://' + SERVER_HOST + '/api/file/download/'
+
+# 分页时，单页面最大100条
+MAX_PAGE_NUMBER = 100

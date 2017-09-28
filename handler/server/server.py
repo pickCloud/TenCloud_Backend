@@ -12,7 +12,7 @@ from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG, ALIYUN_REGION_NAME
 from utils.general import validate_ip
 from utils.security import Aes
 from utils.decorator import is_login
-from constant import MONITOR_CMD
+from constant import MONITOR_CMD, MAX_PAGE_NUMBER
 
 
 class ServerNewHandler(WebSocketHandler, BaseHandler):
@@ -250,7 +250,8 @@ class ServerDetailHandler(BaseHandler):
                 'machine_status': data['machine_status'],
                 'business_status': data['business_status'],
                 'region_id': data['region_id'],
-                'instance_id': data['instance_id']
+                'instance_id': data['instance_id'],
+                'created_time': data['server_created_time']
             }
 
             result['system_info'] = {
@@ -289,6 +290,9 @@ class ServerPerformanceHandler(BaseHandler):
         @apiParam {Number} id 主机ID
         @apiParam {Number} start_time 起始时间
         @apiParam {Number} end_time 终止时间
+        @apiParam {Number} type 0: 机器详情 1: 正常 2: 按时平均 3: 按天平均
+        @apiParam {Number} now_page 当前页面
+        @apiParam {Number} page_number 每页返回条数， 小于100条
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -318,7 +322,6 @@ class ServerPerformanceHandler(BaseHandler):
         """
         try:
             data = yield self.server_service.get_performance(self.params)
-
             self.success(data)
         except:
             self.error()
@@ -364,7 +367,12 @@ class ServerStopHandler(BaseHandler):
         """
         try:
             yield self.server_service.stop_server(id)
-
+            public_ip = yield self.server_service.fetch_public_ip(id)
+            yield self.server_operation_service.add(params={
+                                                        'user_id': self.current_user['id'],
+                                                        'public_ip': public_ip,
+                                                        'operation': 1
+            })
             self.success()
         except:
             self.error()
@@ -386,7 +394,12 @@ class ServerStartHandler(BaseHandler):
         """
         try:
             yield self.server_service.start_server(id)
-
+            public_ip = yield self.server_service.fetch_public_ip(id)
+            yield self.server_operation_service.add(params={
+                                                        'user_id': self.current_user['id'],
+                                                        'public_ip': public_ip,
+                                                        'operation': 0
+            })
             self.success()
         except:
             self.error()
@@ -407,7 +420,12 @@ class ServerRebootHandler(BaseHandler):
         """
         try:
             yield self.server_service.reboot_server(id)
-
+            public_ip = yield self.server_service.fetch_public_ip(id)
+            yield self.server_operation_service.add(params={
+                                                        'user_id': self.current_user['id'],
+                                                        'public_ip': public_ip,
+                                                        'operation': 2
+            })
             self.success()
         except:
             self.error()
@@ -622,6 +640,41 @@ class ServerContainerDelHandler(BaseHandler):
             yield self.server_service.del_container(self.params)
 
             self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+class ServerOperationHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self, server_id):
+        """
+        @api {get} /api/server/([\w\W]+)/operation 服务器操作记录
+        @apiName ServerOperationHandler
+        @apiGroup Server
+
+        @apiParam {Number} server_id 主机id
+
+        @apiSuccessExample {json} Success-Response:
+         HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": [
+                    {
+                        "created_time": str,
+                        "operation" : int 0:开机, 1:关机, 2:重启
+                        "machine_status": str,
+                        "user": str
+                    }
+                    ...
+                ]
+            }
+        """
+        try:
+            public_ip = yield self.server_service.fetch_public_ip(server_id)
+            data = yield self.server_operation_service.get_server_operation(public_ip)
+            self.success(data)
         except:
             self.error()
             self.log.error(traceback.format_exc())
