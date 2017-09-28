@@ -10,11 +10,13 @@ from constant import GIT_TOKEN
 class RepositoryHandler(BaseHandler):
     @is_login
     @coroutine
-    def get(self):
+    def post(self):
         """
-        @api {get} /api/repos 获取repos
+        @api {post} /api/repos 获取repos
         @apiName RepositoryHandler
         @apiGroup Repository
+
+        @apiParam {String} url 当前页面地址
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -39,8 +41,7 @@ class RepositoryHandler(BaseHandler):
         try:
             token = yield Task(self.redis.hget, GIT_TOKEN, self.current_user['id'])
             if not token:
-                original_path = self.request.Header['Referer'] + self.request.uri
-                url = yield self.repos_service.auth_callback(original_path)
+                url = yield self.repos_service.auth_callback(self.params['url'])
                 self.error(message='Require token!', code=401, data={'url': url})
                 return
 
@@ -55,13 +56,14 @@ class RepositoryHandler(BaseHandler):
 class RepositoryBranchHandler(BaseHandler):
     @is_login
     @coroutine
-    def get(self):
+    def post(self):
         """
-        @api {get} /api/repos/branches?repos_name='' 获取仓库的分支
+        @api {post} /api/repos/branches 获取仓库的分支
         @apiName RepositoryBranchHandler
         @apiGroup Repository
 
         @apiParam {String} repos_name 仓库名称
+        @apiParam {String} url 当前页面地址
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -88,12 +90,11 @@ class RepositoryBranchHandler(BaseHandler):
             token = yield Task(self.redis.hget, GIT_TOKEN, self.current_user['id'])
 
             if not token:
-                original_path = self.request.Header['Referer'] + self.request.uri
-                url = yield self.repos_service.auth_callback(original_path)
+                url = yield self.repos_service.auth_callback(self.params['url'])
                 self.error(message='Require token!', code=401, data={'url': url})
                 return
 
-            repos_name = self.get_argument('repos_name', '').strip()
+            repos_name = (self.params.get('repos_name') or '').strip()
 
             result = yield self.repos_service.fetch_branches(repos_name, token)
 
