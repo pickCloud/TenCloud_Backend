@@ -107,7 +107,7 @@ class Instance:
             for j in instances:
                 self.data.extend([j.get('InstanceId'),
                                   '',
-                                  j.get('Placement', {}).get('AvailabilityZone', '')[:-1],
+                                  region,
                                   ZCLOUD_REGION_NAME.get(j.get('Placement', {}).get('AvailabilityZone', '')[:-1], j.get('Placement', {}).get('AvailabilityZone', '')),
                                   '',
                                   j.get('ImageId', ''),
