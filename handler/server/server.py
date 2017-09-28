@@ -649,7 +649,7 @@ class ServerOperationHandler(BaseHandler):
     @coroutine
     def get(self, server_id):
         """
-        @api {get} /api/server/([\w\W]+)/operation 服务器操作记录
+        @api {get} /api/server/([\w\W]+)/operation 主机操作记录
         @apiName ServerOperationHandler
         @apiGroup Server
 
