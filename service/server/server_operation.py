@@ -6,20 +6,19 @@ from service.base import BaseService
 
 
 class ServerOperationService(BaseService):
-    table = 'server_operation'
-    fields = 'id, public_ip, user_id, operation'
+    table = 'operation_log'
+    fields = 'id, object_id, user_id, operation, operation_status'
 
     @coroutine
-    def get_server_operation(self, public_ip):
+    def get_server_operation(self, server_id):
         sql = """
                 SELECT DATE_FORMAT(s.created_time, %s) AS created_time, 
                     s.operation AS operation, 
-                    u.name AS user, 
-                    i.status AS machine_status
-                FROM server_operation s
-                JOIN instance i on s.public_ip=i.public_ip
+                    s.operation_status AS operation_status,
+                    u.name AS user
+                FROM operation_log s
                 JOIN user u on s.user_id=u.id
-                WHERE s.public_ip=%s
+                WHERE s.object_id=%s
               """
-        cur = yield self.db.execute(sql, [FULL_DATE_FORMAT, public_ip])
+        cur = yield self.db.execute(sql, [FULL_DATE_FORMAT, server_id])
         return cur.fetchall()

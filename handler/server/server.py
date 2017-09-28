@@ -12,7 +12,7 @@ from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG, ALIYUN_REGION_NAME
 from utils.general import validate_ip
 from utils.security import Aes
 from utils.decorator import is_login
-from constant import MONITOR_CMD, MAX_PAGE_NUMBER
+from constant import MONITOR_CMD, OPERATE_STATUS, SERVER_OPERATE_STATUS
 
 
 class ServerNewHandler(WebSocketHandler, BaseHandler):
@@ -366,13 +366,18 @@ class ServerStopHandler(BaseHandler):
 
         """
         try:
+            data = yield self.server_operation_service.add(params={
+                                                            'user_id': self.current_user['id'],
+                                                            'object_id': id,
+                                                            'operation': SERVER_OPERATE_STATUS['start'],
+                                                            'operation_status': OPERATE_STATUS['fail'],
+                                                        })
             yield self.server_service.stop_server(id)
-            public_ip = yield self.server_service.fetch_public_ip(id)
-            yield self.server_operation_service.add(params={
-                                                        'user_id': self.current_user['id'],
-                                                        'public_ip': public_ip,
-                                                        'operation': 1
-            })
+            yield self.server_operation_service.update(
+                                                        sets=['operation_status=%s'],
+                                                        conds=['id=%s'],
+                                                        params=[OPERATE_STATUS['success'], data['id']]
+                                                    )
             self.success()
         except:
             self.error()
@@ -393,13 +398,18 @@ class ServerStartHandler(BaseHandler):
         @apiUse Success
         """
         try:
+            data = yield self.server_operation_service.add(params={
+                                                            'user_id': self.current_user['id'],
+                                                            'object_id': id,
+                                                            'operation': SERVER_OPERATE_STATUS['start'],
+                                                            'operation_status': OPERATE_STATUS['fail'],
+                                                        })
             yield self.server_service.start_server(id)
-            public_ip = yield self.server_service.fetch_public_ip(id)
-            yield self.server_operation_service.add(params={
-                                                        'user_id': self.current_user['id'],
-                                                        'public_ip': public_ip,
-                                                        'operation': 0
-            })
+            yield self.server_operation_service.update(
+                                                        sets=['operation_status=%s'],
+                                                        conds=['id=%s'],
+                                                        params=[OPERATE_STATUS['success'], data['id']]
+                                                    )
             self.success()
         except:
             self.error()
@@ -419,13 +429,18 @@ class ServerRebootHandler(BaseHandler):
         @apiUse Success
         """
         try:
+            data = yield self.server_operation_service.add(params={
+                                                            'user_id': self.current_user['id'],
+                                                            'object_id': id,
+                                                            'operation': SERVER_OPERATE_STATUS['reboot'],
+                                                            'operation_status': OPERATE_STATUS['fail'],
+                                                        })
             yield self.server_service.reboot_server(id)
-            public_ip = yield self.server_service.fetch_public_ip(id)
-            yield self.server_operation_service.add(params={
-                                                        'user_id': self.current_user['id'],
-                                                        'public_ip': public_ip,
-                                                        'operation': 2
-            })
+            yield self.server_operation_service.update(
+                                                        sets=['operation_status=%s'],
+                                                        conds=['id=%s'],
+                                                        params=[OPERATE_STATUS['success'], data['id']]
+                                                    )
             self.success()
         except:
             self.error()
@@ -664,7 +679,7 @@ class ServerOperationHandler(BaseHandler):
                     {
                         "created_time": str,
                         "operation" : int 0:开机, 1:关机, 2:重启
-                        "machine_status": str,
+                        "operation_status": int 0:成功, 1:失败
                         "user": str
                     }
                     ...
@@ -672,8 +687,7 @@ class ServerOperationHandler(BaseHandler):
             }
         """
         try:
-            public_ip = yield self.server_service.fetch_public_ip(server_id)
-            data = yield self.server_operation_service.get_server_operation(public_ip)
+            data = yield self.server_operation_service.get_server_operation(server_id)
             self.success(data)
         except:
             self.error()
