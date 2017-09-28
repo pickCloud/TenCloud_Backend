@@ -6,6 +6,7 @@ import sys
 import argparse
 import json
 import time
+import traceback
 import logging
 logging.basicConfig(stream=sys.stdout, level=logging.WARN)
 
@@ -132,7 +133,7 @@ class Instance:
               " public_ip, cpu, memory, os_name, os_type, create_time, expired_time, is_available, charge_type, provider) " \
               " VALUES "
 
-        sql += ",".join("(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)" for _ in range(self.instance_num))
+        sql += ",".join("(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)" for _ in range(self.instance_num))
 
         sql += " ON DUPLICATE KEY UPDATE instance_name=VALUES(instance_name), " \
                "                         region_id=VALUES(region_id)," \
@@ -176,9 +177,9 @@ def main():
         except HTTPError as e:
             err = 'STATUS: {status}, BODY: {body}, URL: {url}'.format(status=str(e), body=e.response.body,
                                                                       url=e.response.effective_url)
-            print(err)
+            logging.error(err)
         except Exception as e:
-            print(e)
+            logging.error(traceback.format_exc())
         end_time = time.time()
         logging.warning('{:>12}: {}'.format('End ' + args.cloud, seconds_to_human(end_time)))
         logging.warning('{:>12}: {}s'.format('Cost ', end_time - start_time))
