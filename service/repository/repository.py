@@ -54,7 +54,7 @@ class RepositoryService(BaseService):
     @coroutine
     def auth_callback(self, original_path):
         redirect_uri = GIT_CALLBACK + '?' + urlencode(
-                {'redirect_uri': original_path}
+                {'redirect_url': original_path}
         )
         params = {
             'client_id': settings['git_client_id'],
