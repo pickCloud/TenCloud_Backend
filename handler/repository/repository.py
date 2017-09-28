@@ -39,7 +39,7 @@ class RepositoryHandler(BaseHandler):
         try:
             token = yield Task(self.redis.hget, GIT_TOKEN, self.current_user['id'])
             if not token:
-                original_path = self.request.Referer + self.request.uri
+                original_path = self.request.Header['Referer'] + self.request.uri
                 url = yield self.repos_service.auth_callback(original_path)
                 self.error(message='Require token!', code=401, data={'url': url})
                 return
@@ -88,7 +88,7 @@ class RepositoryBranchHandler(BaseHandler):
             token = yield Task(self.redis.hget, GIT_TOKEN, self.current_user['id'])
 
             if not token:
-                original_path = self.request.Referer + self.request.uri
+                original_path = self.request.Header['Referer'] + self.request.uri
                 url = yield self.repos_service.auth_callback(original_path)
                 self.error(message='Require token!', code=401, data={'url': url})
                 return
