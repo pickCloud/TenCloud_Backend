@@ -166,7 +166,7 @@ class ServerService(BaseService):
                        s.business_status, i.cpu, i.memory, i.os_name, i.os_type, i.provider, i.create_time, i.expired_time, 
                        i.charge_type, i.instance_id
                 FROM server s 
-                JOIN instance i ON s.public_ip=i.public_ip 
+                JOIN instance i ON s.instance_id=i.instance_id 
                 JOIN cluster c ON  s.cluster_id=c.id 
                 WHERE s.id=%s 
               """
