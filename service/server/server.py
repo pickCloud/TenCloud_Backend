@@ -7,14 +7,15 @@ from service.base import BaseService
 from utils.general import get_formats
 from utils.aliyun import Aliyun
 from utils.qcloud import Qcloud
+from utils.zcloud import Zcloud
 from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAINER_CMD, STOP_CONTAINER_CMD, \
-                     DEL_CONTAINER_CMD, CONTAINER_INFO_CMD, ALIYUN_NAME, QCLOUD_NAME, FULL_DATE_FORMAT
+                     DEL_CONTAINER_CMD, CONTAINER_INFO_CMD, ALIYUN_NAME, QCLOUD_NAME, FULL_DATE_FORMAT, ZCLOUD_NAME
 from utils.security import Aes
 from utils.general import get_in_formats
 
 class ServerService(BaseService):
     table = 'server'
-    fields = 'id, name, address, ip, machine_status, business_status'
+    fields = 'id, name, address, public_ip, business_status'
 
     @coroutine
     def save_report(self, params):
@@ -296,10 +297,21 @@ class ServerService(BaseService):
         info = cur.fetchone()
         return info
 
+    @coroutine
+    def _change_ip(self, cloud, info):
+        new_ip = cloud.get_public_ip(info)
+        old_ip = info['public_ip']
+
+        yield Task(self.redis.hset, DEPLOYED, new_ip)
+        yield Task(self.redis.hdel, DEPLOYED, old_ip)
+        yield self.update(sets=['public_ip=%s'], conds=['public_ip=%s'], params=[new_ip, old_ip])
+        yield self.db.execute('SET public_ip = %s FROM instance WHERE public_ip = %s', [new_ip, old_ip])
+
     def _produce_cloud(self, provider):
         clouds = {
             ALIYUN_NAME: Aliyun,
-            QCLOUD_NAME: Qcloud
+            QCLOUD_NAME: Qcloud,
+            ZCLOUD_NAME: Zcloud
         }
 
         return clouds[provider]
@@ -321,6 +333,15 @@ class ServerService(BaseService):
         info = yield self.fetch_instance_info(id)
 
         cloud = self._produce_cloud(info['provider'])
+
+        # 亚马逊云与微软云，会变化public_ip
+        if info['provider'] == ZCLOUD_NAME:
+            getattr(cloud, cmd)(info)
+
+            if cmd in ['start', 'reboot']:
+                yield self._change_ip(cloud, info)
+
+            return
 
         params = getattr(cloud, cmd)(info)
         payload = cloud.add_sign(params)

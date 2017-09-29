@@ -145,6 +145,9 @@ CREATE TABLE `instance` (
   UNIQUE KEY `instance_id` (`instance_id`),
   UNIQUE KEY `public_ip` (`public_ip`)
 );
+
+ALTER TABLE instance ADD COLUMN region_name varchar(20) NOT NULL DEFAULT '' COMMENT '实例所属地区名称'
+
 ```
 
 * cpu表
