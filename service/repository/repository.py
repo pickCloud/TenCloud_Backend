@@ -42,8 +42,8 @@ class RepositoryService(BaseService):
         :return: token
         '''
         params = {
-            'client_id' : settings['git_oauth_id'],
-            'client_secret': settings['git_oauth_secret'],
+            'client_id' : settings['git_client_id'],
+            'client_secret': settings['git_client_secret'],
             'code': code
         }
 

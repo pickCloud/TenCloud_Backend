@@ -317,17 +317,18 @@ CREATE TABLE `server_log_day` (
 create index ip_time on server_log_day (public_ip, start_time, end_time);
 ```
 
-* 机器操作记录 server_operation
+* 机器操作记录 operation_log
 ```
-CREATE TABLE `server_operation` (
+CREATE TABLE `operation_log` (
     `id` int(11) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `public_ip` varchar(15) NOT NULL,
     `user_id`  int(11) unsigned NOT NULL,
-    `operation` tinyint(4) unsigned NOT NULL DEFAULT 3 COMMENT '0:开机, 1:关机 2:重启',
+    `object_id` varchar(15) NOT NULL COMMENT '操作对象',
+    `operation` tinyint(4) unsigned NOT NULL DEFAULT 3 COMMENT '操作行为状态码，具体操作根据操作对象更改',
+    `operation_status` tinyint(4) unsigned NOT NULL DEFAULT 0 COMMENT '0:失败,1:成功',
     `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 )
-create index ip on server_operation (public_ip);
+create index object_id on operation_log (object_id);
 ```
 ## 测试
 ```
