@@ -46,11 +46,21 @@ class ServerService(BaseService):
         yield self.db.execute(sql, [params['public_ip'], params['username'], params['passwd']])
 
     @coroutine
-    def add_server(self, params):
-        sql = " INSERT INTO server(name, public_ip, cluster_id) " \
-              " VALUES(%s, %s, %s)"
+    def fetch_instance_info(self, public_ip):
+        cur = self.db.execute(" SELECT instance_id FROM instance WHERE public_ip = %s ", public_ip)
+        data = cur.fetch_one()
 
-        yield self.db.execute(sql, [params['name'], params['public_ip'], params['cluster_id']])
+        return data
+
+    @coroutine
+    def add_server(self, params):
+        instance_info = self.fetch_instance_info(params['public_ip'])
+        instance_id = instance_info.get('instance_id', '')
+
+        sql = " INSERT INTO server(name, public_ip, cluster_id, instance_id) " \
+              " VALUES(%s, %s, %s, %s)"
+
+        yield self.db.execute(sql, [params['name'], params['public_ip'], params['cluster_id'], instance_id])
 
     @coroutine
     def migrate_server(self, params):
