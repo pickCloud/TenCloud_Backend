@@ -1,7 +1,7 @@
 
 
 from tornado.gen import coroutine
-from constant import FULL_DATE_FORMAT
+from constant import FULL_DATE_FORMAT, OBJECT_STYPE
 from service.base import BaseService
 
 
@@ -18,7 +18,7 @@ class ServerOperationService(BaseService):
                     u.name AS user
                 FROM operation_log s
                 JOIN user u on s.user_id=u.id
-                WHERE s.object_id=%s
+                WHERE s.object_type=%s AND s.object_id=%s
               """
-        cur = yield self.db.execute(sql, [FULL_DATE_FORMAT, server_id])
+        cur = yield self.db.execute(sql, [FULL_DATE_FORMAT, OBJECT_STYPE['server'], server_id])
         return cur.fetchall()
