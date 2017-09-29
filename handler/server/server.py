@@ -370,7 +370,7 @@ class ServerStopHandler(BaseHandler):
                                                             'user_id': self.current_user['id'],
                                                             'object_id': id,
                                                             'object_type': OBJECT_STYPE['server'],
-                                                            'operation': SERVER_OPERATE_STATUS['start'],
+                                                            'operation': SERVER_OPERATE_STATUS['stop'],
                                                             'operation_status': OPERATE_STATUS['fail'],
                                                         })
             yield self.server_service.stop_server(id)
