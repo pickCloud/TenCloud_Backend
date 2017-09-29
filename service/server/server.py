@@ -315,6 +315,7 @@ class ServerService(BaseService):
         yield Task(self.redis.hdel, DEPLOYED, old_ip)
         yield self.update(sets=['public_ip=%s'], conds=['public_ip=%s'], params=[new_ip, old_ip])
         yield self.db.execute('SET public_ip = %s FROM instance WHERE public_ip = %s', [new_ip, old_ip])
+        yield self.db.execute('SET public_ip = %s FROM server_account WHERE public_ip = %s', [new_ip, old_ip])
 
     def _produce_cloud(self, provider):
         clouds = {
