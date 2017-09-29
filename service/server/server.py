@@ -46,15 +46,15 @@ class ServerService(BaseService):
         yield self.db.execute(sql, [params['public_ip'], params['username'], params['passwd']])
 
     @coroutine
-    def fetch_instance_info(self, public_ip):
-        cur = self.db.execute(" SELECT instance_id FROM instance WHERE public_ip = %s ", public_ip)
-        data = cur.fetch_one()
+    def fetch_instance_id(self, public_ip):
+        cur = yield self.db.execute(" SELECT instance_id FROM instance WHERE public_ip = %s ", [public_ip])
+        data = cur.fetchone()
 
-        return data
+        return data.get('instance_id', '') if data else ''
 
     @coroutine
     def add_server(self, params):
-        instance_info = self.fetch_instance_info(params['public_ip'])
+        instance_info = yield self.fetch_instance_id(params['public_ip'])
         instance_id = instance_info.get('instance_id', '')
 
         sql = " INSERT INTO server(name, public_ip, cluster_id, instance_id) " \
