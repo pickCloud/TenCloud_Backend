@@ -311,7 +311,7 @@ class ServerService(BaseService):
         new_ip = cloud.get_public_ip(info)
         old_ip = info['public_ip']
 
-        yield Task(self.redis.hset, DEPLOYED, new_ip)
+        yield Task(self.redis.hset, DEPLOYED, new_ip, 1)
         yield Task(self.redis.hdel, DEPLOYED, old_ip)
         yield self.update(sets=['public_ip=%s'], conds=['public_ip=%s'], params=[new_ip, old_ip])
         yield self.db.execute('SET public_ip = %s FROM instance WHERE public_ip = %s', [new_ip, old_ip])
