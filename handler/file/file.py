@@ -1,6 +1,7 @@
 import traceback
 
 from tornado.gen import coroutine
+from tornado.web import authenticated
 from handler.base import BaseHandler
 from utils.decorator import is_login
 from utils.general import get_in_formats
@@ -219,7 +220,7 @@ class FileUpdateHandler(BaseHandler):
 
 
 class FileDownloadHandler(BaseHandler):
-    @is_login
+    @authenticated
     @coroutine
     def get(self, file_id):
         """

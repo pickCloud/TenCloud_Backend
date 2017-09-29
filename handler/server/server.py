@@ -245,7 +245,7 @@ class ServerDetailHandler(BaseHandler):
                 'name': data['name'],
                 'cluster_id': data['cluster_id'],
                 'cluster_name': data['cluster_name'],
-                'address': ALIYUN_REGION_NAME.get(data['region_id']),
+                'address': data['region_name'],
                 'public_ip': data['public_ip'],
                 'machine_status': data['machine_status'],
                 'business_status': data['business_status'],

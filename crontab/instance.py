@@ -6,6 +6,7 @@ import sys
 import argparse
 import json
 import time
+import traceback
 import logging
 logging.basicConfig(stream=sys.stdout, level=logging.WARN)
 
@@ -51,6 +52,7 @@ class Instance:
             for j in info['Instances']['Instance']:
                 self.data.extend([j.get('InstanceId'),
                                   j.get('InstanceName', ''),
+                                  j.get('RegionId', ''),
                                   ALIYUN_REGION_NAME.get(j.get('RegionId', ''), j.get('RegionId', '')),
                                   j.get('HostName', ''),
                                   j.get('ImageId', ''),
@@ -79,6 +81,7 @@ class Instance:
             for j in info.get('instanceSet', []):
                 self.data.extend([j.get('instanceId'),
                                   j.get('instanceName', ''),
+                                  region,
                                   QCLOUD_REGION_NAME.get(region, region),
                                   j.get('HostName', ''),
                                   j.get('unImgId', ''),
@@ -104,6 +107,7 @@ class Instance:
             for j in instances:
                 self.data.extend([j.get('InstanceId'),
                                   '',
+                                  region,
                                   ZCLOUD_REGION_NAME.get(j.get('Placement', {}).get('AvailabilityZone', '')[:-1], j.get('Placement', {}).get('AvailabilityZone', '')),
                                   '',
                                   j.get('ImageId', ''),
@@ -125,14 +129,15 @@ class Instance:
 
     @coroutine
     def save(self):
-        sql = " INSERT INTO instance(instance_id, instance_name, region_id, hostname, image_id, status, inner_ip," \
+        sql = " INSERT INTO instance(instance_id, instance_name, region_id, region_name, hostname, image_id, status, inner_ip," \
               " public_ip, cpu, memory, os_name, os_type, create_time, expired_time, is_available, charge_type, provider) " \
               " VALUES "
 
-        sql += ",".join("(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)" for _ in range(self.instance_num))
+        sql += ",".join("(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)" for _ in range(self.instance_num))
 
         sql += " ON DUPLICATE KEY UPDATE instance_name=VALUES(instance_name), " \
                "                         region_id=VALUES(region_id)," \
+               "                         region_name=VALUES(region_name)," \
                "                         hostname=VALUES(hostname), " \
                "                         image_id=VALUES(image_id), " \
                "                         status=VALUES(status), " \
@@ -172,9 +177,9 @@ def main():
         except HTTPError as e:
             err = 'STATUS: {status}, BODY: {body}, URL: {url}'.format(status=str(e), body=e.response.body,
                                                                       url=e.response.effective_url)
-            print(err)
+            logging.error(err)
         except Exception as e:
-            print(e)
+            logging.error(traceback.format_exc())
         end_time = time.time()
         logging.warning('{:>12}: {}'.format('End ' + args.cloud, seconds_to_human(end_time)))
         logging.warning('{:>12}: {}s'.format('Cost ', end_time - start_time))
