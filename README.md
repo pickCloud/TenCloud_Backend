@@ -320,6 +320,7 @@ CREATE TABLE `operation_log` (
     `id` int(11) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `user_id`  int(11) unsigned NOT NULL,
     `object_id` varchar(15) NOT NULL COMMENT '操作对象',
+    `object_type` tinyint(4) NOT NULL COMMENT '操作对象类型',
     `operation` tinyint(4) unsigned NOT NULL DEFAULT 3 COMMENT '操作行为状态码，具体操作根据操作对象更改',
     `operation_status` tinyint(4) unsigned NOT NULL DEFAULT 0 COMMENT '0:失败,1:成功',
     `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
