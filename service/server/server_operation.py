@@ -20,5 +20,6 @@ class ServerOperationService(BaseService):
                 JOIN user u on s.user_id=u.id
                 WHERE s.object_type=%s AND s.object_id=%s
               """
+
         cur = yield self.db.execute(sql, [FULL_DATE_FORMAT, OBJECT_STYPE['server'], server_id])
         return cur.fetchall()
