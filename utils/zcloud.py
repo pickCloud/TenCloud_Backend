@@ -50,8 +50,7 @@ class Zcloud:
     def get_public_ip(cls, data):
         r = cls.get_instances(region=data['region_id'], InstanceIds=[data['instance_id']])
 
-        return r.get('PublicIpAddress', '')
-
+        return r[0].get('PublicIpAddress', '')
 
 if __name__ == '__main__':
     instances = list()
