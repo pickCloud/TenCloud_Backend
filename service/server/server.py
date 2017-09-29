@@ -54,8 +54,7 @@ class ServerService(BaseService):
 
     @coroutine
     def add_server(self, params):
-        instance_info = yield self.fetch_instance_id(params['public_ip'])
-        instance_id = instance_info.get('instance_id', '')
+        instance_id = yield self.fetch_instance_id(params['public_ip'])
 
         sql = " INSERT INTO server(name, public_ip, cluster_id, instance_id) " \
               " VALUES(%s, %s, %s, %s)"
