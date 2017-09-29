@@ -301,7 +301,7 @@ class ServerService(BaseService):
 
     @coroutine
     def fetch_instance_info(self, server_id):
-        sql = " SELECT i.* FROM instance i JOIN server s USING(public_ip) WHERE s.id=%s "
+        sql = " SELECT i.* FROM instance i JOIN server s USING(instance_id) WHERE s.id=%s "
         cur = yield self.db.execute(sql, server_id)
         info = cur.fetchone()
         return info
