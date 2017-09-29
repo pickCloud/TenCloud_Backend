@@ -46,6 +46,9 @@ CREATE TABLE `server` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `ip` (`public_ip`)
 );
+
+ALTER TABLE server ADD COLUMN instance_id varchar(64) NOT NULL DEFAULT '' COMMENT 'instance表的instance_id'
+ALTER TABLE server add unique(instance_id)
 ```
 
 * 镜像仓库 imagehub
