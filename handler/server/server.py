@@ -2,6 +2,7 @@ __author__ = 'Jon'
 
 import traceback
 import json
+import re
 
 
 from tornado.websocket import WebSocketHandler
@@ -69,7 +70,7 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
         self.params.update({'passwd': passwd})
         _, err = yield self.server_service.remote_ssh(self.params, cmd=MONITOR_CMD)
 
-        err = [e for e in err if 'symlink' not in e]
+        err = [e for e in err if not re.search(r'symlink|resolve host', e)] # 忽略某些错误
 
         # 部署失败
         if err:
