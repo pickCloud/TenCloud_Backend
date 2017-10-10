@@ -13,6 +13,7 @@ from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG, ALIYUN_REGION_NAME
 from utils.general import validate_ip
 from utils.security import Aes
 from utils.decorator import is_login
+from utils.ssh import SSH
 from constant import MONITOR_CMD, OPERATE_STATUS, SERVER_OPERATE_STATUS
 
 
@@ -93,6 +94,33 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
     def on_close(self):
         if hasattr(self, 'period'):
             self.period.stop()
+
+
+class RealtimeOutputHandler(WebSocketHandler, BaseHandler):
+    def check_origin(self, origin):
+        return True
+
+    def open(self):
+        self.write_message('open')
+
+    def on_message(self, message):
+        try:
+            ssh = SSH(hostname='localhost', port=2222, username='root', passwd='000000')
+            self.ssh_out, self.ssh_err = ssh.exec_rt('top -b -n 5', self.write_message)
+        except Exception as e:
+            self.write_message(e)
+        finally:
+            ssh.close()
+
+        IOLoop.current().spawn_callback(callback=self.handle_msg)
+
+    @coroutine
+    def handle_msg(self):
+        # 操作数据库
+        pass
+
+    def on_close(self):
+        pass
 
 
 class ServerReport(BaseHandler):
@@ -693,4 +721,3 @@ class ServerOperationHandler(BaseHandler):
         except:
             self.error()
             self.log.error(traceback.format_exc())
-

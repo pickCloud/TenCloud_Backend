@@ -13,7 +13,7 @@ from handler.server.server import ServerNewHandler, ServerReport, ServerMigratio
                                   ServerStopHandler, ServerStartHandler, ServerRebootHandler, \
                                   ServerStatusHandler, ServerContainerPerformanceHandler, ServerContainersHandler, \
                                   ServerContainersInfoHandler, ServerContainerStartHandler, ServerContainerStopHandler,\
-                                  ServerContainerDelHandler, ServerOperationHandler
+                                  ServerContainerDelHandler, ServerOperationHandler, RealtimeOutputHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
                                     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
                                     ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler, \
@@ -106,5 +106,8 @@ routes = [
     (r'/api/file/download/([\w\W]+)', FileDownloadHandler),
     (r'/api/file/delete', FileDeleteHandler),
     (r'/api/file/dir/create', FileDirCreateHandler),
-    (r'/api/file/([\w\W]+)', FileInfoHandler)
+    (r'/api/file/([\w\W]+)', FileInfoHandler),
+
+
+    (r'/api/ssh/realtime/output', RealtimeOutputHandler)
 ]

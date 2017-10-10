@@ -1,5 +1,6 @@
 __author__ = 'Jon'
 
+import select
 import paramiko
 
 from utils.log import LOG
@@ -45,6 +46,55 @@ class SSH:
             self._log(err, 'ERR')
         else:
             self._log(out, 'OUT')
+
+        return out, err
+
+    def exec_rt(self, cmd, out_func=None):
+        ''' 实时显示远端信息
+            Usage::
+                >>> out, err = ssh.exec_rt('top -b -n 5', self.write_message) # tornado websocket
+        '''
+
+        stdin, stdout, stderr = self._client.exec_command(cmd)
+        channel = stdout.channel
+        pending = err_pending = None
+
+        if not out_func: out_func = print
+
+        out, err = [], []
+
+        while not channel.closed or channel.recv_ready() or channel.recv_stderr_ready():
+            readq, _, _ = select.select([channel], [], [], 1)
+            for c in readq:
+                if c.recv_ready():
+                    chunk = c.recv(len(c.in_buffer))
+                    if pending is not None:
+                        chunk = pending + chunk
+                    lines = chunk.splitlines()
+                    if lines and lines[-1] and lines[-1][-1] == chunk[-1]:
+                        pending = lines.pop()
+                    else:
+                        pending = None
+
+                    out.extend(lines)
+
+                    for line in lines:
+                        out_func(line)
+
+                if c.recv_stderr_ready():
+                    chunk = c.recv_stderr(len(c.in_stderr_buffer))
+                    if err_pending is not None:
+                        chunk = err_pending + chunk
+                    lines = chunk.splitlines()
+                    if lines and lines[-1] and lines[-1][-1] == chunk[-1]:
+                        err_pending = lines.pop()
+                    else:
+                        err_pending = None
+
+                    err.extend(lines)
+
+                    for line in lines:
+                        out_func(line)
 
         return out, err
 
