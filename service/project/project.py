@@ -1,6 +1,7 @@
 __author__ = 'Jon'
 
 import os
+import re
 from tornado.gen import coroutine
 from tornado.concurrent import run_on_executor
 from service.base import BaseService
@@ -27,6 +28,7 @@ class ProjectService(BaseService):
         cmd = CREATE_IMAGE_CMD + ' '.join([params['image_name'], params['repos_url'], params['branch_name'], params['version']])
 
         out, err = yield self.remote_ssh(params, cmd)
+        err = [e for e in err if not re.search(r'From github.com|->', e)]
         return out, err
 
     @coroutine
