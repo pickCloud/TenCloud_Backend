@@ -112,13 +112,6 @@ class RealtimeOutputHandler(WebSocketHandler, BaseHandler):
         finally:
             ssh.close()
 
-        IOLoop.current().spawn_callback(callback=self.handle_msg)
-
-    @coroutine
-    def handle_msg(self):
-        # 操作数据库
-        pass
-
     def on_close(self):
         pass
 
