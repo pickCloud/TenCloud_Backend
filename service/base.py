@@ -18,7 +18,7 @@ from tornado.concurrent import run_on_executor
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlencode
 
-from utils.db import DB, REDIS
+from utils.db import DB, REDIS, SYNC_DB
 from utils.log import LOG
 from utils.ssh import SSH
 from utils.general import get_formats, choose_user_agent
@@ -30,6 +30,7 @@ class BaseService():
 
     def __init__(self):
         self.db = DB
+        self.sync_db = SYNC_DB
         self.redis = REDIS
         self.log = LOG
 
