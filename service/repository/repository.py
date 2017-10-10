@@ -53,6 +53,7 @@ class RepositoryService(BaseService):
 
     @coroutine
     def auth_callback(self, original_path):
+        original_path = original_path + '?' + 'token=true'
         redirect_uri = GIT_CALLBACK + '?' + urlencode(
                 {'redirect_url': original_path}
         )

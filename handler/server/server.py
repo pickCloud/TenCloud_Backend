@@ -14,7 +14,7 @@ from utils.general import validate_ip
 from utils.security import Aes
 from utils.decorator import is_login
 from utils.ssh import SSH
-from constant import MONITOR_CMD, OPERATE_STATUS, SERVER_OPERATE_STATUS
+from constant import MONITOR_CMD, OPERATE_STATUS, OBJECT_STYPE, SERVER_OPERATE_STATUS
 
 
 class ServerNewHandler(WebSocketHandler, BaseHandler):
@@ -391,7 +391,8 @@ class ServerStopHandler(BaseHandler):
             data = yield self.server_operation_service.add(params={
                                                             'user_id': self.current_user['id'],
                                                             'object_id': id,
-                                                            'operation': SERVER_OPERATE_STATUS['start'],
+                                                            'object_type': OBJECT_STYPE['server'],
+                                                            'operation': SERVER_OPERATE_STATUS['stop'],
                                                             'operation_status': OPERATE_STATUS['fail'],
                                                         })
             yield self.server_service.stop_server(id)
@@ -423,6 +424,7 @@ class ServerStartHandler(BaseHandler):
             data = yield self.server_operation_service.add(params={
                                                             'user_id': self.current_user['id'],
                                                             'object_id': id,
+                                                            'object_type': OBJECT_STYPE['server'],
                                                             'operation': SERVER_OPERATE_STATUS['start'],
                                                             'operation_status': OPERATE_STATUS['fail'],
                                                         })
@@ -454,6 +456,7 @@ class ServerRebootHandler(BaseHandler):
             data = yield self.server_operation_service.add(params={
                                                             'user_id': self.current_user['id'],
                                                             'object_id': id,
+                                                            'object_type': OBJECT_STYPE['server'],
                                                             'operation': SERVER_OPERATE_STATUS['reboot'],
                                                             'operation_status': OPERATE_STATUS['fail'],
                                                         })
