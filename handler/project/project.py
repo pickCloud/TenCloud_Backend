@@ -4,7 +4,7 @@ import traceback
 import json
 
 from tornado.gen import coroutine
-from handler.base import BaseHandler
+from handler.base import BaseHandler, WebSocketHandler
 from utils.general import get_in_formats
 from utils.decorator import is_login
 from setting import settings
@@ -208,67 +208,39 @@ class ProjectUpdateHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class ProjectDeploymentHandler(BaseHandler):
-    @is_login
-    @coroutine
-    def post(self):
-        """
-        @api {post} /api/project/deployment 部署镜像
-        @apiName ProjectDeploymentHandler
-        @apiGroup Project
+class ProjectDeploymentHandler(WebSocketHandler):
 
-        @apiParam {String} image_name 镜像名称
-        @apiParam {String} container_name 容器名字
-        @apiParam {map[String]map[String]String} ips 公共ip
-        @apiParam {String} project_id 项目id
-
-        @apiParamExample {json} Request-Example:
-            {
-                "image_name": "infohub:0.0.1",
-                "container_name": "infohub",
-                "project_id": "1",
-                "ips": [
-                    {"public_ip": "192.168.56.10"},
-                    {"public_ip": "192.168.56.11"},
-                    ...
-                ]
-            }
-
-        @apiSuccessExample {json} Success-Response
-            HTTP/1.1 200 OK
-            {
-                "192.168.56.10":{
-                    "output": String[],
-                    "err":  String[]
-                }
-                "192.168.56.11":{
-                    "output": String[],
-                    "err": String[]
-                }
-            }
-        """
+    def on_message(self, message):
+        self.params = json.loads(message)
         try:
+            args = ['image_name', 'container_name', 'ips', 'project_id']
+
+            self.guarantee(*args)
+
+            for i in args[1:]:
+                self.params[i] = self.params[i].strip()
+
             params = {'id': self.params['project_id'], 'status': PROJECT_STATUS['deploying']}
-            yield self.project_service.update_status(params)
+            self.project_service.sync_update_status(params)
 
             self.params["infos"] = []
             for ip in self.params['ips']:
-                login_info = yield self.server_service.fetch_ssh_login_info(ip)
+                login_info = self.project_service_service.sync_fetch_ssh_login_info(ip)
                 self.params['infos'].append(login_info)
 
-            log = yield self.project_service.deployment(self.params)
+            log = self.project_service.deployment(self.params)
+
             status = PROJECT_STATUS['deploy-success']
             if log['has_err']:
                 status = PROJECT_STATUS['deploy-failure']
 
             arg = [json.dumps(self.params['ips']), self.params['container_name'], status, self.params['project_id']]
-            yield self.project_service.update(
-                                            sets=['deploy_ips=%s', 'container_name=%s', 'status=%s'],
-                                            conds=['id=%s'], params=arg)
-            self.success(log['log'])
-        except:
-            self.error()
+            self.project_service.set_deploy_ips(arg)
+
+        except Exception as e:
             self.log.error(traceback.format_exc())
+            self.write_message(str(e))
+            self.close()
 
 
 class ProjectContainersListHanler(BaseHandler):
@@ -322,43 +294,39 @@ class ProjectContainersListHanler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class ProjectImageCreationHandler(BaseHandler):
-    @is_login
-    @coroutine
-    def post(self):
-        """
-        @api {post} /api/project/image/creation 构建仓库镜像
-        @apiName ProjectImageCreationHandler
-        @apiGroup Project
+class ProjectImageCreationHandler(WebSocketHandler):
 
-        @apiParam {String} prj_name 项目名字
-        @apiParam {String} repos_url 仓库地址
-        @apiParam {String} branch_name 分支名字
-        @apiParam {String} version 版本号
-        @apiParam {String} image_name 镜像名字
+    def on_message(self, message):
+        self.params = json.loads(message)
 
-        @apiUse Success
-        """
         try:
-            params = {'name': self.params['prj_name'], 'status': PROJECT_STATUS['building']}
-            yield self.project_service.update_status(params)
+            args = ['prj_name', 'repos_url', 'branch_name', 'version', 'image_name']
 
-            login_info = yield self.server_service.fetch_ssh_login_info({'public_ip': settings['ip_for_image_creation']})
+            self.guarantee(*args)
+
+            for i in args[1:]:
+                self.params[i] = self.params[i].strip()
+
+            params = [PROJECT_STATUS['building'], self.params['prj_name']]
+            self.project_service.sync_update_status(params)
+
+            login_info = self.project_service.sync_fetch_ssh_login_info({'public_ip': settings['ip_for_image_creation']})
             self.params.update(login_info)
-            out, err = yield self.project_service.create_image(self.params)
+            out, err = self.project_service.create_image(params=self.params, out_func=self.write_message)
+
             log = {"out": out, "err": err}
             arg = {'name': self.params['prj_name'], 'version': self.params['version'], 'log': json.dumps(log)}
-            yield self.project_service.insert_log(arg)
+            self.project_service.sync_insert_log(arg)
 
             params['status'] = PROJECT_STATUS['build-success']
             if err:
                 params['status'] = PROJECT_STATUS['build-failure']
-            yield self.project_service.update_status(params)
+            self.project_service.sync_update_status(params)
 
-            self.success(out)
-        except:
-            self.error()
+        except Exception as e:
             self.log.error(traceback.format_exc())
+            self.write_message(str(e))
+            self.close()
 
 
 class ProjectImageLogHandler(BaseHandler):

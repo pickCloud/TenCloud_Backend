@@ -9,7 +9,7 @@ from tornado.websocket import WebSocketHandler
 from tornado.gen import coroutine, Task
 from tornado.ioloop import PeriodicCallback, IOLoop
 from handler.base import BaseHandler
-from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG, ALIYUN_REGION_NAME
+from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG
 from utils.general import validate_ip
 from utils.security import Aes
 from utils.decorator import is_login
@@ -105,7 +105,7 @@ class RealtimeOutputHandler(WebSocketHandler, BaseHandler):
 
     def on_message(self, message):
         try:
-            ssh = SSH(hostname='localhost', port=2222, username='root', passwd='000000')
+            ssh = SSH(hostname='192.168.56.10', port=22, username='lancelot', passwd='hga1016xm.')
             self.ssh_out, self.ssh_err = ssh.exec_rt('top -b -n 5', self.write_message)
         except Exception as e:
             self.write_message(e)
