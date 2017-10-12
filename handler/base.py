@@ -34,6 +34,7 @@ __author__ = 'Jon'
 import json
 import tornado.web
 from tornado.gen import coroutine, Task
+from tornado.websocket import WebSocketHandler
 
 from service.cluster.cluster import ClusterService
 from service.imagehub.imagehub import ImagehubService
@@ -141,3 +142,17 @@ class BaseHandler(tornado.web.RequestHandler):
         ''' 删除 Session
         '''
         yield Task(self.redis.delete, SESSION_KEY.format(user_id=user_id))
+
+
+class WebSocketHandler(WebSocketHandler, BaseHandler):
+    def check_origin(self, origin):
+        return True
+
+    def open(self):
+        self.write_message('open')
+
+    def on_message(self, message):
+        pass
+
+    def on_close(self):
+        pass
