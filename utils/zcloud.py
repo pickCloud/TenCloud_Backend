@@ -12,7 +12,9 @@ class Zcloud:
 
     @classmethod
     def _get_client(cls, region):
-        return boto3.client(cls.service, region_name=region, aws_access_key_id=settings['zcloud_id'], aws_secret_access_key=settings['zcloud_secret'])
+        session = boto3.session.Session()
+
+        return session.client(cls.service, region_name=region, aws_access_key_id=settings['zcloud_id'], aws_secret_access_key=settings['zcloud_secret'])
 
     @classmethod
     def get_instances(cls, region, **kwargs):
