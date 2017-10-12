@@ -1,7 +1,7 @@
 __author__ = 'Jon'
 
 import json
-from tornado.gen import coroutine, Task
+from tornado.gen import coroutine, Task, sleep
 
 from service.base import BaseService
 from utils.general import get_formats
@@ -310,6 +310,10 @@ class ServerService(BaseService):
     def _change_ip(self, cloud, info):
         new_ip = cloud.get_public_ip(info)
         old_ip = info['public_ip']
+
+        while not new_ip or new_ip == old_ip:
+            yield sleep(1)
+            new_ip = cloud.get_public_ip(info)
 
         yield Task(self.redis.hset, DEPLOYED, new_ip, 1)
         yield Task(self.redis.hdel, DEPLOYED, old_ip)
