@@ -25,23 +25,18 @@ class ProjectService(BaseService):
         try:
             with self.sync_db.cursor() as cur:
                 cur.execute(sql, params)
-                cur.commit()
+            self.sync_db.commit()
         except:
             raise ValueError("sync_db_execute error with {sql}".format(sql=sql))
-        finally:
-            self.sync_db.close()
 
     def sync_db_fetchone(self, sql, params):
         try:
             with self.sync_db.cursor() as cur:
                 cur.execute(sql, params)
                 res = cur.fetchone()
-                cur.commit()
-
+            self.sync_db.commit()
         except:
             raise ValueError("sync_db_fetchone error with {sql}".format(sql=sql))
-        finally:
-            self.sync_db.close()
         return res
 
     def sync_update_status(self, params):
@@ -83,10 +78,10 @@ class ProjectService(BaseService):
 
     def create_image(self, params, out_func=None):
         cmd = CREATE_IMAGE_CMD + ' '.join([params['image_name'], params['repos_url'], params['branch_name'], params['version']])
-        ssh = SSH(hostname=params['ip'], port=22, username=['username'], passwd=['passwd'])
+        ssh = SSH(hostname=params['public_ip'], port=22, username=params['username'], passwd=params['passwd'])
         out, err = ssh.exec_rt(cmd, out_func)
-        err = [e for e in err if not re.search(r'From github.com|->', e)]
-        return out, err
+        err = [e for e in str(err) if not re.search(r'From github.com|->', e)]
+        return str(out), str(err)
 
     def deployment(self, params, out_func=None):
         image_name = REPOS_DOMAIN + "/library/" + params['image_name']
@@ -99,11 +94,11 @@ class ProjectService(BaseService):
         has_err = False
         log = dict()
         for ip in params['infos']:
-            ssh = SSH(hostname=params['ip'], port=22, username=['username'], passwd=['passwd'])
+            ssh = SSH(hostname=ip['public_ip'], port=22, username=ip['username'], passwd=ip['passwd'])
             out, err = ssh.exec_rt(cmd, out_func)
             if err:
                 has_err = True
-            log[ip['public_ip']] = {"output": out, "error": err}
+            log[ip['public_ip']] = {"output": str(out), "error": str(err)}
         return {'log': log, 'has_err': has_err}
 
     def set_deploy_ips(self, params):

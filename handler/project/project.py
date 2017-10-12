@@ -217,18 +217,15 @@ class ProjectDeploymentHandler(WebSocketHandler):
 
             self.guarantee(*args)
 
-            for i in args[1:]:
-                self.params[i] = self.params[i].strip()
-
             params = {'id': self.params['project_id'], 'status': PROJECT_STATUS['deploying']}
             self.project_service.sync_update_status(params)
 
             self.params["infos"] = []
             for ip in self.params['ips']:
-                login_info = self.project_service_service.sync_fetch_ssh_login_info(ip)
+                login_info = self.project_service.sync_fetch_ssh_login_info(ip)
                 self.params['infos'].append(login_info)
 
-            log = self.project_service.deployment(self.params)
+            log = self.project_service.deployment(self.params, self.write_message)
 
             status = PROJECT_STATUS['deploy-success']
             if log['has_err']:
@@ -307,7 +304,7 @@ class ProjectImageCreationHandler(WebSocketHandler):
             for i in args[1:]:
                 self.params[i] = self.params[i].strip()
 
-            params = [PROJECT_STATUS['building'], self.params['prj_name']]
+            params = {'status': PROJECT_STATUS['building'], 'name': self.params['prj_name']}
             self.project_service.sync_update_status(params)
 
             login_info = self.project_service.sync_fetch_ssh_login_info({'public_ip': settings['ip_for_image_creation']})
