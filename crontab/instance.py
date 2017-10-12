@@ -173,7 +173,6 @@ def main():
     parser = argparse.ArgumentParser(description='Different clouds')
     parser.add_argument('--cloud', choices=['aliyun', 'qcloud', 'zcloud'], help='which cloud to play')
     args = parser.parse_args()
-    args.cloud = 'zcloud'
 
     obj = Instance()
 
