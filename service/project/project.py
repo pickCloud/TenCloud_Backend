@@ -81,7 +81,7 @@ class ProjectService(BaseService):
         ssh = SSH(hostname=params['public_ip'], port=22, username=params['username'], passwd=params['passwd'])
         out, err = ssh.exec_rt(cmd, out_func)
         err = [e for e in str(err) if not re.search(r'From github.com|->', e)]
-        return str(out), str(err)
+        return str(out), ''.join(err)
 
     def deployment(self, params, out_func=None):
         image_name = REPOS_DOMAIN + "/library/" + params['image_name']
