@@ -109,5 +109,5 @@ routes = [
     (r'/api/file/([\w\W]+)', FileInfoHandler),
 
 
-    (r'/api/ssh/realtime/output', RealtimeOutputHandler)
+    # (r'/api/ssh/realtime/output', RealtimeOutputHandler)
 ]

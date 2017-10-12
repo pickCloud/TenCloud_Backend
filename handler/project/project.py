@@ -237,6 +237,7 @@ class ProjectDeploymentHandler(WebSocketHandler):
         except Exception as e:
             self.log.error(traceback.format_exc())
             self.write_message(str(e))
+        finally:
             self.close()
 
 
@@ -323,6 +324,7 @@ class ProjectImageCreationHandler(WebSocketHandler):
         except Exception as e:
             self.log.error(traceback.format_exc())
             self.write_message(str(e))
+        finally:
             self.close()
 
 
