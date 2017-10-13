@@ -318,12 +318,13 @@ class ProjectImageCreationHandler(WebSocketBaseHandler):
             arg = {'name': self.params['prj_name'], 'version': self.params['version'], 'log': json.dumps(log)}
             self.project_service.sync_insert_log(arg)
 
-            params['status'] = PROJECT_STATUS['build-success']
+            params['status'], result = PROJECT_STATUS['build-success'], SUCCESS
             if err:
-                params['status'] = PROJECT_STATUS['build-failure']
+                params['status'], result = PROJECT_STATUS['build-failure'], FAILURE
+
             self.project_service.sync_update_status(params)
 
-            self.write_message(SUCCESS)
+            self.write_message(result)
         except Exception as e:
             self.log.error(traceback.format_exc())
             self.write_message(FAILURE)
