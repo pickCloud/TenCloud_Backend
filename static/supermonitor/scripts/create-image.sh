@@ -74,8 +74,8 @@ code_build(){
 
 remove_old_image(){
     log "remove_old_image"
-    if docker images ${APP_NAME}":"${version}; then
-        docker rmi ${APP_NAME}":"${version}
+    if docker images ${APP_NAME}":"${version} 2>/dev/null; then
+        log "find old version image and delete it"
     fi
     log "finish remove_old_image"
 }
@@ -104,7 +104,7 @@ main(){
 
 	shell_lock;
 	code_get;
-    remove_old_image;
+	remove_old_image;
     code_build;
     image_push;
     shell_unlock;
