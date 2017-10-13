@@ -73,7 +73,6 @@ class ProjectService(BaseService):
         cmd = CREATE_IMAGE_CMD + ' '.join([params['image_name'], params['repos_url'], params['branch_name'], params['version']])
         ssh = SSH(hostname=params['public_ip'], port=22, username=params['username'], passwd=params['passwd'])
         out, err = ssh.exec_rt(cmd, out_func)
-        err = [e for e in err if not re.search(r'From github.com|->|No such image', e)]
 
         return out, err
 
