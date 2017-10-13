@@ -144,7 +144,7 @@ class BaseHandler(tornado.web.RequestHandler):
         yield Task(self.redis.delete, SESSION_KEY.format(user_id=user_id))
 
 
-class WebSocketHandler(WebSocketHandler, BaseHandler):
+class WebSocketBaseHandler(WebSocketHandler, BaseHandler):
     def check_origin(self, origin):
         return True
 

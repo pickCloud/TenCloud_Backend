@@ -372,3 +372,9 @@ SERVER_OPERATE_STATUS = dict()
 SERVER_OPERATE_STATUS['start'] = 0
 SERVER_OPERATE_STATUS['stop'] = 1
 SERVER_OPERATE_STATUS['reboot'] = 2
+
+#################################################################################################
+# Websocket相关
+#################################################################################################
+SUCCESS = 'success'
+FAILURE = 'failure'

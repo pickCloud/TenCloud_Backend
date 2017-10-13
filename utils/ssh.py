@@ -54,6 +54,7 @@ class SSH:
             Usage::
                 >>> out, err = ssh.exec_rt('top -b -n 5', self.write_message) # tornado websocket
         '''
+        LOG.info('SSH CMD: %s' % cmd)
 
         stdin, stdout, stderr = self._client.exec_command(cmd)
         channel = stdout.channel
@@ -76,10 +77,10 @@ class SSH:
                     else:
                         pending = None
 
-                    out.extend(lines)
-
                     for line in lines:
                         out_func(line)
+                        line = line.decode('utf-8')
+                        out.append(line)
 
                 if c.recv_stderr_ready():
                     chunk = c.recv_stderr(len(c.in_stderr_buffer))
@@ -91,10 +92,12 @@ class SSH:
                     else:
                         err_pending = None
 
-                    err.extend(lines)
-
                     for line in lines:
                         out_func(line)
+                        line = line.decode('utf-8')
+                        err.append(line)
+
+        if err == ['[', ']']: err = []
 
         return out, err
 

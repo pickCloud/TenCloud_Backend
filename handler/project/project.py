@@ -4,12 +4,12 @@ import traceback
 import json
 
 from tornado.gen import coroutine
-from handler.base import BaseHandler, WebSocketHandler
+from handler.base import BaseHandler, WebSocketBaseHandler
 from utils.general import get_in_formats
 from utils.decorator import is_login
 from setting import settings
 from handler.user import user
-from constant import PROJECT_STATUS
+from constant import PROJECT_STATUS, SUCCESS, FAILURE
 
 class ProjectHandler(BaseHandler):
     @is_login
@@ -208,7 +208,7 @@ class ProjectUpdateHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class ProjectDeploymentHandler(WebSocketHandler):
+class ProjectDeploymentHandler(WebSocketBaseHandler):
 
     def on_message(self, message):
         self.params = json.loads(message)
@@ -227,16 +227,18 @@ class ProjectDeploymentHandler(WebSocketHandler):
 
             log = self.project_service.deployment(self.params, self.write_message)
 
-            status = PROJECT_STATUS['deploy-success']
+            status, result = PROJECT_STATUS['deploy-success'], SUCCESS
+
             if log['has_err']:
-                status = PROJECT_STATUS['deploy-failure']
+                status, result = PROJECT_STATUS['deploy-failure'], FAILURE
 
             arg = [json.dumps(self.params['ips']), self.params['container_name'], status, self.params['project_id']]
             self.project_service.set_deploy_ips(arg)
 
+            self.write_message(result)
         except Exception as e:
             self.log.error(traceback.format_exc())
-            self.write_message(str(e))
+            self.write_message(FAILURE)
         finally:
             self.close()
 
@@ -292,7 +294,7 @@ class ProjectContainersListHanler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class ProjectImageCreationHandler(WebSocketHandler):
+class ProjectImageCreationHandler(WebSocketBaseHandler):
 
     def on_message(self, message):
         self.params = json.loads(message)
@@ -321,9 +323,10 @@ class ProjectImageCreationHandler(WebSocketHandler):
                 params['status'] = PROJECT_STATUS['build-failure']
             self.project_service.sync_update_status(params)
 
+            self.write_message(SUCCESS)
         except Exception as e:
             self.log.error(traceback.format_exc())
-            self.write_message(str(e))
+            self.write_message(FAILURE)
         finally:
             self.close()
 
