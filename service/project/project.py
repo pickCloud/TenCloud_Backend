@@ -22,22 +22,15 @@ class ProjectService(BaseService):
             """
 
     def sync_db_execute(self, sql, params):
-        try:
-            with self.sync_db.cursor() as cur:
-                cur.execute(sql, params)
-            self.sync_db.commit()
-        except:
-            raise ValueError("sync_db_execute error with {sql}".format(sql=sql))
+        with self.sync_db.cursor() as cur:
+            cur.execute(sql, params)
 
     def sync_db_fetchone(self, sql, params):
-        try:
-            with self.sync_db.cursor() as cur:
-                cur.execute(sql, params)
-                res = cur.fetchone()
-            self.sync_db.commit()
-        except:
-            raise ValueError("sync_db_fetchone error with {sql}".format(sql=sql))
-        return res
+        with self.sync_db.cursor() as cur:
+            cur.execute(sql, params)
+            res = cur.fetchone()
+
+            return res
 
     def sync_update_status(self, params):
         sql = 'UPDATE {table} SET status=%s WHERE '.format(table=self.table)
@@ -80,8 +73,9 @@ class ProjectService(BaseService):
         cmd = CREATE_IMAGE_CMD + ' '.join([params['image_name'], params['repos_url'], params['branch_name'], params['version']])
         ssh = SSH(hostname=params['public_ip'], port=22, username=params['username'], passwd=params['passwd'])
         out, err = ssh.exec_rt(cmd, out_func)
-        err = [e for e in str(err) if not re.search(r'From github.com|->|No such image', e)]
-        return str(out), ''.join(err)
+        err = [e for e in err if not re.search(r'From github.com|->|No such image', e)]
+
+        return out, err
 
     def deployment(self, params, out_func=None):
         image_name = REPOS_DOMAIN + "/library/" + params['image_name']
@@ -95,9 +89,13 @@ class ProjectService(BaseService):
         log = dict()
         for ip in params['infos']:
             ssh = SSH(hostname=ip['public_ip'], port=22, username=ip['username'], passwd=ip['passwd'])
+            result = '成功'
+
             out, err = ssh.exec_rt(cmd, out_func)
             if err:
-                has_err = True
+                has_err, result = True, '失败'
+
+            out_func('IP: {}, 部署{}'.format(ip['public_ip'], result))
             log[ip['public_ip']] = {"output": str(out), "error": str(err)}
         return {'log': log, 'has_err': has_err}
 

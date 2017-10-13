@@ -74,9 +74,12 @@ code_build(){
 
 remove_old_image(){
     log "remove_old_image"
-    if docker images ${APP_NAME}":"${version}; then
+    has_old_image=`docker images -q ${APP_NAME}":"${version}`
+
+    if [ $has_old_image ]; then
         docker rmi ${APP_NAME}":"${version}
     fi
+
     log "finish remove_old_image"
 }
 
