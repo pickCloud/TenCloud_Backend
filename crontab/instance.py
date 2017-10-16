@@ -169,8 +169,9 @@ class Instance:
                "                         is_available=VALUES(is_available), " \
                "                         charge_type=VALUES(charge_type)"
 
-        with self.db.cursor() as cursor:
-            cursor.execute(sql, self.data)
+        cur = self.db.cursor()
+        cur.execute(sql, self.data)
+        cur.close()
 
 
 def main():
