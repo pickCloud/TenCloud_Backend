@@ -1,10 +1,12 @@
 __author__ = 'Jon'
 
 import tornadoredis
+import pymysql.cursors
 
 from tornado_mysql import pools, cursors
+from DBUtils.PooledDB import PooledDB
+
 from setting import settings
-import pymysql.cursors
 
 
 DB = pools.Pool(
@@ -20,13 +22,16 @@ DB = pools.Pool(
      )
 
 
-SYNC_DB = pymysql.connect(host=settings['mysql_host'],
-                          user=settings['mysql_user'],
-                          password=settings['mysql_password'],
-                          db=settings['mysql_database'],
-                          charset=settings['mysql_charset'],
-                          cursorclass=pymysql.cursors.DictCursor,
-                          autocommit=True)
+pool = PooledDB(pymysql, maxcached=1, maxconnections=2,
+                host=settings['mysql_host'],
+                user=settings['mysql_user'],
+                password=settings['mysql_password'],
+                db=settings['mysql_database'],
+                charset=settings['mysql_charset'],
+                cursorclass=pymysql.cursors.DictCursor,
+                autocommit=True)
+SYNC_DB = pool.connection()
+
 
 
 REDIS = tornadoredis.Client(host=settings['redis_host'], port=settings['redis_port'])
