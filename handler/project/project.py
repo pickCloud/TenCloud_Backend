@@ -333,6 +333,7 @@ class ProjectImageCreationHandler(WebSocketBaseHandler):
 
 
 class ProjectImageLogHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self, prj_name, version):
         """
@@ -390,7 +391,7 @@ class ProjectVersionsHandler(BaseHandler):
             }
         """
         try:
-            data = yield self.project_versions_service.select(fields='id, version', conds=['name=%s'], params=[prj_name], ct=False, extra='order by update_time desc')
+            data = yield self.project_versions_service.version_list(prj_name)
             self.success(data)
         except:
             self.error()
