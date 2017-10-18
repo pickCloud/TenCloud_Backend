@@ -21,14 +21,18 @@ from constant import ALIYUN_REGION_LIST, QCLOUD_REGION_LIST, QCLOUD_STATUS, QCLO
 from setting import settings
 from requests_futures.sessions import FuturesSession
 from concurrent.futures import ThreadPoolExecutor, wait
+from DBUtils.PooledDB import PooledDB
 
-DB = pymysql.connect(host=settings['mysql_host'],
-                     user=settings['mysql_user'],
-                     password=settings['mysql_password'],
-                     db=settings['mysql_database'],
-                     charset=settings['mysql_charset'],
-                     cursorclass=pymysql.cursors.DictCursor,
-                     autocommit=True)
+
+pool = PooledDB(pymysql, maxcached=1, maxconnections=1,
+                host=settings['mysql_host'],
+                user=settings['mysql_user'],
+                password=settings['mysql_password'],
+                db=settings['mysql_database'],
+                charset=settings['mysql_charset'],
+                cursorclass=pymysql.cursors.DictCursor,
+                autocommit=True)
+DB = pool.connection()
 
 MAX_WORKERS = 20
 
@@ -165,8 +169,9 @@ class Instance:
                "                         is_available=VALUES(is_available), " \
                "                         charge_type=VALUES(charge_type)"
 
-        with self.db.cursor() as cursor:
-            cursor.execute(sql, self.data)
+        cur = self.db.cursor()
+        cur.execute(sql, self.data)
+        cur.close()
 
 
 def main():
