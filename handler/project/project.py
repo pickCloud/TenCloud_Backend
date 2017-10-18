@@ -84,7 +84,7 @@ class ProjectNewHandler(BaseHandler):
                 is_duplicate_url = yield self.project_service.select(conds=['repos_url=%s'], params=[self.params['repos_url']], one=True)
 
                 if is_duplicate_url:
-                    self.error('仓库url重复')
+                    self.error('你选择的代码仓库，已有项目存在，项目名称【】')
                     return
 
             if self.params.get('image_source') and self.params.get('version'):
