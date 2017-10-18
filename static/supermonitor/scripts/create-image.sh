@@ -104,9 +104,9 @@ main(){
         echo "docker not installed.  Aborting." && exit;
     }
 
-	shell_lock;
-	code_get;
-	remove_old_image;
+    shell_lock;
+    code_get;
+    remove_old_image;
     code_build;
     image_push;
     shell_unlock;
