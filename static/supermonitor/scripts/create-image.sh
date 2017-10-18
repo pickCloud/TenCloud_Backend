@@ -75,7 +75,6 @@ code_build(){
 remove_old_image(){
     log "remove_old_image"
     has_old_image=`docker images -q ${APP_NAME}":"${version}`
-
     if [ $has_old_image ]; then
         docker rmi ${APP_NAME}":"${version}
     fi
@@ -105,8 +104,8 @@ main(){
         echo "docker not installed.  Aborting." && exit;
     }
 
-	shell_lock;
-	code_get;
+    shell_lock;
+    code_get;
     remove_old_image;
     code_build;
     image_push;

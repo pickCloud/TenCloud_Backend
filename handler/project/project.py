@@ -84,7 +84,7 @@ class ProjectNewHandler(BaseHandler):
                 is_duplicate_url = yield self.project_service.select(conds=['repos_url=%s'], params=[self.params['repos_url']], one=True)
 
                 if is_duplicate_url:
-                    self.error('仓库url重复')
+                    self.error('你选择的代码仓库，已有项目存在，项目名称【{prj_name}】'.format(prj_name=is_duplicate_url['name']))
                     return
 
             if self.params.get('image_source') and self.params.get('version'):
@@ -333,6 +333,7 @@ class ProjectImageCreationHandler(WebSocketBaseHandler):
 
 
 class ProjectImageLogHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self, prj_name, version):
         """
@@ -390,7 +391,7 @@ class ProjectVersionsHandler(BaseHandler):
             }
         """
         try:
-            data = yield self.project_versions_service.select(fields='id, version', conds=['name=%s'], params=[prj_name], ct=False, extra='order by update_time desc')
+            data = yield self.project_versions_service.version_list(prj_name)
             self.success(data)
         except:
             self.error()
