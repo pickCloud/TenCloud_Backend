@@ -368,6 +368,26 @@ class ProjectImageLogHandler(BaseHandler):
             self.error()
             self.log.error(traceback.format_exc())
 
+    @is_login
+    @coroutine
+    def delete(self, prj_name, version):
+        """
+       @api {delete} /api/project/([\w\W]+)/image/([\w\W]+)/log 删除相关项目的某一版本的构建日志
+       @apiName ProjectImageLogHandler
+       @apiGroup Project
+
+       @apiParam {String} prj_name 项目名字
+       @apiParam {String} version 版本
+
+       @apiUse Success
+       """
+        try:
+            yield self.project_versions_service.delete(conds=['name=%s', 'version=%s'], params=[prj_name, version])
+            self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
 
 class ProjectVersionsHandler(BaseHandler):
     @is_login
