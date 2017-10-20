@@ -9,7 +9,7 @@ from utils.ssh import SSH
 from utils.security import Aes
 from constant import CREATE_IMAGE_CMD, IMAGE_INFO_CMD, DEPLOY_CMD, \
                      REPOS_DOMAIN, LIST_CONTAINERS_CMD, LOAD_IMAGE_FILE,\
-                     LOAD_IMAGE, CLOUD_DOWNLOAD_IMAGE
+                     LOAD_IMAGE, CLOUD_DOWNLOAD_IMAGE, YE_PORTMAP
 from setting import settings
 
 
@@ -18,7 +18,7 @@ class ProjectService(BaseService):
     fields = """
                 id, name, description, repos_name, 
                 repos_url, http_url, image_name, mode, status, 
-                deploy_ips, container_name, image_source
+                deploy_ips, container_name, image_source, portmap
             """
 
     def sync_db_execute(self, sql, params):
@@ -84,6 +84,7 @@ class ProjectService(BaseService):
             repository=REPOS_DOMAIN,
             username=settings['deploy_username'],
             password=settings['deploy_password'],
+            portmap=YE_PORTMAP,
             image_name=image_name,
             container_name=params['container_name'])
         has_err = False

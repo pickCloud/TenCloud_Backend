@@ -37,7 +37,7 @@ UNINSTALL_CMD = 'curl -sSL https://{host}/supermonitor/uninstall.sh | sh '.forma
 CREATE_IMAGE_CMD = 'curl -sSL https://{host}/supermonitor/scripts/create-image.sh | sh -s '.format(host=SERVER_HOST)
 IMAGE_INFO_CMD = 'docker images %s --format "{{.Tag}},{{.CreatedAt}}" | sed -n 1,3p'
 REPOS_DOMAIN = 'hub.10.com'
-DEPLOY_CMD = 'docker login {repository} -u {username} -p {password} && docker pull {image_name} && docker run -P -d --name {container_name} {image_name} '
+DEPLOY_CMD = 'docker login {repository} -u {username} -p {password} && docker pull {image_name} && docker run {portmap} -d --name {container_name} {image_name} '
 LIST_CONTAINERS_CMD = 'docker ps -a --format "{{.ID}},{{.Names}},{{.Status}},{{.CreatedAt}}"'
 CONTAINER_INFO_CMD = 'docker inspect --format "{{json .}}" %s'
 START_CONTAINER_CMD = 'docker start {container_id}'
@@ -378,3 +378,8 @@ SERVER_OPERATE_STATUS['reboot'] = 2
 #################################################################################################
 SUCCESS = 'success'
 FAILURE = 'failure'
+
+#################################################################################################
+# docker run 宿主机到容器的端口映射
+#################################################################################################
+YE_PORTMAP = '-p 80:80 -p 8080:8080 -p 8888:8888 -p 9999:9999'
