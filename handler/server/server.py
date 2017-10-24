@@ -504,7 +504,7 @@ class ServerStatusHandler(BaseHandler):
 
 
 class ServerContainerPerformanceHandler(BaseHandler):
-    @is_login
+    # @is_login
     @coroutine
     def post(self):
         """
@@ -516,6 +516,9 @@ class ServerContainerPerformanceHandler(BaseHandler):
         @apiParam {String} container_name 容器名字
         @apiParam {Number} start_time 起始时间
         @apiParam {Number} end_time 终止时间
+        @apiParam {Number} type 0: 机器详情 1: 正常 2: 按时平均 3: 按天平均
+        @apiParam {Number} now_page 当前页面
+        @apiParam {Number} page_number 每页返回条数， 小于100条
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
