@@ -300,6 +300,7 @@ CREATE TABLE `server_log_hour` (
     `net_log`  json not null 
 )
 create index ip_time on server_log_hour (public_ip, start_time, end_time);
+ALTER TABLE server_log_hour ADD COLUMN containers json not null;
 ```
 
 * 机器记录天平均维护表 server_log_day
@@ -315,6 +316,7 @@ CREATE TABLE `server_log_day` (
     `net_log`  json not null
 )
 create index ip_time on server_log_day (public_ip, start_time, end_time);
+ALTER TABLE server_log_day ADD COLUMN containers json not null;
 ```
 
 * 机器操作记录 operation_log
