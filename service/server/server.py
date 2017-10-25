@@ -414,17 +414,17 @@ class ServerService(BaseService):
 
         data = {}
         if params['type'] == 0:
-            data = yield self._get_docker_performance(params)
+            data = yield self._get_container_performance(params)
         elif params['type'] == 1:
-            data = yield self._get_docker_performance_page(params)
+            data = yield self._get_container_performance_page(params)
         elif params['type'] == 2:
-            data = yield self._get_performance_avg('server_docker_log_hour', params)
+            data = yield self._get_container_performance_avg('container_log_hour', params)
         elif params['type'] == 3:
-            data = yield self._get_performance_avg('server_docker_log_day', params)
+            data = yield self._get_container_performance_avg('container_log_day', params)
         return data
 
     @coroutine
-    def _get_docker_performance(self, params):
+    def _get_container_performance(self, params):
 
         sql = """
                   SELECT id from {table}
@@ -465,7 +465,7 @@ class ServerService(BaseService):
         return data
 
     @coroutine
-    def _get_docker_performance_page(self, params):
+    def _get_container_performance_page(self, params):
         data = []
         start_page = (params['now_page'] - 1) * params['page_number']
         arg = [
@@ -499,6 +499,37 @@ class ServerService(BaseService):
                         'net_input': content['net_input'],
                         'net_output': content['net_output'],
                         },
+            }
+            data.append(one_record)
+        return data
+
+    @coroutine
+    def _get_container_performance_avg(self, table, params):
+        data = []
+        start_page = (params['now_page'] - 1) * params['page_number']
+        arg = [
+            params['public_ip'],
+            params['container_name'],
+            params['start_time'],
+            params['end_time'],
+            start_page,
+            params['page_number']
+        ]
+        sql = """
+                SELECT end_time, content
+                FROM {table}
+                WHERE public_ip=%s AND container_name=%s AND start_time>=%s AND end_time<=%s 
+                LIMIT %s, %s
+            """.format(table=table)
+        cur = yield self.db.execute(sql, arg)
+        for i in cur.fetchall():
+            content = json.loads(i['content'])
+            one_record = {
+                'created_time': i['end_time'],
+                'cpu': content['cpu'],
+                'block': content['block'],
+                'memory': content['memory'],
+                'net': content['net'],
             }
             data.append(one_record)
         return data

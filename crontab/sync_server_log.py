@@ -18,6 +18,8 @@ class ServerLog:
 
     table_hour = 'server_log_hour'
     table_day = 'server_log_day'
+    table_container_hour = 'container_log_hour'
+    table_container_day = 'container_log_day'
 
     def __init__(self):
         self.data = []
@@ -65,7 +67,7 @@ class ServerLog:
             data = cur.fetchall()
         return data
 
-    def cal_container_stat(self, ip):
+    def cal_container_performance(self, ip):
         resp = self.get_data(ip=ip, table='docker_stat', fields='container_name, content')
         if not resp:
             return {}
@@ -96,23 +98,25 @@ class ServerLog:
         for name in containers:
             if name not in data:
                 data[name] = {
-                    'cpu': '',
-                    'block_input': '',
-                    'block_output': '',
-                    'memory_usage': '',
-                    'memory_limit': '',
-                    'memory_percent': '',
-                    'net_input': '',
-                    'net_output': ''
+                    'cpu': {},
+                    'block': {},
+                    'memory': {},
+                    'net': {}
                 }
-            data[name]['cpu'] = "%.2f" % (statistics.mean(containers[name]['cpu']))
-            data[name]['block_input'] = "%.2f" % (statistics.mean(containers[name]['block_input']))
-            data[name]['block_output'] = "%.2f" % (statistics.mean(containers[name]['block_output']))
-            data[name]['memory_limit'] = "%.2f" % (statistics.mean(containers[name]['memory_limit']))
-            data[name]['memory_usage'] = "%.2f" % (statistics.mean(containers[name]['memory_usage']))
-            data[name]['memory_percent'] = "%.2f" % (statistics.mean(containers[name]['memory_percent']))
-            data[name]['net_input'] = "%.2f" % (statistics.mean(containers[name]['net_input']))
-            data[name]['net_output'] = "%.2f" % (statistics.mean(containers[name]['net_output']))
+            data[name]['cpu'] = {'percent': "%.2f" % (statistics.mean(containers[name]['cpu']))}
+            data[name]['block'] = {
+                'block_input': "%.2f" % (statistics.mean(containers[name]['block_input'])),
+                'block_output': "%.2f" % (statistics.mean(containers[name]['block_output'])),
+            }
+            data[name]['memory'] = {
+                'memory_limit': "%.2f" % (statistics.mean(containers[name]['memory_limit'])),
+                'memory_usage': "%.2f" % (statistics.mean(containers[name]['memory_usage'])),
+                'memory_percent': "%.2f" % (statistics.mean(containers[name]['memory_percent']))
+            }
+            data[name]['net'] = {
+                'net_input': "%.2f" % (statistics.mean(containers[name]['net_input'])),
+                'net_output': "%.2f" % (statistics.mean(containers[name]['net_output']))
+            }
 
         return data
 
@@ -184,7 +188,7 @@ class ServerLog:
                 'disk': json.dumps(self.cal_disk(ip=ip)),
                 'memory': json.dumps(self.cal_memory(ip=ip)),
                 'net': json.dumps(self.cal_net(ip=ip)),
-                'containers': json.dumps(self.cal_container_stat(ip=ip))
+                'containers': self.cal_container_performance(ip=ip)
             }
             self.data.append(one_ip)
         return
@@ -198,8 +202,7 @@ class ServerLog:
                 params['cpu'],
                 params['disk'],
                 params['memory'],
-                params['net'],
-                params['containers']
+                params['net']
             ]
             sql = """
                     INSERT INTO {table} set
@@ -209,20 +212,42 @@ class ServerLog:
                         cpu_log=%s,
                         disk_log=%s,
                         memory_log=%s,
-                        net_log=%s,
-                        containers=%s
+                        net_log=%s
                 """.format(table=table)
             cursor.execute(sql, arg)
-        self.db.commit()
+
+    def _save_container(self, params, table):
+        for container in params['containers']:
+            with self.db.cursor() as cursor:
+                arg = [
+                    params['ip'],
+                    container,
+                    self.start_time,
+                    self.end_time,
+                    json.dumps(params[container])
+                ]
+                sql = """
+                        INSERT INTO {table} set
+                            public_ip=%s,
+                            container_name=%s,
+                            start_time=%s,
+                            end_time=%s,
+                            content=%s
+                    """.format(table=table)
+                cursor.execute(sql, arg)
 
     def save_hour(self):
         for ip in self.data:
             self._save(params=ip, table=self.table_hour)
+            self._save_container(params=ip,table=self.table_container_hour)
+        self.db.commit()
         self.db.close()
 
     def save_day(self):
         for ip in self.data:
             self._save(params=ip, table=self.table_day)
+            self._save_container(params=ip,table=self.table_container_day)
+        self.db.commit()
         self.db.close()
 
 
