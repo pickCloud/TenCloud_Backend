@@ -310,9 +310,9 @@ CREATE TABLE `container_log_hour` (
     `container_name` varchar(128) not null,
     `start_time` int(10) not null,
     `end_time` int(10) not null,
-    'content' json not null
-)
-create index ip_time on container_log_hour (public_ip, containerr_name, start_time, end_time);
+    `content` json not null
+);
+create index hour_ip_time on container_log_hour (public_ip, container_name, start_time, end_time);
 ```
 
 * 容器记录天平均维护表 container_log_day
@@ -323,9 +323,9 @@ CREATE TABLE `container_log_day` (
     `container_name` varchar(128) not null,
     `start_time` int(10) not null,
     `end_time` int(10) not null,
-    'content' json not null
-)
-create index ip_time on server_log_day (public_ip, container_name, start_time, end_time);
+    `content` json not null
+);
+create index day_ip_time on container_log_day (public_ip, container_name, start_time, end_time);
 ```
 
 * 机器记录天平均维护表 server_log_day

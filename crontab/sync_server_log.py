@@ -89,9 +89,9 @@ class ServerLog:
             containers[name]['cpu'].append(float(content['cpu']))
             containers[name]['block_input'].append(float(content['block_input']))
             containers[name]['block_output'].append(float(content['block_output']))
-            containers[name]['mem_limit'].append(float(content['mem_limit']))
-            containers[name]['mem_usage'].append(float(content['mem_usage']))
-            containers[name]['mem_percent'].append(float(content['mem_percent']))
+            containers[name]['memory_limit'].append(float(content['mem_limit']))
+            containers[name]['memory_usage'].append(float(content['mem_usage']))
+            containers[name]['memory_percent'].append(float(content['mem_percent']))
             containers[name]['net_input'].append(float(content['net_input']))
             containers[name]['net_output'].append(float(content['net_output']))
 
@@ -224,7 +224,7 @@ class ServerLog:
                     container,
                     self.start_time,
                     self.end_time,
-                    json.dumps(params[container])
+                    json.dumps(params['containers'][container])
                 ]
                 sql = """
                         INSERT INTO {table} set
