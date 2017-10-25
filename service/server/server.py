@@ -412,13 +412,41 @@ class ServerService(BaseService):
     def get_docker_performance(self, params):
         params['public_ip'] = yield self.fetch_public_ip(params['server_id'])
 
+        data = {}
+        if params['type'] == 0:
+            data = yield self._get_container_performance(params)
+        elif params['type'] == 1:
+            data = yield self._get_container_performance_page(params)
+        elif params['type'] == 2:
+            data = yield self._get_container_performance_avg('container_log_hour', params)
+        elif params['type'] == 3:
+            data = yield self._get_container_performance_avg('container_log_day', params)
+        return data
+
+    @coroutine
+    def _get_container_performance(self, params):
+
         sql = """
-                  SELECT created_time, content from docker_stat
+                  SELECT id from {table}
                   WHERE public_ip=%s AND container_name=%s
                   AND created_time>= %s AND created_time < %s
-              """
+                  ORDER BY created_time DESC
+              """.format(table='docker_stat')
         cur = yield self.db.execute(sql, [params['public_ip'], params['container_name'],
                                     params['start_time'], params['end_time']])
+        ids = [i['id'] for i in cur.fetchall()]
+        if not ids:
+            return {}
+        step = len(ids)//7
+        choose_id = ids
+        if step:
+            choose_id = [ids[i] for i in range(0, len(ids), step)]
+        ids = get_in_formats(field='id', contents=choose_id)
+        sql = """
+                SELECT created_time, content FROM {table}
+                WHERE {ids}
+                """.format(table='docker_stat', ids=ids)
+        cur = yield self.db.execute(sql, choose_id)
         data = {
             'cpu': [],
             'memory': [],
@@ -434,6 +462,76 @@ class ServerService(BaseService):
             data['block'].append([x['created_time'], {'input': content['block_input'],
                                                 'output': content['block_output']}])
 
+        return data
+
+    @coroutine
+    def _get_container_performance_page(self, params):
+        data = []
+        start_page = (params['now_page'] - 1) * params['page_number']
+        arg = [
+            params['public_ip'],
+            params['start_time'],
+            params['end_time'],
+            start_page,
+            params['page_number']
+        ]
+        sql = """
+                SELECT created_time, content FROM {table}
+                WHERE public_ip=%s  AND created_time>=%s AND created_time<%s
+                LIMIT %s, %s
+            """.format(table='docker_stat')
+        cur = yield self.db.execute(sql, arg)
+        for i in cur.fetchall():
+            content = json.loads(i['content'])
+            one_record = {
+                'created_time': i['created_time'],
+                'cpu': {'percent': content['cpu']},
+                'block': {
+                        'block_input': content['block_input'],
+                        'block_output': content['block_output'],
+                },
+                'memory': {
+                        'mem_limit': content['mem_limit'],
+                        'mem_usage': content['mem_usage'],
+                        'mem_percent': content['mem_percent']
+                        },
+                'net': {
+                        'net_input': content['net_input'],
+                        'net_output': content['net_output'],
+                        },
+            }
+            data.append(one_record)
+        return data
+
+    @coroutine
+    def _get_container_performance_avg(self, table, params):
+        data = []
+        start_page = (params['now_page'] - 1) * params['page_number']
+        arg = [
+            params['public_ip'],
+            params['container_name'],
+            params['start_time'],
+            params['end_time'],
+            start_page,
+            params['page_number']
+        ]
+        sql = """
+                SELECT end_time, content
+                FROM {table}
+                WHERE public_ip=%s AND container_name=%s AND start_time>=%s AND end_time<=%s 
+                LIMIT %s, %s
+            """.format(table=table)
+        cur = yield self.db.execute(sql, arg)
+        for i in cur.fetchall():
+            content = json.loads(i['content'])
+            one_record = {
+                'created_time': i['end_time'],
+                'cpu': content['cpu'],
+                'block': content['block'],
+                'memory': content['memory'],
+                'net': content['net'],
+            }
+            data.append(one_record)
         return data
 
     @coroutine
