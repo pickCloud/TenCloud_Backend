@@ -281,7 +281,23 @@ class UserUploadToken(BaseHandler):
         except:
             self.error()
             self.log.error(traceback.format_exc())
-            
+
+    @is_login
+    @coroutine
+    def delete(self):
+        """
+        @api {get} /api/user/token 用户删除token
+        @apiName UserDeleteToekn
+        @apiGroup User
+
+        @apiUse Success
+        """
+        try:
+            yield self.user_service.delete_token(self.current_user['id'])
+            self.success()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
 
 class FileUploadMixin(BaseHandler):
     def get_file_info(self, param='file'):
