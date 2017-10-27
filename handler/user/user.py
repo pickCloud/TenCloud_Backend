@@ -286,7 +286,7 @@ class UserUploadToken(BaseHandler):
     @coroutine
     def delete(self):
         """
-        @api {get} /api/user/token 用户删除token
+        @api {delete} /api/user/token 用户删除token
         @apiName UserDeleteToekn
         @apiGroup User
 

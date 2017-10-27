@@ -9,7 +9,7 @@ from utils.general import get_in_formats
 from utils.decorator import is_login
 from setting import settings
 from handler.user import user
-from constant import PROJECT_STATUS, SUCCESS, FAILURE
+from constant import PROJECT_STATUS, SUCCESS, FAILURE, OPERATION_OBJECT_STYPE
 
 class ProjectHandler(BaseHandler):
     @is_login
