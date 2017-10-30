@@ -14,7 +14,7 @@ from utils.general import validate_ip
 from utils.security import Aes
 from utils.decorator import is_login
 from utils.ssh import SSH
-from constant import MONITOR_CMD, OPERATE_STATUS, OBJECT_STYPE, SERVER_OPERATE_STATUS
+from constant import MONITOR_CMD, OPERATE_STATUS, OPERATION_OBJECT_STYPE, SERVER_OPERATE_STATUS, CONTAINER_OPERATE_STATUS
 
 
 class ServerNewHandler(WebSocketHandler, BaseHandler):
@@ -368,7 +368,21 @@ class ServerUpdateHandler(BaseHandler):
         @apiUse Success
         """
         try:
+            data = yield self.server_operation_service.add(params={
+                'user_id': self.current_user['id'],
+                'object_id': id,
+                'object_type': OPERATION_OBJECT_STYPE['server'],
+                'operation': SERVER_OPERATE_STATUS['change'],
+                'operation_status': OPERATE_STATUS['fail'],
+            })
+
             yield self.server_service.update_server(self.params)
+
+            yield self.server_operation_service.update(
+                    sets=['operation_status=%s'],
+                    conds=['id=%s'],
+                    params=[OPERATE_STATUS['success'], data['id']]
+            )
 
             self.success()
         except:
@@ -394,7 +408,7 @@ class ServerStopHandler(BaseHandler):
             data = yield self.server_operation_service.add(params={
                                                             'user_id': self.current_user['id'],
                                                             'object_id': id,
-                                                            'object_type': OBJECT_STYPE['server'],
+                                                            'object_type': OPERATION_OBJECT_STYPE['server'],
                                                             'operation': SERVER_OPERATE_STATUS['stop'],
                                                             'operation_status': OPERATE_STATUS['fail'],
                                                         })
@@ -427,7 +441,7 @@ class ServerStartHandler(BaseHandler):
             data = yield self.server_operation_service.add(params={
                                                             'user_id': self.current_user['id'],
                                                             'object_id': id,
-                                                            'object_type': OBJECT_STYPE['server'],
+                                                            'object_type': OPERATION_OBJECT_STYPE['server'],
                                                             'operation': SERVER_OPERATE_STATUS['start'],
                                                             'operation_status': OPERATE_STATUS['fail'],
                                                         })
@@ -459,7 +473,7 @@ class ServerRebootHandler(BaseHandler):
             data = yield self.server_operation_service.add(params={
                                                             'user_id': self.current_user['id'],
                                                             'object_id': id,
-                                                            'object_type': OBJECT_STYPE['server'],
+                                                            'object_type': OPERATION_OBJECT_STYPE['server'],
                                                             'operation': SERVER_OPERATE_STATUS['reboot'],
                                                             'operation_status': OPERATE_STATUS['fail'],
                                                         })
@@ -637,8 +651,21 @@ class ServerContainerStartHandler(BaseHandler):
         @apiUse Success
         """
         try:
+            data = yield self.server_operation_service.add(params={
+                'user_id': self.current_user['id'],
+                'object_id': self.params['container_id'],
+                'object_type': OPERATION_OBJECT_STYPE['container'],
+                'operation': CONTAINER_OPERATE_STATUS['start'],
+                'operation_status': OPERATE_STATUS['fail'],
+            })
+
             yield self.server_service.start_container(self.params)
 
+            yield self.server_operation_service.update(
+                    sets=['operation_status=%s'],
+                    conds=['id=%s'],
+                    params=[OPERATE_STATUS['success'], data['id']]
+            )
             self.success()
         except:
             self.error()
@@ -660,7 +687,21 @@ class ServerContainerStopHandler(BaseHandler):
         @apiUse Success
         """
         try:
+            data = yield self.server_operation_service.add(params={
+                'user_id': self.current_user['id'],
+                'object_id': self.params['container_id'],
+                'object_type': OPERATION_OBJECT_STYPE['container'],
+                'operation': CONTAINER_OPERATE_STATUS['stop'],
+                'operation_status': OPERATE_STATUS['fail'],
+            })
+
             yield self.server_service.stop_container(self.params)
+
+            yield self.server_operation_service.update(
+                    sets=['operation_status=%s'],
+                    conds=['id=%s'],
+                    params=[OPERATE_STATUS['success'], data['id']]
+            )
 
             self.success()
         except:
@@ -683,8 +724,21 @@ class ServerContainerDelHandler(BaseHandler):
         @apiUse Success
         """
         try:
+            data = yield self.server_operation_service.add(params={
+                'user_id': self.current_user['id'],
+                'object_id': self.params['container_id'],
+                'object_type': OPERATION_OBJECT_STYPE['container'],
+                'operation': CONTAINER_OPERATE_STATUS['delete'],
+                'operation_status': OPERATE_STATUS['fail'],
+            })
+
             yield self.server_service.del_container(self.params)
 
+            yield self.server_operation_service.update(
+                    sets=['operation_status=%s'],
+                    conds=['id=%s'],
+                    params=[OPERATE_STATUS['success'], data['id']]
+            )
             self.success()
         except:
             self.error()

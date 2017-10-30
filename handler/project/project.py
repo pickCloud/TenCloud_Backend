@@ -4,12 +4,13 @@ import traceback
 import json
 
 from tornado.gen import coroutine
+from tornado.ioloop import PeriodicCallback, IOLoop
 from handler.base import BaseHandler, WebSocketBaseHandler
 from utils.general import get_in_formats
 from utils.decorator import is_login
 from setting import settings
 from handler.user import user
-from constant import PROJECT_STATUS, SUCCESS, FAILURE
+from constant import PROJECT_STATUS, SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, PROJECT_OPERATE_STATUS, OPERATE_STATUS
 
 class ProjectHandler(BaseHandler):
     @is_login
@@ -93,6 +94,14 @@ class ProjectNewHandler(BaseHandler):
                 yield self.project_service.insert_log(arg)
 
             result = yield self.project_service.add(params=self.params)
+
+            yield self.server_operation_service.add(params={
+                'user_id': self.current_user['id'],
+                'object_id': result['id'],
+                'object_type': OPERATION_OBJECT_STYPE['project'],
+                'operation': PROJECT_OPERATE_STATUS['create'],
+                'operation_status': OPERATE_STATUS['success'],
+            })
             self.success(result)
         except:
             self.error()
@@ -114,7 +123,6 @@ class ProjectDelHandler(BaseHandler):
         """
         try:
             ids = self.params['id']
-
             yield self.project_service.delete(conds=[get_in_formats('id', ids)], params=ids)
 
             self.success()
@@ -176,6 +184,7 @@ class ProjectUpdateHandler(BaseHandler):
         @apiName ProjectUpdateHandler
         @apiGroup Project
 
+        @apiParam {String} id 项目id
         @apiParam {String} name 名称
         @apiParam {String} description 描述
         @apiParam {String} repos_name 仓库名字
@@ -187,6 +196,13 @@ class ProjectUpdateHandler(BaseHandler):
         @apiUse Success
         """
         try:
+            data = yield self.server_operation_service.add(params={
+                'user_id': self.current_user['id'],
+                'object_id': self.params['id'],
+                'object_type': OPERATION_OBJECT_STYPE['project'],
+                'operation': PROJECT_OPERATE_STATUS['change'],
+                'operation_status': OPERATE_STATUS['fail'],
+            })
 
             sets = ['name=%s', 'description=%s', 'repos_name=%s', 'repos_url=%s', 'http_url=%s', 'mode=%s', 'image_name=%s']
             conds = ['id=%s']
@@ -202,6 +218,12 @@ class ProjectUpdateHandler(BaseHandler):
                     ]
 
             yield self.project_service.update(sets=sets, conds=conds, params=params)
+
+            yield self.server_operation_service.update(
+                    sets=['operation_status=%s'],
+                    conds=['id=%s'],
+                    params=[OPERATE_STATUS['success'], data['id']]
+            )
             self.success()
         except:
             self.error()
@@ -213,9 +235,16 @@ class ProjectDeploymentHandler(WebSocketBaseHandler):
     def on_message(self, message):
         self.params = json.loads(message)
         try:
-            args = ['image_name', 'container_name', 'ips', 'project_id']
+            args = ['image_name', 'container_name', 'ips', 'project_id', 'user_id']
 
             self.guarantee(*args)
+
+            log_params = {
+                    'user_id': self.params['user_id'],
+                    'object_id': self.params['project_id'],
+                    'object_type': OPERATION_OBJECT_STYPE['project'],
+            }
+            IOLoop.current().spawn_callback(self.init_operation_log, log_params)
 
             params = {'id': self.params['project_id'], 'status': PROJECT_STATUS['deploying']}
             self.project_service.sync_update_status(params)
@@ -235,13 +264,42 @@ class ProjectDeploymentHandler(WebSocketBaseHandler):
             arg = [json.dumps(self.params['ips']), self.params['container_name'], status, self.params['project_id']]
             self.project_service.set_deploy_ips(arg)
 
-            self.write_message(result)
+            IOLoop.current().spawn_callback(self.finish_operation_log, log_params)
+
+            self.write_message('ok')
         except Exception as e:
             self.log.error(traceback.format_exc())
             self.write_message(FAILURE)
         finally:
             self.close()
 
+    @coroutine
+    def init_operation_log(self, log_params):
+        yield self.server_operation_service.add(params={
+            'user_id': log_params['user_id'],
+            'object_id': log_params['object_id'],
+            'object_type': log_params['object_type'],
+            'operation': PROJECT_OPERATE_STATUS['deploy'],
+            'operation_status': OPERATE_STATUS['fail'],
+        })
+
+    @coroutine
+    def finish_operation_log(self, log_params):
+        arg = [
+                OPERATE_STATUS['success'],
+                log_params['user_id'],
+                log_params['object_id'],
+                log_params['object_type']
+        ]
+        yield self.server_operation_service.update(
+                sets=['operation_status=%s'],
+                conds=[
+                        'user_id=%s',
+                        'object_id=%s',
+                        'object_type=%s'
+                ],
+                params=arg
+        )
 
 class ProjectContainersListHanler(BaseHandler):
     @is_login
@@ -300,12 +358,19 @@ class ProjectImageCreationHandler(WebSocketBaseHandler):
         self.params = json.loads(message)
 
         try:
-            args = ['prj_name', 'repos_url', 'branch_name', 'version', 'image_name']
+            args = ['prj_name', 'repos_url', 'branch_name', 'version', 'image_name', 'project_id', 'user_id']
 
             self.guarantee(*args)
 
             for i in args[1:]:
                 self.params[i] = self.params[i].strip()
+
+            log_params = {
+                'user_id': self.params['user_id'],
+                'object_id': self.params['project_id'],
+                'object_type': OPERATION_OBJECT_STYPE['project'],
+            }
+            IOLoop.current().spawn_callback(callback=self.init_operation_log, params=log_params)
 
             params = {'status': PROJECT_STATUS['building'], 'name': self.params['prj_name']}
             self.project_service.sync_update_status(params)
@@ -323,7 +388,7 @@ class ProjectImageCreationHandler(WebSocketBaseHandler):
                 params['status'], result = PROJECT_STATUS['build-failure'], FAILURE
 
             self.project_service.sync_update_status(params)
-
+            IOLoop.current().spawn_callback(callback=self.finish_operation_log, params=log_params)
             self.write_message(result)
         except Exception as e:
             self.log.error(traceback.format_exc())
@@ -331,6 +396,33 @@ class ProjectImageCreationHandler(WebSocketBaseHandler):
         finally:
             self.close()
 
+    @coroutine
+    def init_operation_log(self, log_params):
+        yield self.server_operation_service.add(params={
+            'user_id': log_params['user_id'],
+            'object_id': log_params['object_id'],
+            'object_type': log_params['object_type'],
+            'operation': PROJECT_OPERATE_STATUS['build'],
+            'operation_status': OPERATE_STATUS['fail'],
+        })
+
+    @coroutine
+    def finish_operation_log(self, log_params):
+        arg = [
+                OPERATE_STATUS['success'],
+                log_params['user_id'],
+                log_params['object_id'],
+                log_params['object_type']
+        ]
+        yield self.server_operation_service.update(
+                sets=['operation_status=%s'],
+                conds=[
+                        'user_id=%s',
+                        'object_id=%s',
+                        'object_type=%s'
+                ],
+                params=arg
+        )
 
 class ProjectImageLogHandler(BaseHandler):
     @is_login
@@ -382,7 +474,22 @@ class ProjectImageLogHandler(BaseHandler):
        @apiUse Success
        """
         try:
+            data_id = yield self.project_service.select(fields='id',conds=['name=%s'], params=[prj_name], ct=False, ut=False, one=True)
+            data = yield self.server_operation_service.add(params={
+                'user_id': self.current_user['id'],
+                'object_id': data_id['id'],
+                'object_type': OPERATION_OBJECT_STYPE['project'],
+                'operation': PROJECT_OPERATE_STATUS['delete_log'],
+                'operation_status': OPERATE_STATUS['fail'],
+            })
+
             yield self.project_versions_service.delete(conds=['name=%s', 'version=%s'], params=[prj_name, version])
+
+            yield self.server_operation_service.update(
+                    sets=['operation_status=%s'],
+                    conds=['id=%s'],
+                    params=[OPERATE_STATUS['success'], data['id']]
+            )
             self.success()
         except:
             self.error()
