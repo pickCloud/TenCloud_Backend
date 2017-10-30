@@ -235,12 +235,12 @@ class ProjectDeploymentHandler(WebSocketBaseHandler):
     def on_message(self, message):
         self.params = json.loads(message)
         try:
-            args = ['image_name', 'container_name', 'ips', 'project_id', 'user_id']
+            args = ['image_name', 'container_name', 'ips', 'project_id']
 
             self.guarantee(*args)
 
             log_params = {
-                    'user_id': self.params['user_id'],
+                    'user_id': self.current_user['id'],
                     'object_id': self.params['project_id'],
                     'object_type': OPERATION_OBJECT_STYPE['project'],
             }
@@ -358,7 +358,7 @@ class ProjectImageCreationHandler(WebSocketBaseHandler):
         self.params = json.loads(message)
 
         try:
-            args = ['prj_name', 'repos_url', 'branch_name', 'version', 'image_name', 'project_id', 'user_id']
+            args = ['prj_name', 'repos_url', 'branch_name', 'version', 'image_name', 'project_id']
 
             self.guarantee(*args)
 
@@ -366,7 +366,7 @@ class ProjectImageCreationHandler(WebSocketBaseHandler):
                 self.params[i] = self.params[i].strip()
 
             log_params = {
-                'user_id': self.params['user_id'],
+                'user_id': self.current_user['id'],
                 'object_id': self.params['project_id'],
                 'object_type': OPERATION_OBJECT_STYPE['project'],
             }
