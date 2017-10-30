@@ -653,7 +653,7 @@ class ServerContainerStartHandler(BaseHandler):
         try:
             data = yield self.server_operation_service.add(params={
                 'user_id': self.current_user['id'],
-                'object_id': id,
+                'object_id': self.params['container_id'],
                 'object_type': OPERATION_OBJECT_STYPE['container'],
                 'operation': CONTAINER_OPERATE_STATUS['start'],
                 'operation_status': OPERATE_STATUS['fail'],
@@ -689,7 +689,7 @@ class ServerContainerStopHandler(BaseHandler):
         try:
             data = yield self.server_operation_service.add(params={
                 'user_id': self.current_user['id'],
-                'object_id': id,
+                'object_id': self.params['container_id'],
                 'object_type': OPERATION_OBJECT_STYPE['container'],
                 'operation': CONTAINER_OPERATE_STATUS['stop'],
                 'operation_status': OPERATE_STATUS['fail'],
@@ -726,7 +726,7 @@ class ServerContainerDelHandler(BaseHandler):
         try:
             data = yield self.server_operation_service.add(params={
                 'user_id': self.current_user['id'],
-                'object_id': id,
+                'object_id': self.params['container_id'],
                 'object_type': OPERATION_OBJECT_STYPE['container'],
                 'operation': CONTAINER_OPERATE_STATUS['delete'],
                 'operation_status': OPERATE_STATUS['fail'],

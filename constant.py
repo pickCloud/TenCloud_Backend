@@ -381,17 +381,18 @@ CONTAINER_OPERATE_STATUS = dict()
 CONTAINER_OPERATE_STATUS['start'] = 0
 CONTAINER_OPERATE_STATUS['stop'] = 1
 CONTAINER_OPERATE_STATUS['reboot'] = 2
+CONTAINER_OPERATE_STATUS['delete'] = 3
 
 #################################################################################################
 # 项目操作行为码
 #################################################################################################
-SERVER_OPERATE_STATUS = dict()
-SERVER_OPERATE_STATUS['create'] = 0
-SERVER_OPERATE_STATUS['build'] = 1
-SERVER_OPERATE_STATUS['deploy'] = 2
-SERVER_OPERATE_STATUS['change'] = 3
-SERVER_OPERATE_STATUS['delete'] = 5
-SERVER_OPERATE_STATUS['delete_log'] = 5
+PROJECT_OPERATE_STATUS = dict()
+PROJECT_OPERATE_STATUS['create'] = 0
+PROJECT_OPERATE_STATUS['build'] = 1
+PROJECT_OPERATE_STATUS['deploy'] = 2
+PROJECT_OPERATE_STATUS['change'] = 3
+PROJECT_OPERATE_STATUS['delete'] = 5
+PROJECT_OPERATE_STATUS['delete_log'] = 5
 
 #################################################################################################
 # Websocket相关
