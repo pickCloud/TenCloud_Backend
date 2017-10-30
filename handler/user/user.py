@@ -1,15 +1,18 @@
 __author__ = 'Jon'
 
 import traceback
+
+from tornado.gen import Task, coroutine
+from sdk import GeetestLib
+
+from constant import AUTH_CODE, AUTH_CODE_ERROR_COUNT, AUTH_CODE_ERROR_COUNT_LIMIT, AUTH_FAILURE_TIP, AUTH_LOCK, \
+    AUTH_LOCK_TIMEOUT, AUTH_LOCK_TIP, COOKIE_EXPIRES_DAYS, SMS_SENDING_LOCK, SMS_SENDING_LOCK_TIMEOUT, \
+    SMS_SENDING_LOCK_TIP, SMS_TIMEOUT
 from handler.base import BaseHandler
-from tornado.gen import coroutine, Task
-from utils.general import validate_mobile, validate_auth_code, gen_random_code
-from utils.decorator import is_login
-from utils.datetool import seconds_to_human
-from constant import AUTH_CODE, SMS_TIMEOUT, COOKIE_EXPIRES_DAYS, AUTH_CODE_ERROR_COUNT, AUTH_CODE_ERROR_COUNT_LIMIT, \
-                     AUTH_LOCK, AUTH_LOCK_TIMEOUT, AUTH_LOCK_TIP, AUTH_FAILURE_TIP, \
-                     SMS_SENDING_LOCK, SMS_SENDING_LOCK_TIMEOUT, SMS_SENDING_LOCK_TIP
 from setting import settings
+from utils.datetool import seconds_to_human
+from utils.decorator import is_login
+from utils.general import gen_random_code, validate_auth_code, validate_mobile
 
 
 class UserSMSHandler(BaseHandler):
@@ -299,6 +302,7 @@ class UserUploadToken(BaseHandler):
             self.error()
             self.log.error(traceback.format_exc())
 
+
 class FileUploadMixin(BaseHandler):
     def get_file_info(self, param='file'):
         """
@@ -321,3 +325,80 @@ class FileUploadMixin(BaseHandler):
         filename = yield self.user_service.save_file(new_name or filename, content)
 
         return filename
+
+
+class GetCaptChaHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/user/captcha 获取验证码
+        @apiName GetCaptChaHandler
+        @apiGroup User
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "message": "success",
+                "data": {
+                    "token": str,
+                    "timeout": int,
+                }
+            }
+        """
+        try:
+            gt = GeetestLib(settings['gee_id'], settings['gee_key'])
+            status = gt.pre_process(self.current_user['id'])
+            if not status:
+                status = 2
+            self.current_user[gt.GT_STATUS_SESSION_KEY] = status
+            response_str = gt.get_response_str()
+            self.success(response_str)
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+
+class ValidateCaptChaHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/user/validatecaptchar 验证验证码
+        @apiName ValidateCaptChaHandler 验证验证码
+        @apiGroup User
+
+        @apiParam {String} challenge
+        @apiParam {String} validate
+        @apiParam {String} Seccode
+
+        @apiSuccessExample {json} Success-Response:
+           HTTP/1.1 200 OK
+           {
+               "status": 0,
+               "message": "success",
+               "data": {
+                   "token": str,
+                   "timeout": int,
+               }
+           }
+       """
+        try:
+            gt = GeetestLib(settings['gee_id'], settings['gee_key'])
+            challenge = self.params.get(gt.FN_CHALLENGE, "")
+            validate = self.params.get(gt.FN_VALIDATE, "")
+            seccode = self.params.get(gt.FN_SECCODE, "")
+            status = self.current_user[gt.GT_STATUS_SESSION_KEY]
+            user_id = self.current_user["id"]
+            if status == 1:
+                result = gt.success_validate(challenge, validate, seccode, user_id)
+            else:
+                result = gt.failback_validate(challenge, validate, seccode)
+            if result:
+                self.success()
+            else:
+                self.error()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
