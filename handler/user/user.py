@@ -4,7 +4,7 @@ import traceback
 
 from tornado.gen import Task, coroutine
 from sdk import GeetestLib
-
+import bcrypt
 from constant import AUTH_CODE, AUTH_CODE_ERROR_COUNT, AUTH_CODE_ERROR_COUNT_LIMIT, AUTH_FAILURE_TIP, AUTH_LOCK, \
     AUTH_LOCK_TIMEOUT, AUTH_LOCK_TIP, COOKIE_EXPIRES_DAYS, SMS_SENDING_LOCK, SMS_SENDING_LOCK_TIMEOUT, \
     SMS_SENDING_LOCK_TIP, SMS_TIMEOUT
@@ -327,8 +327,7 @@ class FileUploadMixin(BaseHandler):
         return filename
 
 
-class GetCaptChaHandler(BaseHandler):
-    @is_login
+class GetCaptchaHandler(BaseHandler):
     @coroutine
     def get(self):
         """
@@ -362,12 +361,11 @@ class GetCaptChaHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class ValidateCaptChaHandler(BaseHandler):
-    @is_login
+class ValidateCaptchaHandler(BaseHandler):
     @coroutine
     def post(self):
         """
-        @api {post} /api/user/validatecaptchar 验证验证码
+        @api {post} /api/user/captcha/validate 验证验证码
         @apiName ValidateCaptChaHandler 验证验证码
         @apiGroup User
 
@@ -392,6 +390,35 @@ class ValidateCaptChaHandler(BaseHandler):
                 self.success()
             else:
                 self.error()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+class PasswordLoginHandler(BaseHandler):
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/user/login/password 密码登入
+        @apiName PasswordLoginHandler
+        @apiGroup User
+
+        @apiParam {String} mobile 手机号码
+        @apiParam {String} password 密码
+
+        @apiUse Success
+        """
+        try:
+            password = self.params['password'].encode('utf-8')
+            hashed = yield self.user_service.select(
+                                                            fields='password',
+                                                            conds=['mobile=%s'],
+                                                            params=[self.params['mobile']],
+                                                            ct=False, ut=False, one=True
+            )
+            if bcrypt.checkpw(password, hashed['password'].encode('utf-8')):
+                self.success()
+            else:
+                self.error('wrong password, please check again')
         except:
             self.error()
             self.log.error(traceback.format_exc())
