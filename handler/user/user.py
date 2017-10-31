@@ -5,9 +5,11 @@ import traceback
 from tornado.gen import Task, coroutine
 from sdk import GeetestLib
 import bcrypt
+import json
+import time
 from constant import AUTH_CODE, AUTH_CODE_ERROR_COUNT, AUTH_CODE_ERROR_COUNT_LIMIT, AUTH_FAILURE_TIP, AUTH_LOCK, \
     AUTH_LOCK_TIMEOUT, AUTH_LOCK_TIP, COOKIE_EXPIRES_DAYS, SMS_SENDING_LOCK, SMS_SENDING_LOCK_TIMEOUT, \
-    SMS_SENDING_LOCK_TIP, SMS_TIMEOUT
+    SMS_SENDING_LOCK_TIP, SMS_TIMEOUT, CAPTCHA
 from handler.base import BaseHandler
 from setting import settings
 from utils.datetool import seconds_to_human
@@ -345,16 +347,19 @@ class GetCaptchaHandler(BaseHandler):
                     "gt": str,
                     "challenge": str,
                     "new_captcha": boolean
+                    "user_id": int
                 }
             }
         """
         try:
+            ts = int(time.time())
             gt = GeetestLib(settings['gee_id'], settings['gee_key'])
-            status = gt.pre_process(self.current_user['id'])
+            status = gt.pre_process(ts)
             if not status:
                 status = 2
-            self.current_user[gt.GT_STATUS_SESSION_KEY] = status
-            response_str = gt.get_response_str()
+            yield Task(self.redis.hset, CAPTCHA, ts, status)
+            response_str = json.loads(gt.get_response_str())
+            response_str.update({'user_id': ts})
             self.success(response_str)
         except:
             self.error()
@@ -372,6 +377,7 @@ class ValidateCaptchaHandler(BaseHandler):
         @apiParam {String} geetest_challenge
         @apiParam {String} geetest_validate
         @apiParam {String} geetest_seccode
+        @apiParam {Number} user_id
 
         @apiUse Success
        """
@@ -380,9 +386,9 @@ class ValidateCaptchaHandler(BaseHandler):
             challenge = self.params.get(gt.FN_CHALLENGE, "")
             validate = self.params.get(gt.FN_VALIDATE, "")
             seccode = self.params.get(gt.FN_SECCODE, "")
-            status = self.current_user[gt.GT_STATUS_SESSION_KEY]
-            user_id = self.current_user["id"]
-            if status == 1:
+            status = yield Task(self.redis.hget, CAPTCHA, self.params['user_id'])
+            user_id = self.params['user_id']
+            if int(status) == 1:
                 result = gt.success_validate(challenge, validate, seccode, user_id)
             else:
                 result = gt.failback_validate(challenge, validate, seccode)
