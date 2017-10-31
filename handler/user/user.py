@@ -4,10 +4,12 @@ import traceback
 
 from tornado.gen import Task, coroutine
 from sdk import GeetestLib
-
+import bcrypt
+import json
+import time
 from constant import AUTH_CODE, AUTH_CODE_ERROR_COUNT, AUTH_CODE_ERROR_COUNT_LIMIT, AUTH_FAILURE_TIP, AUTH_LOCK, \
     AUTH_LOCK_TIMEOUT, AUTH_LOCK_TIP, COOKIE_EXPIRES_DAYS, SMS_SENDING_LOCK, SMS_SENDING_LOCK_TIMEOUT, \
-    SMS_SENDING_LOCK_TIP, SMS_TIMEOUT
+    SMS_SENDING_LOCK_TIP, SMS_TIMEOUT, CAPTCHA
 from handler.base import BaseHandler
 from setting import settings
 from utils.datetool import seconds_to_human
@@ -327,8 +329,7 @@ class FileUploadMixin(BaseHandler):
         return filename
 
 
-class GetCaptChaHandler(BaseHandler):
-    @is_login
+class GetCaptchaHandler(BaseHandler):
     @coroutine
     def get(self):
         """
@@ -346,34 +347,37 @@ class GetCaptChaHandler(BaseHandler):
                     "gt": str,
                     "challenge": str,
                     "new_captcha": boolean
+                    "user_id": int
                 }
             }
         """
         try:
+            ts = int(time.time())
             gt = GeetestLib(settings['gee_id'], settings['gee_key'])
-            status = gt.pre_process(self.current_user['id'])
+            status = gt.pre_process(ts)
             if not status:
                 status = 2
-            self.current_user[gt.GT_STATUS_SESSION_KEY] = status
-            response_str = gt.get_response_str()
+            yield Task(self.redis.hset, CAPTCHA, ts, status)
+            response_str = json.loads(gt.get_response_str())
+            response_str.update({'user_id': ts})
             self.success(response_str)
         except:
             self.error()
             self.log.error(traceback.format_exc())
 
 
-class ValidateCaptChaHandler(BaseHandler):
-    @is_login
+class ValidateCaptchaHandler(BaseHandler):
     @coroutine
     def post(self):
         """
-        @api {post} /api/user/validatecaptchar 验证验证码
+        @api {post} /api/user/captcha/validate 验证验证码
         @apiName ValidateCaptChaHandler 验证验证码
         @apiGroup User
 
         @apiParam {String} geetest_challenge
         @apiParam {String} geetest_validate
         @apiParam {String} geetest_seccode
+        @apiParam {Number} user_id
 
         @apiUse Success
        """
@@ -382,9 +386,9 @@ class ValidateCaptChaHandler(BaseHandler):
             challenge = self.params.get(gt.FN_CHALLENGE, "")
             validate = self.params.get(gt.FN_VALIDATE, "")
             seccode = self.params.get(gt.FN_SECCODE, "")
-            status = self.current_user[gt.GT_STATUS_SESSION_KEY]
-            user_id = self.current_user["id"]
-            if status == 1:
+            status = yield Task(self.redis.hget, CAPTCHA, self.params['user_id'])
+            user_id = self.params['user_id']
+            if int(status) == 1:
                 result = gt.success_validate(challenge, validate, seccode, user_id)
             else:
                 result = gt.failback_validate(challenge, validate, seccode)
@@ -392,6 +396,35 @@ class ValidateCaptChaHandler(BaseHandler):
                 self.success()
             else:
                 self.error()
+        except:
+            self.error()
+            self.log.error(traceback.format_exc())
+
+class PasswordLoginHandler(BaseHandler):
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/user/login/password 密码登入
+        @apiName PasswordLoginHandler
+        @apiGroup User
+
+        @apiParam {String} mobile 手机号码
+        @apiParam {String} password 密码
+
+        @apiUse Success
+        """
+        try:
+            password = self.params['password'].encode('utf-8')
+            hashed = yield self.user_service.select(
+                                                            fields='password',
+                                                            conds=['mobile=%s'],
+                                                            params=[self.params['mobile']],
+                                                            ct=False, ut=False, one=True
+            )
+            if bcrypt.checkpw(password, hashed['password'].encode('utf-8')):
+                self.success()
+            else:
+                self.error('wrong password, please check again')
         except:
             self.error()
             self.log.error(traceback.format_exc())

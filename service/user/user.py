@@ -8,7 +8,7 @@ from constant import GIT_TOKEN
 
 class UserService(BaseService):
     table = 'user'
-    fields = 'id, mobile, email, name, image_url, gender, birthday'
+    fields = 'id, mobile, email, name, image_url, gender, birthday, password'
 
     @run_on_executor
     def get_qiniu_token(self):

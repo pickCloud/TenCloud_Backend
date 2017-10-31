@@ -255,6 +255,7 @@ CREATE TABLE `user` (
   `mobile` varchar(11) NOT NULL COMMENT '用户手机',
   `email` varchar(128) NOT NULL DEFAULT '' COMMENT '用户邮箱',
   `name` varchar(64) NOT NULL DEFAULT '' COMMENT '用户名字',
+  `password` varchar(256) NOT NULL DEFAULT '' COMMENT '用户密码',
   `image_url` varchar(128) NOT NULL DEFAULT '' COMMENT '用户头像url',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
