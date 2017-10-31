@@ -360,10 +360,10 @@ OPERATE_STATUS['fail'] = 1
 #################################################################################################
 # 操作对象类型
 #################################################################################################
-OBJECT_STYPE = dict()
-OBJECT_STYPE['server'] = 0
-OBJECT_STYPE['container'] = 1
-OBJECT_STYPE['file'] = 2
+OPERATION_OBJECT_STYPE = dict()
+OPERATION_OBJECT_STYPE['server'] = 0
+OPERATION_OBJECT_STYPE['container'] = 1
+OPERATION_OBJECT_STYPE['project'] = 2
 
 #################################################################################################
 # 主机操作行为码
@@ -372,6 +372,27 @@ SERVER_OPERATE_STATUS = dict()
 SERVER_OPERATE_STATUS['start'] = 0
 SERVER_OPERATE_STATUS['stop'] = 1
 SERVER_OPERATE_STATUS['reboot'] = 2
+SERVER_OPERATE_STATUS['change'] = 3
+
+#################################################################################################
+# 容器操作行为码
+#################################################################################################
+CONTAINER_OPERATE_STATUS = dict()
+CONTAINER_OPERATE_STATUS['start'] = 0
+CONTAINER_OPERATE_STATUS['stop'] = 1
+CONTAINER_OPERATE_STATUS['reboot'] = 2
+CONTAINER_OPERATE_STATUS['delete'] = 3
+
+#################################################################################################
+# 项目操作行为码
+#################################################################################################
+PROJECT_OPERATE_STATUS = dict()
+PROJECT_OPERATE_STATUS['create'] = 0
+PROJECT_OPERATE_STATUS['build'] = 1
+PROJECT_OPERATE_STATUS['deploy'] = 2
+PROJECT_OPERATE_STATUS['change'] = 3
+PROJECT_OPERATE_STATUS['delete'] = 5
+PROJECT_OPERATE_STATUS['delete_log'] = 5
 
 #################################################################################################
 # Websocket相关

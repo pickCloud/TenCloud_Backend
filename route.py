@@ -21,7 +21,7 @@ from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDe
                                     ProjectImageCloudDownload
 from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler, GithubOauthCallbackHandler
 from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, \
-                              UserUpdateHandler, UserUploadToken
+                              UserUpdateHandler, UserUploadToken, GetCaptChaHandler, ValidateCaptChaHandler
 from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
                                 FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
 
@@ -97,6 +97,8 @@ routes = [
     (r'/api/user/logout', UserLogoutHandler),
     (r'/api/user/sms/(\d+)', UserSMSHandler),
     (r'/api/user/token', UserUploadToken),
+    (r'/api/user/captcha', GetCaptChaHandler),
+    (r'/api/user/captcha/validate', ValidateCaptChaHandler),
 
     #文件上传
     (r'/api/file/upload', FileUploadHandler),

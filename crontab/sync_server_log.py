@@ -18,6 +18,8 @@ class ServerLog:
 
     table_hour = 'server_log_hour'
     table_day = 'server_log_day'
+    table_container_hour = 'container_log_hour'
+    table_container_day = 'container_log_day'
 
     def __init__(self):
         self.data = []
@@ -49,7 +51,7 @@ class ServerLog:
             ips = cur.fetchall()
         return [x['public_ip'] for x in ips]
 
-    def get_data(self, ip, table):
+    def get_data(self, ip, table, fields):
         with self.db.cursor() as cur:
             arg = [
                 ip,
@@ -57,46 +59,107 @@ class ServerLog:
                 self.end_time,
             ]
             sql = """
-                SELECT content
+                SELECT {fields}
                 FROM {table}
                 WHERE public_ip = %s AND created_time >= %s AND created_time < %s
-                """.format(table=table)
+                """.format(table=table, fields=fields)
             cur.execute(sql, arg)
             data = cur.fetchall()
         return data
 
+    def cal_container_performance(self, ip):
+        resp = self.get_data(ip=ip, table='docker_stat', fields='container_name, content')
+        if not resp:
+            return {}
+        containers, data = dict(), dict()
+        for i in resp:
+            name = i['container_name']
+            if name not in containers:
+                containers[name] = {
+                                    'cpu': [],
+                                    'block_input': [],
+                                    'block_output': [],
+                                    'memory_usage': [],
+                                    'memory_limit': [],
+                                    'memory_percent': [],
+                                    'net_input': [],
+                                    'net_output': []
+                                    }
+            content = json.loads(i['content'])
+            containers[name]['cpu'].append(float(content['cpu']))
+            containers[name]['block_input'].append(float(content['block_input']))
+            containers[name]['block_output'].append(float(content['block_output']))
+            containers[name]['memory_limit'].append(float(content['mem_limit']))
+            containers[name]['memory_usage'].append(float(content['mem_usage']))
+            containers[name]['memory_percent'].append(float(content['mem_percent']))
+            containers[name]['net_input'].append(float(content['net_input']))
+            containers[name]['net_output'].append(float(content['net_output']))
+
+        for name in containers:
+            if name not in data:
+                data[name] = {
+                    'cpu': {},
+                    'block': {},
+                    'memory': {},
+                    'net': {}
+                }
+            data[name]['cpu'] = {'percent': "%.2f" % (statistics.mean(containers[name]['cpu']))}
+            data[name]['block'] = {
+                'block_input': "%.2f" % (statistics.mean(containers[name]['block_input'])),
+                'block_output': "%.2f" % (statistics.mean(containers[name]['block_output'])),
+            }
+            data[name]['memory'] = {
+                'memory_limit': "%.2f" % (statistics.mean(containers[name]['memory_limit'])),
+                'memory_usage': "%.2f" % (statistics.mean(containers[name]['memory_usage'])),
+                'memory_percent': "%.2f" % (statistics.mean(containers[name]['memory_percent']))
+            }
+            data[name]['net'] = {
+                'net_input': "%.2f" % (statistics.mean(containers[name]['net_input'])),
+                'net_output': "%.2f" % (statistics.mean(containers[name]['net_output']))
+            }
+
+        return data
+
     def cal_cpu(self, ip):
-        data = []
-        for x in self.get_data(ip=ip, table='cpu'):
-            content = json.loads(x['content'])
-            data.append(content['percent'])
-        avg = "%.2f" % (statistics.mean(data))
+        data, avg = [], ''
+        resp = self.get_data(ip=ip, table='cpu', fields='content')
+        if resp:
+            for x in resp:
+                content = json.loads(x['content'])
+                data.append(content['percent'])
+            avg = "%.2f" % (statistics.mean(data))
         return {'percent': avg}
 
     def cal_disk(self, ip):
         total, free, percent = [], [], []
-        for x in self.get_data(ip=ip, table='disk'):
-            content = json.loads(x['content'])
-            total.append(content['total'])
-            free.append(content['free'])
-            percent.append(content['percent'])
-        total_avg = "%.2f" % (statistics.mean(total))
-        free_avg = "%.2f" % (statistics.mean(free))
-        percent_avg = "%.2f" % (statistics.mean(percent))
+        total_avg, free_avg, percent_avg = '', '', ''
+        resp = self.get_data(ip=ip, table='disk', fields='content')
+        if resp:
+            for x in resp:
+                content = json.loads(x['content'])
+                total.append(content['total'])
+                free.append(content['free'])
+                percent.append(content['percent'])
+            total_avg = "%.2f" % (statistics.mean(total))
+            free_avg = "%.2f" % (statistics.mean(free))
+            percent_avg = "%.2f" % (statistics.mean(percent))
         return {'total': total_avg, 'free': free_avg, 'percent': percent_avg}
 
     def cal_memory(self, ip):
         total, free, percent, avaible = [], [], [], []
-        for x in self.get_data(ip=ip, table='memory'):
-            content = json.loads(x['content'])
-            total.append(content['total'])
-            free.append(content['free'])
-            percent.append(content['percent'])
-            avaible.append(content['available'])
-        total_avg = "%.2f" % (statistics.mean(total))
-        free_avg = "%.2f" % (statistics.mean(free))
-        percent_avg = "%.2f" % (statistics.mean(percent))
-        avaible_avg = "%.2f" % (statistics.mean(avaible))
+        total_avg, free_avg, percent_avg, avaible_avg = '', '', '', ''
+        resp = self.get_data(ip=ip, table='memory', fields='content')
+        if resp:
+            for x in resp:
+                content = json.loads(x['content'])
+                total.append(content['total'])
+                free.append(content['free'])
+                percent.append(content['percent'])
+                avaible.append(content['available'])
+            total_avg = "%.2f" % (statistics.mean(total))
+            free_avg = "%.2f" % (statistics.mean(free))
+            percent_avg = "%.2f" % (statistics.mean(percent))
+            avaible_avg = "%.2f" % (statistics.mean(avaible))
         return {
             'total': total_avg,
             'free': free_avg,
@@ -106,12 +169,15 @@ class ServerLog:
 
     def cal_net(self, ip):
         recv, send = [], []
-        for x in self.get_data(ip=ip, table='net'):
-            content = json.loads(x['content'])
-            recv.append(content['input'])
-            send.append(content['output'])
-        recv_avg = "%.2f" % (statistics.mean(recv))
-        send_avg = "%.2f" % (statistics.mean(send))
+        recv_avg, send_avg = '', ''
+        resp = self.get_data(ip=ip, table='net', fields='content')
+        if resp:
+            for x in resp:
+                content = json.loads(x['content'])
+                recv.append(content['input'])
+                send.append(content['output'])
+            recv_avg = "%.2f" % (statistics.mean(recv))
+            send_avg = "%.2f" % (statistics.mean(send))
         return {'input': recv_avg, 'output': send_avg}
 
     def cal(self):
@@ -121,7 +187,8 @@ class ServerLog:
                 'cpu': json.dumps(self.cal_cpu(ip=ip)),
                 'disk': json.dumps(self.cal_disk(ip=ip)),
                 'memory': json.dumps(self.cal_memory(ip=ip)),
-                'net': json.dumps(self.cal_net(ip=ip))
+                'net': json.dumps(self.cal_net(ip=ip)),
+                'containers': self.cal_container_performance(ip=ip)
             }
             self.data.append(one_ip)
         return
@@ -148,16 +215,39 @@ class ServerLog:
                         net_log=%s
                 """.format(table=table)
             cursor.execute(sql, arg)
-        self.db.commit()
+
+    def _save_container(self, params, table):
+        for container in params['containers']:
+            with self.db.cursor() as cursor:
+                arg = [
+                    params['ip'],
+                    container,
+                    self.start_time,
+                    self.end_time,
+                    json.dumps(params['containers'][container])
+                ]
+                sql = """
+                        INSERT INTO {table} set
+                            public_ip=%s,
+                            container_name=%s,
+                            start_time=%s,
+                            end_time=%s,
+                            content=%s
+                    """.format(table=table)
+                cursor.execute(sql, arg)
 
     def save_hour(self):
         for ip in self.data:
             self._save(params=ip, table=self.table_hour)
+            self._save_container(params=ip,table=self.table_container_hour)
+        self.db.commit()
         self.db.close()
 
     def save_day(self):
         for ip in self.data:
             self._save(params=ip, table=self.table_day)
+            self._save_container(params=ip,table=self.table_container_day)
+        self.db.commit()
         self.db.close()
 
 

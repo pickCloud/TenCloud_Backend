@@ -14,7 +14,7 @@ from utils.general import validate_ip
 from utils.security import Aes
 from utils.decorator import is_login
 from utils.ssh import SSH
-from constant import MONITOR_CMD, OPERATE_STATUS, OBJECT_STYPE, SERVER_OPERATE_STATUS
+from constant import MONITOR_CMD, OPERATE_STATUS, OPERATION_OBJECT_STYPE, SERVER_OPERATE_STATUS, CONTAINER_OPERATE_STATUS
 
 
 class ServerNewHandler(WebSocketHandler, BaseHandler):
@@ -368,7 +368,21 @@ class ServerUpdateHandler(BaseHandler):
         @apiUse Success
         """
         try:
+            data = yield self.server_operation_service.add(params={
+                'user_id': self.current_user['id'],
+                'object_id': id,
+                'object_type': OPERATION_OBJECT_STYPE['server'],
+                'operation': SERVER_OPERATE_STATUS['change'],
+                'operation_status': OPERATE_STATUS['fail'],
+            })
+
             yield self.server_service.update_server(self.params)
+
+            yield self.server_operation_service.update(
+                    sets=['operation_status=%s'],
+                    conds=['id=%s'],
+                    params=[OPERATE_STATUS['success'], data['id']]
+            )
 
             self.success()
         except:
@@ -394,7 +408,7 @@ class ServerStopHandler(BaseHandler):
             data = yield self.server_operation_service.add(params={
                                                             'user_id': self.current_user['id'],
                                                             'object_id': id,
-                                                            'object_type': OBJECT_STYPE['server'],
+                                                            'object_type': OPERATION_OBJECT_STYPE['server'],
                                                             'operation': SERVER_OPERATE_STATUS['stop'],
                                                             'operation_status': OPERATE_STATUS['fail'],
                                                         })
@@ -427,7 +441,7 @@ class ServerStartHandler(BaseHandler):
             data = yield self.server_operation_service.add(params={
                                                             'user_id': self.current_user['id'],
                                                             'object_id': id,
-                                                            'object_type': OBJECT_STYPE['server'],
+                                                            'object_type': OPERATION_OBJECT_STYPE['server'],
                                                             'operation': SERVER_OPERATE_STATUS['start'],
                                                             'operation_status': OPERATE_STATUS['fail'],
                                                         })
@@ -459,7 +473,7 @@ class ServerRebootHandler(BaseHandler):
             data = yield self.server_operation_service.add(params={
                                                             'user_id': self.current_user['id'],
                                                             'object_id': id,
-                                                            'object_type': OBJECT_STYPE['server'],
+                                                            'object_type': OPERATION_OBJECT_STYPE['server'],
                                                             'operation': SERVER_OPERATE_STATUS['reboot'],
                                                             'operation_status': OPERATE_STATUS['fail'],
                                                         })
@@ -504,7 +518,7 @@ class ServerStatusHandler(BaseHandler):
 
 
 class ServerContainerPerformanceHandler(BaseHandler):
-    @is_login
+    # @is_login
     @coroutine
     def post(self):
         """
@@ -516,6 +530,9 @@ class ServerContainerPerformanceHandler(BaseHandler):
         @apiParam {String} container_name 容器名字
         @apiParam {Number} start_time 起始时间
         @apiParam {Number} end_time 终止时间
+        @apiParam {Number} type 0: 机器详情 1: 正常 2: 按时平均 3: 按天平均
+        @apiParam {Number} now_page 当前页面
+        @apiParam {Number} page_number 每页返回条数， 小于100条
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -634,8 +651,21 @@ class ServerContainerStartHandler(BaseHandler):
         @apiUse Success
         """
         try:
+            data = yield self.server_operation_service.add(params={
+                'user_id': self.current_user['id'],
+                'object_id': self.params['container_id'],
+                'object_type': OPERATION_OBJECT_STYPE['container'],
+                'operation': CONTAINER_OPERATE_STATUS['start'],
+                'operation_status': OPERATE_STATUS['fail'],
+            })
+
             yield self.server_service.start_container(self.params)
 
+            yield self.server_operation_service.update(
+                    sets=['operation_status=%s'],
+                    conds=['id=%s'],
+                    params=[OPERATE_STATUS['success'], data['id']]
+            )
             self.success()
         except:
             self.error()
@@ -657,7 +687,21 @@ class ServerContainerStopHandler(BaseHandler):
         @apiUse Success
         """
         try:
+            data = yield self.server_operation_service.add(params={
+                'user_id': self.current_user['id'],
+                'object_id': self.params['container_id'],
+                'object_type': OPERATION_OBJECT_STYPE['container'],
+                'operation': CONTAINER_OPERATE_STATUS['stop'],
+                'operation_status': OPERATE_STATUS['fail'],
+            })
+
             yield self.server_service.stop_container(self.params)
+
+            yield self.server_operation_service.update(
+                    sets=['operation_status=%s'],
+                    conds=['id=%s'],
+                    params=[OPERATE_STATUS['success'], data['id']]
+            )
 
             self.success()
         except:
@@ -680,8 +724,21 @@ class ServerContainerDelHandler(BaseHandler):
         @apiUse Success
         """
         try:
+            data = yield self.server_operation_service.add(params={
+                'user_id': self.current_user['id'],
+                'object_id': self.params['container_id'],
+                'object_type': OPERATION_OBJECT_STYPE['container'],
+                'operation': CONTAINER_OPERATE_STATUS['delete'],
+                'operation_status': OPERATE_STATUS['fail'],
+            })
+
             yield self.server_service.del_container(self.params)
 
+            yield self.server_operation_service.update(
+                    sets=['operation_status=%s'],
+                    conds=['id=%s'],
+                    params=[OPERATE_STATUS['success'], data['id']]
+            )
             self.success()
         except:
             self.error()

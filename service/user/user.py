@@ -1,8 +1,10 @@
 import os
 from service.base import BaseService
+from tornado.gen import coroutine, Task
 from tornado.concurrent import run_on_executor
 from qiniu import Auth
 from setting import settings
+from constant import GIT_TOKEN
 
 class UserService(BaseService):
     table = 'user'
@@ -33,3 +35,7 @@ class UserService(BaseService):
             up.write(content)
 
         return filename
+
+    @coroutine
+    def delete_token(self, id):
+        yield Task(self.redis.hdel, GIT_TOKEN, id)
