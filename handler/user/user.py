@@ -6,10 +6,10 @@ from tornado.gen import Task, coroutine
 from sdk import GeetestLib
 import bcrypt
 import json
-import time
+import uuid
 from constant import AUTH_CODE, AUTH_CODE_ERROR_COUNT, AUTH_CODE_ERROR_COUNT_LIMIT, AUTH_FAILURE_TIP, AUTH_LOCK, \
     AUTH_LOCK_TIMEOUT, AUTH_LOCK_TIP, COOKIE_EXPIRES_DAYS, SMS_SENDING_LOCK, SMS_SENDING_LOCK_TIMEOUT, \
-    SMS_SENDING_LOCK_TIP, SMS_TIMEOUT, CAPTCHA
+    SMS_SENDING_LOCK_TIP, SMS_TIMEOUT, CAPTCHA_TIMEOUT
 from handler.base import BaseHandler
 from setting import settings
 from utils.datetool import seconds_to_human
@@ -347,19 +347,16 @@ class GetCaptchaHandler(BaseHandler):
                     "gt": str,
                     "challenge": str,
                     "new_captcha": boolean
-                    "user_id": int
                 }
             }
         """
         try:
-            ts = int(time.time())
             gt = GeetestLib(settings['gee_id'], settings['gee_key'])
-            status = gt.pre_process(ts)
+            status = gt.pre_process()
             if not status:
                 status = 2
-            yield Task(self.redis.hset, CAPTCHA, ts, status)
+            yield Task(self.redis.setex, gt.GT_STATUS_SESSION_KEY, CAPTCHA_TIMEOUT, status)
             response_str = json.loads(gt.get_response_str())
-            response_str.update({'user_id': ts})
             self.success(response_str)
         except:
             self.error()
@@ -371,13 +368,12 @@ class ValidateCaptchaHandler(BaseHandler):
     def post(self):
         """
         @api {post} /api/user/captcha/validate 验证验证码
-        @apiName ValidateCaptChaHandler 验证验证码
+        @apiName ValidateCaptchaHandler 验证验证码
         @apiGroup User
 
         @apiParam {String} geetest_challenge
         @apiParam {String} geetest_validate
         @apiParam {String} geetest_seccode
-        @apiParam {Number} user_id
 
         @apiUse Success
        """
@@ -386,10 +382,9 @@ class ValidateCaptchaHandler(BaseHandler):
             challenge = self.params.get(gt.FN_CHALLENGE, "")
             validate = self.params.get(gt.FN_VALIDATE, "")
             seccode = self.params.get(gt.FN_SECCODE, "")
-            status = yield Task(self.redis.hget, CAPTCHA, self.params['user_id'])
-            user_id = self.params['user_id']
+            status = yield Task(self.redis.get, gt.GT_STATUS_SESSION_KEY)
             if int(status) == 1:
-                result = gt.success_validate(challenge, validate, seccode, user_id)
+                result = gt.success_validate(challenge, validate, seccode)
             else:
                 result = gt.failback_validate(challenge, validate, seccode)
             if result:
