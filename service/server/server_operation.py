@@ -7,7 +7,7 @@ from service.base import BaseService
 
 class ServerOperationService(BaseService):
     table = 'operation_log'
-    fields = 'id, object_id, user_id, operation, operation_status'
+    fields = 'id, object_id, user_id, operation, operation_status, object_type'
 
     @coroutine
     def get_server_operation(self, server_id):
