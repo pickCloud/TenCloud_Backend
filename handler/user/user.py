@@ -6,10 +6,9 @@ from tornado.gen import Task, coroutine
 from sdk import GeetestLib
 import bcrypt
 import json
-import uuid
 from constant import AUTH_CODE, AUTH_CODE_ERROR_COUNT, AUTH_CODE_ERROR_COUNT_LIMIT, AUTH_FAILURE_TIP, AUTH_LOCK, \
     AUTH_LOCK_TIMEOUT, AUTH_LOCK_TIP, COOKIE_EXPIRES_DAYS, SMS_SENDING_LOCK, SMS_SENDING_LOCK_TIMEOUT, \
-    SMS_SENDING_LOCK_TIP, SMS_TIMEOUT, CAPTCHA_TIMEOUT
+    SMS_SENDING_LOCK_TIP, SMS_TIMEOUT
 from handler.base import BaseHandler
 from setting import settings
 from utils.datetool import seconds_to_human
@@ -355,7 +354,7 @@ class GetCaptchaHandler(BaseHandler):
             status = gt.pre_process()
             if not status:
                 status = 2
-            yield Task(self.redis.setex, gt.GT_STATUS_SESSION_KEY, CAPTCHA_TIMEOUT, status)
+            yield Task(self.redis.set, gt.GT_STATUS_SESSION_KEY, status)
             response_str = json.loads(gt.get_response_str())
             self.success(response_str)
         except:

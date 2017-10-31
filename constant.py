@@ -26,7 +26,6 @@ SMS_SENDING_LOCK = 'sms_sending_lock_{mobile}'
 SMS_SENDING_LOCK_TIMEOUT = 60 # 一分钟
 SESSION_KEY = 'session_{user_id}'
 GIT_TOKEN = 'git_token'
-CAPTCHA_TIMEOUT = 3600
 
 #################################################################################################
 # ssh相关
