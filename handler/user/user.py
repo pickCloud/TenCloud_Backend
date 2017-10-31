@@ -342,8 +342,10 @@ class GetCaptChaHandler(BaseHandler):
                 "status": 0,
                 "message": "success",
                 "data": {
-                    "token": str,
-                    "timeout": int,
+                    "success": int,
+                    "gt": str,
+                    "challenge": str,
+                    "new_captcha": boolean
                 }
             }
         """
@@ -373,16 +375,7 @@ class ValidateCaptChaHandler(BaseHandler):
         @apiParam {String} validate
         @apiParam {String} Seccode
 
-        @apiSuccessExample {json} Success-Response:
-           HTTP/1.1 200 OK
-           {
-               "status": 0,
-               "message": "success",
-               "data": {
-                   "token": str,
-                   "timeout": int,
-               }
-           }
+        @apiUse Success
        """
         try:
             gt = GeetestLib(settings['gee_id'], settings['gee_key'])
