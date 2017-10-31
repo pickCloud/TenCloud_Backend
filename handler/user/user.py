@@ -371,9 +371,9 @@ class ValidateCaptChaHandler(BaseHandler):
         @apiName ValidateCaptChaHandler 验证验证码
         @apiGroup User
 
-        @apiParam {String} challenge
-        @apiParam {String} validate
-        @apiParam {String} Seccode
+        @apiParam {String} geetest_challenge
+        @apiParam {String} geetest_validate
+        @apiParam {String} geetest_seccode
 
         @apiUse Success
        """
