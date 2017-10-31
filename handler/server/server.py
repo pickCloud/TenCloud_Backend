@@ -370,7 +370,7 @@ class ServerUpdateHandler(BaseHandler):
         try:
             data = yield self.server_operation_service.add(params={
                 'user_id': self.current_user['id'],
-                'object_id': id,
+                'object_id': self.params['id'],
                 'object_type': OPERATION_OBJECT_STYPE['server'],
                 'operation': SERVER_OPERATE_STATUS['change'],
                 'operation_status': OPERATE_STATUS['fail'],
