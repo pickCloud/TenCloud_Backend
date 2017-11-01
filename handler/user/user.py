@@ -104,7 +104,31 @@ class NeedSMSMixin(BaseHandler):
         """
         yield Task(self.redis.delete, self.auth_code_key, self.auth_lock_key, self.err_count_key)
 
-class UserLoginHandler(NeedSMSMixin):
+
+class UserBase(BaseHandler):
+    @coroutine
+    def validate_captcha(self, challenge='', validate='', seccode=''):
+        gt = GeetestLib(settings['gee_id'], settings['gee_key'])
+        status = yield Task(self.redis.get, gt.GT_STATUS_SESSION_KEY)
+        if int(status) == 1:
+            result = gt.success_validate(challenge, validate, seccode)
+        else:
+            result = gt.failback_validate(challenge, validate, seccode)
+        if not result:
+            return False
+        return True
+
+    @coroutine
+    def user_session(self, mobile):
+        data = yield self.user_service.select(conds=['mobile=%s'], params=[mobile], one=True)
+        # 设置cookie
+        self.set_secure_cookie('user_id', str(data['id']), expires_days=COOKIE_EXPIRES_DAYS)
+        # 设置session
+        yield self.set_session(data['id'], data)
+
+
+
+class UserLoginHandler(NeedSMSMixin, UserBase):
     @coroutine
     def post(self):
         """
@@ -137,26 +161,15 @@ class UserLoginHandler(NeedSMSMixin):
 
             if not is_ok: return
 
-            gt = GeetestLib(settings['gee_id'], settings['gee_key'])
-            challenge = self.params.get(gt.FN_CHALLENGE, "")
-            validate = self.params.get(gt.FN_VALIDATE, "")
-            seccode = self.params.get(gt.FN_SECCODE, "")
-            status = yield Task(self.redis.get, gt.GT_STATUS_SESSION_KEY)
-            if int(status) == 1:
-                result = gt.success_validate(challenge, validate, seccode)
-            else:
-                result = gt.failback_validate(challenge, validate, seccode)
-            if not result:
+            valid = yield self.validate_captcha(
+                                    challenge=self.params['geetest_challenge'],
+                                    seccode=self.params['geetest_seccode'],
+                                    validate=self.params['geetest_validate']
+                                    )
+            if not valid:
                 self.error()
 
-            data = yield self.user_service.select(conds=['mobile=%s'], params=[mobile], one=True)
-
-            # 设置cookie
-            self.set_secure_cookie('user_id', str(data['id']), expires_days=COOKIE_EXPIRES_DAYS)
-
-            # 设置session
-            yield self.set_session(data['id'], data)
-
+            yield self.user_session(self.params['mobile'])
             yield self.clean()
 
             self.success()
@@ -371,7 +384,7 @@ class GetCaptchaHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class PasswordLoginHandler(BaseHandler):
+class PasswordLoginHandler(UserBase):
     @coroutine
     def post(self):
         """
@@ -393,16 +406,7 @@ class PasswordLoginHandler(BaseHandler):
                                                             ct=False, ut=False, one=True
             )
             if bcrypt.checkpw(password, hashed['password'].encode('utf-8')):
-
-                data = yield self.user_service.select(conds=['mobile=%s'], params=self.params['mobile'], one=True)
-
-                # 设置cookie
-                self.set_secure_cookie('user_id', str(data['id']), expires_days=COOKIE_EXPIRES_DAYS)
-
-                # 设置session
-                yield self.set_session(data['id'], data)
-
-                yield self.clean()
+                yield self.user_session(self.params['mobile'])
                 self.success()
             else:
                 self.error('wrong password, please check again')
@@ -411,7 +415,7 @@ class PasswordLoginHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class UserRegisterHandler(NeedSMSMixin):
+class UserRegisterHandler(NeedSMSMixin, UserBase):
     @coroutine
     def post(self):
         """
@@ -444,16 +448,12 @@ class UserRegisterHandler(NeedSMSMixin):
             if not is_ok:
                 return
 
-            gt = GeetestLib(settings['gee_id'], settings['gee_key'])
-            challenge = self.params.get(gt.FN_CHALLENGE, "")
-            validate = self.params.get(gt.FN_VALIDATE, "")
-            seccode = self.params.get(gt.FN_SECCODE, "")
-            status = yield Task(self.redis.get, gt.GT_STATUS_SESSION_KEY)
-            if int(status) == 1:
-                result = gt.success_validate(challenge, validate, seccode)
-            else:
-                result = gt.failback_validate(challenge, validate, seccode)
-            if not result:
+            is_valid = yield self.validate_captcha(
+                                    challenge=self.params['geetest_challenge'],
+                                    seccode=self.params['geetest_seccode'],
+                                    validate=self.params['geetest_validate']
+                                    )
+            if not is_valid:
                 self.error()
 
             arg = {
@@ -461,15 +461,7 @@ class UserRegisterHandler(NeedSMSMixin):
                 'password': bcrypt.hashpw(self.params['password'].encode('utf-8'), bcrypt.gensalt())
             }
             yield self.user_service.add(params=arg)
-
-            data = yield self.user_service.select(conds=['mobile=%s'], params=self.params['mobile'], one=True)
-
-            # 设置cookie
-            self.set_secure_cookie('user_id', str(data['id']), expires_days=COOKIE_EXPIRES_DAYS)
-
-            # 设置session
-            yield self.set_session(data['id'], data)
-
+            yield self.user_session(self.params['mobile'])
             yield self.clean()
             self.success()
         except:
