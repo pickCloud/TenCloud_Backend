@@ -744,16 +744,17 @@ class ServerContainerDelHandler(BaseHandler):
             self.error()
             self.log.error(traceback.format_exc())
 
-class ServerOperationHandler(BaseHandler):
+class OperationLogHandler(BaseHandler):
     @is_login
     @coroutine
-    def get(self, server_id):
+    def post(self):
         """
-        @api {get} /api/server/([\w\W]+)/operation 主机操作记录
-        @apiName ServerOperationHandler
+        @api {get} /api/log/operation 操作记录
+        @apiName OperationHandler
         @apiGroup Server
 
-        @apiParam {Number} server_id 主机id
+        @apiParam {Number} object_type 对象类型
+        @apiParam {Number} object_id 对象id
 
         @apiSuccessExample {json} Success-Response:
          HTTP/1.1 200 OK
@@ -772,7 +773,7 @@ class ServerOperationHandler(BaseHandler):
             }
         """
         try:
-            data = yield self.server_operation_service.get_server_operation(server_id)
+            data = yield self.server_operation_service.get_server_operation(self.params)
             self.success(data)
         except:
             self.error()
