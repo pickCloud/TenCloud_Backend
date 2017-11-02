@@ -499,7 +499,8 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
            @apiGroup User
 
            @apiParam {String} mobile
-           @apiParam {String} password
+           @apiParam {String} old_password
+           @apiParam {String} new_password
            @apiParam {String} auth_code 验证码
            @apiParam {String} geetest_challenge
            @apiParam {String} geetest_validate
@@ -508,18 +509,32 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
            @apiUse Success
            """
         try:
-            args = ['mobile', 'password','auth_code', 'geetest_challenge', 'geetest_validate', 'geetest_seccode']
+            args = ['mobile', 'new_password', 'auth_code', 'geetest_challenge', 'geetest_validate', 'geetest_seccode']
             self.guarantee(*args)
             self.strip(*args)
 
             validate_mobile(self.params['mobile'])
             validate_auth_code(self.params['auth_code'])
-            validate_user_password(self.params['password'])
+            validate_user_password(self.params['new_password'])
 
             mobile, auth_code = self.params['mobile'], self.params['auth_code']
             is_ok = yield self.check(mobile, auth_code)
             if not is_ok:
                 return
+
+            old_password = self.params.get('old_password', '')
+            if old_password:
+                old_password = old_password.encode('utf-8')
+                hashed = yield self.user_service.select(
+                    fields='password',
+                    conds=['mobile=%s'],
+                    params=[self.params['mobile']],
+                    ct=False, ut=False, one=True
+                )
+                result = bcrypt.checkpw(old_password, hashed['password'].encode('utf-8'))
+                if not result:
+                    self.error('wrong password, please check again')
+                    return
 
             is_valid = yield self.validate_captcha(
                 challenge=self.params['geetest_challenge'],
@@ -530,8 +545,7 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
                 self.error('fail in passing geetest ')
                 return
 
-            hashed = bcrypt.hashpw(self.params['password'].encode('utf-8'), bcrypt.gensalt())
-
+            hashed = bcrypt.hashpw(self.params['new_password'].encode('utf-8'), bcrypt.gensalt())
             yield self.user_service.update(
                                             sets=['password=%s'],
                                             conds=['mobile=%s'],
