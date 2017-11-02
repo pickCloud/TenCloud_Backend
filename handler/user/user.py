@@ -477,13 +477,14 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
             self.error(str(e))
             self.log.error(traceback.format_exc())
 
-class UserResetPaawordHandler(BaseHandler):
+
+class UserResetPasswordHandler(NeedSMSMixin, UserBase):
     """
     @api {post} /api/user/password/reset 重置密码
-    @apiName UserResetPaawordHandler
+    @apiName UserResetPasswordHandler
     @apiGroup User
 
-    @apiParam  {String} mobile
+    @apiParam {String} mobile
     @apiParam {String} password
     @apiParam {String} auth_code 验证码
     @apiParam {String} geetest_challenge
@@ -492,5 +493,40 @@ class UserResetPaawordHandler(BaseHandler):
 
     @apiUse Success
     """
+    @is_login
+    @coroutine
     def post(self):
-        pass
+        try:
+            args = ['mobile', 'password','auth_code', 'geetest_challenge', 'geetest_validate', 'geetest_seccode']
+            self.guarantee(*args)
+            self.strip(*args)
+
+            validate_mobile(self.params['mobile'])
+            validate_auth_code(self.params['auth_code'])
+
+            mobile, auth_code = self.params['mobile'], self.params['auth_code']
+            is_ok = yield self.check(mobile, auth_code)
+            if not is_ok:
+                self.error('wrong auth code')
+
+            is_valid = yield self.validate_captcha(
+                challenge=self.params['geetest_challenge'],
+                seccode=self.params['geetest_seccode'],
+                validate=self.params['geetest_validate']
+            )
+            if not is_valid:
+                self.error('fail to passing geetest ')
+
+            hashed = bcrypt.hashpw(self.params['password'].encode('utf-8'), bcrypt.gensalt())
+
+            yield self.user_service.update(
+                                            sets=['password=%s'],
+                                            conds=['mobile=%s'],
+                                            params=[hashed, self.params['mobile']]
+            )
+            yield self.make_session(self.params['mobile'])
+            yield self.clean()
+            self.success()
+        except Exception as e:
+            self.error(str(e))
+            self.log.error(traceback.format_exc())
