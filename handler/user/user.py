@@ -20,7 +20,7 @@ class UserSMSHandler(BaseHandler):
     @coroutine
     def post(self, mobile):
         """
-        @api {post} /api/user/sms/:mobile 发送验证码
+        @api {post} /api/user/sms/:mobile 发送手机验证码
         @apiName UserSMSHandler
         @apiGroup User
 
@@ -119,7 +119,7 @@ class UserBase(BaseHandler):
         return True
 
     @coroutine
-    def user_session(self, mobile):
+    def make_session(self, mobile):
         data = yield self.user_service.select(conds=['mobile=%s'], params=[mobile], one=True)
         # 设置cookie
         self.set_secure_cookie('user_id', str(data['id']), expires_days=COOKIE_EXPIRES_DAYS)
@@ -132,7 +132,7 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
     @coroutine
     def post(self):
         """
-        @api {post} /api/user/login 用户登陆
+        @api {post} /api/user/login 验证码登陆
         @apiName UserLoginHandler
         @apiGroup User
 
@@ -147,7 +147,7 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
         """
         try:
             # 参数认证
-            args = ['mobile', 'auth_code']
+            args = ['mobile', 'auth_code', 'geetest_challenge', 'geetest_validate', 'geetest_seccode']
 
             self.guarantee(*args)
             self.strip(*args)
@@ -158,8 +158,7 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
             mobile, auth_code = self.params['mobile'], self.params['auth_code']
 
             is_ok = yield self.check(mobile, auth_code)
-
-            if not is_ok: return
+            if not is_ok: self.error('wrong auth code')
 
             valid = yield self.validate_captcha(
                                     challenge=self.params['geetest_challenge'],
@@ -167,9 +166,9 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
                                     validate=self.params['geetest_validate']
                                     )
             if not valid:
-                self.error()
+                self.error('fail to passing geetest')
 
-            yield self.user_session(self.params['mobile'])
+            yield self.make_session(self.params['mobile'])
             yield self.clean()
 
             self.success()
@@ -354,7 +353,7 @@ class GetCaptchaHandler(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {get} /api/user/captcha 获取验证码
+        @api {get} /api/user/captcha 极验证验证码预处理
         @apiName GetCaptChaHandler
         @apiGroup User
 
@@ -398,6 +397,15 @@ class PasswordLoginHandler(UserBase):
         @apiUse Success
         """
         try:
+            args = ['mobile', 'password']
+
+            self.guarantee(*args)
+            self.strip(*args)
+
+            validate_mobile(self.params['mobile'])
+            if self.params['password'] == '':
+                self.error('empty password')
+
             password = self.params['password'].encode('utf-8')
             hashed = yield self.user_service.select(
                                                             fields='password',
@@ -406,12 +414,12 @@ class PasswordLoginHandler(UserBase):
                                                             ct=False, ut=False, one=True
             )
             if bcrypt.checkpw(password, hashed['password'].encode('utf-8')):
-                yield self.user_session(self.params['mobile'])
+                yield self.make_session(self.params['mobile'])
                 self.success()
             else:
                 self.error('wrong password, please check again')
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -433,20 +441,20 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
         @apiUse Success
         """
         try:
-            args = ['mobile', 'auth_code']
+            args = ['mobile', 'auth_code', 'password', 'geetest_challenge', 'geetest_validate', 'geetest_seccode']
 
             self.guarantee(*args)
             self.strip(*args)
 
             validate_mobile(self.params['mobile'])
             validate_auth_code(self.params['auth_code'])
+            if self.params['password'] == '':
+                self.error('empty password')
 
             mobile, auth_code = self.params['mobile'], self.params['auth_code']
-
             is_ok = yield self.check(mobile, auth_code)
-
             if not is_ok:
-                return
+                self.error('wrong auth code')
 
             is_valid = yield self.validate_captcha(
                                     challenge=self.params['geetest_challenge'],
@@ -454,16 +462,71 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
                                     validate=self.params['geetest_validate']
                                     )
             if not is_valid:
-                self.error()
+                self.error('fail to passing geetest ')
 
             arg = {
                 'mobile': mobile,
                 'password': bcrypt.hashpw(self.params['password'].encode('utf-8'), bcrypt.gensalt())
             }
             yield self.user_service.add(params=arg)
-            yield self.user_session(self.params['mobile'])
+
+            yield self.make_session(self.params['mobile'])
             yield self.clean()
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
+            self.log.error(traceback.format_exc())
+
+
+class UserResetPasswordHandler(NeedSMSMixin, UserBase):
+    """
+    @api {post} /api/user/password/reset 重置密码
+    @apiName UserResetPasswordHandler
+    @apiGroup User
+
+    @apiParam {String} mobile
+    @apiParam {String} password
+    @apiParam {String} auth_code 验证码
+    @apiParam {String} geetest_challenge
+    @apiParam {String} geetest_validate
+    @apiParam {String} geetest_seccode
+
+    @apiUse Success
+    """
+    @is_login
+    @coroutine
+    def post(self):
+        try:
+            args = ['mobile', 'password','auth_code', 'geetest_challenge', 'geetest_validate', 'geetest_seccode']
+            self.guarantee(*args)
+            self.strip(*args)
+
+            validate_mobile(self.params['mobile'])
+            validate_auth_code(self.params['auth_code'])
+
+            mobile, auth_code = self.params['mobile'], self.params['auth_code']
+            is_ok = yield self.check(mobile, auth_code)
+            if not is_ok:
+                self.error('wrong auth code')
+
+            is_valid = yield self.validate_captcha(
+                challenge=self.params['geetest_challenge'],
+                seccode=self.params['geetest_seccode'],
+                validate=self.params['geetest_validate']
+            )
+            if not is_valid:
+                self.error('fail to passing geetest ')
+
+            hashed = bcrypt.hashpw(self.params['password'].encode('utf-8'), bcrypt.gensalt())
+
+            yield self.user_service.update(
+                                            sets=['password=%s'],
+                                            conds=['mobile=%s'],
+                                            params=[hashed, self.params['mobile']]
+            )
+            yield self.make_session(self.params['mobile'])
+            yield self.clean()
+            self.success()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
