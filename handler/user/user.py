@@ -20,7 +20,7 @@ class UserSMSHandler(BaseHandler):
     @coroutine
     def post(self, mobile):
         """
-        @api {post} /api/user/sms/:mobile 发送验证码
+        @api {post} /api/user/sms/:mobile 发送手机验证码
         @apiName UserSMSHandler
         @apiGroup User
 
@@ -132,7 +132,7 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
     @coroutine
     def post(self):
         """
-        @api {post} /api/user/login 用户登陆
+        @api {post} /api/user/login 验证码登陆
         @apiName UserLoginHandler
         @apiGroup User
 
@@ -353,7 +353,7 @@ class GetCaptchaHandler(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {get} /api/user/captcha 获取验证码
+        @api {get} /api/user/captcha 极验证验证码预处理
         @apiName GetCaptChaHandler
         @apiGroup User
 
