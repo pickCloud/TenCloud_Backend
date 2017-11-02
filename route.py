@@ -22,7 +22,8 @@ from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDe
 from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler, GithubOauthCallbackHandler
 from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, \
                               UserUpdateHandler, UserUploadToken, GetCaptchaHandler, \
-                              PasswordLoginHandler, UserRegisterHandler, UserResetPasswordHandler
+                              PasswordLoginHandler, UserRegisterHandler, UserResetPasswordHandler, \
+                              UserResetMobileHandler
 from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
                                 FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
 
@@ -102,6 +103,7 @@ routes = [
     (r'/api/user/captcha', GetCaptchaHandler),
     (r'/api/user/register', UserRegisterHandler),
     (r'/api/user/reset', UserResetPasswordHandler),
+    (r'/api/user/mobile/reset', UserResetMobileHandler),
 
     #文件上传
     (r'/api/file/upload', FileUploadHandler),

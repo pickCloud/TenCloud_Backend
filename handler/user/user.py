@@ -491,23 +491,23 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
 
 
 class UserResetPasswordHandler(NeedSMSMixin, UserBase):
-    """
-    @api {post} /api/user/password/reset 重置密码
-    @apiName UserResetPasswordHandler
-    @apiGroup User
-
-    @apiParam {String} mobile
-    @apiParam {String} password
-    @apiParam {String} auth_code 验证码
-    @apiParam {String} geetest_challenge
-    @apiParam {String} geetest_validate
-    @apiParam {String} geetest_seccode
-
-    @apiUse Success
-    """
     @is_login
     @coroutine
     def post(self):
+        """
+           @api {post} /api/user/password/reset 重置密码
+           @apiName UserResetPasswordHandler
+           @apiGroup User
+
+           @apiParam {String} mobile
+           @apiParam {String} password
+           @apiParam {String} auth_code 验证码
+           @apiParam {String} geetest_challenge
+           @apiParam {String} geetest_validate
+           @apiParam {String} geetest_seccode
+
+           @apiUse Success
+           """
         try:
             args = ['mobile', 'password','auth_code', 'geetest_challenge', 'geetest_validate', 'geetest_seccode']
             self.guarantee(*args)
@@ -539,6 +539,77 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
             yield self.make_session(self.params['mobile'])
             yield self.clean()
             self.success()
+        except Exception as e:
+            self.error(str(e))
+            self.log.error(traceback.format_exc())
+
+
+class UserResetMobileHandler(NeedSMSMixin, UserBase):
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/user/mobile/reset 重置手机号码
+        @apiName UserResetMobileHandler
+        @apiGroup User
+
+        @apiParam {String} new_mobile
+        @apiParam {String} auth_code
+        @apiParam {String} password
+        @apiParam {String} geetest_challenge
+        @apiParam {String} geetest_validate
+        @apiParam {String} geetest_seccode
+        """
+        try:
+            args = ['new_mobile', 'auth_code', 'password', 'geetest_challenge', 'geetest_validate', 'geetest_seccode']
+
+            self.guarantee(*args)
+            self.strip(*args)
+
+            validate_mobile(self.params['new_mobile'])
+            validate_auth_code(self.params['auth_code'])
+
+            mobile = self.params['new_mobile']
+            auth_code = self.params['auth_code']
+            password = self.params['password'].encode('utf-8')
+
+            data = yield self.user_service.select(
+                fields='id',
+                conds=['mobile=%s'],
+                params=[mobile],
+                ct=False, ut=False, one=True
+            )
+            if data:
+                self.error('this mobile number has registered before')
+
+            if password == '':
+                self.error('empty password')
+
+            is_ok = yield self.check(mobile, auth_code)
+            if not is_ok:
+                self.error('wrong auth code')
+
+            is_valid = yield self.validate_captcha(
+                challenge=self.params['geetest_challenge'],
+                seccode=self.params['geetest_seccode'],
+                validate=self.params['geetest_validate']
+            )
+            if not is_valid:
+                self.error('fail to passing geetest ')
+
+            hashed = yield self.user_service.select(
+                fields='password',
+                conds=['id=%s'],
+                params=[self.current_user['id']],
+                ct=False, ut=False, one=True
+            )
+            result = bcrypt.checkpw(password, hashed['password'].encode('utf-8'))
+            if not result:
+                self.error('wrong password, please check again')
+
+            yield self.user_service.update(sets=['mobile=%s'], conds=['id=%s'], params=[mobile, self.current_user['id']])
+            self.success()
+
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())
