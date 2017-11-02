@@ -448,8 +448,20 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
 
             validate_mobile(self.params['mobile'])
             validate_auth_code(self.params['auth_code'])
+            data = yield self.user_service.select(
+                                                    fields='id',
+                                                    conds=['mobile=%s'],
+                                                    params=[self.params['mobile']],
+                                                    ct=False, ut=False, one=True
+                                                )
+            if data:
+                self.error('this mobile number has registered before')
+
             if self.params['password'] == '':
                 self.error('empty password')
+
+            if len(self.params['password']) < 6:
+                self.error('password length required longer than 6')
 
             mobile, auth_code = self.params['mobile'], self.params['auth_code']
             is_ok = yield self.check(mobile, auth_code)
