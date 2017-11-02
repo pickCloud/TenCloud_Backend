@@ -46,6 +46,11 @@ def validate_auth_code(auth_code):
 
     _validate(regex, auth_code, '请输入4位验证码')
 
+def validate_user_password(password):
+    regex = r'[\d|\w]{6,20}'
+
+    _validate(regex, password,'密码长度要求6到20位，由大小写字母和数字组成')
+
 def gen_random_code(length=6):
     return ''.join(random.sample('123456789', length))
 

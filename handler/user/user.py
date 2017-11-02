@@ -13,7 +13,7 @@ from handler.base import BaseHandler
 from setting import settings
 from utils.datetool import seconds_to_human
 from utils.decorator import is_login
-from utils.general import gen_random_code, validate_auth_code, validate_mobile
+from utils.general import gen_random_code, validate_auth_code, validate_mobile, validate_user_password
 
 
 class UserSMSHandler(BaseHandler):
@@ -158,7 +158,8 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
             mobile, auth_code = self.params['mobile'], self.params['auth_code']
 
             is_ok = yield self.check(mobile, auth_code)
-            if not is_ok: self.error('wrong auth code')
+            if not is_ok:
+                return
 
             valid = yield self.validate_captcha(
                                     challenge=self.params['geetest_challenge'],
@@ -166,7 +167,8 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
                                     validate=self.params['geetest_validate']
                                     )
             if not valid:
-                self.error('fail to passing geetest')
+                self.error('fail in passing geetest')
+                return
 
             yield self.make_session(self.params['mobile'])
             yield self.clean()
@@ -403,8 +405,7 @@ class PasswordLoginHandler(UserBase):
             self.strip(*args)
 
             validate_mobile(self.params['mobile'])
-            if self.params['password'] == '':
-                self.error('empty password')
+            validate_user_password(self.params['password'])
 
             password = self.params['password'].encode('utf-8')
             hashed = yield self.user_service.select(
@@ -448,6 +449,8 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
 
             validate_mobile(self.params['mobile'])
             validate_auth_code(self.params['auth_code'])
+            validate_user_password(self.params['password'])
+
             data = yield self.user_service.select(
                                                     fields='id',
                                                     conds=['mobile=%s'],
@@ -456,17 +459,12 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
                                                 )
             if data:
                 self.error('this mobile number has registered before')
-
-            if self.params['password'] == '':
-                self.error('empty password')
-
-            if len(self.params['password']) < 6:
-                self.error('password length required longer than 6')
+                return
 
             mobile, auth_code = self.params['mobile'], self.params['auth_code']
             is_ok = yield self.check(mobile, auth_code)
             if not is_ok:
-                self.error('wrong auth code')
+                return
 
             is_valid = yield self.validate_captcha(
                                     challenge=self.params['geetest_challenge'],
@@ -474,7 +472,8 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
                                     validate=self.params['geetest_validate']
                                     )
             if not is_valid:
-                self.error('fail to passing geetest ')
+                self.error('fail in passing geetest ')
+                return
 
             arg = {
                 'mobile': mobile,
@@ -515,11 +514,12 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
 
             validate_mobile(self.params['mobile'])
             validate_auth_code(self.params['auth_code'])
+            validate_user_password(self.params['password'])
 
             mobile, auth_code = self.params['mobile'], self.params['auth_code']
             is_ok = yield self.check(mobile, auth_code)
             if not is_ok:
-                self.error('wrong auth code')
+                return
 
             is_valid = yield self.validate_captcha(
                 challenge=self.params['geetest_challenge'],
@@ -527,7 +527,8 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
                 validate=self.params['geetest_validate']
             )
             if not is_valid:
-                self.error('fail to passing geetest ')
+                self.error('fail in passing geetest ')
+                return
 
             hashed = bcrypt.hashpw(self.params['password'].encode('utf-8'), bcrypt.gensalt())
 
@@ -568,6 +569,7 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
 
             validate_mobile(self.params['new_mobile'])
             validate_auth_code(self.params['auth_code'])
+            validate_user_password(self.params['password'])
 
             mobile = self.params['new_mobile']
             auth_code = self.params['auth_code']
@@ -581,13 +583,11 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
             )
             if data:
                 self.error('this mobile number has registered before')
-
-            if password == '':
-                self.error('empty password')
+                return
 
             is_ok = yield self.check(mobile, auth_code)
             if not is_ok:
-                self.error('wrong auth code')
+                return
 
             is_valid = yield self.validate_captcha(
                 challenge=self.params['geetest_challenge'],
@@ -595,7 +595,8 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
                 validate=self.params['geetest_validate']
             )
             if not is_valid:
-                self.error('fail to passing geetest ')
+                self.error('fail in passing geetest ')
+                return
 
             hashed = yield self.user_service.select(
                 fields='password',
@@ -606,6 +607,7 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
             result = bcrypt.checkpw(password, hashed['password'].encode('utf-8'))
             if not result:
                 self.error('wrong password, please check again')
+                return
 
             yield self.user_service.update(sets=['mobile=%s'], conds=['id=%s'], params=[mobile, self.current_user['id']])
             self.success()
