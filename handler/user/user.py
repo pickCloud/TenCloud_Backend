@@ -7,8 +7,8 @@ from sdk import GeetestLib
 import bcrypt
 import json
 from constant import AUTH_CODE, AUTH_CODE_ERROR_COUNT, AUTH_CODE_ERROR_COUNT_LIMIT, AUTH_FAILURE_TIP, AUTH_LOCK, \
-    AUTH_LOCK_TIMEOUT, AUTH_LOCK_TIP, COOKIE_EXPIRES_DAYS, SMS_SENDING_LOCK, SMS_SENDING_LOCK_TIMEOUT, \
-    SMS_SENDING_LOCK_TIP, SMS_TIMEOUT, CAPTCHA_TIMEOUT
+    AUTH_LOCK_TIMEOUT, AUTH_LOCK_TIP, COOKIE_EXPIRES_DAYS, SMS_FREQUENCE_LOCK, SMS_FREQUENCE_LOCK_TIMEOUT, \
+    SMS_FREQUENCE_LOCK_TIP, SMS_TIMEOUT, SMS_SENT_COUNT, SMS_SENT_COUNT_LIMIT, SMS_SENT_COUNT_LIMIT_TIP, SMS_SENT_COUNT_LIMIT_TIMEOUT
 from handler.base import BaseHandler
 from setting import settings
 from utils.datetool import seconds_to_human
@@ -30,23 +30,38 @@ class UserSMSHandler(BaseHandler):
             # 参数认证
             validate_mobile(mobile)
 
-            # 检查sms_sending_lock
-            sms_sending_lock = SMS_SENDING_LOCK.format(mobile=mobile)
+            # 检查手机一分钟只能发送一次锁
+            sms_frequence_lock = SMS_FREQUENCE_LOCK.format(mobile=mobile)
 
-            has_lock = yield Task(self.redis.get, sms_sending_lock)
+            has_lock = yield Task(self.redis.get, sms_frequence_lock)
             if has_lock:
-                self.error(SMS_SENDING_LOCK_TIP)
+                self.error(SMS_FREQUENCE_LOCK_TIP)
+                return
+
+            # 检查手机一天的发送次数
+            sms_sent_count_key = SMS_SENT_COUNT.format(mobile=mobile)
+            sms_sent_count = yield Task(self.redis.get, sms_sent_count_key)
+            sms_sent_count = int(sms_sent_count) if sms_sent_count else 0
+
+            if sms_sent_count >= SMS_SENT_COUNT_LIMIT:
+                self.error(SMS_SENT_COUNT_LIMIT_TIP)
                 return
 
             # 发送短信验证码
             auth_code = gen_random_code()
 
-            yield Task(self.redis.setex, sms_sending_lock, SMS_SENDING_LOCK_TIMEOUT, '1')
+            yield Task(self.redis.setex, sms_frequence_lock, SMS_FREQUENCE_LOCK_TIMEOUT, '1')
             result = yield self.sms_service.send(mobile, auth_code)
 
             if result.get('err'):
                 self.error(result.get('err'))
                 return
+
+            # 增加手机发送次数
+            if sms_sent_count == 0:
+                yield Task(self.redis.setex, sms_sent_count_key, SMS_SENT_COUNT_LIMIT_TIMEOUT, '1')
+            else:
+                yield Task(self.redis.incr, sms_sent_count_key)
 
             # 设置验证码有效期
             yield Task(self.redis.setex, AUTH_CODE.format(mobile=mobile, auth_code=auth_code), SMS_TIMEOUT, '1')
@@ -387,7 +402,7 @@ class GetCaptchaHandler(BaseHandler):
             status = gt.pre_process()
             if not status:
                 status = 2
-            yield Task(self.redis.setex, gt.GT_STATUS_SESSION_KEY, CAPTCHA_TIMEOUT, status)
+            yield Task(self.redis.set, gt.GT_STATUS_SESSION_KEY, status)
             response_str = json.loads(gt.get_response_str())
             self.success(response_str)
         except:

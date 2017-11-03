@@ -22,11 +22,13 @@ AUTH_CODE_ERROR_COUNT = 'auth_code_error_count_{mobile}'
 AUTH_CODE_ERROR_COUNT_LIMIT = 10
 AUTH_LOCK = 'auth_lock_{mobile}'
 AUTH_LOCK_TIMEOUT = 7200 # 两个小时
-SMS_SENDING_LOCK = 'sms_sending_lock_{mobile}'
-SMS_SENDING_LOCK_TIMEOUT = 60 # 一分钟
+SMS_FREQUENCE_LOCK = 'sms_frequence_lock_{mobile}'
+SMS_FREQUENCE_LOCK_TIMEOUT = 60 # 一分钟
+SMS_SENT_COUNT = 'sms_sent_count_{mobile}'
+SMS_SENT_COUNT_LIMIT = 3
+SMS_SENT_COUNT_LIMIT_TIMEOUT = 86400 # 一天
 SESSION_KEY = 'session_{user_id}'
 GIT_TOKEN = 'git_token'
-CAPTCHA_TIMEOUT = 3600
 
 #################################################################################################
 # ssh相关
@@ -294,11 +296,13 @@ GIT_BRANCH_URL = 'https://api.github.com/repos/{repos_name}/branches'
 GIT_FETCH_TOKEN_URL = 'https://github.com/login/oauth/access_token'
 GIT_FETCH_CODE_URL = 'https://github.com/login/oauth/authorize'
 GIT_CALLBACK = 'https://' + SERVER_HOST + '/api/github/oauth/callback'
+
 #################################################################################################
 # SMS相关
 #################################################################################################
 SMS_TIMEOUT = 600 # 验证码有效期10分钟
-SMS_SENDING_LOCK_TIP = '一分钟内一个手机只能发送一次'
+SMS_FREQUENCE_LOCK_TIP = '一分钟内一个手机只能发送一次'
+SMS_SENT_COUNT_LIMIT_TIP = '每部手机一天只能发送3次验证码'
 AUTH_FAILURE_TIP = '登陆验证码错误{count}次'
 AUTH_LOCK_TIP = '登陆验证码已连续错{count}次，请二个小时后再次尝试'.format(count=AUTH_CODE_ERROR_COUNT_LIMIT)
 
