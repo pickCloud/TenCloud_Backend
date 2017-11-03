@@ -173,6 +173,16 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
             yield self.make_session(self.params['mobile'])
             yield self.clean()
 
+            is_exist = yield self.user_service.select(
+                fields='id',
+                conds=['mobile=%s'],
+                params=[mobile],
+                ct=False, ut=False, one=True
+            )
+            if not is_exist:
+                data = {'status': 10404, 'message':" user has not registered before"}
+                self.success(data)
+
             self.success()
         except Exception as e:
             self.error(str(e))
@@ -644,8 +654,13 @@ class UserSetPasswordHandler(BaseHandler):
         @apiUse Success
         """
         try:
-            # password = bcrypt.hashpw(self.params['password'].encode('utf-8'), bcrypt.gensalt())
-            pass
+            hashed = bcrypt.hashpw(self.params['password'].encode('utf-8'), bcrypt.gensalt())
+            yield self.user_service.update(
+                sets=['password=%s'],
+                conds=['id=%s'],
+                params=[hashed, self.current_user['id']]
+            )
+            self.success()
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())
