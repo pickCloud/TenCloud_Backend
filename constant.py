@@ -25,7 +25,8 @@ AUTH_LOCK_TIMEOUT = 7200 # 两个小时
 SMS_FREQUENCE_LOCK = 'sms_frequence_lock_{mobile}'
 SMS_FREQUENCE_LOCK_TIMEOUT = 60 # 一分钟
 SMS_SENT_COUNT = 'sms_sent_count_{mobile}'
-SMS_SENT_COUNT_LIMIT = 3
+SMS_SENT_COUNT_LIMIT = 10
+SMS_NEED_GEETEST_COUNT = 3
 SMS_SENT_COUNT_LIMIT_TIMEOUT = 86400 # 一天
 SESSION_KEY = 'session_{user_id}'
 GIT_TOKEN = 'git_token'
@@ -409,3 +410,9 @@ FAILURE = 'failure'
 # docker run 宿主机到容器的端口映射
 #################################################################################################
 YE_PORTMAP = '-p 80:80 -p 8080:8080 -p 8888:8888 -p 9999:9999'
+
+#################################################################################################
+# 错误代码及信息
+#################################################################################################
+NO_REGISTER_STATU = 10404
+NO_REGISTER_MESSAGE = "this mobile number has not registered before"
