@@ -8,7 +8,8 @@ import bcrypt
 import json
 from constant import AUTH_CODE, AUTH_CODE_ERROR_COUNT, AUTH_CODE_ERROR_COUNT_LIMIT, AUTH_FAILURE_TIP, AUTH_LOCK, \
     AUTH_LOCK_TIMEOUT, AUTH_LOCK_TIP, COOKIE_EXPIRES_DAYS, SMS_FREQUENCE_LOCK, SMS_FREQUENCE_LOCK_TIMEOUT, \
-    SMS_FREQUENCE_LOCK_TIP, SMS_TIMEOUT, SMS_SENT_COUNT, SMS_SENT_COUNT_LIMIT, SMS_SENT_COUNT_LIMIT_TIP, SMS_SENT_COUNT_LIMIT_TIMEOUT
+    SMS_FREQUENCE_LOCK_TIP, SMS_TIMEOUT, SMS_SENT_COUNT, SMS_SENT_COUNT_LIMIT, SMS_SENT_COUNT_LIMIT_TIP, \
+    SMS_SENT_COUNT_LIMIT_TIMEOUT, SMS_NEED_GEETEST_COUNT, NO_REGISTER_STATU, NO_REGISTER_MESSAGE
 from handler.base import BaseHandler
 from setting import settings
 from utils.datetool import seconds_to_human
@@ -16,61 +17,29 @@ from utils.decorator import is_login
 from utils.general import gen_random_code, validate_auth_code, validate_mobile, validate_user_password
 
 
-class UserSMSHandler(BaseHandler):
+class UserBase(BaseHandler):
     @coroutine
-    def post(self, mobile):
-        """
-        @api {post} /api/user/sms/:mobile 发送手机验证码
-        @apiName UserSMSHandler
-        @apiGroup User
+    def validate_captcha(self, challenge='', validate='', seccode=''):
+        gt = GeetestLib(settings['gee_id'], settings['gee_key'])
+        status = yield Task(self.redis.get, gt.GT_STATUS_SESSION_KEY)
+        if int(status) == 1:
+            result = gt.success_validate(challenge, validate, seccode)
+        else:
+            result = gt.failback_validate(challenge, validate, seccode)
+        if not result:
+            return False
+        return True
 
-        @apiUse Success
-        """
-        try:
-            # 参数认证
-            validate_mobile(mobile)
-
-            # 检查手机一分钟只能发送一次锁
-            sms_frequence_lock = SMS_FREQUENCE_LOCK.format(mobile=mobile)
-
-            has_lock = yield Task(self.redis.get, sms_frequence_lock)
-            if has_lock:
-                self.error(SMS_FREQUENCE_LOCK_TIP)
-                return
-
-            # 检查手机一天的发送次数
-            sms_sent_count_key = SMS_SENT_COUNT.format(mobile=mobile)
-            sms_sent_count = yield Task(self.redis.get, sms_sent_count_key)
-            sms_sent_count = int(sms_sent_count) if sms_sent_count else 0
-
-            if sms_sent_count >= SMS_SENT_COUNT_LIMIT:
-                self.error(SMS_SENT_COUNT_LIMIT_TIP)
-                return
-
-            # 发送短信验证码
-            auth_code = gen_random_code()
-
-            yield Task(self.redis.setex, sms_frequence_lock, SMS_FREQUENCE_LOCK_TIMEOUT, '1')
-            result = yield self.sms_service.send(mobile, auth_code)
-
-            if result.get('err'):
-                self.error(result.get('err'))
-                return
-
-            # 增加手机发送次数
-            if sms_sent_count == 0:
-                yield Task(self.redis.setex, sms_sent_count_key, SMS_SENT_COUNT_LIMIT_TIMEOUT, '1')
-            else:
-                yield Task(self.redis.incr, sms_sent_count_key)
-
-            # 设置验证码有效期
-            yield Task(self.redis.setex, AUTH_CODE.format(mobile=mobile, auth_code=auth_code), SMS_TIMEOUT, '1')
-
-            self.log.info('mobile: {mobile}, auth_code: {auth_code}'.format(mobile=mobile, auth_code=auth_code))
-            self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
+    @coroutine
+    def make_session(self, mobile):
+        data = yield self.user_service.select(conds=['mobile=%s'], params=[mobile], one=True)
+        if not data:
+            yield self.user_service.add({'mobile': mobile})
+            data = yield self.user_service.select(conds=['mobile=%s'], params=[mobile], one=True)
+        # 设置cookie
+        self.set_secure_cookie('user_id', str(data['id']), expires_days=COOKIE_EXPIRES_DAYS)
+        # 设置session
+        yield self.set_session(data['id'], data)
 
 
 class NeedSMSMixin(BaseHandler):
@@ -120,27 +89,85 @@ class NeedSMSMixin(BaseHandler):
         yield Task(self.redis.delete, self.auth_code_key, self.auth_lock_key, self.err_count_key)
 
 
-class UserBase(BaseHandler):
+class UserSMSHandler(UserBase):
     @coroutine
-    def validate_captcha(self, challenge='', validate='', seccode=''):
-        gt = GeetestLib(settings['gee_id'], settings['gee_key'])
-        status = yield Task(self.redis.get, gt.GT_STATUS_SESSION_KEY)
-        if int(status) == 1:
-            result = gt.success_validate(challenge, validate, seccode)
-        else:
-            result = gt.failback_validate(challenge, validate, seccode)
-        if not result:
-            return False
-        return True
+    def post(self):
+        """
+        @api {post} /api/user/sms 发送手机验证码
+        @apiName UserSMSHandler
+        @apiGroup User
 
-    @coroutine
-    def make_session(self, mobile):
-        data = yield self.user_service.select(conds=['mobile=%s'], params=[mobile], one=True)
-        # 设置cookie
-        self.set_secure_cookie('user_id', str(data['id']), expires_days=COOKIE_EXPIRES_DAYS)
-        # 设置session
-        yield self.set_session(data['id'], data)
+        @apiParam {String} mobile
+        @apiParam {String} geetest_challenge
+        @apiParam {String} geetest_validate
+        @apiParam {String} geetest_seccode
 
+        @apiSuccessExample {json} Success-Response:
+          HTTP/1.1 200 ok
+            {
+                "sms_count": int
+            }
+        """
+        try:
+            mobile = self.params['mobile']
+            # 参数认证
+            validate_mobile(mobile)
+
+            # 检查手机一分钟只能发送一次锁
+            sms_frequence_lock = SMS_FREQUENCE_LOCK.format(mobile=mobile)
+
+            has_lock = yield Task(self.redis.get, sms_frequence_lock)
+            if has_lock:
+                self.error(SMS_FREQUENCE_LOCK_TIP)
+                return
+
+            # 检查手机一天的发送次数
+            sms_sent_count_key = SMS_SENT_COUNT.format(mobile=mobile)
+            sms_sent_count = yield Task(self.redis.get, sms_sent_count_key)
+            sms_sent_count = int(sms_sent_count) if sms_sent_count else 0
+
+            if sms_sent_count >= SMS_SENT_COUNT_LIMIT:
+                self.error(SMS_SENT_COUNT_LIMIT_TIP)
+                return
+
+            if sms_sent_count >= SMS_NEED_GEETEST_COUNT:
+                valid = yield self.validate_captcha(
+                    challenge=self.params['geetest_challenge'],
+                    seccode=self.params['geetest_seccode'],
+                    validate=self.params['geetest_validate']
+                )
+                if not valid:
+                    self.error('fail in passing geetest')
+                    return
+
+            # 发送短信验证码
+            auth_code = gen_random_code()
+
+            yield Task(self.redis.setex, sms_frequence_lock, SMS_FREQUENCE_LOCK_TIMEOUT, '1')
+            result = yield self.sms_service.send(mobile, auth_code)
+
+            if result.get('err'):
+                self.error(result.get('err'))
+                return
+
+            # 增加手机发送次数
+            if sms_sent_count == 0:
+                yield Task(self.redis.setex, sms_sent_count_key, SMS_SENT_COUNT_LIMIT_TIMEOUT, '1')
+            else:
+                yield Task(self.redis.incr, sms_sent_count_key)
+
+            # 设置验证码有效期
+            yield Task(self.redis.setex, AUTH_CODE.format(mobile=mobile, auth_code=auth_code), SMS_TIMEOUT, '1')
+
+            self.log.info('mobile: {mobile}, auth_code: {auth_code}'.format(mobile=mobile, auth_code=auth_code))
+
+            data = {
+                'sms_count': sms_sent_count
+            }
+            self.success(data)
+        except Exception as e:
+            self.error(str(e))
+            self.log.error(traceback.format_exc())
 
 
 class UserLoginHandler(NeedSMSMixin, UserBase):
@@ -151,18 +178,20 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
         @apiName UserLoginHandler
         @apiGroup User
 
-        @apiParam {String} geetest_challenge
-        @apiParam {String} geetest_validate
-        @apiParam {String} geetest_seccode
         @apiParam {String} mobile
         @apiParam {String} auth_code
 
 
-        @apiUse Success
+        @apiSuccessExample {json} Success-Response:
+          HTTP/1.1 200 ok
+            {
+                "status": int,
+                "message": str,
+            }
         """
         try:
             # 参数认证
-            args = ['mobile', 'auth_code', 'geetest_challenge', 'geetest_validate', 'geetest_seccode']
+            args = ['mobile', 'auth_code']
 
             self.guarantee(*args)
             self.strip(*args)
@@ -176,15 +205,6 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
             if not is_ok:
                 return
 
-            valid = yield self.validate_captcha(
-                                    challenge=self.params['geetest_challenge'],
-                                    seccode=self.params['geetest_seccode'],
-                                    validate=self.params['geetest_validate']
-                                    )
-            if not valid:
-                self.error('fail in passing geetest')
-                return
-
             yield self.make_session(self.params['mobile'])
             yield self.clean()
 
@@ -195,7 +215,7 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
                 ct=False, ut=False, one=True
             )
             if not is_exist:
-                data = {'status': 10404, 'message':" user has not registered before"}
+                data = {'status': NO_REGISTER_STATU, 'message':NO_REGISTER_MESSAGE}
                 self.success(data)
 
             self.success()
@@ -460,14 +480,11 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
         @apiParam {Number} mobile 手机号码
         @apiParam {String} auth_code 验证码
         @apiParam {String} password 密码
-        @apiParam {String} geetest_challenge
-        @apiParam {String} geetest_validate
-        @apiParam {String} geetest_seccode
 
         @apiUse Success
         """
         try:
-            args = ['mobile', 'auth_code', 'password', 'geetest_challenge', 'geetest_validate', 'geetest_seccode']
+            args = ['mobile', 'auth_code', 'password']
 
             self.guarantee(*args)
             self.strip(*args)
@@ -489,15 +506,6 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
             mobile, auth_code = self.params['mobile'], self.params['auth_code']
             is_ok = yield self.check(mobile, auth_code)
             if not is_ok:
-                return
-
-            is_valid = yield self.validate_captcha(
-                                    challenge=self.params['geetest_challenge'],
-                                    seccode=self.params['geetest_seccode'],
-                                    validate=self.params['geetest_validate']
-                                    )
-            if not is_valid:
-                self.error('fail in passing geetest ')
                 return
 
             arg = {
@@ -527,14 +535,11 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
            @apiParam {String} old_password
            @apiParam {String} new_password
            @apiParam {String} auth_code 验证码
-           @apiParam {String} geetest_challenge
-           @apiParam {String} geetest_validate
-           @apiParam {String} geetest_seccode
 
            @apiUse Success
            """
         try:
-            args = ['mobile', 'new_password', 'auth_code', 'geetest_challenge', 'geetest_validate', 'geetest_seccode']
+            args = ['mobile', 'new_password', 'auth_code']
             self.guarantee(*args)
             self.strip(*args)
 
@@ -560,15 +565,6 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
                 if not result:
                     self.error('wrong password, please check again')
                     return
-
-            is_valid = yield self.validate_captcha(
-                challenge=self.params['geetest_challenge'],
-                seccode=self.params['geetest_seccode'],
-                validate=self.params['geetest_validate']
-            )
-            if not is_valid:
-                self.error('fail in passing geetest ')
-                return
 
             hashed = bcrypt.hashpw(self.params['new_password'].encode('utf-8'), bcrypt.gensalt())
             yield self.user_service.update(
@@ -596,12 +592,11 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
         @apiParam {String} new_mobile
         @apiParam {String} auth_code
         @apiParam {String} password
-        @apiParam {String} geetest_challenge
-        @apiParam {String} geetest_validate
-        @apiParam {String} geetest_seccode
+
+        @apiUse Success
         """
         try:
-            args = ['new_mobile', 'auth_code', 'password', 'geetest_challenge', 'geetest_validate', 'geetest_seccode']
+            args = ['new_mobile', 'auth_code', 'password']
 
             self.guarantee(*args)
             self.strip(*args)
@@ -628,15 +623,6 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
             if not is_ok:
                 return
 
-            is_valid = yield self.validate_captcha(
-                challenge=self.params['geetest_challenge'],
-                seccode=self.params['geetest_seccode'],
-                validate=self.params['geetest_validate']
-            )
-            if not is_valid:
-                self.error('fail in passing geetest ')
-                return
-
             hashed = yield self.user_service.select(
                 fields='password',
                 conds=['id=%s'],
@@ -649,6 +635,7 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
                 return
 
             yield self.user_service.update(sets=['mobile=%s'], conds=['id=%s'], params=[mobile, self.current_user['id']])
+            self.clean()
             self.success()
 
         except Exception as e:

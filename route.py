@@ -98,7 +98,7 @@ routes = [
     (r'/api/user/login', UserLoginHandler),
     (r'/api/user/login/password', PasswordLoginHandler),
     (r'/api/user/logout', UserLogoutHandler),
-    (r'/api/user/sms/(\d+)', UserSMSHandler),
+    (r'/api/user/sms', UserSMSHandler),
     (r'/api/user/token', UserUploadToken),
     (r'/api/user/captcha', GetCaptchaHandler),
     (r'/api/user/register', UserRegisterHandler),
