@@ -644,3 +644,23 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())
+
+class UserSetPasswordHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/user/password/set 设置密码
+        @apiName UserSetPasswordHandler
+        @apiGroup User
+
+        @apiParam {String} password
+
+        @apiUse Success
+        """
+        try:
+            # password = bcrypt.hashpw(self.params['password'].encode('utf-8'), bcrypt.gensalt())
+            pass
+        except Exception as e:
+            self.error(str(e))
+            self.log.error(traceback.format_exc())

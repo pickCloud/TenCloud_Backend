@@ -102,7 +102,7 @@ routes = [
     (r'/api/user/token', UserUploadToken),
     (r'/api/user/captcha', GetCaptchaHandler),
     (r'/api/user/register', UserRegisterHandler),
-    (r'/api/user/reset', UserResetPasswordHandler),
+    (r'/api/user/password/reset', UserResetPasswordHandler),
     # (r'/api/user/mobile/reset', UserResetMobileHandler),
 
     #文件上传
