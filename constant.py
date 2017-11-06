@@ -415,6 +415,6 @@ YE_PORTMAP = '-p 80:80 -p 8080:8080 -p 8888:8888 -p 9999:9999'
 # 错误代码及信息
 #################################################################################################
 NO_REGISTER_STATU = 10404
-NO_REGISTER_MESSAGE = "this mobile number has not registered before"
+NO_REGISTER_MESSAGE = "该手机号码未注册"
 SMS_OVER_LIMIT = 10405
-SMS_OVER_LIMIT_MESSAGE = "send over 3 messages to this phone today"
+SMS_OVER_LIMIT_MESSAGE = "该手机号码发送短信超过3次"
