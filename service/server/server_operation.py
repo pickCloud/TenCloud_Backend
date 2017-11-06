@@ -10,7 +10,7 @@ class ServerOperationService(BaseService):
     fields = 'id, object_id, user_id, operation, operation_status, object_type'
 
     @coroutine
-    def get_server_operation(self, server_id):
+    def get_server_operation(self, params):
         sql = """
                 SELECT DATE_FORMAT(s.created_time, %s) AS created_time, 
                     s.operation AS operation, 
@@ -21,5 +21,5 @@ class ServerOperationService(BaseService):
                 WHERE s.object_type=%s AND s.object_id=%s
               """
 
-        cur = yield self.db.execute(sql, [FULL_DATE_FORMAT, OPERATION_OBJECT_STYPE['server'], server_id])
+        cur = yield self.db.execute(sql, [FULL_DATE_FORMAT, params['object_type'], params['object_id']])
         return cur.fetchall()

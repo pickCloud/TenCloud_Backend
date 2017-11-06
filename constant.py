@@ -25,7 +25,8 @@ AUTH_LOCK_TIMEOUT = 7200 # 两个小时
 SMS_FREQUENCE_LOCK = 'sms_frequence_lock_{mobile}'
 SMS_FREQUENCE_LOCK_TIMEOUT = 60 # 一分钟
 SMS_SENT_COUNT = 'sms_sent_count_{mobile}'
-SMS_SENT_COUNT_LIMIT = 3
+SMS_SENT_COUNT_LIMIT = 10
+SMS_NEED_GEETEST_COUNT = 3
 SMS_SENT_COUNT_LIMIT_TIMEOUT = 86400 # 一天
 SESSION_KEY = 'session_{user_id}'
 GIT_TOKEN = 'git_token'
@@ -302,7 +303,7 @@ GIT_CALLBACK = 'https://' + SERVER_HOST + '/api/github/oauth/callback'
 #################################################################################################
 SMS_TIMEOUT = 600 # 验证码有效期10分钟
 SMS_FREQUENCE_LOCK_TIP = '一分钟内一个手机只能发送一次'
-SMS_SENT_COUNT_LIMIT_TIP = '每部手机一天只能发送3次验证码'
+SMS_SENT_COUNT_LIMIT_TIP = '每部手机一天只能发送10次验证码'
 AUTH_FAILURE_TIP = '登陆验证码错误{count}次'
 AUTH_LOCK_TIP = '登陆验证码已连续错{count}次，请二个小时后再次尝试'.format(count=AUTH_CODE_ERROR_COUNT_LIMIT)
 
@@ -409,3 +410,43 @@ FAILURE = 'failure'
 # docker run 宿主机到容器的端口映射
 #################################################################################################
 YE_PORTMAP = '-p 80:80 -p 8080:8080 -p 8888:8888 -p 9999:9999'
+
+#################################################################################################
+# 错误代码及信息
+#################################################################################################
+ERROR_CODE = dict()
+
+no_registered = dict()
+no_registered['message'] = "该手机号码未注册"
+no_registered['code'] = 10404
+ERROR_CODE['no_registered'] = no_registered
+
+sms_over_three = dict()
+sms_over_three['message'] = "该手机号码发送短信超过3次"
+sms_over_three['code'] = 10405
+ERROR_CODE['sms_over_three'] = sms_over_three
+
+sms_over_ten = dict()
+sms_over_ten['message'] = "每部手机一天只能发送10次验证码"
+sms_over_ten['code'] = 10407
+ERROR_CODE['sms_over_ten'] = sms_over_ten
+
+sms_too_frequency = dict()
+sms_too_frequency['message'] = "一分钟内一个手机只能发送一次"
+sms_too_frequency['code'] = 10408
+ERROR_CODE['sms_too_frequency'] = sms_too_frequency
+
+fail_in_geetest = dict()
+fail_in_geetest['message'] = "人机验证失败"
+fail_in_geetest['code'] = 10409
+ERROR_CODE['fail_in_geetest'] = fail_in_geetest
+
+password_error = dict()
+password_error['message'] = "密码错误"
+password_error['code'] = 10410
+ERROR_CODE['password_error'] = password_error
+
+mobile_has_exist = dict()
+mobile_has_exist['message'] = "该手机号码已经注册过"
+mobile_has_exist['code'] = 10411
+ERROR_CODE['mobile_has_exist'] = mobile_has_exist

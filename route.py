@@ -13,7 +13,7 @@ from handler.server.server import ServerNewHandler, ServerReport, ServerMigratio
                                   ServerStopHandler, ServerStartHandler, ServerRebootHandler, \
                                   ServerStatusHandler, ServerContainerPerformanceHandler, ServerContainersHandler, \
                                   ServerContainersInfoHandler, ServerContainerStartHandler, ServerContainerStopHandler,\
-                                  ServerContainerDelHandler, ServerOperationHandler, RealtimeOutputHandler
+                                  ServerContainerDelHandler, OperationLogHandler, RealtimeOutputHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
                                     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
                                     ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler, \
@@ -22,7 +22,8 @@ from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDe
 from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler, GithubOauthCallbackHandler
 from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, \
                               UserUpdateHandler, UserUploadToken, GetCaptchaHandler, \
-                              PasswordLoginHandler, UserRegisterHandler, UserResetPasswordHandler
+                              PasswordLoginHandler, UserRegisterHandler, UserResetPasswordHandler, \
+                              UserResetMobileHandler
 from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
                                 FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
 
@@ -65,8 +66,8 @@ routes = [
     (r'/api/server/container/stop', ServerContainerStopHandler),
     (r'/api/server/container/del', ServerContainerDelHandler),
     (r'/api/server/([\w\W]+)/container/([\w\W]+)', ServerContainersInfoHandler),
-    (r'/api/server/([\w\W]+)/operation', ServerOperationHandler),
 
+    (r'/api/log/operation', OperationLogHandler),
 
     # 主机相关之远程主机上报信息
     (r'/remote/server/report', ServerReport),
@@ -97,11 +98,12 @@ routes = [
     (r'/api/user/login', UserLoginHandler),
     (r'/api/user/login/password', PasswordLoginHandler),
     (r'/api/user/logout', UserLogoutHandler),
-    (r'/api/user/sms/(\d+)', UserSMSHandler),
+    (r'/api/user/sms', UserSMSHandler),
     (r'/api/user/token', UserUploadToken),
     (r'/api/user/captcha', GetCaptchaHandler),
     (r'/api/user/register', UserRegisterHandler),
-    (r'/api/user/reset', UserResetPasswordHandler),
+    (r'/api/user/password/reset', UserResetPasswordHandler),
+    # (r'/api/user/mobile/reset', UserResetMobileHandler),
 
     #文件上传
     (r'/api/file/upload', FileUploadHandler),
