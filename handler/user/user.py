@@ -9,8 +9,7 @@ import json
 from constant import AUTH_CODE, AUTH_CODE_ERROR_COUNT, AUTH_CODE_ERROR_COUNT_LIMIT, AUTH_FAILURE_TIP, AUTH_LOCK, \
     AUTH_LOCK_TIMEOUT, AUTH_LOCK_TIP, COOKIE_EXPIRES_DAYS, SMS_FREQUENCE_LOCK, SMS_FREQUENCE_LOCK_TIMEOUT, \
     SMS_FREQUENCE_LOCK_TIP, SMS_TIMEOUT, SMS_SENT_COUNT, SMS_SENT_COUNT_LIMIT, SMS_SENT_COUNT_LIMIT_TIP, \
-    SMS_SENT_COUNT_LIMIT_TIMEOUT, SMS_NEED_GEETEST_COUNT, NO_REGISTER_STATU, NO_REGISTER_MESSAGE, \
-    SMS_OVER_LIMIT, SMS_OVER_LIMIT_MESSAGE
+    SMS_SENT_COUNT_LIMIT_TIMEOUT, SMS_NEED_GEETEST_COUNT, ERROR_CODE
 from handler.base import BaseHandler
 from setting import settings
 from utils.datetool import seconds_to_human
@@ -119,7 +118,7 @@ class UserSMSHandler(UserBase):
 
             has_lock = yield Task(self.redis.get, sms_frequence_lock)
             if has_lock:
-                self.error(SMS_FREQUENCE_LOCK_TIP)
+                self.error(status=ERROR_CODE['sms_too_frequency']['code'], message=ERROR_CODE['sms_too_frequency']['message'])
                 return
 
             # 检查手机一天的发送次数
@@ -128,17 +127,17 @@ class UserSMSHandler(UserBase):
             sms_sent_count = int(sms_sent_count) if sms_sent_count else 0
 
             data = {
-                'sms_count': sms_sent_count+1,
+                'sms_count': sms_sent_count,
             }
 
             if sms_sent_count >= SMS_SENT_COUNT_LIMIT:
-                self.error(SMS_SENT_COUNT_LIMIT_TIP)
+                self.error(status=ERROR_CODE['sms_too_frequency']['code'], message=ERROR_CODE['sms_too_frequency']['message'], data=data)
                 return
 
             if sms_sent_count >= SMS_NEED_GEETEST_COUNT:
                 challenge = self.params.get('geetest_challenge', '')
                 if not challenge:
-                    self.error(status=SMS_OVER_LIMIT, message=SMS_OVER_LIMIT_MESSAGE, data=data)
+                    self.error(status=ERROR_CODE['sms_over_three']['code'], message=ERROR_CODE['sms_over_three']['message'], data=data)
                     return
                 valid = yield self.validate_captcha(
                     challenge=self.params['geetest_challenge'],
@@ -146,7 +145,7 @@ class UserSMSHandler(UserBase):
                     validate=self.params['geetest_validate']
                 )
                 if not valid:
-                    self.error('fail in passing geetest')
+                    self.error(status=ERROR_CODE['fail_in_geetest']['code'], message=ERROR_CODE['sms_over_three']['message'])
                     return
 
             # 发送短信验证码
@@ -215,13 +214,13 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
             yield self.clean()
 
             is_exist = yield self.user_service.select(
-                fields='id',
+                fields='password',
                 conds=['mobile=%s'],
                 params=[mobile],
                 ct=False, ut=False, one=True
             )
-            if not is_exist:
-                self.error(status=NO_REGISTER_STATU, message=NO_REGISTER_MESSAGE)
+            if not is_exist['password']:
+                self.error(status=ERROR_CODE['no_registered']['code'], message=ERROR_CODE['no_registered']['message'])
                 return
 
             self.success()
@@ -469,7 +468,7 @@ class PasswordLoginHandler(UserBase):
                 yield self.make_session(self.params['mobile'])
                 self.success()
             else:
-                self.error('wrong password, please check again')
+                self.error(status=ERROR_CODE['password_error']['code'], message=ERROR_CODE['password_error']['message'])
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())
@@ -506,7 +505,7 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
                                                     ct=False, ut=False, one=True
                                                 )
             if data:
-                self.error('this mobile number has registered before')
+                self.error(status=ERROR_CODE['mobile_has_exist']['code'],message=ERROR_CODE['mobile_has_exist']['message'])
                 return
 
             mobile, auth_code = self.params['mobile'], self.params['auth_code']
@@ -568,7 +567,7 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
                 )
                 result = bcrypt.checkpw(old_password, hashed['password'].encode('utf-8'))
                 if not result:
-                    self.error('wrong password, please check again')
+                    self.error(status=ERROR_CODE['password_error']['code'], message=ERROR_CODE['password_error']['message'])
                     return
 
             hashed = bcrypt.hashpw(self.params['new_password'].encode('utf-8'), bcrypt.gensalt())
@@ -621,7 +620,7 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
                 ct=False, ut=False, one=True
             )
             if data:
-                self.error('this mobile number has registered before')
+                self.error(status=ERROR_CODE['mobile_has_exist']['code'], message=ERROR_CODE['mobile_has_exist']['message'])
                 return
 
             is_ok = yield self.check(mobile, auth_code)
@@ -636,7 +635,7 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
             )
             result = bcrypt.checkpw(password, hashed['password'].encode('utf-8'))
             if not result:
-                self.error('wrong password, please check again')
+                self.error(status=ERROR_CODE['password_error']['code'], message=ERROR_CODE['password']['message'])
                 return
 
             yield self.user_service.update(sets=['mobile=%s'], conds=['id=%s'], params=[mobile, self.current_user['id']])
