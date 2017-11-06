@@ -138,7 +138,7 @@ class UserSMSHandler(UserBase):
             if sms_sent_count >= SMS_NEED_GEETEST_COUNT:
                 challenge = self.params.get('geetest_challenge', '')
                 if not challenge:
-                    self.error(code=SMS_OVER_LIMIT, message=SMS_OVER_LIMIT_MESSAGE, data=data)
+                    self.error(status=SMS_OVER_LIMIT, message=SMS_OVER_LIMIT_MESSAGE, data=data)
                     return
                 valid = yield self.validate_captcha(
                     challenge=self.params['geetest_challenge'],
@@ -221,8 +221,8 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
                 ct=False, ut=False, one=True
             )
             if not is_exist:
-                data = {'status': NO_REGISTER_STATU, 'message':NO_REGISTER_MESSAGE}
-                self.success(data)
+                self.error(status=NO_REGISTER_STATU, message=NO_REGISTER_MESSAGE)
+                return
 
             self.success()
         except Exception as e:
@@ -647,27 +647,4 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
             self.error(str(e))
             self.log.error(traceback.format_exc())
 
-class UserSetPasswordHandler(BaseHandler):
-    @is_login
-    @coroutine
-    def post(self):
-        """
-        @api {post} /api/user/password/set 设置密码
-        @apiName UserSetPasswordHandler
-        @apiGroup User
 
-        @apiParam {String} password
-
-        @apiUse Success
-        """
-        try:
-            hashed = bcrypt.hashpw(self.params['password'].encode('utf-8'), bcrypt.gensalt())
-            yield self.user_service.update(
-                sets=['password=%s'],
-                conds=['id=%s'],
-                params=[hashed, self.current_user['id']]
-            )
-            self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())

@@ -115,11 +115,11 @@ class BaseHandler(tornado.web.RequestHandler):
         '''
         self.write({"status": 0, "message": message, "data": data})
 
-    def error(self, message='系统繁忙, 请重新尝试', data=None, code=400):
+    def error(self, message='系统繁忙, 请重新尝试', data=None, code=400, status=1):
         ''' 响应失败, 返回错误原因
         '''
         self.set_status(code, message)
-        self.write({"status": 1, "message": message, "data": data})
+        self.write({"status": status, "message": message, "data": data})
 
     @coroutine
     def set_session(self, user_id, data):
