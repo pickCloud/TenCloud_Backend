@@ -523,7 +523,6 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
 
 
 class UserResetPasswordHandler(NeedSMSMixin, UserBase):
-    @is_login
     @coroutine
     def post(self):
         """
