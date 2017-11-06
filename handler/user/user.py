@@ -162,7 +162,7 @@ class UserSMSHandler(UserBase):
             self.log.info('mobile: {mobile}, auth_code: {auth_code}'.format(mobile=mobile, auth_code=auth_code))
 
             data = {
-                'sms_count': sms_sent_count
+                'sms_count': sms_sent_count+1
             }
             self.success(data)
         except Exception as e:
