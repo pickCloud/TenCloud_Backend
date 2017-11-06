@@ -9,7 +9,8 @@ import json
 from constant import AUTH_CODE, AUTH_CODE_ERROR_COUNT, AUTH_CODE_ERROR_COUNT_LIMIT, AUTH_FAILURE_TIP, AUTH_LOCK, \
     AUTH_LOCK_TIMEOUT, AUTH_LOCK_TIP, COOKIE_EXPIRES_DAYS, SMS_FREQUENCE_LOCK, SMS_FREQUENCE_LOCK_TIMEOUT, \
     SMS_FREQUENCE_LOCK_TIP, SMS_TIMEOUT, SMS_SENT_COUNT, SMS_SENT_COUNT_LIMIT, SMS_SENT_COUNT_LIMIT_TIP, \
-    SMS_SENT_COUNT_LIMIT_TIMEOUT, SMS_NEED_GEETEST_COUNT, NO_REGISTER_STATU, NO_REGISTER_MESSAGE
+    SMS_SENT_COUNT_LIMIT_TIMEOUT, SMS_NEED_GEETEST_COUNT, NO_REGISTER_STATU, NO_REGISTER_MESSAGE, \
+    SMS_OVER_LIMIT, SMS_OVER_LIMIT_MESSAGE
 from handler.base import BaseHandler
 from setting import settings
 from utils.datetool import seconds_to_human
@@ -126,11 +127,19 @@ class UserSMSHandler(UserBase):
             sms_sent_count = yield Task(self.redis.get, sms_sent_count_key)
             sms_sent_count = int(sms_sent_count) if sms_sent_count else 0
 
+            data = {
+                'sms_count': sms_sent_count+1,
+            }
+
             if sms_sent_count >= SMS_SENT_COUNT_LIMIT:
                 self.error(SMS_SENT_COUNT_LIMIT_TIP)
                 return
 
             if sms_sent_count >= SMS_NEED_GEETEST_COUNT:
+                challenge = self.params.get('geetest_challenge', '')
+                if not challenge:
+                    self.error(code=SMS_OVER_LIMIT, message=SMS_OVER_LIMIT_MESSAGE, data=data)
+                    return
                 valid = yield self.validate_captcha(
                     challenge=self.params['geetest_challenge'],
                     seccode=self.params['geetest_seccode'],
@@ -161,9 +170,6 @@ class UserSMSHandler(UserBase):
 
             self.log.info('mobile: {mobile}, auth_code: {auth_code}'.format(mobile=mobile, auth_code=auth_code))
 
-            data = {
-                'sms_count': sms_sent_count+1
-            }
             self.success(data)
         except Exception as e:
             self.error(str(e))
