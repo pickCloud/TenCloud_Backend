@@ -5,3 +5,4 @@ setting.py
 Dashboard.iml
 static/apidoc/*
 .vscode/*
+env
