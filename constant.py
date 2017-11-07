@@ -422,7 +422,7 @@ no_registered['code'] = 10404
 ERROR_CODE['no_registered'] = no_registered
 
 sms_over_three = dict()
-sms_over_three['message'] = "该手机号码发送短信超过3次"
+sms_over_three['message'] = "点击验证按钮，可获取短信验证码"
 sms_over_three['code'] = 10405
 ERROR_CODE['sms_over_three'] = sms_over_three
 
