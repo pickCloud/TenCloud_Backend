@@ -3,26 +3,6 @@ __author__ = 'Jon'
 '''
 程序的常量
 '''
-#################################################################################################
-# 错误代码及信息
-#################################################################################################
-ERR_TIP = {
-    # 注册与登陆
-    'no_registered':     {'sts': 10404, 'msg': '该手机号码未注册'},
-    'sms_over_three':    {'sts': 10405, 'msg': '该手机号码发送短信超过3次'},
-    'sms_over_ten':      {'sts': 10407, 'msg': '每部手机一天只能发送10次验证码'},
-    'sms_too_frequency': {'sts': 10408, 'msg': '一分钟内一个手机只能发送一次'},
-    'fail_in_geetest':   {'sts': 10409, 'msg': '人机验证失败'},
-    'password_error':    {'sts': 10410, 'msg': '密码错误'},
-    'mobile_has_exist':  {'sts': 10411, 'msg': '该手机号码已经注册过'},
-    'auth_code_has_error': {'sts': 10412, 'msg': '登陆验证码错误{count}次'},
-    'auth_code_many_errors': {'sts': 10413, 'msg': '登陆验证码已连续错{count}次，请二个小时后再次尝试'.format(count=10)},
-    
-    # 公司
-    'company_exists': {'sts': 10000, 'msg': '已存在公司'},
-    'is_employee':    {'sts': 10001, 'msg': '已是公司员工'}
-}
-
 
 #################################################################################################
 # 时间相关
@@ -41,6 +21,7 @@ AUTH_CODE = 'auth_code_{mobile}_{auth_code}'
 AUTH_CODE_ERROR_COUNT = 'auth_code_error_count_{mobile}'
 AUTH_LOCK = 'auth_lock_{mobile}'
 AUTH_LOCK_TIMEOUT = 7200 # 两个小时
+AUTH_CODE_ERROR_COUNT_LIMIT = 10
 SMS_FREQUENCE_LOCK = 'sms_frequence_lock_{mobile}'
 SMS_FREQUENCE_LOCK_TIMEOUT = 60 # 一分钟
 SMS_SENT_COUNT = 'sms_sent_count_{mobile}'
@@ -49,6 +30,26 @@ SMS_NEED_GEETEST_COUNT = 3
 SMS_SENT_COUNT_LIMIT_TIMEOUT = 86400 # 一天
 SESSION_KEY = 'session_{user_id}'
 GIT_TOKEN = 'git_token'
+
+#################################################################################################
+# 错误代码及信息
+#################################################################################################
+ERR_TIP = {
+    # 注册与登陆
+    'no_registered':     {'sts': 10404, 'msg': '该手机号码未注册'},
+    'sms_over_three':    {'sts': 10405, 'msg': '该手机号码发送短信超过3次'},
+    'sms_over_ten':      {'sts': 10407, 'msg': '每部手机一天只能发送10次验证码'},
+    'sms_too_frequency': {'sts': 10408, 'msg': '一分钟内一个手机只能发送一次'},
+    'fail_in_geetest':   {'sts': 10409, 'msg': '人机验证失败'},
+    'password_error':    {'sts': 10410, 'msg': '密码错误'},
+    'mobile_has_exist':    {'sts': 10411, 'msg': '该手机号码已经注册过'},
+    'auth_code_has_error': {'sts': 10412, 'msg': '登陆验证码错误{count}次'},
+    'auth_code_many_errors': {'sts': 10413, 'msg': '登陆验证码已连续错{count}次，请二个小时后再次尝试'.format(count=AUTH_CODE_ERROR_COUNT_LIMIT)},
+
+    # 公司
+    'company_exists': {'sts': 10000, 'msg': '已存在公司'},
+    'is_employee':    {'sts': 10001, 'msg': '已是公司员工'}
+}
 
 #################################################################################################
 # ssh相关
@@ -322,9 +323,6 @@ GIT_CALLBACK = 'https://' + SERVER_HOST + '/api/github/oauth/callback'
 # SMS相关
 #################################################################################################
 SMS_TIMEOUT = 600 # 验证码有效期10分钟
-SMS_FREQUENCE_LOCK_TIP = '一分钟内一个手机只能发送一次'
-SMS_SENT_COUNT_LIMIT_TIP = '每部手机一天只能发送10次验证码'
-AUTH_FAILURE_TIP = '登陆验证码错误{count}次'
 
 #################################################################################################
 # Session相关
@@ -429,7 +427,6 @@ FAILURE = 'failure'
 # docker run 宿主机到容器的端口映射
 #################################################################################################
 YE_PORTMAP = '-p 80:80 -p 8080:8080 -p 8888:8888 -p 9999:9999'
-
 
 #################################################################################################
 # 公司相关
