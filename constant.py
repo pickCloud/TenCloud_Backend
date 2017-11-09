@@ -16,7 +16,7 @@ ERR_TIP = {
     'password_error':    {'sts': 10410, 'msg': '密码错误'},
     'mobile_has_exist':  {'sts': 10411, 'msg': '该手机号码已经注册过'},
     'auth_code_has_error': {'sts': 10412, 'msg': '登陆验证码错误{count}次'},
-    'auth_code_many_errors': {'sts': 10413, 'msg': '登陆验证码已连续错{count}次，请二个小时后再次尝试'.format(count=10)}
+    'auth_code_many_errors': {'sts': 10413, 'msg': '登陆验证码已连续错{count}次，请二个小时后再次尝试'.format(count=10)},
     
     # 公司
     'company_exists': {'sts': 10000, 'msg': '已存在公司'},
@@ -325,7 +325,6 @@ SMS_TIMEOUT = 600 # 验证码有效期10分钟
 SMS_FREQUENCE_LOCK_TIP = '一分钟内一个手机只能发送一次'
 SMS_SENT_COUNT_LIMIT_TIP = '每部手机一天只能发送10次验证码'
 AUTH_FAILURE_TIP = '登陆验证码错误{count}次'
-AUTH_LOCK_TIP = '登陆验证码已连续错{count}次，请二个小时后再次尝试'.format(count=AUTH_CODE_ERROR_COUNT_LIMIT)
 
 #################################################################################################
 # Session相关
