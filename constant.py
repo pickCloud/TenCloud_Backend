@@ -15,7 +15,9 @@ ERR_TIP = {
     'fail_in_geetest':   {'sts': 10409, 'msg': '人机验证失败'},
     'password_error':    {'sts': 10410, 'msg': '密码错误'},
     'mobile_has_exist':  {'sts': 10411, 'msg': '该手机号码已经注册过'},
-
+    'auth_code_has_error': {'sts': 10412, 'msg': '登陆验证码错误{count}次'},
+    'auth_code_many_errors': {'sts': 10413, 'msg': '登陆验证码已连续错{count}次，请二个小时后再次尝试'.format(count=10)}
+    
     # 公司
     'company_exists': {'sts': 10000, 'msg': '已存在公司'},
     'is_employee':    {'sts': 10001, 'msg': '已是公司员工'}
@@ -37,7 +39,6 @@ DEPLOYED  = 'deployed'
 DEPLOYED_FLAG = '1'
 AUTH_CODE = 'auth_code_{mobile}_{auth_code}'
 AUTH_CODE_ERROR_COUNT = 'auth_code_error_count_{mobile}'
-AUTH_CODE_ERROR_COUNT_LIMIT = 10
 AUTH_LOCK = 'auth_lock_{mobile}'
 AUTH_LOCK_TIMEOUT = 7200 # 两个小时
 SMS_FREQUENCE_LOCK = 'sms_frequence_lock_{mobile}'

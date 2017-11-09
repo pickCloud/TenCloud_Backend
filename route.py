@@ -24,7 +24,7 @@ from handler.repository.repository import RepositoryHandler, RepositoryBranchHan
 from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, \
                               UserUpdateHandler, UserUploadToken, GetCaptchaHandler, \
                               PasswordLoginHandler, UserRegisterHandler, UserResetPasswordHandler, \
-                              UserResetMobileHandler
+                              UserResetMobileHandler, UserPasswordSetHandler
 from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
                                 FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
 from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, CompanyEntrySettingHandler, \
@@ -102,6 +102,7 @@ routes = [
     (r'/api/user/captcha', GetCaptchaHandler),
     (r'/api/user/register', UserRegisterHandler),
     (r'/api/user/password/reset', UserResetPasswordHandler),
+    (r'/api/user/password/set', UserPasswordSetHandler),
     # (r'/api/user/mobile/reset', UserResetMobileHandler),
 
     # 公司相关

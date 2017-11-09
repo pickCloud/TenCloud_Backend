@@ -8,7 +8,7 @@ import bcrypt
 import json
 from constant import AUTH_CODE, AUTH_CODE_ERROR_COUNT, AUTH_CODE_ERROR_COUNT_LIMIT, AUTH_FAILURE_TIP, AUTH_LOCK, \
     AUTH_LOCK_TIMEOUT, AUTH_LOCK_TIP, COOKIE_EXPIRES_DAYS, SMS_FREQUENCE_LOCK, SMS_FREQUENCE_LOCK_TIMEOUT, \
-    SMS_FREQUENCE_LOCK_TIP, SMS_TIMEOUT, SMS_SENT_COUNT, SMS_SENT_COUNT_LIMIT, SMS_SENT_COUNT_LIMIT_TIP, \
+    SMS_TIMEOUT, SMS_SENT_COUNT, SMS_SENT_COUNT_LIMIT, \
     SMS_SENT_COUNT_LIMIT_TIMEOUT, SMS_NEED_GEETEST_COUNT, ERR_TIP
 from handler.base import BaseHandler
 from setting import settings
@@ -57,7 +57,10 @@ class NeedSMSMixin(BaseHandler):
 
         has_lock = yield Task(self.redis.get, self.auth_lock_key)
         if has_lock:
-            self.error(AUTH_LOCK_TIP)
+            self.error(
+                status=ERR_TIP['auth_code_many_errors']['sts'],
+                message=ERR_TIP['auth_code_many_errors']['msg']
+            )
             return False
 
         # 认证
@@ -73,10 +76,16 @@ class NeedSMSMixin(BaseHandler):
             if err_count >= AUTH_CODE_ERROR_COUNT_LIMIT:
                 yield Task(self.redis.setex, self.auth_lock_key, AUTH_LOCK_TIMEOUT, '1')
                 yield Task(self.redis.delete, self.err_count_key)
-                self.error(AUTH_LOCK_TIP)
+                self.error(
+                    status=ERR_TIP['auth_code_many_errors']['sts'],
+                    message=ERR_TIP['auth_code_many_errors']['msg']
+                )
             else:
                 yield Task(self.redis.set, self.err_count_key, err_count)
-                self.error(AUTH_FAILURE_TIP.format(count=err_count))
+                self.error(
+                        status=ERR_TIP['auth_code_has_error']['sts'],
+                        message=ERR_TIP['auth_code_has_error']['msg'].format(count=err_count),
+                )
 
             return False
 
@@ -642,6 +651,33 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
             self.clean()
             self.success()
 
+        except Exception as e:
+            self.error(str(e))
+            self.log.error(traceback.format_exc())
+
+
+class UserPasswordSetHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/user/password/set 设置密码
+        @apiName UserPasswordSetHandler
+        @apiGroup User
+
+        @apiParam {String} password
+
+        @apiUser Success
+        """
+        try:
+            password = self.params['password'].encode('utf-8')
+            hashed = bcrypt.hashpw(password, bcrypt.gensalt())
+            yield self.user_service.update(
+                sets=['password=%s'],
+                conds=['id=%s'],
+                params=[hashed, self.current_user['id']]
+            )
+            self.success()
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())
