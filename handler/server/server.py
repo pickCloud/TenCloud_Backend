@@ -96,29 +96,6 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
             self.period.stop()
 
 
-class RealtimeOutputHandler(WebSocketHandler, BaseHandler):
-    def check_origin(self, origin):
-        return True
-
-    def open(self):
-        self.write_message('open')
-
-    def on_message(self, message):
-        try:
-            cmd = """
-                    git clone --progress git@github.com:AIUnicorn/YeBackend.git /tmp/ye
-                    """
-            ssh = SSH(hostname='192.168.56.10', port=22, username='lancelot', passwd='hga1016xm.')
-            self.ssh_out, self.ssh_err = ssh.exec_rt(cmd, self.write_message)
-        except Exception as e:
-            self.write_message(e)
-        finally:
-            ssh.close()
-
-    def on_close(self):
-        pass
-
-
 class ServerReport(BaseHandler):
     @coroutine
     def post(self):
