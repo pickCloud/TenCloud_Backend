@@ -46,6 +46,11 @@ from service.user.user import UserService
 from service.user.sms import SMSService
 from service.file.file import FileService
 from service.server.server_operation import ServerOperationService
+from service.company.company import CompanyService
+from service.company.company_employee import CompanyEmployeeService
+from service.company.company_entry_setting import CompanyEntrySettingService
+from service.company.company_application import CompanyApplicationService
+from service.message.message import MessageService
 
 from constant import SESSION_TIMEOUT, SESSION_KEY
 from utils.general import json_dumps, json_loads
@@ -63,7 +68,11 @@ class BaseHandler(tornado.web.RequestHandler):
     file_service = FileService(ak=settings['qiniu_access_key'], sk=settings['qiniu_secret_key'])
     sms_service = SMSService()
     server_operation_service = ServerOperationService()
-
+    company_service = CompanyService()
+    company_employee_service = CompanyEmployeeService()
+    company_entry_setting_service = CompanyEntrySettingService()
+    company_application_service = CompanyApplicationService()
+    message_service = MessageService()
 
     @property
     def db(self):
@@ -99,10 +108,8 @@ class BaseHandler(tornado.web.RequestHandler):
         ''' 接口参数是否完整
         '''
         for arg in args:
-            try:
-                self.params[arg]
-            except KeyError:
-                raise AttributeError('缺少参数 %s' % arg)
+            if not self.params.get(arg):
+                raise AttributeError('参数 %s 不能为空' % arg)
 
     def strip(self, *args):
         ''' 对self.params的一些参数进行strip
@@ -110,12 +117,12 @@ class BaseHandler(tornado.web.RequestHandler):
         for arg in args:
             self.params[arg].strip()
 
-    def success(self, data=None, message="success"):
+    def success(self, data=None, message='成功'):
         ''' 响应成功, 返回数据
         '''
         self.write({"status": 0, "message": message, "data": data})
 
-    def error(self, message='系统繁忙, 请重新尝试', data=None, code=400, status=1):
+    def error(self, message='', data=None, code=400, status=1):
         ''' 响应失败, 返回错误原因
         '''
         self.set_status(code, message)

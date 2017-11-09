@@ -3,6 +3,26 @@ __author__ = 'Jon'
 '''
 程序的常量
 '''
+#################################################################################################
+# 错误代码及信息
+#################################################################################################
+ERR_TIP = {
+    # 注册与登陆
+    'no_registered':     {'sts': 10404, 'msg': '该手机号码未注册'},
+    'sms_over_three':    {'sts': 10405, 'msg': '该手机号码发送短信超过3次'},
+    'sms_over_ten':      {'sts': 10407, 'msg': '每部手机一天只能发送10次验证码'},
+    'sms_too_frequency': {'sts': 10408, 'msg': '一分钟内一个手机只能发送一次'},
+    'fail_in_geetest':   {'sts': 10409, 'msg': '人机验证失败'},
+    'password_error':    {'sts': 10410, 'msg': '密码错误'},
+    'mobile_has_exist':  {'sts': 10411, 'msg': '该手机号码已经注册过'},
+    'auth_code_has_error': {'sts': 10412, 'msg': '登陆验证码错误{count}次'},
+    'auth_code_many_errors': {'sts': 10413, 'msg': '登陆验证码已连续错{count}次，请二个小时后再次尝试'.format(count=10)}
+    
+    # 公司
+    'company_exists': {'sts': 10000, 'msg': '已存在公司'},
+    'is_employee':    {'sts': 10001, 'msg': '已是公司员工'}
+}
+
 
 #################################################################################################
 # 时间相关
@@ -19,7 +39,6 @@ DEPLOYED  = 'deployed'
 DEPLOYED_FLAG = '1'
 AUTH_CODE = 'auth_code_{mobile}_{auth_code}'
 AUTH_CODE_ERROR_COUNT = 'auth_code_error_count_{mobile}'
-AUTH_CODE_ERROR_COUNT_LIMIT = 10
 AUTH_LOCK = 'auth_lock_{mobile}'
 AUTH_LOCK_TIMEOUT = 7200 # 两个小时
 SMS_FREQUENCE_LOCK = 'sms_frequence_lock_{mobile}'
@@ -36,6 +55,7 @@ GIT_TOKEN = 'git_token'
 #################################################################################################
 SSH_CONNECT_TIMEOUT = 30
 SERVER_HOST = 'c.10.com'
+SERVER_URL = 'https://' + SERVER_HOST
 MONITOR_CMD = 'curl -sSL https://{host}/supermonitor/install.sh | sh '.format(host=SERVER_HOST)
 UNINSTALL_CMD = 'curl -sSL https://{host}/supermonitor/uninstall.sh | sh '.format(host=SERVER_HOST)
 CREATE_IMAGE_CMD = 'curl -sSL https://{host}/supermonitor/scripts/create-image.sh | sh -s '.format(host=SERVER_HOST)
@@ -411,52 +431,29 @@ FAILURE = 'failure'
 #################################################################################################
 YE_PORTMAP = '-p 80:80 -p 8080:8080 -p 8888:8888 -p 9999:9999'
 
+
 #################################################################################################
-# 错误代码及信息
+# 公司相关
 #################################################################################################
-ERROR_CODE = dict()
-
-no_registered = dict()
-no_registered['message'] = "该手机号码未注册"
-no_registered['code'] = 10404
-ERROR_CODE['no_registered'] = no_registered
-
-sms_over_three = dict()
-sms_over_three['message'] = "点击验证按钮，可获取短信验证码"
-sms_over_three['code'] = 10405
-ERROR_CODE['sms_over_three'] = sms_over_three
-
-sms_over_ten = dict()
-sms_over_ten['message'] = "每部手机一天只能发送10次验证码"
-sms_over_ten['code'] = 10407
-ERROR_CODE['sms_over_ten'] = sms_over_ten
-
-sms_too_frequency = dict()
-sms_too_frequency['message'] = "一分钟内一个手机只能发送一次"
-sms_too_frequency['code'] = 10408
-ERROR_CODE['sms_too_frequency'] = sms_too_frequency
-
-fail_in_geetest = dict()
-fail_in_geetest['message'] = "人机验证失败"
-fail_in_geetest['code'] = 10409
-ERROR_CODE['fail_in_geetest'] = fail_in_geetest
-
-password_error = dict()
-password_error['message'] = "密码错误"
-password_error['code'] = 10410
-ERROR_CODE['password_error'] = password_error
-
-mobile_has_exist = dict()
-mobile_has_exist['message'] = "该手机号码已经注册过"
-mobile_has_exist['code'] = 10411
-ERROR_CODE['mobile_has_exist'] = mobile_has_exist
-
-auth_code_has_error = dict()
-auth_code_has_error['message'] = '登陆验证码错误{count}次'
-auth_code_has_error['code'] = 10412
-ERROR_CODE['auth_code_has_error'] = auth_code_has_error
-
-auth_code_many_errors = dict()
-auth_code_many_errors['message'] = '登陆验证码已连续错{count}次，请二个小时后再次尝试'.format(count=AUTH_CODE_ERROR_COUNT_LIMIT)
-auth_code_many_errors['code'] = 10413
-ERROR_CODE['auth_code_many_errors'] = auth_code_many_errors
+INVITE_URL = SERVER_URL + '/company/application?code='
+APPLICATION_STATUS = {
+    'reject': -1,
+    'process': 0,
+    'accept': 1
+}
+MSG = {
+    'application': {
+        'admin': '【{name}】【{mobile}】审核加入【{company_name}】，请及时审核 ',
+        'accept': '【{admin_name}】审核通过了了你加入【{company_name}】的申请，你可以进入企业了',
+        'reject': '【{admin_name}】拒绝了你加入【{company_name}】的申请，你可以核对信息后重新提交申请'
+    },
+    'change': '你的企业【{company_name}】被管理员 【{admin_name}】修改了资料'
+}
+MSG_MODE = {
+    'application': 1,
+    'change': 2
+}
+MSG_STATUS = {
+    'unread': 0,
+    'read': 1
+}

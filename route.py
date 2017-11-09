@@ -13,7 +13,8 @@ from handler.server.server import ServerNewHandler, ServerReport, ServerMigratio
                                   ServerStopHandler, ServerStartHandler, ServerRebootHandler, \
                                   ServerStatusHandler, ServerContainerPerformanceHandler, ServerContainersHandler, \
                                   ServerContainersInfoHandler, ServerContainerStartHandler, ServerContainerStopHandler,\
-                                  ServerContainerDelHandler, OperationLogHandler, RealtimeOutputHandler
+                                  ServerContainerDelHandler, OperationLogHandler
+
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
                                     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
                                     ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler, \
@@ -26,12 +27,10 @@ from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandle
                               UserResetMobileHandler, UserPasswordSetHandler
 from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
                                 FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
-
-
-
-
-
-
+from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, CompanyEntrySettingHandler, \
+                                    CompanyApplicationHandler, CompanyApplicationAcceptHandler, CompanyApplicationRejectHandler, \
+                                    CompanyEmployeeHandler
+from handler.message.message import MessageHandler
 
 
 routes = [
@@ -106,7 +105,19 @@ routes = [
     (r'/api/user/password/set', UserPasswordSetHandler),
     # (r'/api/user/mobile/reset', UserResetMobileHandler),
 
-    #文件上传
+    # 公司相关
+    (r'/api/company/new', CompanyNewHandler),
+    (r'/api/company/update', CompanyUpdateHandler),
+    (r'/api/company/(\d+)/entry/setting', CompanyEntrySettingHandler),
+    (r'/api/company/application', CompanyApplicationHandler),
+    (r'/api/company/application/accept', CompanyApplicationAcceptHandler),
+    (r'/api/company/application/reject', CompanyApplicationRejectHandler),
+    (r'/api/company/(\d+)/employees', CompanyEmployeeHandler),
+
+    # 消息
+    (r'/api/messages/?(\d*)', MessageHandler),
+
+    # 文件上传
     (r'/api/file/upload', FileUploadHandler),
     (r'/api/file/update', FileUpdateHandler),
     (r'/api/file/list', FileListHandler),
@@ -116,6 +127,4 @@ routes = [
     (r'/api/file/dir/create', FileDirCreateHandler),
     (r'/api/file/([\w\W]+)', FileInfoHandler),
 
-
-    # (r'/api/ssh/realtime/output', RealtimeOutputHandler)
 ]
