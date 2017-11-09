@@ -57,7 +57,10 @@ class NeedSMSMixin(BaseHandler):
 
         has_lock = yield Task(self.redis.get, self.auth_lock_key)
         if has_lock:
-            self.error(AUTH_LOCK_TIP)
+            self.error(
+                status=ERROR_CODE['auth_code_many_errors']['code'],
+                message=ERROR_CODE['auth_code_many_errors']['message']
+            )
             return False
 
         # 认证
@@ -73,10 +76,16 @@ class NeedSMSMixin(BaseHandler):
             if err_count >= AUTH_CODE_ERROR_COUNT_LIMIT:
                 yield Task(self.redis.setex, self.auth_lock_key, AUTH_LOCK_TIMEOUT, '1')
                 yield Task(self.redis.delete, self.err_count_key)
-                self.error(AUTH_LOCK_TIP)
+                self.error(
+                    status=ERROR_CODE['auth_code_many_errors']['code'],
+                    message=ERROR_CODE['auth_code_many_errors']['message']
+                )
             else:
                 yield Task(self.redis.set, self.err_count_key, err_count)
-                self.error(AUTH_FAILURE_TIP.format(count=err_count))
+                self.error(
+                        status=ERROR_CODE['auth_code_has_error']['code'],
+                        message=ERROR_CODE['auth_code_has_error']['message'].format(count=err_count),
+                )
 
             return False
 

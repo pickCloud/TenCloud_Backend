@@ -450,3 +450,13 @@ mobile_has_exist = dict()
 mobile_has_exist['message'] = "该手机号码已经注册过"
 mobile_has_exist['code'] = 10411
 ERROR_CODE['mobile_has_exist'] = mobile_has_exist
+
+auth_code_has_error = dict()
+auth_code_has_error['message'] = '登陆验证码错误{count}次'
+auth_code_has_error['code'] = 10412
+ERROR_CODE['auth_code_has_error'] = auth_code_has_error
+
+auth_code_many_errors = dict()
+auth_code_many_errors['message'] = '登陆验证码已连续错{count}次，请二个小时后再次尝试'.format(count=AUTH_CODE_ERROR_COUNT_LIMIT)
+auth_code_many_errors['code'] = 10413
+ERROR_CODE['auth_code_many_errors'] = auth_code_many_errors
