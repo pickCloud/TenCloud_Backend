@@ -111,7 +111,7 @@ class CompanyEntrySettingHandler(BaseHandler):
     def get(self, cid):
         """
         @api {get} /api/company/(\d+)/entry/setting 获取员工加入条件
-        @apiName CompanyEntrySettingHandler
+        @apiName CompanyEntrySettingGetHandler
         @apiGroup Company
 
         @apiParam {String} cid     公司id
@@ -150,7 +150,7 @@ class CompanyEntrySettingHandler(BaseHandler):
     def post(self, cid):
         """
         @api {post} /api/company/(\d+)/entry/setting 设置员工加入条件
-        @apiName CompanyEntrySettingHandler
+        @apiName CompanyEntrySettingPostHandler
         @apiGroup Company
 
         @apiParam {String} setting 配置mobile,name,id_card
@@ -192,7 +192,7 @@ class CompanyApplicationHandler(BaseHandler):
     def get(self):
         """
         @api {get} /api/company/application 员工申请加入的初始条件
-        @apiName CompanyApplicationHandler
+        @apiName CompanyApplicationGetHandler
         @apiGroup Company
 
         @apiParam {String} code
@@ -228,7 +228,7 @@ class CompanyApplicationHandler(BaseHandler):
     def post(self):
         """
         @api {post} /api/company/application 员工申请提交
-        @apiName CompanyApplicationHandler
+        @apiName CompanyApplicationPostHandler
         @apiGroup Company
 
         @apiParam {String} code
