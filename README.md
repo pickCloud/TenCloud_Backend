@@ -358,6 +358,65 @@ CREATE TABLE `operation_log` (
 )
 create index object_id on operation_log (object_id);
 ```
+
+* 公司表 company
+```
+CREATE TABLE `company` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `name` varchar(128) NOT NULL COMMENT '名称',
+  `contact` varchar(128) NOT NULL COMMENT '联系人',
+  `mobile` varchar(11) NOT NULL COMMENT '联系方式',
+  `description` text,
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+* 公司员工表 company_employee
+```
+CREATE TABLE `company_employee` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `cid` int(11) NOT NULL COMMENT 'company表ID',
+  `uid` int(11) NOT NULL COMMENT 'user表ID',
+  `is_admin` tinyint(1) NOT NULL DEFAULT '0' COMMENT '管理员',
+  `status` tinyint(4) NOT NULL DEFAULT '0' COMMENT '-1拒绝, 0审核中, 1通过',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+* 公司员工加入条件表 company_entry_setting
+```
+CREATE TABLE `company_entry_setting` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `cid` int(11) NOT NULL COMMENT 'company表ID',
+  `setting` varchar(64) NOT NULL COMMENT '条件配置包含user表的字段名',
+  `code` varchar(7) NOT NULL COMMENT 'company_id与setting的hash值',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `company_id` (`cid`),
+  UNIQUE KEY `code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+* 消息表 message
+```
+CREATE TABLE `message` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `owner` int(11) NOT NULL COMMENT 'user表ID',
+  `content` varchar(256) DEFAULT NULL,
+  `mode` tinyint(4) NOT NULL DEFAULT '1' COMMENT '1加入企业，2企业改变信息',
+  `url` varchar(128) NOT NULL DEFAULT '' COMMENT '链接',
+  `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0未读，1已读',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
 ## 测试
 ```
 curl http://localhost:8010/api/clusters
