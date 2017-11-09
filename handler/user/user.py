@@ -6,10 +6,9 @@ from tornado.gen import Task, coroutine
 from sdk import GeetestLib
 import bcrypt
 import json
-from constant import AUTH_CODE, AUTH_CODE_ERROR_COUNT, AUTH_FAILURE_TIP, AUTH_LOCK, \
-    AUTH_LOCK_TIMEOUT, COOKIE_EXPIRES_DAYS, SMS_FREQUENCE_LOCK, SMS_FREQUENCE_LOCK_TIMEOUT, \
-    SMS_TIMEOUT, SMS_SENT_COUNT, SMS_SENT_COUNT_LIMIT, \
-    SMS_SENT_COUNT_LIMIT_TIMEOUT, SMS_NEED_GEETEST_COUNT, ERR_TIP
+from constant import AUTH_CODE, AUTH_CODE_ERROR_COUNT, AUTH_LOCK, AUTH_LOCK_TIMEOUT, COOKIE_EXPIRES_DAYS, \
+    SMS_FREQUENCE_LOCK, SMS_FREQUENCE_LOCK_TIMEOUT, SMS_TIMEOUT, SMS_SENT_COUNT, SMS_SENT_COUNT_LIMIT, \
+    SMS_SENT_COUNT_LIMIT_TIMEOUT, SMS_NEED_GEETEST_COUNT, ERR_TIP, AUTH_CODE_ERROR_COUNT_LIMIT
 from handler.base import BaseHandler
 from setting import settings
 from utils.datetool import seconds_to_human
@@ -667,7 +666,7 @@ class UserPasswordSetHandler(BaseHandler):
 
         @apiParam {String} password
 
-        @apiUser Success
+        @apiUse Success
         """
         try:
             password = self.params['password'].encode('utf-8')

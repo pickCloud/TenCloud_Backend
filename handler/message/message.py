@@ -11,9 +11,11 @@ class MessageHandler(BaseHandler):
     @coroutine
     def get(self, mode):
         """
-        @api {get} /api/messages/?(\d*) 获取员工全部消息列表, 其中/?(\d*)可选 e.g /1加入企业，/2企业变更
-        @apiName MessageHandler
+        @api {get} /api/messages/?(\d*) 获取员工消息列表
+        @apiName MessageGetHandler
         @apiGroup Message
+
+        @apiDescription /1加入企业, /2企业变更, /全部
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -42,7 +44,7 @@ class MessageHandler(BaseHandler):
     def post(self, id):
         """
         @api {get} /api/messages/(\d+) 标记消息id已读
-        @apiName MessageHandler
+        @apiName MessagePostHandler
         @apiGroup Message
 
         @apiUse Success
