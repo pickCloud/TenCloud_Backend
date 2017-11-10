@@ -29,7 +29,7 @@ from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHand
                                 FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
 from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, CompanyEntrySettingHandler, \
                                     CompanyApplicationHandler, CompanyApplicationAcceptHandler, CompanyApplicationRejectHandler, \
-                                    CompanyEmployeeHandler
+                                    CompanyEmployeeHandler, CompanyHandler
 from handler.message.message import MessageHandler
 
 
@@ -106,6 +106,7 @@ routes = [
     # (r'/api/user/mobile/reset', UserResetMobileHandler),
 
     # 公司相关
+    (r'/api/companies', CompanyHandler),
     (r'/api/company/new', CompanyNewHandler),
     (r'/api/company/update', CompanyUpdateHandler),
     (r'/api/company/(\d+)/entry/setting', CompanyEntrySettingHandler),
