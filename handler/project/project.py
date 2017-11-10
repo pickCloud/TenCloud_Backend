@@ -362,9 +362,6 @@ class ProjectImageCreationHandler(WebSocketBaseHandler):
 
             self.guarantee(*args)
 
-            for i in args[1:]:
-                self.params[i] = self.params[i].strip()
-
             log_params = {
                 'user_id': self.current_user['id'],
                 'object_id': self.params['project_id'],
