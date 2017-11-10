@@ -48,8 +48,8 @@ class RepositoryHandler(BaseHandler):
             result = yield self.repos_service.fetch_repos(token)
 
             self.success(result)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -99,8 +99,8 @@ class RepositoryBranchHandler(BaseHandler):
             result = yield self.repos_service.fetch_branches(repos_name, token)
 
             self.success(result)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -114,6 +114,6 @@ class GithubOauthCallbackHandler(BaseHandler):
             yield Task(self.redis.hset, GIT_TOKEN, str(self.current_user['id']), token)
             url = self.get_argument('redirect_url')
             self.redirect(url=url, permanent=False, status=302)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())

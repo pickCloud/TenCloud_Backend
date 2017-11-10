@@ -44,8 +44,8 @@ class ProjectHandler(BaseHandler):
             result = yield self.project_service.select(ct=False)
 
             self.success(result)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -103,8 +103,8 @@ class ProjectNewHandler(BaseHandler):
                 'operation_status': OPERATE_STATUS['success'],
             })
             self.success(result)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -126,8 +126,8 @@ class ProjectDelHandler(BaseHandler):
             yield self.project_service.delete(conds=[get_in_formats('id', ids)], params=ids)
 
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -170,8 +170,8 @@ class ProjectDetailHandler(BaseHandler):
             result = yield self.project_service.select(conds=['id=%s'], params=[id])
 
             self.success(result)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -225,8 +225,8 @@ class ProjectUpdateHandler(BaseHandler):
                     params=[OPERATE_STATUS['success'], data['id']]
             )
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -347,8 +347,8 @@ class ProjectContainersListHanler(BaseHandler):
                     one_ip.extend(i)
                 data.append(one_ip)
             self.success(data)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -456,8 +456,8 @@ class ProjectImageLogHandler(BaseHandler):
                                                             params=[prj_name, version], ct=False, one=True)
             data = {"log": json.loads(out['log']), "update_time": out['update_time']}
             self.success(data)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
     @is_login
@@ -491,8 +491,8 @@ class ProjectImageLogHandler(BaseHandler):
                     params=[OPERATE_STATUS['success'], data['id']]
             )
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -520,8 +520,8 @@ class ProjectVersionsHandler(BaseHandler):
         try:
             data = yield self.project_versions_service.version_list(prj_name)
             self.success(data)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 class ProjectImageFindHandler(BaseHandler):
@@ -555,8 +555,8 @@ class ProjectImageFindHandler(BaseHandler):
                 self.error(err)
                 return
             self.success(data)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -576,8 +576,8 @@ class ProjectImageUpload(user.FileUploadMixin):
             filename = yield self.handle_file_upload()
             yield self.project_service.upload_image(filename)
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -598,7 +598,7 @@ class ProjectImageCloudDownload(BaseHandler):
             yield self.project_service.cloud_download(self.params['image_url'])
             yield self.project_service.upload_image(self.params['image_url'].split('\\')[-1])
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 

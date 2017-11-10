@@ -139,8 +139,8 @@ class ServerReport(BaseHandler):
             yield self.server_service.save_report(self.params)
 
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -162,8 +162,8 @@ class ServerMigrationHandler(BaseHandler):
             yield self.server_service.migrate_server(self.params)
 
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -184,8 +184,8 @@ class ServerDelHandler(BaseHandler):
             yield self.server_service.delete_server(self.params)
 
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -275,8 +275,8 @@ class ServerDetailHandler(BaseHandler):
             }
 
             self.success(result)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -325,8 +325,8 @@ class ServerPerformanceHandler(BaseHandler):
         try:
             data = yield self.server_service.get_performance(self.params)
             self.success(data)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -362,8 +362,8 @@ class ServerUpdateHandler(BaseHandler):
             )
 
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -396,8 +396,8 @@ class ServerStopHandler(BaseHandler):
                                                         params=[OPERATE_STATUS['success'], data['id']]
                                                     )
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -429,8 +429,8 @@ class ServerStartHandler(BaseHandler):
                                                         params=[OPERATE_STATUS['success'], data['id']]
                                                     )
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 class ServerRebootHandler(BaseHandler):
@@ -461,8 +461,8 @@ class ServerRebootHandler(BaseHandler):
                                                         params=[OPERATE_STATUS['success'], data['id']]
                                                     )
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -489,8 +489,8 @@ class ServerStatusHandler(BaseHandler):
             data = yield self.server_service.get_instance_status(instance_id)
 
             self.success(data)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -536,8 +536,8 @@ class ServerContainerPerformanceHandler(BaseHandler):
         try:
             data = yield self.server_service.get_docker_performance(self.params)
             self.success(data)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -572,7 +572,7 @@ class ServerContainersHandler(BaseHandler):
             data = yield self.server_service.get_containers({"server_id": str(id)})
 
             self.success(data)
-        except:
+        except Exception as e:
             self.success()
             self.log.error(traceback.format_exc())
 
@@ -608,8 +608,8 @@ class ServerContainersInfoHandler(BaseHandler):
                 self.error(err)
             else:
                 self.success(data)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -644,8 +644,8 @@ class ServerContainerStartHandler(BaseHandler):
                     params=[OPERATE_STATUS['success'], data['id']]
             )
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -681,8 +681,8 @@ class ServerContainerStopHandler(BaseHandler):
             )
 
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -717,8 +717,8 @@ class ServerContainerDelHandler(BaseHandler):
                     params=[OPERATE_STATUS['success'], data['id']]
             )
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 class OperationLogHandler(BaseHandler):
@@ -752,6 +752,6 @@ class OperationLogHandler(BaseHandler):
         try:
             data = yield self.server_operation_service.get_server_operation(self.params)
             self.success(data)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
