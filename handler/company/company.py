@@ -9,6 +9,33 @@ from utils.general import validate_mobile
 from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE
 
 
+class CompanyHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/companies 公司列表
+        @apiName CompanyHandler
+        @apiGroup Company
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": [
+                    {"cid": 1, "company_name": "十全", "ctime": "申请时间", "utime": "审核时间", "status": "-1拒绝, 0审核中, 1通过"}
+                ]
+            }        """
+        try:
+            data = yield self.company_service.get_companies(self.current_user['id'])
+
+            self.success(data)
+        except Exception as e:
+            self.error(str(e))
+            self.log.error(traceback.format_exc())
+
+
 class CompanyNewHandler(BaseHandler):
     @is_login
     @coroutine
