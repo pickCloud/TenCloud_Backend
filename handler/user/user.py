@@ -251,8 +251,8 @@ class UserLogoutHandler(BaseHandler):
         try:
             yield self.del_session(self.current_user['id'])
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -286,8 +286,8 @@ class UserDetailHandler(BaseHandler):
         """
         try:
             self.success(self.current_user)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -335,8 +335,8 @@ class UserUpdateHandler(BaseHandler):
             yield self.set_session(new['id'], new)
 
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -363,8 +363,8 @@ class UserUploadToken(BaseHandler):
         try:
             data = yield self.user_service.get_qiniu_token()
             self.success(data)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
     @is_login
@@ -380,8 +380,8 @@ class UserUploadToken(BaseHandler):
         try:
             yield self.user_service.delete_token(self.current_user['id'])
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -438,8 +438,8 @@ class GetCaptchaHandler(BaseHandler):
             yield Task(self.redis.set, gt.GT_STATUS_SESSION_KEY, status)
             response_str = json.loads(gt.get_response_str())
             self.success(response_str)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 

@@ -33,8 +33,8 @@ class ClusterHandler(BaseHandler):
             result = yield self.cluster_service.select()
 
             self.success(result)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -65,8 +65,8 @@ class ClusterNewHandler(BaseHandler):
             result = yield self.cluster_service.add(self.params)
 
             self.success(result)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -89,8 +89,8 @@ class ClusterDelHandler(BaseHandler):
             yield self.cluster_service.delete(conds=[get_in_formats('id', ids)], params=ids)
 
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -144,8 +144,8 @@ class ClusterDetailHandler(BaseHandler):
                 'basic_info': basic_info,
                 'server_list': server_list
             })
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -172,6 +172,6 @@ class ClusterUpdateHandler(BaseHandler):
             yield self.cluster_service.update(sets=sets, conds=conds, params=params)
 
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())

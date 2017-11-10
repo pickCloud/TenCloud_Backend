@@ -17,8 +17,8 @@ class ImagehubHandler(BaseHandler):
             result = yield self.imagehub_service.get_list()
 
             self.success(result)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -33,8 +33,8 @@ class ImagehubBySourceHandler(BaseHandler):
             result = yield self.imagehub_service.get_by_source(source_id)
 
             self.success(result)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -49,8 +49,8 @@ class ImagehubByTypeHandler(BaseHandler):
             result = yield self.imagehub_service.get_by_type(type_id)
 
             self.success(result)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -69,6 +69,6 @@ class ImagehubSearchHandler(BaseHandler):
             }
             result = yield self.imagehub_service.get_by_search(query_data)
             self.success(result)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())

@@ -52,8 +52,8 @@ class FileListHandler(BaseHandler):
                 return
             data = yield self.file_service.seg_page(self.params)
             self.success(data)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -79,8 +79,8 @@ class FileTotalHandler(BaseHandler):
         try:
             data = yield self.file_service.total_pages(file_id)
             self.success(data)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -119,8 +119,8 @@ class FileInfoHandler(BaseHandler):
         try:
             data = yield self.file_service.select(conds=['id=%s'], params=[file_id], one=True)
             self.success(data)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -170,8 +170,8 @@ class FileUploadHandler(BaseHandler):
                 data = yield self.file_service.batch_upload(arg)
                 resp.append(data)
             self.success(resp)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -214,8 +214,8 @@ class FileUpdateHandler(BaseHandler):
                                             params=arg
                                         )
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -239,8 +239,8 @@ class FileDownloadHandler(BaseHandler):
         try:
             url = yield self.file_service.private_download_url(qiniu_id=file_id)
             self.redirect(url=url, permanent=False, status=302)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -291,8 +291,8 @@ class FileDirCreateHandler(BaseHandler):
             data = yield self.file_service.add(arg)
             resp = yield self.file_service.select(conds=['id=%s'], params=[data['id']])
             self.success(resp)
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
@@ -343,8 +343,8 @@ class FileDeleteHandler(BaseHandler):
                 self.error(data={'file_ids': incorrect_ids})
                 return
             self.success()
-        except:
-            self.error()
+        except Exception as e:
+            self.error(str(e))
             self.log.error(traceback.format_exc())
 
 
