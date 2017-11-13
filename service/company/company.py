@@ -6,7 +6,7 @@ from constant import APPLICATION_STATUS, MSG, MSG_MODE, FULL_DATE_FORMAT
 
 class CompanyService(BaseService):
     table  = 'company'
-    fields = 'id, name, contact, mobile'
+    fields = 'id, name, contact, mobile, description'
 
     @coroutine
     def get_companies(self, uid):
