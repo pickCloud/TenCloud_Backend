@@ -11,6 +11,10 @@ class CompanyEntrySettingService(BaseService):
     table  = 'company_entry_setting'
     fields = 'id, cid, setting, code'
 
+    @staticmethod
+    def produce_url(code):
+        return INVITE_URL + code
+
     @coroutine
     def save_setting(self, params):
         ''' 设置员工加入条件
@@ -29,7 +33,7 @@ class CompanyEntrySettingService(BaseService):
             params['code'] = code
             yield self.add(params=params)
 
-        return INVITE_URL + code
+        return self.produce_url(code)
 
     @coroutine
     def get_setting(self, cid):
