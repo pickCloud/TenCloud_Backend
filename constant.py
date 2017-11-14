@@ -38,7 +38,7 @@ ERR_TIP = {
     # 注册与登陆
     'no_registered':     {'sts': 10404, 'msg': '该手机号码未注册'},
     'sms_over_three':    {'sts': 10405, 'msg': '该手机号码发送短信超过3次'},
-    'sms_over_ten':      {'sts': 10407, 'msg': '每部手机一天只能发送10次验证码'},
+    'sms_over_limit':      {'sts': 10407, 'msg': '每个手机号24小时内仅允许有10次获取短信验证码的机会，请24小时后再尝试'},
     'sms_too_frequency': {'sts': 10408, 'msg': '一分钟内一个手机只能发送一次'},
     'fail_in_geetest':   {'sts': 10409, 'msg': '人机验证失败'},
     'password_error':    {'sts': 10410, 'msg': '密码错误'},
