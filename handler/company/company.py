@@ -36,6 +36,32 @@ class CompanyHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
+class CompanyDetailHandler(BaseHandler):
+    @coroutine
+    def get(self, id):
+        """
+        @api {get} /api/company/(\d+) 公司详情
+        @apiName CompanyDetailHandler
+        @apiGroup Company
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": [
+                    {"id": 1, "name": "十全", "create_time": "申请时间", "update_time": "审核时间", "contact": "联系人", "mobile": "手机号", "description": "公司简介"}
+                ]
+            }        """
+        try:
+            data = yield self.company_service.select(conds=['id=%s'], params=[id])
+
+            self.success(data)
+        except Exception as e:
+            self.error(str(e))
+            self.log.error(traceback.format_exc())
+
+
 class CompanyNewHandler(BaseHandler):
     @is_login
     @coroutine
