@@ -17,11 +17,11 @@ python3
 ```
 settings['mysql_user'], settings['mysql_password']
 ```
-* 数据库ten_dashboard
+* 数据库
 ```
 CREATE DATABASE IF NOT EXISTS ten_dashboard DEFAULT CHARSET utf8mb4;
 ```
-* 集群表cluster
+* 集群表
 ```
 CREATE TABLE IF NOT EXISTS `cluster` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '集群ID',
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `cluster` (
   PRIMARY KEY (`id`)
 );
 ```
-* 主机表server
+* 主机表
 ```
 CREATE TABLE `server` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主机ID',
@@ -51,7 +51,7 @@ ALTER TABLE server ADD COLUMN instance_id varchar(64) NOT NULL DEFAULT '' COMMEN
 ALTER TABLE server add unique(instance_id)
 ```
 
-* 镜像仓库 imagehub
+* 镜像仓库
 ```
 CREATE TABLE IF NOT EXISTS `imagehub` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '镜像ID',
@@ -209,7 +209,7 @@ create table ten_dashboard.docker_stat (
 create index ip_container_time on docker_stat (public_ip, container_name, created_time);
 ```
 
-* 项目表 project
+* 项目表
 ```
 CREATE TABLE `project` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '项目ID',
@@ -234,7 +234,7 @@ ALTER TABLE project ADD COLUMN image_source tinyint(4) NOT NULL DEFAULT '' COMME
 
 ```
 
-* 项目版本表 project_versions
+* 项目版本表
 ```
 CREATE TABLE `project_versions` (
      `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '项目版本id',
@@ -248,7 +248,7 @@ CREATE UNIQUE INDEX name_version on project_versions (name, version);
 ALTER TABLE project_versions ADD COLUMN log longtext COMMENT '构建日志';
 ```
 
-* 用户表 user
+* 用户表
 ```
 CREATE TABLE `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '用户ID',
@@ -267,7 +267,7 @@ ALTER TABLE user ADD COLUMN gender tinyint(4) COMMENT '性别 0: 男性 1: 女�
 ALTER TABLE user ADD COLUMN birthday int(10) COMMENT '生日'
 ```
 
-* 文件表 filehub
+* 文件表
 ```
 CREATE TABLE `filehub` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -288,7 +288,7 @@ ALTER TABLE filehub ADD COLUMN upload_status tinyint(2) unsigned NOT NULL DEFAUL
 ALTER TABLE filehub DROP COLUMN upload_status
 ```
 
-* 机器记录时平均维护表 server_log_hour
+* 机器记录时平均维护表
 ```
 CREATE TABLE `server_log_hour` (
     `id` int(11) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -303,7 +303,7 @@ CREATE TABLE `server_log_hour` (
 create index ip_time on server_log_hour (public_ip, start_time, end_time);
 ```
 
-* 容器记录时平均维护表 container_log_hour
+* 容器记录时平均维护表
 ```
 CREATE TABLE `container_log_hour` (
     `id` int(11) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -316,7 +316,7 @@ CREATE TABLE `container_log_hour` (
 create index hour_ip_time on container_log_hour (public_ip, container_name, start_time, end_time);
 ```
 
-* 容器记录天平均维护表 container_log_day
+* 容器记录天平均维护表
 ```
 CREATE TABLE `container_log_day` (
     `id` int(11) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -329,7 +329,7 @@ CREATE TABLE `container_log_day` (
 create index day_ip_time on container_log_day (public_ip, container_name, start_time, end_time);
 ```
 
-* 机器记录天平均维护表 server_log_day
+* 机器记录天平均维护表
 ```
 CREATE TABLE `server_log_day` (
     `id` int(11) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -344,7 +344,7 @@ CREATE TABLE `server_log_day` (
 create index ip_time on server_log_day (public_ip, start_time, end_time);
 ```
 
-* 机器操作记录 operation_log
+* 机器操作记录
 ```
 CREATE TABLE `operation_log` (
     `id` int(11) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -359,7 +359,7 @@ CREATE TABLE `operation_log` (
 create index object_id on operation_log (object_id);
 ```
 
-* 公司表 company
+* 公司表
 ```
 CREATE TABLE `company` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
@@ -373,7 +373,7 @@ CREATE TABLE `company` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-* 公司员工表 company_employee
+* 公司员工表
 ```
 CREATE TABLE `company_employee` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
@@ -387,7 +387,7 @@ CREATE TABLE `company_employee` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-* 公司员工加入条件表 company_entry_setting
+* 公司员工加入条件表
 ```
 CREATE TABLE `company_entry_setting` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
@@ -402,7 +402,7 @@ CREATE TABLE `company_entry_setting` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-* 消息表 message
+* 消息表
 ```
 CREATE TABLE `message` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
@@ -416,6 +416,83 @@ CREATE TABLE `message` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
+
+* 权限模版表
+```
+CREATE TABLE `permission_template` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `name` varchar(64) NOT NULL COMMENT '权限模版名称',
+  `cid` int(11) NOT NULL COMMENT '表company对应的ID',
+  `permissions` varchar(512) NOT NULL DEFAULT '' COMMENT '表permission对应的id集合, 比如1,2,3',
+  `access_servers` varchar(1024) NOT NULL DEFAULT '' COMMENT '表server对应的id集合, 比如1,2,3',
+  `access_projects` varchar(1024) NOT NULL DEFAULT '' COMMENT '表project对应的id集合, 比如1,2,3',
+  `access_filehub` varchar(1024) NOT NULL DEFAULT '' COMMENT '表filehub对应的id集合, 比如1,2,3',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+* 权限表
+```
+CREATE TABLE `permission` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `name` varchar(64) NOT NULL COMMENT '权限名称',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+* 用户权限表
+```
+CREATE TABLE `user_permission` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `uid` int(11) NOT NULL COMMENT '表user的ID',
+  `pid` int(11) NOT NULL COMMENT '表permission的ID',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+* 用户可访问云服务器表
+```
+CREATE TABLE `user_access_server` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `uid` int(11) NOT NULL COMMENT '表user的ID',
+  `sid` int(11) NOT NULL COMMENT '表server的ID',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+* 用户可访问项目表
+```
+CREATE TABLE `user_access_project` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `uid` int(11) NOT NULL COMMENT '表user的ID',
+  `pid` int(11) NOT NULL COMMENT '表project的ID',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+* 用户可访问文件表
+```
+CREATE TABLE `user_access_filehub` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `uid` int(11) NOT NULL COMMENT '表user的ID',
+  `fid` int(11) NOT NULL COMMENT '表filehub的ID',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+
 
 ## 测试
 ```
