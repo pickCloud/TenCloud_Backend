@@ -438,6 +438,7 @@ CREATE TABLE `permission_template` (
 CREATE TABLE `permission` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `name` varchar(64) NOT NULL COMMENT '权限名称',
+  `group` tinyint(4) NOT NULL COMMENT '权限组, 0云服务器, 1项目, 2文件服务, 3企业资料, 4员工管理, 5权限模版管理, 6平台管理',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
