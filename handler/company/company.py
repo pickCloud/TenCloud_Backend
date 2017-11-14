@@ -239,6 +239,47 @@ class CompanyEntrySettingHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
+class CompanyEntryUrlHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self, cid):
+        """
+        @api {get} /api/company/(\d+)/entry/url 获取员工加入URL
+        @apiName CompanyEntryUrlHandler
+        @apiGroup Company
+
+        @apiParam {String} cid     公司id
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": {
+                    "url": "https://c.10.com/invite?code=65d4a0f"
+                }
+            }
+
+        @apiErrorExample {json} Error-Response:
+        HTTP/1.1 400
+            {
+                "status": 1,
+                "msg": "需要管理员权限",
+                "data": {}
+            }
+        """
+        try:
+            yield self.company_employee_service.check_admin(cid, self.current_user['id'])
+
+            data = yield self.company_entry_setting_service.select(fields='code', conds=['cid=%s'], params=[cid], one=True)
+
+            self.success({'url': self.company_entry_setting_service.produce_url(data.get('code'))})
+
+        except Exception as e:
+            self.error(str(e))
+            self.log.error(traceback.format_exc())
+
+
 class CompanyApplicationHandler(BaseHandler):
     @is_login
     @coroutine
