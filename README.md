@@ -451,6 +451,7 @@ CREATE TABLE `user_permission` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `uid` int(11) NOT NULL COMMENT '表user的ID',
   `pid` int(11) NOT NULL COMMENT '表permission的ID',
+  `cid` int(11) NOT NULL COMMENT '表company的ID',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
@@ -463,6 +464,7 @@ CREATE TABLE `user_access_server` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `uid` int(11) NOT NULL COMMENT '表user的ID',
   `sid` int(11) NOT NULL COMMENT '表server的ID',
+  `cid` int(11) NOT NULL COMMENT '表company的ID',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
@@ -475,6 +477,7 @@ CREATE TABLE `user_access_project` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `uid` int(11) NOT NULL COMMENT '表user的ID',
   `pid` int(11) NOT NULL COMMENT '表project的ID',
+  `cid` int(11) NOT NULL COMMENT '表company的ID',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
@@ -487,6 +490,7 @@ CREATE TABLE `user_access_filehub` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `uid` int(11) NOT NULL COMMENT '表user的ID',
   `fid` int(11) NOT NULL COMMENT '表filehub的ID',
+  `cid` int(11) NOT NULL COMMENT '表company的ID',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
