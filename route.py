@@ -28,9 +28,8 @@ from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandle
 from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
                                 FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
 from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, CompanyEntrySettingHandler, \
-                                    CompanyApplicationHandler, CompanyApplicationAcceptHandler, \
-                                    CompanyApplicationRejectHandler, CompanyEmployeeHandler, CompanyHandler, \
-                                    CompanyDetailHandler
+                                    CompanyApplicationHandler, CompanyApplicationAcceptHandler, CompanyApplicationRejectHandler, \
+                                    CompanyEmployeeHandler, CompanyHandler, CompanyDetailHandler, CompanyEntryUrlHandler
 from handler.message.message import MessageHandler
 from handler.user.permission import PermissionTemplateList, PermissionTemplateDetail, PermissionTemplateRename, \
                                     PermissionTemplateAdd, PermissionTemplateChange
@@ -120,6 +119,7 @@ routes = [
     (r'/api/company/new', CompanyNewHandler),
     (r'/api/company/update', CompanyUpdateHandler),
     (r'/api/company/(\d+)/entry/setting', CompanyEntrySettingHandler),
+    (r'/api/company/(\d+)/entry/url', CompanyEntryUrlHandler),
     (r'/api/company/application', CompanyApplicationHandler),
     (r'/api/company/application/accept', CompanyApplicationAcceptHandler),
     (r'/api/company/application/reject', CompanyApplicationRejectHandler),

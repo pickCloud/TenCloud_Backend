@@ -63,11 +63,12 @@ class NeedSMSMixin(BaseHandler):
             return False
 
         # 认证
-        self.auth_code_key = AUTH_CODE.format(mobile=mobile, auth_code=auth_code)
+        self.auth_code_key = AUTH_CODE.format(mobile=mobile)
         self.err_count_key = AUTH_CODE_ERROR_COUNT.format(mobile=mobile)
 
-        is_exist = yield Task(self.redis.get, self.auth_code_key)
-        if not is_exist:
+        real_code = yield Task(self.redis.get, self.auth_code_key)
+
+        if auth_code != real_code:
             err_count = yield Task(self.redis.get, self.err_count_key)
             err_count = int(err_count) if err_count else 0
             err_count += 1
@@ -173,7 +174,7 @@ class UserSMSHandler(UserBase):
                 yield Task(self.redis.incr, sms_sent_count_key)
 
             # 设置验证码有效期
-            yield Task(self.redis.setex, AUTH_CODE.format(mobile=mobile, auth_code=auth_code), SMS_TIMEOUT, '1')
+            yield Task(self.redis.setex, AUTH_CODE.format(mobile=mobile), SMS_TIMEOUT, auth_code)
 
             self.log.info('mobile: {mobile}, auth_code: {auth_code}'.format(mobile=mobile, auth_code=auth_code))
 
