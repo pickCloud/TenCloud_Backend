@@ -28,9 +28,12 @@ from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandle
 from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
                                 FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
 from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, CompanyEntrySettingHandler, \
-                                    CompanyApplicationHandler, CompanyApplicationAcceptHandler, CompanyApplicationRejectHandler, \
-                                    CompanyEmployeeHandler, CompanyHandler, CompanyDetailHandler
+                                    CompanyApplicationHandler, CompanyApplicationAcceptHandler, \
+                                    CompanyApplicationRejectHandler, CompanyEmployeeHandler, CompanyHandler, \
+                                    CompanyDetailHandler
 from handler.message.message import MessageHandler
+from handler.user.permission import PermissionTemplateList, PermissionTemplateDetail, PermissionTemplateRename, \
+                                    PermissionTemplateAdd, PermissionTemplateChange
 
 
 routes = [
@@ -104,6 +107,12 @@ routes = [
     (r'/api/user/password/reset', UserResetPasswordHandler),
     (r'/api/user/password/set', UserPasswordSetHandler),
     # (r'/api/user/mobile/reset', UserResetMobileHandler),
+    (r'/api/user/permission/list', PermissionTemplateList),
+    (r'/api/user/permission/(\d+)', PermissionTemplateDetail),
+    (r'/api/user/permission/rename', PermissionTemplateRename),
+    (r'/api/user/permission/add', PermissionTemplateAdd),
+    (r'/api/user/permission/change', PermissionTemplateChange),
+
 
     # 公司相关
     (r'/api/companies', CompanyHandler),

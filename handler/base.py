@@ -44,6 +44,7 @@ from service.project.project_versions import ProjectVersionService
 from service.repository.repository import RepositoryService
 from service.user.user import UserService
 from service.user.sms import SMSService
+from service.user.permission_template import PermissionTemplateService
 from service.file.file import FileService
 from service.server.server_operation import ServerOperationService
 from service.company.company import CompanyService
@@ -73,6 +74,8 @@ class BaseHandler(tornado.web.RequestHandler):
     company_entry_setting_service = CompanyEntrySettingService()
     company_application_service = CompanyApplicationService()
     message_service = MessageService()
+    permission_template_service = PermissionTemplateService()
+
 
     @property
     def db(self):
