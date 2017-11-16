@@ -175,7 +175,7 @@ class CompanyEntrySettingHandler(BaseHandler):
                 "status": 0,
                 "msg": "success",
                 "data": {
-                    "url": "https://c.10.com/api/company/application?code=65d4a0f"
+                    "url": "https://c.10.com/#/invite?code=65d4a0f"
                 }
             }
 
@@ -214,7 +214,7 @@ class CompanyEntrySettingHandler(BaseHandler):
                 "status": 0,
                 "msg": "success",
                 "data": {
-                    "url": "https://c.10.com/api/company/application?code=65d4a0f"
+                    "url": "https://c.10.com/#/invite?code=65d4a0f"
                 }
             }
 
@@ -256,7 +256,7 @@ class CompanyEntryUrlHandler(BaseHandler):
                 "status": 0,
                 "msg": "success",
                 "data": {
-                    "url": "https://c.10.com/api/company/application?code=65d4a0f"
+                    "url": "https://c.10.com/#/invite?code=65d4a0f"
                 }
             }
 
