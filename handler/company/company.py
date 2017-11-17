@@ -427,8 +427,8 @@ class CompanyApplicationRejectHandler(CompanyApplicationVerifyMixin):
     @coroutine
     def post(self):
         """
-        @api {post} /api/company/application/accept 接受员工申请
-        @apiName CompanyApplicationAcceptHandler
+        @api {post} /api/company/application/reject 接受员工申请
+        @apiName CompanyApplicationRejectHandler
         @apiGroup Company
 
         @apiParam {Number} id 员工表id
