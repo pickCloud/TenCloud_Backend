@@ -6,14 +6,14 @@ from handler.base import BaseHandler
 from utils.decorator import is_login
 
 
-class PermissionTemplateList(BaseHandler):
+class PermissionTemplateListHandler(BaseHandler):
     @coroutine
     @is_login
     def post(self):
         """
-        @api {get} /api/usr/permission/list
-        @apiName PermissionTemplateList
-        @apiGroup User
+        @api {get} /api/permission/template/list 获取权限模版列表
+        @apiName PermissionTemplateListHandler
+        @apiGroup Permission
 
         @apiParam {Number} cid 公司id
 
@@ -37,16 +37,17 @@ class PermissionTemplateList(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class PermissionTemplateDetail(BaseHandler):
+class PermissionTemplateDetailHandler(BaseHandler):
     @coroutine
     @is_login
     def get(self, id):
         """
-        @api {post} /api/usr/permission/(\d+)
-        @apiName PermissionTemplateDetail
-        @apiGroup User
+        @api {get} /api/permission/template/(\d+) 获取权限模版
+        @apiName PermissionTemplateDetailHandler
+        @apiGroup Permission
 
-        @apiParam {String} id 权限模版id
+        @apiParam {Number} id 权限模版id
+
         @SuccessExample {json} Success-Response
             HTTP/1.1 200 OK
             {
@@ -68,11 +69,12 @@ class PermissionTemplateDetail(BaseHandler):
     @is_login
     def delete(self, id):
         """
-        @api {delete} /api/usr/permission/(\d+)
-        @apiName PermissionTemplateDetail
-        @apiGroup User
+        @api {delete} /api/permission/template/(\d+) 删除权限模版
+        @apiName PermissionTemplateDetailHandler
+        @apiGroup Permission
 
         @apiParam {Number} id 权限模版id
+
         @apiUse Success
         """
         try:
@@ -84,14 +86,14 @@ class PermissionTemplateDetail(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class PermissionTemplateChange(BaseHandler):
+class PermissionTemplateUpdateHandler(BaseHandler):
     @coroutine
     @is_login
     def post(self):
         """
-        @api {post} /api/usr/permission/change
-        @apiName PermissionTemplateChange
-        @apiGroup User
+        @api {post} /api/permission/template/update 修改权限模版
+        @apiName PermissionTemplateUpdateHandler
+        @apiGroup Permission
 
         @apiParam {Number} id 权限模版id
         @apiParam {Number} cid 公司id
@@ -126,14 +128,14 @@ class PermissionTemplateChange(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class PermissionTemplateRename(BaseHandler):
+class PermissionTemplateRenameHandler(BaseHandler):
     @coroutine
     @is_login
     def post(self):
         """
-        @api {post} /api/usr/permission/rename
-        @apiName PermissionTemplateRename
-        @apiGroup User
+        @api {post} /api/permission/template/rename 权限模版重命名
+        @apiName PermissionTemplateRenameHandler
+        @apiGroup Permission
 
         @apiParam {Number} id 权限模版id
         @apiParam {String} name 新名字
@@ -153,14 +155,14 @@ class PermissionTemplateRename(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class PermissionTemplateAdd(BaseHandler):
+class PermissionTemplateAddHandler(BaseHandler):
     @coroutine
     @is_login
     def post(self):
         """
-        @api {post} /api/usr/permission/add
-        @apiName PermissionTemplateAdd
-        @apiGroup User
+        @api {post} /api/permission/template/add 增加权限模版
+        @apiName PermissionTemplateAddHandler
+        @apiGroup Permission
 
         @apiParam {String} name 名字
         @apiParam {Number} cid 公司id
@@ -183,6 +185,57 @@ class PermissionTemplateAdd(BaseHandler):
 
             yield self.permission_template_service.add(params)
             self.success()
+        except Exception as e:
+            self.error(str(e))
+            self.log.error(traceback.format_exc())
+
+
+class PermissionUserDetailHandler(BaseHandler):
+    @coroutine
+    @is_login
+    def post(self):
+        """
+        @api {post} /api/permission/user/detail 用户权限详情
+        @apiName PermissionUserDetailHandler
+        @apiGroup Permission
+
+        @apiParam {Number} uid 用户id
+        @apiParam {Number} cid 公司id
+
+        @SuccessExample {json} Success-Response
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "message": 成功,
+                "data": [
+                    ...
+                ]
+            }
+        """
+        try:
+            data = yield self.permission_service.get_user_permission(self.params)
+            self.success(data)
+        except Exception as e:
+            self.error(str(e))
+            self.log.error(traceback.format_exc())
+
+
+class PermissionUserUpdateHandler(BaseHandler):
+    @coroutine
+    @is_login
+    def post(self):
+        """
+        @api {post} /api/permission/user/update 更新用户权限详情
+        @apiName PermissionUserUpdateHandler
+        @apiGroup Permission
+
+        @apiParam {Number} uid 用户id
+        @apiParam {Number} cid 公司id
+
+        @apiSuccess {json} Success-Response
+        """
+        try:
+            pass
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())

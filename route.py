@@ -31,8 +31,10 @@ from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, Com
                                     CompanyApplicationHandler, CompanyApplicationAcceptHandler, CompanyApplicationRejectHandler, \
                                     CompanyEmployeeHandler, CompanyHandler, CompanyDetailHandler, CompanyEntryUrlHandler
 from handler.message.message import MessageHandler
-from handler.user.permission import PermissionTemplateList, PermissionTemplateDetail, PermissionTemplateRename, \
-                                    PermissionTemplateAdd, PermissionTemplateChange
+from handler.user.permission import PermissionTemplateListHandler, PermissionTemplateDetailHandler, \
+                                    PermissionTemplateRenameHandler, PermissionTemplateAddHandler, \
+                                    PermissionTemplateUpdateHandler, PermissionUserDetailHandler, \
+                                    PermissionUserUpdateHandler
 
 
 routes = [
@@ -106,11 +108,14 @@ routes = [
     (r'/api/user/password/reset', UserResetPasswordHandler),
     (r'/api/user/password/set', UserPasswordSetHandler),
     # (r'/api/user/mobile/reset', UserResetMobileHandler),
-    (r'/api/user/permission/list', PermissionTemplateList),
-    (r'/api/user/permission/(\d+)', PermissionTemplateDetail),
-    (r'/api/user/permission/rename', PermissionTemplateRename),
-    (r'/api/user/permission/add', PermissionTemplateAdd),
-    (r'/api/user/permission/change', PermissionTemplateChange),
+
+    (r'/api/permission/template/list', PermissionTemplateListHandler),
+    (r'/api/permission/template/(\d+)', PermissionTemplateDetailHandler),
+    (r'/api/permission/template/rename', PermissionTemplateRenameHandler),
+    (r'/api/permission/template/add', PermissionTemplateAddHandler),
+    (r'/api/permission/template/update', PermissionTemplateUpdateHandler),
+    (r'/api/permission/user/detail', PermissionUserDetailHandler),
+    (r'/api/permission/user/update', PermissionUserUpdateHandler),
 
 
     # 公司相关
