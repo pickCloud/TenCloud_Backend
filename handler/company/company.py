@@ -188,6 +188,8 @@ class CompanyEntrySettingHandler(BaseHandler):
             }
         """
         try:
+            cid = int(cid)
+
             yield self.company_employee_service.check_admin(cid, self.current_user['id'])
 
             data = yield self.company_entry_setting_service.get_setting(cid)
@@ -227,6 +229,8 @@ class CompanyEntrySettingHandler(BaseHandler):
             }
         """
         try:
+            cid = int(cid)
+
             yield self.company_employee_service.check_admin(cid, self.current_user['id'])
 
             self.params['cid'] = cid
@@ -269,6 +273,8 @@ class CompanyEntryUrlHandler(BaseHandler):
             }
         """
         try:
+            cid = int(cid)
+
             yield self.company_employee_service.check_admin(cid, self.current_user['id'])
 
             data = yield self.company_entry_setting_service.select(fields='code', conds=['cid=%s'], params=[cid], one=True)
@@ -427,7 +433,7 @@ class CompanyApplicationRejectHandler(CompanyApplicationVerifyMixin):
     @coroutine
     def post(self):
         """
-        @api {post} /api/company/application/reject 接受员工申请
+        @api {post} /api/company/application/reject 拒绝员工申请
         @apiName CompanyApplicationRejectHandler
         @apiGroup Company
 
@@ -456,6 +462,8 @@ class CompanyEmployeeHandler(BaseHandler):
         @apiUse Success
         """
         try:
+            cid = int(cid)
+
             yield self.company_employee_service.check_employee(cid, self.current_user['id'])
 
             employees = yield self.company_employee_service.get_employees(cid)
