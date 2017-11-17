@@ -337,10 +337,8 @@ class CompanyApplicationHandler(BaseHandler):
 
             validate_mobile(self.params['mobile'])
 
-            code = self.get_argument('code')
-
             # 检验code
-            info = yield self.company_service.fetch_with_code(code)
+            info = yield self.company_service.fetch_with_code(self.params['code'])
 
             if not info:
                 self.error('code不合法')
