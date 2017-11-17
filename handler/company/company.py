@@ -122,7 +122,7 @@ class CompanyUpdateHandler(BaseHandler):
         @apiName CompanyUpdateHandler
         @apiGroup Company
 
-        @apiParam {String} cid 公司id
+        @apiParam {Number} cid 公司id
         @apiParam {String} name 公司名称
         @apiParam {String} contact 联系人
         @apiParam {String} mobile 联系方式
@@ -167,7 +167,7 @@ class CompanyEntrySettingHandler(BaseHandler):
         @apiName CompanyEntrySettingGetHandler
         @apiGroup Company
 
-        @apiParam {String} cid     公司id
+        @apiParam {Number} cid     公司id
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -371,7 +371,7 @@ class CompanyApplicationHandler(BaseHandler):
                 'owner': admin['uid'],
                 'content': MSG['application']['admin'].format(name=self.params.get('name', ''), mobile=self.params['mobile'], company_name=info['company_name']),
                 'url': '企业资料的员工管理界面',
-                'type': MSG_MODE['application']
+                'mode': MSG_MODE['application']
             }
 
             yield self.message_service.add(admin_data)
@@ -409,7 +409,7 @@ class CompanyApplicationAcceptHandler(CompanyApplicationVerifyMixin):
         @apiName CompanyApplicationAcceptHandler
         @apiGroup Company
 
-        @apiParam {String} id 员工表id
+        @apiParam {Number} id 员工表id
 
         @apiUse Success
         """
@@ -431,7 +431,7 @@ class CompanyApplicationRejectHandler(CompanyApplicationVerifyMixin):
         @apiName CompanyApplicationAcceptHandler
         @apiGroup Company
 
-        @apiParam {String} id 员工表id
+        @apiParam {Number} id 员工表id
 
         @apiUse Success
         """
@@ -461,6 +461,88 @@ class CompanyEmployeeHandler(BaseHandler):
             employees = yield self.company_employee_service.get_employees(cid)
 
             self.success(employees)
+        except Exception as e:
+            self.error(str(e))
+            self.log.error(traceback.format_exc())
+
+
+class CompanyEmployeeDismissionHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/company/employee/dismission 员工解除公司
+        @apiName CompanyEmployeeHandler
+        @apiGroup Company
+
+        @apiParam {Number} id 列表id
+
+        @apiUse Success
+        """
+        try:
+            data = yield self.company_employee_service.select(conds=['id=%s','is_admin=%s', 'uid=%s'],
+                                                              params=[self.params['id'], 1, self.current_user['id']])
+
+            if data:
+                self.error('管理员不能解除公司，需要先进行管理员转移')
+                return
+
+            yield self.company_employee_service.delete(conds=['id=%s', 'uid=%s'], params=[self.params['id'], self.current_user['id']])
+
+            self.success(data)
+        except Exception as e:
+            self.error(str(e))
+            self.log.error(traceback.format_exc())
+
+
+class CompanyAdminTransferHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/company/admin/transfer 转移管理员
+        @apiName CompanyAdminTransferHandler
+        @apiGroup Company
+
+        @apiParam {Number[]} uids 新管理人员id
+        @apiParam {Number} cid 公司id
+
+        @apiUse Success
+        """
+        try:
+            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
+
+            self.params['admin_id'] = self.current_user['id']
+
+            yield self.company_employee_service.transfer_adimin(self.params)
+
+            self.success()
+        except Exception as e:
+            self.error(str(e))
+            self.log.error(traceback.format_exc())
+
+
+class CompanyApplicationDismissionHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/company/application/dismission 管理员解除员工
+        @apiName CompanyApplicationDismissionHandler
+        @apiGroup Company
+
+        @apiParam {Number} id 列表id
+
+        @apiUse Success
+        """
+        try:
+            data = yield self.company_employee_service.select(fields='cid', conds=['id=%s'], params=[self.params['id']], one=True)
+
+            yield self.company_employee_service.check_admin(data['cid'], self.current_user['id'])
+
+            yield self.company_employee_service.delete(conds=['id=%s'], params=[self.params['id']])
+
+            self.success()
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())

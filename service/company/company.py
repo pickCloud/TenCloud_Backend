@@ -63,7 +63,7 @@ class CompanyService(BaseService):
         content = MSG['change'].format(company_name=params['company_name'], admin_name=params['admin_name'])
 
         sql = '''
-            INSERT INTO message (owner, content, type, url) VALUES (%s, %s, %s, %s)
+            INSERT INTO message (owner, content, mode, url) VALUES (%s, %s, %s, %s)
         '''
         for e in employees:
             yield self.db.execute(sql, [e['uid'], content, MSG_MODE['change'], '企业资料页'])
@@ -77,7 +77,7 @@ class CompanyService(BaseService):
         content = MSG['application'][params['mode']].format(company_name=params['company_name'], admin_name=params['admin_name'])
 
         sql = '''
-            INSERT INTO message (owner, content, type, url) VALUES (%s, %s, %s, %s)
+            INSERT INTO message (owner, content, mode, url) VALUES (%s, %s, %s, %s)
         '''
 
         yield self.db.execute(sql, [params['uid'], content, MSG_MODE['application'], '企业资料页'])
