@@ -4,12 +4,16 @@ import hashlib
 
 from service.base import BaseService
 from tornado.gen import coroutine
-from constant import INVITE_URL
+from constant import INVITE_URL, DEFAULT_ENTRY_SETTING
 
 
 class CompanyEntrySettingService(BaseService):
     table  = 'company_entry_setting'
     fields = 'id, cid, setting, code'
+
+    @staticmethod
+    def create_code(cid, setting=DEFAULT_ENTRY_SETTING):
+        return hashlib.sha1((str(cid) + setting).encode('utf-8')).hexdigest()[:7]
 
     @staticmethod
     def produce_url(code):
@@ -23,7 +27,7 @@ class CompanyEntrySettingService(BaseService):
         '''
         cid, setting = params['cid'], params['setting']
 
-        code = hashlib.sha1((str(cid) + setting).encode('utf-8')).hexdigest()[:7]
+        code = self.create_code(str(cid))
 
         data = yield self.select(conds=['cid=%s'], params=[cid], one=True)
 

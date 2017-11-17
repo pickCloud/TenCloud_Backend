@@ -6,7 +6,7 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login
 from utils.general import validate_mobile
-from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE
+from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING
 
 
 class CompanyHandler(BaseHandler):
@@ -273,7 +273,13 @@ class CompanyEntryUrlHandler(BaseHandler):
 
             data = yield self.company_entry_setting_service.select(fields='code', conds=['cid=%s'], params=[cid], one=True)
 
-            self.success({'url': self.company_entry_setting_service.produce_url(data.get('code'))})
+            if not data:
+                # 默认配置手机号与姓名
+                data = {'cid': cid, 'setting': DEFAULT_ENTRY_SETTING, 'code': self.company_entry_setting_service.create_code(cid)}
+
+                yield self.company_entry_setting_service.add(data)
+
+            self.success({'url': self.company_entry_setting_service.produce_url(data['code'])})
 
         except Exception as e:
             self.error(str(e))
