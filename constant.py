@@ -36,13 +36,13 @@ GIT_TOKEN = 'git_token'
 #################################################################################################
 ERR_TIP = {
     # 注册与登陆
-    'no_registered':     {'sts': 10404, 'msg': '该手机号码未注册'},
+    'no_registered':     {'sts': 10404, 'msg': '你的账户还未注册，请先注册账户。'},
     'sms_over_three':    {'sts': 10405, 'msg': '该手机号码发送短信超过3次'},
-    'sms_over_ten':      {'sts': 10407, 'msg': '每部手机一天只能发送10次验证码'},
+    'sms_over_limit':      {'sts': 10407, 'msg': '每个手机号24小时内仅允许有10次获取短信验证码的机会，请24小时后再尝试'},
     'sms_too_frequency': {'sts': 10408, 'msg': '一分钟内一个手机只能发送一次'},
     'fail_in_geetest':   {'sts': 10409, 'msg': '人机验证失败'},
-    'password_error':    {'sts': 10410, 'msg': '密码错误'},
-    'mobile_has_exist':    {'sts': 10411, 'msg': '该手机号码已经注册过'},
+    'password_error':    {'sts': 10410, 'msg': '密码不正确，请确认后重新登录。'},
+    'mobile_has_exist':    {'sts': 10411, 'msg': '该手机号已被注册。'},
     'auth_code_has_error': {'sts': 10412, 'msg': '登陆验证码错误{count}次'},
     'auth_code_many_errors': {'sts': 10413, 'msg': '登陆验证码已连续错{count}次，请二个小时后再次尝试'.format(count=AUTH_CODE_ERROR_COUNT_LIMIT)},
 

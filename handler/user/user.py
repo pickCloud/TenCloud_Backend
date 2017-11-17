@@ -140,7 +140,7 @@ class UserSMSHandler(UserBase):
             }
 
             if sms_sent_count >= SMS_SENT_COUNT_LIMIT:
-                self.error(status=ERR_TIP['sms_too_frequency']['sts'], message=ERR_TIP['sms_too_frequency']['msg'], data=data)
+                self.error(status=ERR_TIP['sms_over_limit']['sts'], message=ERR_TIP['sms_over_limit']['msg'], data=data)
                 return
 
             if sms_sent_count >= SMS_NEED_GEETEST_COUNT:
@@ -681,5 +681,6 @@ class UserPasswordSetHandler(BaseHandler):
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())
+
 
 
