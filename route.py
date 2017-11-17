@@ -29,7 +29,8 @@ from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHand
                                 FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
 from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, CompanyEntrySettingHandler, \
                                     CompanyApplicationHandler, CompanyApplicationAcceptHandler, CompanyApplicationRejectHandler, \
-                                    CompanyEmployeeHandler, CompanyHandler, CompanyDetailHandler, CompanyEntryUrlHandler
+                                    CompanyEmployeeHandler, CompanyHandler, CompanyDetailHandler, CompanyEntryUrlHandler, \
+                                    CompanyAdminTransferHandler, CompanyEmployeeDismissionHandler, CompanyApplicationDismissionHandler
 from handler.message.message import MessageHandler
 
 
@@ -115,7 +116,10 @@ routes = [
     (r'/api/company/application', CompanyApplicationHandler),
     (r'/api/company/application/accept', CompanyApplicationAcceptHandler),
     (r'/api/company/application/reject', CompanyApplicationRejectHandler),
+    (r'/api/company/application/dismission', CompanyApplicationDismissionHandler),
     (r'/api/company/(\d+)/employees', CompanyEmployeeHandler),
+    (r'/api/company/employee/dismission', CompanyEmployeeDismissionHandler),
+    (r'/api/company/admin/transfer', CompanyAdminTransferHandler),
 
     # 消息
     (r'/api/messages/?(\d*)', MessageHandler),
