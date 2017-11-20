@@ -8,10 +8,8 @@ from handler.cluster.cluster import ClusterHandler, ClusterNewHandler, ClusterDe
     ClusterDetailHandler, ClusterUpdateHandler
 from handler.imagehub.imagehub import ImagehubHandler, ImagehubBySourceHandler, ImagehubByTypeHandler, \
     ImagehubSearchHandler
-from handler.permission.permission import PermissionTemplateListHandler, PermissionTemplateDetailHandler, \
-    PermissionTemplateRenameHandler, PermissionTemplateAddHandler, \
-    PermissionTemplateUpdateHandler, PermissionUserDetailHandler, \
-    PermissionUserUpdateHandler
+from handler.permission.permission import PermissionTemplateListHandler, PermissionTemplateHandler, \
+    PermissionTemplateRenameHandler, PermissionUserDetailHandler, PermissionUserUpdateHandler, PermissionTemplateAddHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
     ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler, \
@@ -109,12 +107,11 @@ routes = [
     (r'/api/user/password/set', UserPasswordSetHandler),
     # (r'/api/user/mobile/reset', UserResetMobileHandler),
 
-    (r'/api/permission/template/list', PermissionTemplateListHandler),
-    (r'/api/permission/template/(\d+)', PermissionTemplateDetailHandler),
-    (r'/api/permission/template/rename', PermissionTemplateRenameHandler),
     (r'/api/permission/template/add', PermissionTemplateAddHandler),
-    (r'/api/permission/template/update', PermissionTemplateUpdateHandler),
-    (r'/api/permission/user/detail', PermissionUserDetailHandler),
+    (r'/api/permission/template/list/(\d+)', PermissionTemplateListHandler),
+    (r'/api/permission/template/(\d+)', PermissionTemplateHandler),
+    (r'/api/permission/template/(\d+)/rename', PermissionTemplateRenameHandler),
+    (r'/api/permission/(\d+)/user/(\d+)/detail', PermissionUserDetailHandler),
     (r'/api/permission/user/update', PermissionUserUpdateHandler),
 
 

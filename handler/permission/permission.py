@@ -9,9 +9,9 @@ from utils.decorator import is_login
 class PermissionTemplateListHandler(BaseHandler):
     @is_login
     @coroutine
-    def post(self):
+    def get(self, cid):
         """
-        @api {get} /api/permission/template/list 获取权限模版列表
+        @api {get} /api/permission/template/list/(\d+) 获取权限模版列表
         @apiName PermissionTemplateListHandler
         @apiGroup Permission
 
@@ -28,7 +28,7 @@ class PermissionTemplateListHandler(BaseHandler):
             }
         """
         try:
-            cid = self.params['cid']
+            cid = int(cid)
             data = yield self.permission_template_service.select(conds=['cid=%s'], params=[cid])
             self.success(data)
 
@@ -37,13 +37,13 @@ class PermissionTemplateListHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
-class PermissionTemplateDetailHandler(BaseHandler):
+class PermissionTemplateHandler(BaseHandler):
     @is_login
     @coroutine
-    def get(self, pid):
+    def get(self, ptid):
         """
         @api {get} /api/permission/template/(\d+) 获取权限模版
-        @apiName PermissionTemplateDetailHandler
+        @apiName PermissionTemplateHandler
         @apiGroup Permission
 
         @apiParam {Number} id 权限模版id
@@ -59,8 +59,8 @@ class PermissionTemplateDetailHandler(BaseHandler):
             }
         """
         try:
-            pid = int(pid)
-            data = yield self.permission_template_service.get_template_permission(pid)
+            ptid = int(ptid)
+            data = yield self.permission_template_service.get_template_permission(ptid)
             self.success(data)
         except Exception as e:
             self.error(str(e))
@@ -68,36 +68,39 @@ class PermissionTemplateDetailHandler(BaseHandler):
 
     @is_login
     @coroutine
-    def delete(self, pid):
+    def delete(self, ptid):
         """
         @api {delete} /api/permission/template/(\d+) 删除权限模版
-        @apiName PermissionTemplateDetailHandler
+        @apiName PermissionTemplateHandler
         @apiGroup Permission
 
         @apiParam {Number} id 权限模版id
+        @apiParam {Number} cid 公司id
 
         @apiUse Success
         """
         try:
 
+            args = ['cid']
+            self.guarantee(*args)
+
+            ptid = int(ptid)
+
             yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
 
-            pid = int(pid)
-            yield self.permission_template_service.delete(conds=['id=%s'], params=[pid])
+            yield self.permission_template_service.delete(conds=['id=%s'], params=[ptid])
             self.success()
 
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())
 
-
-class PermissionTemplateUpdateHandler(BaseHandler):
     @is_login
     @coroutine
-    def post(self):
+    def put(self, ptid):
         """
-        @api {post} /api/permission/template/update 修改权限模版
-        @apiName PermissionTemplateUpdateHandler
+        @api {pu} /api/permission/template/(\d+) 修改权限模版
+        @apiName PermissionTemplateHandler
         @apiGroup Permission
 
         @apiParam {Number} id 权限模版id
@@ -111,55 +114,27 @@ class PermissionTemplateUpdateHandler(BaseHandler):
         """
         try:
 
+            args = ['cid', 'permissions', 'access_servers', 'access_projects', 'access_filehub']
+            self.guarantee(*args)
+
             yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
 
-            id = self.params['id']
-            cid = self.params['cid']
+            ptid = int(ptid)
             permissions = self.params['permissions']
             access_servers = self.params['access_servers']
             access_projects = self.params['access_projects']
             access_filehub = self.params['access_filehub']
 
             sets = [
-                   'cid=%s', 'permissions=%s',
-                   'access_servers=%s','access_projects=%s',
-                   'access_filehub=%s'
+                'permissions=%s',
+                'access_servers=%s', 'access_projects=%s',
+                'access_filehub=%s'
             ]
-            params=[cid, permissions, access_servers, access_projects, access_filehub, id]
+            params = [permissions, access_servers, access_projects, access_filehub, ptid]
             yield self.permission_template_service.update(sets=sets,
-                                                        conds=['id=%s'],
-                                                        params=params
-            )
-            self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
-
-
-class PermissionTemplateRenameHandler(BaseHandler):
-    @is_login
-    @coroutine
-    def post(self):
-        """
-        @api {post} /api/permission/template/rename 权限模版重命名
-        @apiName PermissionTemplateRenameHandler
-        @apiGroup Permission
-
-        @apiParam {Number} id 权限模版id
-        @apiParam {String} name 新名字
-
-        @apiUse Success
-        """
-        try:
-
-            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
-
-            name, id = self.params['name'], self.params['id']
-            yield self.permission_template_service.update(
-                                                        sets=['name=%s'],
-                                                        conds=['id=%s'],
-                                                        params=[name,id]
-            )
+                                                          conds=['id=%s'],
+                                                          params=params
+                                                          )
             self.success()
         except Exception as e:
             self.error(str(e))
@@ -186,6 +161,9 @@ class PermissionTemplateAddHandler(BaseHandler):
         """
         try:
 
+            args = ['name', 'cid', 'permissions', 'access_servers', 'access_projects', 'access_filehub']
+            self.guarantee(*args)
+
             yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
 
             params = {
@@ -203,18 +181,47 @@ class PermissionTemplateAddHandler(BaseHandler):
             self.error(str(e))
             self.log.error(traceback.format_exc())
 
+class PermissionTemplateRenameHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def put(self, ptid):
+        """
+        @api {post} /api/permission/template/(\d+)/rename 权限模版重命名
+        @apiName PermissionTemplateRenameHandler
+        @apiGroup Permission
+
+        @apiParam {Number} id 权限模版id
+        @apiParam {Number} cid 公司id
+        @apiParam {String} name 新名字
+
+        @apiUse Success
+        """
+        try:
+            args = ['cid','name']
+            self.guarantee(*args)
+
+            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
+
+            name, ptid = self.params['name'], int(ptid)
+            yield self.permission_template_service.update(
+                                                        sets=['name=%s'],
+                                                        conds=['id=%s'],
+                                                        params=[name, ptid]
+            )
+            self.success()
+        except Exception as e:
+            self.error(str(e))
+            self.log.error(traceback.format_exc())
+
 
 class PermissionUserDetailHandler(BaseHandler):
     @is_login
     @coroutine
-    def post(self):
+    def get(self, cid, uid):
         """
-        @api {post} /api/permission/user/detail 用户权限详情
+        @api {get} /api/permission/(\d+)/user/(\d+)/detail 用户权限详情
         @apiName PermissionUserDetailHandler
         @apiGroup Permission
-
-        @apiParam {Number} uid 用户id
-        @apiParam {Number} cid 公司id
 
         @SuccessExample {json} Success-Response
             HTTP/1.1 200 OK
@@ -227,11 +234,8 @@ class PermissionUserDetailHandler(BaseHandler):
             }
         """
         try:
-            if not(self.params.get('uid', '') or self.params('cid', '')):
-                self.error(message='need uid and cid, check again')
-                return
-
-            data = yield self.permission_service.get_user_permission(self.params)
+            cid, uid = int(cid), int(uid)
+            data = yield self.permission_service.get_user_permission(cid=cid, uid=uid)
             self.success(data)
         except Exception as e:
             self.error(str(e))
@@ -257,12 +261,10 @@ class PermissionUserUpdateHandler(BaseHandler):
         @apiUse Success
         """
         try:
+            args = ['uid', 'cid']
+            self.guarantee(*args)
 
             yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
-
-            if not (self.params.get('uid', '') or self.params('cid', '')):
-                self.error(message='need uid and cid, check again')
-                return
 
             server_ids = self.params.get('server_id', '')
             if server_ids:

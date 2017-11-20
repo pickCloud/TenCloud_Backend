@@ -19,6 +19,9 @@ class PermissionTemplateService(PermissionBaseService):
         cur = yield self.db.execute(source_id_sql, [id])
         id_data = cur.fetchone()
 
+        if not id_data:
+            raise ValueError('id不存在')
+
         permission_ids = '({ids})'.format(ids=id_data['permissions'])
         project_ids = '({ids})'.format(ids=id_data['access_projects'])
         server_ids = '({ids})'.format(ids=id_data['access_servers'])

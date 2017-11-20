@@ -8,8 +8,8 @@ class PermissionService(PermissionBaseService):
     fields = 'id, name, group'
 
     @coroutine
-    def get_user_permission(self, params):
-        arg = [params['uid'], params['cid']]
+    def get_user_permission(self, cid,uid):
+        arg = [uid, cid]
 
         permission_data = yield self._get_user_permission(
                                                     fields='a.id, a.name, `group`',
