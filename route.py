@@ -6,14 +6,8 @@ __author__ = 'Jon'
 
 from handler.cluster.cluster import ClusterHandler, ClusterNewHandler, ClusterDelHandler, \
     ClusterDetailHandler, ClusterUpdateHandler
-from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, CompanyEntrySettingHandler, \
-    CompanyApplicationHandler, CompanyApplicationAcceptHandler, CompanyApplicationRejectHandler, \
-    CompanyEmployeeHandler, CompanyHandler, CompanyDetailHandler, CompanyEntryUrlHandler
-from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
-    FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
 from handler.imagehub.imagehub import ImagehubHandler, ImagehubBySourceHandler, ImagehubByTypeHandler, \
     ImagehubSearchHandler
-from handler.message.message import MessageHandler
 from handler.permission.permission import PermissionTemplateListHandler, PermissionTemplateDetailHandler, \
     PermissionTemplateRenameHandler, PermissionTemplateAddHandler, \
     PermissionTemplateUpdateHandler, PermissionUserDetailHandler, \
@@ -31,9 +25,17 @@ from handler.server.server import ServerNewHandler, ServerReport, ServerMigratio
     ServerContainersInfoHandler, ServerContainerStartHandler, ServerContainerStopHandler, \
     ServerContainerDelHandler, OperationLogHandler
 from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, \
-    UserUpdateHandler, UserUploadToken, GetCaptchaHandler, \
-    PasswordLoginHandler, UserRegisterHandler, UserResetPasswordHandler, \
-    UserPasswordSetHandler
+                              UserUpdateHandler, UserUploadToken, GetCaptchaHandler, \
+                              PasswordLoginHandler, UserRegisterHandler, UserResetPasswordHandler, \
+                              UserResetMobileHandler, UserPasswordSetHandler
+from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
+                                FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
+from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, CompanyEntrySettingHandler, \
+                                    CompanyApplicationHandler, CompanyApplicationAcceptHandler, CompanyApplicationRejectHandler, \
+                                    CompanyEmployeeHandler, CompanyHandler, CompanyDetailHandler, CompanyEntryUrlHandler, \
+                                    CompanyAdminTransferHandler, CompanyEmployeeDismissionHandler, CompanyApplicationDismissionHandler
+from handler.message.message import MessageHandler
+
 
 routes = [
     # 集群相关
@@ -126,7 +128,10 @@ routes = [
     (r'/api/company/application', CompanyApplicationHandler),
     (r'/api/company/application/accept', CompanyApplicationAcceptHandler),
     (r'/api/company/application/reject', CompanyApplicationRejectHandler),
+    (r'/api/company/application/dismission', CompanyApplicationDismissionHandler),
     (r'/api/company/(\d+)/employees', CompanyEmployeeHandler),
+    (r'/api/company/employee/dismission', CompanyEmployeeDismissionHandler),
+    (r'/api/company/admin/transfer', CompanyAdminTransferHandler),
 
     # 消息
     (r'/api/messages/?(\d*)', MessageHandler),

@@ -3,6 +3,7 @@ __author__ = 'Jon'
 from tornado.gen import coroutine
 from service.base import BaseService
 from constant import APPLICATION_STATUS, FULL_DATE_FORMAT
+from utils.general import get_in_formats
 
 
 class CompanyEmployeeService(BaseService):
@@ -94,3 +95,14 @@ class CompanyEmployeeService(BaseService):
         data = cur.fetchall()
 
         return data
+
+    @coroutine
+    def transfer_adimin(self, params):
+        ''' 转换管理员
+        :param params: {'admin_id', 'cid', 'uids'}
+        '''
+        yield self.update(sets=['is_admin=%s'], conds=['uid=%s', 'cid=%s'], params=[0, params['admin_id'], params['cid']])
+
+        yield self.update(sets=['is_admin=%s'],
+                          conds=[get_in_formats('uid', params['uids']), 'cid=%s'],
+                          params=[1] + params['uids'] + [params['cid']])
