@@ -27,7 +27,7 @@ class CompanyEntrySettingService(BaseService):
         '''
         cid, setting = params['cid'], params['setting']
 
-        code = self.create_code(str(cid))
+        code = self.create_code(str(cid), setting)
 
         data = yield self.select(conds=['cid=%s'], params=[cid], one=True)
 
