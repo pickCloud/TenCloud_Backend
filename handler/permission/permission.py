@@ -7,8 +7,8 @@ from utils.decorator import is_login
 
 
 class PermissionTemplateListHandler(BaseHandler):
-    @coroutine
     @is_login
+    @coroutine
     def post(self):
         """
         @api {get} /api/permission/template/list 获取权限模版列表
@@ -38,9 +38,9 @@ class PermissionTemplateListHandler(BaseHandler):
 
 
 class PermissionTemplateDetailHandler(BaseHandler):
-    @coroutine
     @is_login
-    def get(self, id):
+    @coroutine
+    def get(self, pid):
         """
         @api {get} /api/permission/template/(\d+) 获取权限模版
         @apiName PermissionTemplateDetailHandler
@@ -59,15 +59,16 @@ class PermissionTemplateDetailHandler(BaseHandler):
             }
         """
         try:
-            data = yield self.permission_template_service.get_permission_detail(id)
+            pid = int(pid)
+            data = yield self.permission_template_service.get_template_permission(pid)
             self.success(data)
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())
 
-    @coroutine
     @is_login
-    def delete(self, id):
+    @coroutine
+    def delete(self, pid):
         """
         @api {delete} /api/permission/template/(\d+) 删除权限模版
         @apiName PermissionTemplateDetailHandler
@@ -78,7 +79,11 @@ class PermissionTemplateDetailHandler(BaseHandler):
         @apiUse Success
         """
         try:
-            yield self.permission_template_service.delete(conds=['id=%s'], params=[id])
+
+            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
+
+            pid = int(pid)
+            yield self.permission_template_service.delete(conds=['id=%s'], params=[pid])
             self.success()
 
         except Exception as e:
@@ -87,8 +92,8 @@ class PermissionTemplateDetailHandler(BaseHandler):
 
 
 class PermissionTemplateUpdateHandler(BaseHandler):
-    @coroutine
     @is_login
+    @coroutine
     def post(self):
         """
         @api {post} /api/permission/template/update 修改权限模版
@@ -105,6 +110,9 @@ class PermissionTemplateUpdateHandler(BaseHandler):
         @apiUse Success
         """
         try:
+
+            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
+
             id = self.params['id']
             cid = self.params['cid']
             permissions = self.params['permissions']
@@ -129,8 +137,8 @@ class PermissionTemplateUpdateHandler(BaseHandler):
 
 
 class PermissionTemplateRenameHandler(BaseHandler):
-    @coroutine
     @is_login
+    @coroutine
     def post(self):
         """
         @api {post} /api/permission/template/rename 权限模版重命名
@@ -143,6 +151,9 @@ class PermissionTemplateRenameHandler(BaseHandler):
         @apiUse Success
         """
         try:
+
+            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
+
             name, id = self.params['name'], self.params['id']
             yield self.permission_template_service.update(
                                                         sets=['name=%s'],
@@ -156,8 +167,8 @@ class PermissionTemplateRenameHandler(BaseHandler):
 
 
 class PermissionTemplateAddHandler(BaseHandler):
-    @coroutine
     @is_login
+    @coroutine
     def post(self):
         """
         @api {post} /api/permission/template/add 增加权限模版
@@ -174,6 +185,9 @@ class PermissionTemplateAddHandler(BaseHandler):
         @apiUse Success
         """
         try:
+
+            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
+
             params = {
                 'name': self.params['name'],
                 'cid': self.params['cid'],
@@ -191,8 +205,8 @@ class PermissionTemplateAddHandler(BaseHandler):
 
 
 class PermissionUserDetailHandler(BaseHandler):
-    @coroutine
     @is_login
+    @coroutine
     def post(self):
         """
         @api {post} /api/permission/user/detail 用户权限详情
@@ -213,6 +227,10 @@ class PermissionUserDetailHandler(BaseHandler):
             }
         """
         try:
+            if not(self.params.get('uid', '') or self.params('cid', '')):
+                self.error(message='need uid and cid, check again')
+                return
+
             data = yield self.permission_service.get_user_permission(self.params)
             self.success(data)
         except Exception as e:
@@ -221,8 +239,8 @@ class PermissionUserDetailHandler(BaseHandler):
 
 
 class PermissionUserUpdateHandler(BaseHandler):
-    @coroutine
     @is_login
+    @coroutine
     def post(self):
         """
         @api {post} /api/permission/user/update 更新用户权限详情
@@ -231,11 +249,38 @@ class PermissionUserUpdateHandler(BaseHandler):
 
         @apiParam {Number} uid 用户id
         @apiParam {Number} cid 公司id
+        @apiParam {Number} server_id 服务器id
+        @apiParam {Number} project_id 项目id
+        @apiParam {Number} filehub_id 文件id
+        @apiParam {Number} permission_id 权限id
 
-        @apiSuccess {json} Success-Response
+        @apiUse Success
         """
         try:
-            pass
+
+            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
+
+            if not (self.params.get('uid', '') or self.params('cid', '')):
+                self.error(message='need uid and cid, check again')
+                return
+
+            server_ids = self.params.get('server_id', '')
+            if server_ids:
+                yield self.permission_service.update_user_access_server(self.params)
+
+            project_ids = self.params.get('project_id', '')
+            if project_ids:
+                yield self.permission_service.update_user_access_project(self.params)
+
+            filehub_ids = self.params.get('filehub_id', '')
+            if filehub_ids:
+                yield self.permission_service.update_user_access_filehub(self.params)
+
+            permission_ids = self.params.get('permission_id', '')
+            if permission_ids:
+                yield self.permission_service.update_user_permission(self.params)
+
+            self.success()
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())

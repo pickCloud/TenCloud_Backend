@@ -4,38 +4,36 @@ __author__ = 'Jon'
 项目路由文件
 '''
 
-from handler.cluster.cluster import ClusterHandler, ClusterNewHandler, ClusterDelHandler,\
-                                    ClusterDetailHandler, ClusterUpdateHandler
-from handler.imagehub.imagehub import ImagehubHandler, ImagehubBySourceHandler, ImagehubByTypeHandler, \
-                                      ImagehubSearchHandler
-from handler.server.server import ServerNewHandler, ServerReport, ServerMigrationHandler, ServerDelHandler, \
-                                  ServerDetailHandler, ServerPerformanceHandler, ServerUpdateHandler, \
-                                  ServerStopHandler, ServerStartHandler, ServerRebootHandler, \
-                                  ServerStatusHandler, ServerContainerPerformanceHandler, ServerContainersHandler, \
-                                  ServerContainersInfoHandler, ServerContainerStartHandler, ServerContainerStopHandler,\
-                                  ServerContainerDelHandler, OperationLogHandler
-
-from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
-                                    ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
-                                    ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler, \
-                                    ProjectImageLogHandler, ProjectContainersListHanler, ProjectImageUpload, \
-                                    ProjectImageCloudDownload
-from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler, GithubOauthCallbackHandler
-from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, \
-                              UserUpdateHandler, UserUploadToken, GetCaptchaHandler, \
-                              PasswordLoginHandler, UserRegisterHandler, UserResetPasswordHandler, \
-                              UserResetMobileHandler, UserPasswordSetHandler
-from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
-                                FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
+from handler.cluster.cluster import ClusterHandler, ClusterNewHandler, ClusterDelHandler, \
+    ClusterDetailHandler, ClusterUpdateHandler
 from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, CompanyEntrySettingHandler, \
-                                    CompanyApplicationHandler, CompanyApplicationAcceptHandler, CompanyApplicationRejectHandler, \
-                                    CompanyEmployeeHandler, CompanyHandler, CompanyDetailHandler, CompanyEntryUrlHandler
+    CompanyApplicationHandler, CompanyApplicationAcceptHandler, CompanyApplicationRejectHandler, \
+    CompanyEmployeeHandler, CompanyHandler, CompanyDetailHandler, CompanyEntryUrlHandler
+from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
+    FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
+from handler.imagehub.imagehub import ImagehubHandler, ImagehubBySourceHandler, ImagehubByTypeHandler, \
+    ImagehubSearchHandler
 from handler.message.message import MessageHandler
-from handler.user.permission import PermissionTemplateListHandler, PermissionTemplateDetailHandler, \
-                                    PermissionTemplateRenameHandler, PermissionTemplateAddHandler, \
-                                    PermissionTemplateUpdateHandler, PermissionUserDetailHandler, \
-                                    PermissionUserUpdateHandler
-
+from handler.permission.permission import PermissionTemplateListHandler, PermissionTemplateDetailHandler, \
+    PermissionTemplateRenameHandler, PermissionTemplateAddHandler, \
+    PermissionTemplateUpdateHandler, PermissionUserDetailHandler, \
+    PermissionUserUpdateHandler
+from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
+    ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
+    ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler, \
+    ProjectImageLogHandler, ProjectContainersListHanler, ProjectImageUpload, \
+    ProjectImageCloudDownload
+from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler, GithubOauthCallbackHandler
+from handler.server.server import ServerNewHandler, ServerReport, ServerMigrationHandler, ServerDelHandler, \
+    ServerDetailHandler, ServerPerformanceHandler, ServerUpdateHandler, \
+    ServerStopHandler, ServerStartHandler, ServerRebootHandler, \
+    ServerStatusHandler, ServerContainerPerformanceHandler, ServerContainersHandler, \
+    ServerContainersInfoHandler, ServerContainerStartHandler, ServerContainerStopHandler, \
+    ServerContainerDelHandler, OperationLogHandler
+from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, \
+    UserUpdateHandler, UserUploadToken, GetCaptchaHandler, \
+    PasswordLoginHandler, UserRegisterHandler, UserResetPasswordHandler, \
+    UserPasswordSetHandler
 
 routes = [
     # 集群相关

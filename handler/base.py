@@ -32,31 +32,31 @@ __author__ = 'Jon'
 
 
 import json
+
 import tornado.web
+from service.permission.permission_template import PermissionTemplateService
 from tornado.gen import coroutine, Task
 from tornado.websocket import WebSocketHandler
 
+from constant import SESSION_TIMEOUT, SESSION_KEY
 from service.cluster.cluster import ClusterService
+from service.company.company import CompanyService
+from service.company.company_application import CompanyApplicationService
+from service.company.company_employee import CompanyEmployeeService
+from service.company.company_entry_setting import CompanyEntrySettingService
+from service.file.file import FileService
 from service.imagehub.imagehub import ImagehubService
-from service.server.server import ServerService
+from service.message.message import MessageService
+from service.permission.permission import PermissionService
 from service.project.project import ProjectService
 from service.project.project_versions import ProjectVersionService
 from service.repository.repository import RepositoryService
-from service.user.user import UserService
-from service.user.sms import SMSService
-from service.user.permission_template import PermissionTemplateService
-from service.user.permission import PermissionService
-from service.file.file import FileService
+from service.server.server import ServerService
 from service.server.server_operation import ServerOperationService
-from service.company.company import CompanyService
-from service.company.company_employee import CompanyEmployeeService
-from service.company.company_entry_setting import CompanyEntrySettingService
-from service.company.company_application import CompanyApplicationService
-from service.message.message import MessageService
-
-from constant import SESSION_TIMEOUT, SESSION_KEY
-from utils.general import json_dumps, json_loads
+from service.user.sms import SMSService
+from service.user.user import UserService
 from setting import settings
+from utils.general import json_dumps, json_loads
 
 
 class BaseHandler(tornado.web.RequestHandler):
