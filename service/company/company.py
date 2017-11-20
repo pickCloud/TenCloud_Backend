@@ -18,7 +18,7 @@ class CompanyService(BaseService):
             SELECT c.id AS cid, c.name AS company_name, DATE_FORMAT(ce.create_time, %s) AS ctime, DATE_FORMAT(ce.update_time, %s) AS utime, ce.status
             FROM company_employee ce
             JOIN company c ON ce.cid = c.id
-            WHERE ce.uid = %a
+            WHERE ce.uid = %s
         '''
         cur = yield self.db.execute(sql, [FULL_DATE_FORMAT, FULL_DATE_FORMAT, uid])
 
