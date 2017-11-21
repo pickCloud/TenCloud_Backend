@@ -17,7 +17,7 @@ class PermissionTemplateListHandler(BaseHandler):
 
         @apiParam {Number} cid 公司id
 
-        @SuccessExample {json} Success-Response
+        @apiSuccessExample {json} Success-Response
             HTTP/1.1 200 OK
             {
                 "status": 0,
@@ -48,7 +48,7 @@ class PermissionTemplateHandler(BaseHandler):
 
         @apiParam {Number} id 权限模版id
 
-        @SuccessExample {json} Success-Response
+        @apiSuccessExample {json} Success-Response
             HTTP/1.1 200 OK
             {
                 "status": 0,
@@ -223,7 +223,7 @@ class PermissionUserDetailHandler(BaseHandler):
         @apiName PermissionUserDetailHandler
         @apiGroup Permission
 
-        @SuccessExample {json} Success-Response
+        @apiSuccessExample {json} Success-Response
             HTTP/1.1 200 OK
             {
                 "status": 0,
