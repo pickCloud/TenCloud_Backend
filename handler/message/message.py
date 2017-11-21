@@ -23,7 +23,11 @@ class MessageHandler(BaseHandler):
                 "status": 0,
                 "msg": "success",
                 "data": [
-                    {"id": 1, "content": "十全十美", "url": "http", "mode": "1加入企业，2企业改变信息", "status": "0未读，1已读"}
+                    {"id": 1, "content": "十全十美",
+                    "url": "http",
+                    "mode": "1加入企业，2企业改变信息",
+                    "status": "0未读，1已读",
+                    "tip": "马上审核/重新提交/..."}
                 ]
             }
         """
