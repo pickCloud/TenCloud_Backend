@@ -454,3 +454,4 @@ MSG_STATUS = {
     'unread': 0,
     'read': 1
 }
+MSG_PAGE_NUM = 20
