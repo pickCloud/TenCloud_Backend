@@ -6,7 +6,7 @@ from service.base import BaseService
 
 class MessageService(BaseService):
     table  = 'message'
-    fields = 'id, owner, content, mode'
+    fields = 'id, owner, content, mode, url, status'
 
     @coroutine
     def fetch(self, params):

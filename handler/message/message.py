@@ -15,7 +15,7 @@ class MessageHandler(BaseHandler):
         @apiName MessageGetHandler
         @apiGroup Message
 
-        @apiDescription /1加入企业, /2企业变更, /全部
+        @apiDescription /1加入企业,  /2企业变更, /全部
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -23,7 +23,7 @@ class MessageHandler(BaseHandler):
                 "status": 0,
                 "msg": "success",
                 "data": [
-                    {"id": 1, "content": "十全十美", "url": "http"}
+                    {"id": 1, "content": "十全十美", "url": "http", "mode": "1加入企业，2企业改变信息", "status": "0未读，1已读"}
                 ]
             }
         """
