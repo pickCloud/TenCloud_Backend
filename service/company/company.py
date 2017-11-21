@@ -2,7 +2,7 @@ __author__ = 'Jon'
 
 from tornado.gen import coroutine
 from service.base import BaseService
-from constant import APPLICATION_STATUS, MSG, MSG_MODE, FULL_DATE_FORMAT, MSG_TIP
+from constant import APPLICATION_STATUS, MSG, MSG_MODE, FULL_DATE_FORMAT, MSG_SUB_MODE
 
 class CompanyService(BaseService):
     table  = 'company'
@@ -63,22 +63,22 @@ class CompanyService(BaseService):
         content = MSG['change'].format(company_name=params['company_name'], admin_name=params['admin_name'])
 
         sql = '''
-            INSERT INTO message (owner, content, mode, url，tip) VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO message (owner, content, mode, sub_mode, tip) VALUES (%s, %s, %s, %s, %s)
         '''
         for e in employees:
-            yield self.db.execute(sql, [e['uid'], content, MSG_MODE['change'], '企业资料页', MSG_TIP['change']])
+            yield self.db.execute(sql, [e['uid'], content, MSG_MODE['change'], MSG_SUB_MODE['change'], '{}:'.format(params['cid'])])
 
     @coroutine
     def notify_verify(self, params):
         ''' 接受或拒绝员工
-        :param params: {'uid', 'company_name', 'admin_name', 'mode', 'tip'}
+        :param params: {'uid', 'company_name', 'admin_name', 'mode', 'sub_mode', 'tip'}
         :return:
         '''
         content = MSG['application'][params['mode']].format(company_name=params['company_name'], admin_name=params['admin_name'])
 
         sql = '''
-            INSERT INTO message (owner, content, mode, url, tip) VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO message (owner, content, mode, sub_mode, tip) VALUES (%s, %s, %s, %s, %s)
         '''
 
-        yield self.db.execute(sql, [params['uid'], content, MSG_MODE['application'], '企业资料页', params['tip']])
+        yield self.db.execute(sql, [params['uid'], content, MSG_MODE['application'], params['sub_mode'], params['tip']])
 

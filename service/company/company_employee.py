@@ -53,12 +53,13 @@ class CompanyEmployeeService(BaseService):
     def get_app_info(self, id):
         ''' 通过员工表id获取一些信息
         :param id: 员工表id
-        :return: {'company_name', 'cid', 'uid'}
+        :return: {'company_name', 'cid', 'uid', 'code'}
         '''
         sql = '''
-            SELECT c.name AS company_name, c.id AS cid, ce.uid AS uid
+            SELECT c.name AS company_name, c.id AS cid, ce.uid AS uid, ces.code AS code
             FROM company c
             JOIN company_employee ce ON c.id=ce.cid
+            JOIN company_entry_setting ces ON c.id=ces.cid
             WHERE ce.id=%s
         '''
         cur = yield self.db.execute(sql, id)

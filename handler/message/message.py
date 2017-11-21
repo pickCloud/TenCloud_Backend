@@ -15,7 +15,7 @@ class MessageHandler(BaseHandler):
         @apiName MessageGetHandler
         @apiGroup Message
 
-        @apiDescription /0未读,  /1已读, /全部。page默认为1
+        @apiDescription /0未读,  /1已读, /全部。没有page,返回所有
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -26,13 +26,14 @@ class MessageHandler(BaseHandler):
                     {"id": 1, "content": "十全十美",
                     "url": "http",
                     "mode": "1加入企业，2企业改变信息",
+                    "sub_mode": "0马上审核, 1重新提交, 2进入企业, 3马上查看"
                     "status": "0未读，1已读",
-                    "tip": "马上审核/重新提交/..."}
+                    "tip": "cid:code"}
                 ]
             }
         """
         try:
-            params = {'owner': self.current_user['id'], 'page': self.get_argument('page', 1)}
+            params = {'owner': self.current_user['id'], 'page': self.get_argument('page', None)}
 
             if status: params['status'] = status
 
