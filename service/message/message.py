@@ -8,7 +8,7 @@ from utils.general import get_in_formats
 
 class MessageService(BaseService):
     table  = 'message'
-    fields = 'id, owner, content, mode, url, tip, status'
+    fields = 'id, owner, content, mode, sub_mode, tip, status'
 
     @coroutine
     def fetch(self, params):
@@ -16,11 +16,16 @@ class MessageService(BaseService):
         :param params: {'owner', 'status', 'page'} # status, page可选
         :return:
         '''
-        page = params.pop('page', 1)
+        page = params.pop('page', None)
+
+        extra = ' ORDER BY update_time DESC '
+
+        if page:
+            extra += 'LIMIT {},{}'.format((page - 1) * MSG_PAGE_NUM, MSG_PAGE_NUM)
 
         c, p = self.make_pair(params)
 
-        data = yield self.select(conds=c, params=p, extra=' ORDER BY update_time DESC LIMIT {},{}'.format((page - 1) * MSG_PAGE_NUM, MSG_PAGE_NUM))
+        data = yield self.select(conds=c, params=p, extra=extra)
 
         unread = [d['id'] for d in data if d['status']==0]
         if unread:
