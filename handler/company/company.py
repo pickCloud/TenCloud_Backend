@@ -6,7 +6,7 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login
 from utils.general import validate_mobile
-from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING
+from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING, MSG_TIP
 
 
 class CompanyHandler(BaseHandler):
@@ -377,7 +377,8 @@ class CompanyApplicationHandler(BaseHandler):
                 'owner': admin['uid'],
                 'content': MSG['application']['admin'].format(name=self.params.get('name', ''), mobile=self.params['mobile'], company_name=info['company_name']),
                 'url': '企业资料的员工管理界面',
-                'mode': MSG_MODE['application']
+                'mode': MSG_MODE['application'],
+                'tip': MSG_TIP['verify']
             }
 
             yield self.message_service.add(admin_data)
@@ -402,7 +403,8 @@ class CompanyApplicationVerifyMixin(BaseHandler):
             'uid': info['uid'],
             'admin_name': self.current_user['name'],
             'company_name': info['company_name'],
-            'mode': mode
+            'mode': mode,
+            'tip': MSG_TIP[mode]
         })
 
 

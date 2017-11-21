@@ -8,7 +8,7 @@ from utils.general import get_in_formats
 
 class MessageService(BaseService):
     table  = 'message'
-    fields = 'id, owner, content, mode, url, status'
+    fields = 'id, owner, content, mode, url, tip, status'
 
     @coroutine
     def fetch(self, params):

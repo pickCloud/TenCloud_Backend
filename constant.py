@@ -454,4 +454,10 @@ MSG_STATUS = {
     'unread': 0,
     'read': 1
 }
+MSG_TIP = {
+    'verify': '马上审核',
+    'reject': '重新提交',
+    'accept': '进入企业',
+    'change': '马上查看'
+}
 MSG_PAGE_NUM = 20

@@ -410,6 +410,7 @@ CREATE TABLE `message` (
   `content` varchar(256) DEFAULT NULL,
   `mode` tinyint(4) NOT NULL DEFAULT '1' COMMENT '1加入企业，2企业改变信息',
   `url` varchar(128) NOT NULL DEFAULT '' COMMENT '链接',
+  `tip` varchar(64) NOT NULL DEFAULT '' COMMENT '提示语',
   `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0未读，1已读',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
