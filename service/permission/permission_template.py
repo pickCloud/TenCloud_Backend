@@ -50,4 +50,29 @@ class PermissionTemplateService(PermissionBaseService):
         cur = yield self.db.execute(sql)
         return cur.fetchall()
 
+    @coroutine
+    def get_resources(self, cid):
+        sql = """
+            SELECT id, filename FROM filehub WHERE type=1 AND cid=%s
+              """
+        cur = yield self.db.execute(sql, [cid])
+        files = cur.fetchall()
+        projects = yield self._get_resources(table='project', cid=cid)
+        servers = yield self._get_resources(table='server', cid=cid)
+        data = {
+            'files': files,
+            'projects': projects,
+            'servers': servers
+        }
+        return data
+
+    @coroutine
+    def _get_resources(self, table, cid):
+        sql = """
+            SELECT id, name FROM {table} where cid=%s
+              """.format(table=table)
+        cur = yield self.db.execute(sql, [cid])
+        data = cur.fetchall()
+        return data
+
 
