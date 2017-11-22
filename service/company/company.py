@@ -12,10 +12,10 @@ class CompanyService(BaseService):
     def get_companies(self, uid):
         ''' 获取个人申请过的公司
         :param uid: 用户id
-        :return: [{'cid', 'company_name', 'create_time', 'utime', 'status'}]
+        :return: [{'cid', 'company_name', 'create_time', 'update_time', 'status'}]
         '''
         sql = '''
-            SELECT c.id AS cid, c.name AS company_name, DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS utime, ce.status
+            SELECT c.id AS cid, c.name AS company_name, DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time, ce.status
             FROM company_employee ce
             JOIN company c ON ce.cid = c.id
             WHERE ce.uid = %s
