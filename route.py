@@ -9,7 +9,8 @@ from handler.cluster.cluster import ClusterHandler, ClusterNewHandler, ClusterDe
 from handler.imagehub.imagehub import ImagehubHandler, ImagehubBySourceHandler, ImagehubByTypeHandler, \
     ImagehubSearchHandler
 from handler.permission.permission import PermissionTemplateListHandler, PermissionTemplateHandler, \
-    PermissionTemplateRenameHandler, PermissionUserDetailHandler, PermissionUserUpdateHandler, PermissionTemplateAddHandler
+    PermissionTemplateRenameHandler, PermissionUserDetailHandler, PermissionUserUpdateHandler, \
+    PermissionTemplateAddHandler, PermissionResourcesHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
     ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler, \
@@ -107,6 +108,7 @@ routes = [
     (r'/api/user/password/set', UserPasswordSetHandler),
     # (r'/api/user/mobile/reset', UserResetMobileHandler),
 
+    (r'/api/permission/resource/(\d+)', PermissionResourcesHandler),
     (r'/api/permission/template/add', PermissionTemplateAddHandler),
     (r'/api/permission/template/list/(\d+)', PermissionTemplateListHandler),
     (r'/api/permission/template/(\d+)', PermissionTemplateHandler),

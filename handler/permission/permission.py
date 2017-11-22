@@ -6,6 +6,47 @@ from handler.base import BaseHandler
 from utils.decorator import is_login
 
 
+class PermissionResourcesHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self, cid):
+        """
+        @api {get} /api/permission/resource/(\d+)
+        @apiName PermissionResourcesHandler
+        @apiGroup Permission
+
+        @apiParam {Number} cid 公司id
+
+        @SuccessExample {json} Success-Response
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "message": 成功,
+                "data": {
+                    "projects": [
+                        {"id": int, "name": str},
+                        ...
+                    ],
+                    "files": [
+                        {"id": int, "name": str},
+                        ...
+                    ],
+                    "servers": [
+                        {"id": int, "name": str},
+                        ..
+                    ],
+                }
+            }
+        """
+        try:
+            cid = int(cid)
+            data = yield self.permission_template_service.get_resources(cid)
+            self.success(data)
+        except Exception as e:
+            self.error(str(e))
+            self.log.error(traceback.format_exc())
+
+
 class PermissionTemplateListHandler(BaseHandler):
     @is_login
     @coroutine
