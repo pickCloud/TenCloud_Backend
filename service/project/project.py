@@ -18,7 +18,7 @@ class ProjectService(BaseService):
     fields = """
                 id, name, description, repos_name, 
                 repos_url, http_url, image_name, mode, status, 
-                deploy_ips, container_name, image_source
+                deploy_ips, container_name, image_source, cid
             """
 
     def sync_db_execute(self, sql, params):
