@@ -24,7 +24,7 @@ class CompanyHandler(BaseHandler):
                 "status": 0,
                 "msg": "success",
                 "data": [
-                    {"cid": 1, "company_name": "十全", "ctime": "申请时间", "utime": "审核时间", "status": "-1拒绝, 0审核中, 1通过"}
+                    {"cid": 1, "company_name": "十全", "create_time": "申请时间", "utime": "审核时间", "status": "-1拒绝, 0审核中, 1通过"}
                 ]
             }        """
         try:
