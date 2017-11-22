@@ -55,7 +55,10 @@ class PermissionTemplateService(PermissionBaseService):
         # 暂时获取所有资源
         files = yield self._get_resources(fields='id, filename', table='filehub', extra='where cid={cid} and type=1'.format(cid=cid))
         projects = yield self._get_resources(fields='id, name', table='project', extra='where cid={cid}'.format(cid=cid))
+
         permissions = yield self._get_resources(fields='id, name, `group`', table='permission')
+        permissions = yield self.merge_list(permissions)
+
         servers = yield self.fetch_instance_info()
         servers = yield self.merge_dict(servers)
         data = {
@@ -76,4 +79,16 @@ class PermissionTemplateService(PermissionBaseService):
         data = cur.fetchall()
         return data
 
-
+    @coroutine
+    def merge_list(self, data):
+        result = dict()
+        for column in data:
+            tmp = {
+                'id': column['id'],
+                'name': column['name']
+            }
+            if column['group'] not in result.keys():
+                result[column['group']] = [tmp]
+            else:
+                result[column['group']].append(tmp)
+        return result
