@@ -31,7 +31,7 @@ class PermissionTemplateService(PermissionBaseService):
         project_data = yield self._get_template_permission(fields='id, name', table='project', params=project_ids)
         filehub_data = yield self._get_template_permission(fields='id, filename', table='filehub', params=filehub_ids, extra='type=1 AND')
 
-        server_data = yield self.fetch_instance_info(server_ids)
+        server_data = yield self.fetch_instance_info(extra='WHERE s.id in {ids}'.format(ids=server_ids))
         server_data = yield self.merge_dict(server_data)
 
         data = {
@@ -52,29 +52,26 @@ class PermissionTemplateService(PermissionBaseService):
 
     @coroutine
     def get_resources(self, cid):
-
         # 暂时获取所有资源
-        sql = """
-            SELECT id, filename FROM filehub WHERE type=1
-              """
-        cur = yield self.db.execute(sql)
-        files = cur.fetchall()
-        projects = yield self._get_resources(table='project', cid=cid)
-        servers = yield self._get_resources(table='server', cid=cid)
+        files = yield self._get_resources(fields='id, filename', table='filehub', extra='where cid={cid} and type=1'.format(cid=cid))
+        projects = yield self._get_resources(fields='id, name', table='project', extra='where cid={cid}'.format(cid=cid))
+        permissions = yield self._get_resources(fields='id, name, `group`', table='permission')
+        servers = yield self.fetch_instance_info()
+        servers = yield self.merge_dict(servers)
         data = {
             'files': files,
             'projects': projects,
-            'servers': servers
+            'servers': servers,
+            'permissions': permissions
         }
         return data
 
     @coroutine
-    def _get_resources(self, table, cid):
+    def _get_resources(self, fields, table, extra=''):
 
-        # 暂时获取所有资源
         sql = """
-            SELECT id, name FROM {table}
-              """.format(table=table)
+            SELECT {fields} FROM {table} {extra}
+              """.format(fields=fields, table=table,extra=extra)
         cur = yield self.db.execute(sql)
         data = cur.fetchall()
         return data

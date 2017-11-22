@@ -39,10 +39,12 @@ class PermissionBaseService(BaseService):
         return dict(result.items())
 
     @coroutine
-    def fetch_instance_info(self, server_ids):
+    def fetch_instance_info(self, extra=''):
+        # WHERE s.id in {ids}
         sql = """
-                SELECT i.provider, i.region_name, s.id as sid, s.name FROM instance i JOIN server s USING(instance_id) WHERE s.id in {ids}
-              """.format(ids=server_ids)
+                SELECT i.provider, i.region_name, s.id as sid, s.name FROM instance i 
+                JOIN server s USING(instance_id) {extra}
+              """.format(extra=extra)
         cur = yield self.db.execute(sql)
         info = cur.fetchall()
         return info

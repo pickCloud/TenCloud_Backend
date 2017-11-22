@@ -39,7 +39,7 @@ class PermissionService(PermissionBaseService):
         cur = yield self.db.execute(sql, arg)
         ids = ','.join([str(i['sid']) for i in cur.fetchall()])
         server_ids = '({ids})'.format(ids=ids)
-        server_data = yield self.fetch_instance_info(server_ids)
+        server_data = yield self.fetch_instance_info(extra='WHERE s.id in {ids}'.format(ids=server_ids))
         server_data = yield self.merge_dict(server_data)
 
         data = {
