@@ -23,15 +23,15 @@ class PermissionResourcesHandler(BaseHandler):
                 "status": 0,
                 "message": 成功,
                 "data": {
-                    "projects": [
+                    "access_projects": [
                         {"id": int, "name": str},
                         ...
                     ],
-                    "files": [
+                    "access_files": [
                         {"id": int, "name": str},
                         ...
                     ],
-                    "servers": [
+                    "access_servers": [
                         {"id": int, "name": str},
                         ..
                     ],
