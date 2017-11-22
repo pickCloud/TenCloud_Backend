@@ -17,7 +17,7 @@ class PermissionResourcesHandler(BaseHandler):
 
         @apiParam {Number} cid 公司id
 
-        @SuccessExample {json} Success-Response
+        @apiSuccessExample {json} Success-Response
             HTTP/1.1 200 OK
             {
                 "status": 0,
