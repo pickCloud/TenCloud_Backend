@@ -222,6 +222,7 @@ class PermissionTemplateAddHandler(BaseHandler):
             self.error(str(e))
             self.log.error(traceback.format_exc())
 
+
 class PermissionTemplateRenameHandler(BaseHandler):
     @is_login
     @coroutine
