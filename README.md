@@ -36,19 +36,19 @@ CREATE TABLE IF NOT EXISTS `cluster` (
 * 主机表
 ```
 CREATE TABLE `server` (
-  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主机ID',
-  `name` varchar(128) DEFAULT '' COMMENT '主机名称',
-  `public_ip` varchar(15) DEFAULT '' COMMENT '主机IP',
-  `business_status` tinyint(4) DEFAULT '0' COMMENT '0适用, 1正常, 2锁定, 3过期, 4即将过期',
-  `cluster_id` int(11) NOT NULL DEFAULT '1' COMMENT '表cluster的id',
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `name` varchar(128) DEFAULT '',
+  `public_ip` varchar(15) DEFAULT '' COMMENT 'IP',
+  `business_status` tinyint(4) DEFAULT '0' COMMENT '0, 1, 2, 33, 44',
+  `cluster_id` int(11) NOT NULL DEFAULT '1' COMMENT 'clusterid',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `instance_id` varchar(64) NOT NULL DEFAULT '' COMMENT 'instance表的instance_id',
+  `cid` int(11) NOT NULL DEFAULT '1' COMMENT 'company表id',
   PRIMARY KEY (`id`),
+  UNIQUE KEY `instance_id` (`instance_id`),
   UNIQUE KEY `ip` (`public_ip`)
-);
-
-ALTER TABLE server ADD COLUMN instance_id varchar(64) NOT NULL DEFAULT '' COMMENT 'instance表的instance_id'
-ALTER TABLE server add unique(instance_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
 * 镜像仓库
@@ -216,20 +216,20 @@ CREATE TABLE `project` (
   `name` varchar(128) NOT NULL COMMENT '项目名称',
   `description` text COMMENT '项目描述',
   `repos_name` varchar(128) NOT NULL DEFAULT '' COMMENT '项目仓库名称',
-  `status` tinyint(4) DEFAULT '0' COMMENT '项目最新状态: 0 初创建, 1 构建中, 2 构建成功, 3 部署中， 4 部署成功, -2 构建失败, -4 部署失败',
+  `status` tinyint(4) DEFAULT '0' COMMENT '项目状态: 0 初创建, 1 构建中, 2 构建成功, 3 部署中， 4 部署成功, -2 构建失败, -4 部署失败''',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `repos_url` varchar(512) NOT NULL DEFAULT '' COMMENT '项目仓库地址',
   `mode` tinyint(4) DEFAULT '0' COMMENT '项目类型: 0 普通项目, 1 基础服务, 2 应用组件',
-  'http_url' varchar(512) NOT NULL DEFAULT '' COMMENT '项目在github的http地址',
-  'image_name' varchar(128) NOT NULL DEFAULT '' COMMENT '镜像名字',
-  'deploy_ips' varchar(128) NOT NULL DEFAULT '' COMMENT '部署的服务器列表',
-  'container_name' varchar(128) NOT NULL DEFAULT '' COMMENT '容器名字',
+  `http_url` varchar(512) NOT NULL DEFAULT '' COMMENT 'githubhttp',
+  `image_name` varchar(128) NOT NULL DEFAULT '',
+  `deploy_ips` varchar(128) NOT NULL DEFAULT '',
+  `container_name` varchar(128) NOT NULL DEFAULT '',
+  `image_source` tinyint(4) NOT NULL,
+  `cid` int(11) NOT NULL DEFAULT '1' COMMENT 'company表id',
   PRIMARY KEY (`id`),
   UNIQUE KEY `repos_url` (`repos_url`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-ALTER TABLE project ADD COLUMN image_source tinyint(4) NOT NULL DEFAULT '' COMMENT '镜像来源头：0 项目构建，1 本地上传， 2 云端下载'
 
 
 ```
@@ -279,6 +279,7 @@ CREATE TABLE `filehub` (
   `hash` varchar(128) NOT NULL DEFAULT '' COMMENT '文件hash',    
   `type` tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '0表示文件, 1表示文件夹',
   `pid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '树形结构的父节点',
+  `cid` int(11) DEFAULT '1' COMMENT 'company表id',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)

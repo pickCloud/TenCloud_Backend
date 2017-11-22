@@ -15,7 +15,7 @@ from utils.general import get_in_formats
 
 class ServerService(BaseService):
     table = 'server'
-    fields = 'id, name, public_ip, business_status, cluster_id, instance_id'
+    fields = 'id, name, public_ip, business_status, cluster_id, instance_id, cid'
 
     @coroutine
     def save_report(self, params):
