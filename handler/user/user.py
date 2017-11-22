@@ -467,13 +467,20 @@ class PasswordLoginHandler(UserBase):
             validate_user_password(self.params['password'])
 
             password = self.params['password'].encode('utf-8')
-            hashed = yield self.user_service.select(
+            data = yield self.user_service.select(
                                                             fields='password',
                                                             conds=['mobile=%s'],
                                                             params=[self.params['mobile']],
                                                             ct=False, ut=False, one=True
             )
-            if bcrypt.checkpw(password, hashed['password'].encode('utf-8')):
+
+            if not data:
+                self.error(status=ERR_TIP['no_registered']['sts'], message=ERR_TIP['no_registered']['msg'])
+                return
+
+            hashed = data['password'].encode('utf-8')
+
+            if hashed and bcrypt.checkpw(password, hashed):
                 yield self.make_session(self.params['mobile'])
                 self.success()
             else:
@@ -524,7 +531,7 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
 
             arg = {
                 'mobile': mobile,
-                'password': bcrypt.hashpw(self.params['password'].encode('utf-8'), bcrypt.gensalt())
+                'password': bcrypt.hashpw(self.params['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             }
             yield self.user_service.add(params=arg)
 
