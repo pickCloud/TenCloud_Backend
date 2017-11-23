@@ -99,7 +99,7 @@ class ClusterDetailHandler(BaseHandler):
     @coroutine
     def get(self, id):
         """
-         @api {get} /api/clusters/(\d+) 集群详情
+         @api {get} /api/cluster/(\d+) 集群详情
          @apiName ClusterDetailHandler
          @apiGroup Cluster
 
