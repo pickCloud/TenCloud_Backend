@@ -81,6 +81,7 @@ class PermissionTemplateService(PermissionBaseService):
 
     @coroutine
     def merge_list(self, data):
+        res = list()
         result = dict()
         for column in data:
             tmp = {
@@ -92,4 +93,12 @@ class PermissionTemplateService(PermissionBaseService):
                 result[column['group']] = [tmp]
             else:
                 result[column['group']].append(tmp)
-        return result
+        self.log.info(result)
+        for k in result:
+            tmp_dict = {
+                'group_id': k,
+                'data': result[k]
+            }
+            res.append(tmp_dict)
+        self.log.info(res)
+        return res
