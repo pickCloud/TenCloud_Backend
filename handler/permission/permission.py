@@ -201,7 +201,7 @@ class PermissionTemplateAddHandler(BaseHandler):
         @apiUse Success
         """
         try:
- 
+
             yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
 
             params = {

@@ -85,7 +85,8 @@ class PermissionTemplateService(PermissionBaseService):
         for column in data:
             tmp = {
                 'id': column['id'],
-                'name': column['name']
+                'name': column['name'],
+                'group': column['group']
             }
             if column['group'] not in result.keys():
                 result[column['group']] = [tmp]
