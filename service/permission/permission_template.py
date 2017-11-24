@@ -6,8 +6,7 @@ from service.permission.permission_base import PermissionBaseService
 class PermissionTemplateService(PermissionBaseService):
     table = 'permission_template'
     fields = """
-            id, name, cid, permissions, access_servers, access_projects,
-            access_projects, access_filehub
+            id, name, cid, permissions, access_servers, access_projects, access_filehub
             """
 
     @coroutine
@@ -93,7 +92,6 @@ class PermissionTemplateService(PermissionBaseService):
                 result[column['group']] = [tmp]
             else:
                 result[column['group']].append(tmp)
-        self.log.info(result)
         for k in result:
             tmp_dict = {
                 'group_id': k,
