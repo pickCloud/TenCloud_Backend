@@ -109,9 +109,9 @@ class PermissionTemplateHandler(BaseHandler):
 
     @is_login
     @coroutine
-    def delete(self, ptid):
+    def post(self, ptid):
         """
-        @api {delete} /api/permission/template/(\d+) 删除权限模版
+        @api {post} /api/permission/template/(\d+) 删除权限模版
         @apiName PermissionTemplateHandler
         @apiGroup Permission
 
