@@ -27,6 +27,7 @@ class PermissionBaseService(BaseService):
                         }
                     }
         """
+        res = list()
         result = defaultdict(dict)
 
         for d in data:
@@ -36,7 +37,23 @@ class PermissionBaseService(BaseService):
                 result[provider][region] = []
 
             result[provider][region].append({'sid': d['sid'], 'name': d['name']})
-        return dict(result.items())
+        tmp = dict(result.items())
+        for k in tmp:
+            a_regions = list()
+            tmp_provider = {
+                'provider': k,
+                'regions': []
+            }
+            for x in tmp[k]:
+                tmp_region = {
+                    'region': x,
+                    'servers': tmp[k][x]
+                }
+                a_regions.append(tmp_region)
+            tmp_provider['regions'] = a_regions
+            res.append(tmp_provider)
+        return res
+
 
     @coroutine
     def fetch_instance_info(self, extra=''):
