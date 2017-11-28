@@ -201,6 +201,8 @@ class PermissionTemplateAddHandler(BaseHandler):
         @apiUse Success
         """
         try:
+            args = ['name', 'cid', 'permissions', 'access_servers', 'access_projects', 'access_filehub']
+            self.guarantee(*args)
 
             yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
 

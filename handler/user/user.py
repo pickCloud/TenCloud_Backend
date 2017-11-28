@@ -13,6 +13,7 @@ from handler.base import BaseHandler
 from setting import settings
 from utils.datetool import seconds_to_human
 from utils.decorator import is_login
+from utils.security import password_strength
 from utils.general import gen_random_code, validate_auth_code, validate_mobile, validate_user_password
 
 
@@ -319,7 +320,7 @@ class UserUpdateHandler(BaseHandler):
             new = {
                 'id': old['id'],
                 'name': self.params.get('name', '') or old.get('name', ''),
-                'email': self.params.get('email' '') or old.get('email', ''),
+                'email': self.params.get('email', '') or old.get('email', ''),
                 'image_url': settings['qiniu_header_bucket_url'] + self.params.get('image_url', '') \
                              if self.params.get('image_url', '') else old.get('image_url', ''),
                 'mobile': self.params.get('mobile', '') or old.get('mobile', ''),
@@ -531,7 +532,8 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
 
             arg = {
                 'mobile': mobile,
-                'password': bcrypt.hashpw(self.params['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                'password': bcrypt.hashpw(self.params['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
+                'password_strength': password_strength(self.params['password'])
             }
             yield self.user_service.add(params=arg)
 
@@ -587,10 +589,11 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
                     return
 
             hashed = bcrypt.hashpw(self.params['new_password'].encode('utf-8'), bcrypt.gensalt())
+            p_strength = password_strength(self.params['new_password'])
             yield self.user_service.update(
-                                            sets=['password=%s'],
+                                            sets=['password=%s','password_strength=%s'],
                                             conds=['mobile=%s'],
-                                            params=[hashed, self.params['mobile']]
+                                            params=[hashed, p_strength, self.params['mobile']]
             )
             yield self.make_session(self.params['mobile'])
             yield self.clean()
@@ -679,10 +682,11 @@ class UserPasswordSetHandler(BaseHandler):
         try:
             password = self.params['password'].encode('utf-8')
             hashed = bcrypt.hashpw(password, bcrypt.gensalt())
+            p_strength = password_strength(self.params['password'])
             yield self.user_service.update(
-                sets=['password=%s'],
+                sets=['password=%s', 'password_strength=%s'],
                 conds=['id=%s'],
-                params=[hashed, self.current_user['id']]
+                params=[hashed, p_strength, self.current_user['id']]
             )
             self.success()
         except Exception as e:

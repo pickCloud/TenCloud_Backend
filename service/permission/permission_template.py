@@ -61,10 +61,14 @@ class PermissionTemplateService(PermissionBaseService):
         servers = yield self.fetch_instance_info()
         servers = yield self.merge_dict(servers)
         data = {
-            'files': files,
-            'projects': projects,
-            'servers': servers,
-            'permissions': permissions
+            'functions': {
+                'name': 'functions',
+                'permissions': permissions
+            },
+            'data': {
+                'name': 'data',
+                'categories': [files, projects, servers]
+            }
         }
         return data
 
