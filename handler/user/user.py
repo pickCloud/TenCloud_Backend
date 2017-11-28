@@ -3,7 +3,7 @@ __author__ = 'Jon'
 import traceback
 
 from tornado.gen import Task, coroutine
-from sdk import GeetestLib
+from geetest import GeetestLib
 import bcrypt
 import json
 from constant import AUTH_CODE, AUTH_CODE_ERROR_COUNT, AUTH_LOCK, AUTH_LOCK_TIMEOUT, COOKIE_EXPIRES_DAYS, \
