@@ -415,7 +415,8 @@ CREATE TABLE `message` (
   `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0未读，1已读',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `owner_status` (`owner`,`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
