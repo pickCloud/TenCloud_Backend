@@ -12,11 +12,13 @@ from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_S
 class CompanyHandler(BaseHandler):
     @is_login
     @coroutine
-    def get(self):
+    def get(self, is_pass):
         """
-        @api {get} /api/companies 公司列表
+        @api {get} /api/companies/list/(\d+) 公司列表
         @apiName CompanyHandler
         @apiGroup Company
+
+        @apiParam {Number} is_pass 获取通过列表传1，其余传0
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -28,6 +30,12 @@ class CompanyHandler(BaseHandler):
                 ]
             }        """
         try:
+            is_pass = int(is_pass)
+            if is_pass == 1:
+                status = 'and ce.status={is_pass}'.format(is_pass=is_pass)
+                data = yield self.company_service.get_companies(self.current_user['id'],status)
+                self.success(data)
+                return
             data = yield self.company_service.get_companies(self.current_user['id'])
 
             self.success(data)

@@ -320,7 +320,7 @@ class UserUpdateHandler(BaseHandler):
             new = {
                 'id': old['id'],
                 'name': self.params.get('name', '') or old.get('name', ''),
-                'email': self.params.get('email' '') or old.get('email', ''),
+                'email': self.params.get('email', '') or old.get('email', ''),
                 'image_url': settings['qiniu_header_bucket_url'] + self.params.get('image_url', '') \
                              if self.params.get('image_url', '') else old.get('image_url', ''),
                 'mobile': self.params.get('mobile', '') or old.get('mobile', ''),
