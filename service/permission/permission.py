@@ -45,29 +45,25 @@ class PermissionService(PermissionBaseService):
 
         data = [
             {
-                'functions': {
-                    'name': 'functions',
-                    'categories': permission_data
-                }
+                'name': 'functions',
+                'categories': permission_data
             },
             {
-                'data': {
-                    'name': 'data',
-                    'categories': [
-                        {
-                            'name': 'filehub',
-                            'data':filehub_data
-                        },
-                        {
-                            'name':'project',
-                            'data':project_data
-                        },
-                        {
-                            'name': 'server',
-                            'data':server_data
-                        }
-                    ]
-                }
+                'name': 'data',
+                'categories': [
+                    {
+                        'name': 'filehub',
+                        'data': filehub_data
+                    },
+                    {
+                        'name': 'project',
+                        'data': project_data
+                    },
+                    {
+                        'name': 'server',
+                        'data': server_data
+                    }
+                ]
             }
         ]
         return data
