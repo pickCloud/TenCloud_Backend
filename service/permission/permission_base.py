@@ -3,12 +3,12 @@ from collections import defaultdict
 from tornado.gen import coroutine
 
 from service.base import BaseService
-
+from constant import  PERMISSIONS
 
 class PermissionBaseService(BaseService):
 
     @coroutine
-    def merge_dict(self, data):
+    def merge_servers(self, data):
 
         """
 
@@ -55,7 +55,7 @@ class PermissionBaseService(BaseService):
         return res
 
     @coroutine
-    def merge_list(self, data):
+    def merge_permissions(self, data):
         res = list()
         result = dict()
         for column in data:
@@ -70,7 +70,7 @@ class PermissionBaseService(BaseService):
                 result[column['group']].append(tmp)
         for k in result:
             tmp_dict = {
-                'group_id': k,
+                'name': PERMISSIONS[k],
                 'data': result[k]
             }
             res.append(tmp_dict)
