@@ -45,11 +45,15 @@ class PermissionTemplateService(PermissionBaseService):
                 'categories': [
                     {
                         'name': '文件',
-                        'data': filehub_data
+                        'data': [
+                            {'name': '文件', 'data': filehub_data}
+                        ]
                     },
                     {
                         'name': '项目',
-                        'data': project_data
+                        'data': [
+                            {'name': '项目', 'data': project_data}
+                        ]
                     },
                     {
                         'name': '云服务器',
@@ -89,11 +93,15 @@ class PermissionTemplateService(PermissionBaseService):
                 'categories': [
                     {
                         'name': '文件',
-                        'data': files
+                        'data': [
+                            {'name': '文件', 'data': files}
+                        ]
                     },
                     {
                         'name': '项目',
-                        'data': projects
+                        'data': [
+                            {'name': '项目', 'data': projects}
+                        ]
                     },
                     {
                         'name': '云服务器',

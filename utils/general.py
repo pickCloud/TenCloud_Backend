@@ -70,3 +70,18 @@ def gen_md5(fp):
     m.update(fp)
 
     return m.hexdigest()
+
+def fuzzyfinder(user_input, sourece):
+    """
+    :param user_input str:
+    :param sourece []int:
+    :return:
+    """
+    suggestions = []
+    pattern = '.*?'.join(user_input)  # Converts 'djm' to 'd.*?j.*?m'
+    regex = re.compile(pattern)  # Compiles a regex.
+    for item in sourece:
+        match = regex.search(item)  # Checks if the current item matches the regex.
+        if match:
+            suggestions.append((len(match.group()), match.start(), item))
+    return [x for _, _, x in sorted(suggestions)]

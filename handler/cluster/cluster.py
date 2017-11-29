@@ -149,6 +149,21 @@ class ClusterDetailHandler(BaseHandler):
             self.log.error(traceback.format_exc())
 
 
+class ClusterSearchHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/cluster/search 集群名称
+        @apiName ClusterSearchHandler
+        @apiGroup Cluster
+
+        @apiParam {Number} cluster_id
+        :return:
+        """
+        pass
+
+
 class ClusterUpdateHandler(BaseHandler):
     @is_login
     @coroutine
