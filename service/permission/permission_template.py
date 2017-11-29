@@ -37,29 +37,25 @@ class PermissionTemplateService(PermissionBaseService):
 
         data = [
             {
-                'functions': {
-                    'name': 'functions',
-                    'categories': permissions_data
-                }
+                'name': 'functions',
+                'categories': permissions_data
             },
             {
-                'data': {
-                    'name': 'data',
-                    'categories': [
-                        {
-                            'name': 'filehub',
-                            'data':filehub_data
-                        },
-                        {
-                            'name':'project',
-                            'data':project_data
-                        },
-                        {
-                            'name': 'server',
-                            'data':server_data
-                        }
-                    ]
-                }
+                'name': 'data',
+                'categories': [
+                    {
+                        'name': 'filehub',
+                        'data': filehub_data
+                    },
+                    {
+                        'name': 'project',
+                        'data': project_data
+                    },
+                    {
+                        'name': 'server',
+                        'data': server_data
+                    }
+                ]
             }
         ]
         return data
@@ -85,29 +81,25 @@ class PermissionTemplateService(PermissionBaseService):
         servers = yield self.merge_dict(servers)
         data = [
             {
-                'functions': {
-                    'name': 'functions',
-                    'categories': permissions
-                }
+                'name': 'functions',
+                'categories': permissions
             },
             {
-                'data': {
-                    'name': 'data',
-                    'categories': [
-                        {
-                            'name': 'filehub',
-                            'data':files
-                        },
-                        {
-                            'name':'project',
-                            'data':projects
-                        },
-                        {
-                            'name': 'server',
-                            'data':servers
-                        }
-                    ]
-                }
+                'name': 'data',
+                'categories': [
+                    {
+                        'name': 'filehub',
+                        'data': files
+                    },
+                    {
+                        'name': 'project',
+                        'data': projects
+                    },
+                    {
+                        'name': 'server',
+                        'data': servers
+                    }
+                ]
             }
         ]
         return data

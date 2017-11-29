@@ -146,6 +146,13 @@ class CompanyUpdateHandler(BaseHandler):
             # 管理员判定
             yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
 
+            # 公司名字是否存在
+            company_info = yield self.company_service.select(conds=['name=%s'], params=[self.params['name']], one=True)
+            if company_info:
+                err_key = 'company_name_repeat'
+                self.error(status=ERR_TIP[err_key]['sts'], message=ERR_TIP[err_key]['msg'])
+                return
+
             # 更新数据
             old = yield self.company_service.select(fields='name', conds=['id=%s'], params=[self.params['cid']], one=True)
 
