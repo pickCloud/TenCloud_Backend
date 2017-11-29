@@ -17,7 +17,7 @@ class PermissionService(PermissionBaseService):
                                                     where_table='user_permission',
                                                     params=arg
         )
-        permission_data = yield self.merge_list(permission_data)
+        permission_data = yield self.merge_permissions(permission_data)
 
         project_data = yield self._get_user_permission(
                                                     fields='a.id, a.name',
@@ -41,7 +41,7 @@ class PermissionService(PermissionBaseService):
         ids = [str(i['sid']) for i in cur.fetchall()]
         ids = ','.join(ids)
         server_data = yield self.fetch_instance_info(extra='WHERE s.id in ({ids})'.format(ids=ids))
-        server_data = yield self.merge_dict(server_data)
+        server_data = yield self.merge_servers(server_data)
 
         data = [
             {

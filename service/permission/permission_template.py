@@ -27,13 +27,13 @@ class PermissionTemplateService(PermissionBaseService):
         filehub_ids = '({ids})'.format(ids=id_data['access_filehub'])
 
         permission_data = yield self._get_template_permission(fields='id, name, `group`', table='permission', params=permission_ids)
-        permissions_data = yield self.merge_list(permission_data)
+        permissions_data = yield self.merge_permissions(permission_data)
 
         project_data = yield self._get_template_permission(fields='id, name', table='project', params=project_ids)
         filehub_data = yield self._get_template_permission(fields='id, filename', table='filehub', params=filehub_ids, extra='type=1 AND')
 
         server_data = yield self.fetch_instance_info(extra='WHERE s.id in {ids}'.format(ids=server_ids))
-        server_data = yield self.merge_dict(server_data)
+        server_data = yield self.merge_servers(server_data)
 
         data = [
             {
@@ -75,10 +75,10 @@ class PermissionTemplateService(PermissionBaseService):
         projects = yield self._get_resources(fields='id, name', table='project', extra='where cid={cid}'.format(cid=cid))
 
         permissions = yield self._get_resources(fields='id, name, `group`', table='permission')
-        permissions = yield self.merge_list(permissions)
+        permissions = yield self.merge_permissions(permissions)
 
         servers = yield self.fetch_instance_info()
-        servers = yield self.merge_dict(servers)
+        servers = yield self.merge_servers(servers)
         data = [
             {
                 'name': '功能',
