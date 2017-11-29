@@ -73,9 +73,16 @@ class PermissionBaseService(BaseService):
             else:
                 result[column['group']].append(tmp)
         for k in result:
+            # tmp_dict = {
+            #     'name': PERMISSIONS[k],
+            #     'data': result[k]
+            # }
             tmp_dict = {
                 'name': PERMISSIONS[k],
-                'data': result[k]
+                'data': {
+                    'name': PERMISSIONS[k],
+                    'data': result[k]
+                }
             }
             res.append(tmp_dict)
         return res
