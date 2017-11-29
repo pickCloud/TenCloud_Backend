@@ -41,16 +41,20 @@ class PermissionBaseService(BaseService):
         for k in tmp:
             a_regions = list()
             tmp_provider = {
-                'provider': k,
-                'regions': []
+                # provider
+                # region
+                'name': k,
+                'data': []
             }
             for x in tmp[k]:
                 tmp_region = {
-                    'region': x,
-                    'servers': tmp[k][x]
+                    # region
+                    # server
+                    'name': x,
+                    'data': tmp[k][x]
                 }
                 a_regions.append(tmp_region)
-            tmp_provider['regions'] = a_regions
+            tmp_provider['data'] = a_regions
             res.append(tmp_provider)
         return res
 
