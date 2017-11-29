@@ -37,22 +37,22 @@ class PermissionTemplateService(PermissionBaseService):
 
         data = [
             {
-                'name': 'functions',
+                'name': '功能',
                 'categories': permissions_data
             },
             {
-                'name': 'data',
+                'name': '数据',
                 'categories': [
                     {
-                        'name': 'filehub',
+                        'name': '文件',
                         'data': filehub_data
                     },
                     {
-                        'name': 'project',
+                        'name': '项目',
                         'data': project_data
                     },
                     {
-                        'name': 'server',
+                        'name': '云服务器',
                         'data': server_data
                     }
                 ]
@@ -81,22 +81,22 @@ class PermissionTemplateService(PermissionBaseService):
         servers = yield self.merge_dict(servers)
         data = [
             {
-                'name': 'functions',
+                'name': '功能',
                 'categories': permissions
             },
             {
-                'name': 'data',
+                'name': '数据',
                 'categories': [
                     {
-                        'name': 'filehub',
+                        'name': '文件',
                         'data': files
                     },
                     {
-                        'name': 'project',
+                        'name': '项目',
                         'data': projects
                     },
                     {
-                        'name': 'server',
+                        'name': '云服务器',
                         'data': servers
                     }
                 ]
