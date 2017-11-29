@@ -54,6 +54,27 @@ class PermissionBaseService(BaseService):
             res.append(tmp_provider)
         return res
 
+    @coroutine
+    def merge_list(self, data):
+        res = list()
+        result = dict()
+        for column in data:
+            tmp = {
+                'id': column['id'],
+                'name': column['name'],
+                'group': column['group']
+            }
+            if column['group'] not in result.keys():
+                result[column['group']] = [tmp]
+            else:
+                result[column['group']].append(tmp)
+        for k in result:
+            tmp_dict = {
+                'group_id': k,
+                'data': result[k]
+            }
+            res.append(tmp_dict)
+        return res
 
     @coroutine
     def fetch_instance_info(self, extra=''):

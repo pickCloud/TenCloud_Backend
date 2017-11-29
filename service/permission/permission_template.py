@@ -27,18 +27,41 @@ class PermissionTemplateService(PermissionBaseService):
         filehub_ids = '({ids})'.format(ids=id_data['access_filehub'])
 
         permission_data = yield self._get_template_permission(fields='id, name, `group`', table='permission', params=permission_ids)
+        permissions_data = yield self.merge_list(permission_data)
+
         project_data = yield self._get_template_permission(fields='id, name', table='project', params=project_ids)
         filehub_data = yield self._get_template_permission(fields='id, filename', table='filehub', params=filehub_ids, extra='type=1 AND')
 
         server_data = yield self.fetch_instance_info(extra='WHERE s.id in {ids}'.format(ids=server_ids))
         server_data = yield self.merge_dict(server_data)
 
-        data = {
-            'permission': permission_data,
-            'servers': server_data,
-            'projects': project_data,
-            'filehub': filehub_data
-        }
+        data = [
+            {
+                'functions': {
+                    'name': 'functions',
+                    'categories': permissions_data
+                }
+            },
+            {
+                'data': {
+                    'name': 'data',
+                    'categories': [
+                        {
+                            'name': 'filehub',
+                            'data':filehub_data
+                        },
+                        {
+                            'name':'project',
+                            'data':project_data
+                        },
+                        {
+                            'name': 'server',
+                            'data':server_data
+                        }
+                    ]
+                }
+            }
+        ]
         return data
 
     @coroutine
@@ -60,16 +83,33 @@ class PermissionTemplateService(PermissionBaseService):
 
         servers = yield self.fetch_instance_info()
         servers = yield self.merge_dict(servers)
-        data = {
-            'functions': {
-                'name': 'functions',
-                'permissions': permissions
+        data = [
+            {
+                'functions': {
+                    'name': 'functions',
+                    'categories': permissions
+                }
             },
-            'data': {
-                'name': 'data',
-                'categories': [files, projects, servers]
+            {
+                'data': {
+                    'name': 'data',
+                    'categories': [
+                        {
+                            'name': 'filehub',
+                            'data':files
+                        },
+                        {
+                            'name':'project',
+                            'data':projects
+                        },
+                        {
+                            'name': 'server',
+                            'data':servers
+                        }
+                    ]
+                }
             }
-        }
+        ]
         return data
 
     @coroutine
@@ -81,26 +121,3 @@ class PermissionTemplateService(PermissionBaseService):
         cur = yield self.db.execute(sql)
         data = cur.fetchall()
         return data
-
-    @coroutine
-    def merge_list(self, data):
-        res = list()
-        result = dict()
-        for column in data:
-            tmp = {
-                'id': column['id'],
-                'name': column['name'],
-                'group': column['group']
-            }
-            if column['group'] not in result.keys():
-                result[column['group']] = [tmp]
-            else:
-                result[column['group']].append(tmp)
-        for k in result:
-            tmp_dict = {
-                'group_id': k,
-                'data': result[k]
-            }
-            res.append(tmp_dict)
-        self.log.info(res)
-        return res
