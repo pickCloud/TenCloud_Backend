@@ -38,11 +38,11 @@ class PermissionTemplateService(PermissionBaseService):
         data = [
             {
                 'name': '功能',
-                'categories': permissions_data
+                'data': permissions_data
             },
             {
                 'name': '数据',
-                'categories': [
+                'data': [
                     {
                         'name': '文件',
                         'data': [
@@ -86,11 +86,11 @@ class PermissionTemplateService(PermissionBaseService):
         data = [
             {
                 'name': '功能',
-                'categories': permissions
+                'data': permissions
             },
             {
                 'name': '数据',
-                'categories': [
+                'data': [
                     {
                         'name': '文件',
                         'data': [

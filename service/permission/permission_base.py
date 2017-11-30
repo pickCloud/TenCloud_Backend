@@ -36,20 +36,16 @@ class PermissionBaseService(BaseService):
             if region not in result[provider]:
                 result[provider][region] = []
 
-            result[provider][region].append({'sid': d['sid'], 'name': d['name']})
+            result[provider][region].append({'id': d['sid'], 'name': d['name']})
         tmp = dict(result.items())
         for k in tmp:
             a_regions = list()
             tmp_provider = {
-                # provider
-                # region
                 'name': k,
                 'data': []
             }
             for x in tmp[k]:
                 tmp_region = {
-                    # region
-                    # server
                     'name': x,
                     'data': tmp[k][x]
                 }
@@ -73,10 +69,6 @@ class PermissionBaseService(BaseService):
             else:
                 result[column['group']].append(tmp)
         for k in result:
-            # tmp_dict = {
-            #     'name': PERMISSIONS[k],
-            #     'data': result[k]
-            # }
             tmp_dict = {
                 'name': PERMISSIONS[k],
                 'data': [
@@ -88,7 +80,6 @@ class PermissionBaseService(BaseService):
 
     @coroutine
     def fetch_instance_info(self, extra=''):
-        # WHERE s.id in {ids}
         sql = """
                 SELECT i.provider, i.region_name, s.id as sid, s.name FROM instance i 
                 JOIN server s USING(instance_id) {extra}
