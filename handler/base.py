@@ -130,7 +130,7 @@ class BaseHandler(tornado.web.RequestHandler):
                 >>> self.current_user['id']
                 >>> self.params['x']
         '''
-        token = self.request.headers['Authorization'].split(' ')[1] if self.request.headers.get('Authorization') else ''
+        token = self.request.headers.get('Authorization')
 
         if token:
             user_id = self.decode_auth_token(token)

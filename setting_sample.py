@@ -12,7 +12,8 @@ settings = dict()
 #################################################################################################
 settings['port'] = 8010
 settings['debug'] = True
-settings['cookie_secret'] = 'D+quO3NETEi+LhjQi7DhnhHqiN9RkUNqpl8HpS+uv84='
+settings['cookie_secret'] = ''
+settings['token_secret'] = ''
 settings['login_url'] = '/#/login'
 
 
