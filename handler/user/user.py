@@ -8,7 +8,7 @@ import bcrypt
 import json
 from constant import AUTH_CODE, AUTH_CODE_ERROR_COUNT, AUTH_LOCK, AUTH_LOCK_TIMEOUT, COOKIE_EXPIRES_DAYS, \
     SMS_FREQUENCE_LOCK, SMS_FREQUENCE_LOCK_TIMEOUT, SMS_TIMEOUT, SMS_SENT_COUNT, SMS_SENT_COUNT_LIMIT, \
-    SMS_SENT_COUNT_LIMIT_TIMEOUT, SMS_NEED_GEETEST_COUNT, ERR_TIP, AUTH_CODE_ERROR_COUNT_LIMIT
+    SMS_SENT_COUNT_LIMIT_TIMEOUT, SMS_NEED_GEETEST_COUNT, ERR_TIP, AUTH_CODE_ERROR_COUNT_LIMIT, SMS_EXISTS_TIME
 from handler.base import BaseHandler
 from setting import settings
 from utils.datetool import seconds_to_human
@@ -66,6 +66,12 @@ class NeedSMSMixin(BaseHandler):
         # 认证
         self.auth_code_key = AUTH_CODE.format(mobile=mobile)
         self.err_count_key = AUTH_CODE_ERROR_COUNT.format(mobile=mobile)
+
+        # 验证码超时
+        code_ttl = yield Task(self.redis.ttl, self.auth_code_key)
+        if 0 < code_ttl < SMS_EXISTS_TIME-SMS_TIMEOUT:
+            self.error(status=ERR_TIP['auth_code_timeout']['sts'], message=ERR_TIP['auth_code_timeout']['msg'])
+            return False
 
         real_code = yield Task(self.redis.get, self.auth_code_key)
 
@@ -175,7 +181,7 @@ class UserSMSHandler(UserBase):
                 yield Task(self.redis.incr, sms_sent_count_key)
 
             # 设置验证码有效期
-            yield Task(self.redis.setex, AUTH_CODE.format(mobile=mobile), SMS_TIMEOUT, auth_code)
+            yield Task(self.redis.setex, AUTH_CODE.format(mobile=mobile), SMS_EXISTS_TIME, auth_code)
 
             self.log.info('mobile: {mobile}, auth_code: {auth_code}'.format(mobile=mobile, auth_code=auth_code))
 
