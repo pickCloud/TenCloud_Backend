@@ -121,7 +121,19 @@ class ServerService(BaseService):
         yield self.db.execute(sql, [params['name'], params['id']])
 
     @coroutine
-    def get_brief_list(self, cluster_id):
+    def get_brief_list(self, cluster_id, provider='', region=''):
+        extra = ''
+        arg = [cluster_id]
+        if provider and region:
+            extra = 'WHERE i.provider=%s AND i.region_name=%s'
+            arg.extend([provider, region])
+        elif provider and (not region):
+            extra = 'WHERE i.provider=%s'
+            arg.extend([provider])
+        elif (not provider) and region:
+            extra = 'WHERE i.region_name=%s'
+            arg.extend([region])
+
         ''' 集群详情中获取主机列表
         '''
         sql = """
@@ -151,9 +163,11 @@ class ServerService(BaseService):
                 LEFT JOIN memory AS m ON ss.public_ip = m.public_ip AND ss.report_time = m.created_time
             ) sss
             LEFT JOIN instance AS i ON sss.public_ip = i.public_ip
+            """+"""
+            {where}
             ORDER BY i.provider
-        """
-        cur = yield self.db.execute(sql, cluster_id)
+            """.format(where=extra)
+        cur = yield self.db.execute(sql, arg)
         data = cur.fetchall()
         return data
 
