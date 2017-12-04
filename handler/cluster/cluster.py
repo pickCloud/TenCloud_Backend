@@ -190,8 +190,8 @@ class ClusterSearchHandler(BaseHandler):
 
         @apiParam {Number} cluster_id
         @apiParam {String} server_name
-        @apiParam {String} region_name
-        @apiParam {String} provider_name
+        @apiParam {[]String} region_name
+        @apiParam {[]String} provider_name
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -206,8 +206,8 @@ class ClusterSearchHandler(BaseHandler):
         """
         try:
             cluster_id = self.params['cluster_id']
-            region_name = self.params.get('region_name', '')
-            provider_name = self.params.get('provider_name', '')
+            region_name = self.params.get('region_name', [])
+            provider_name = self.params.get('provider_name', [])
             server_name = self.params.get('server_name', '')
 
             if not(server_name or provider_name or region_name):

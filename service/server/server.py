@@ -121,18 +121,22 @@ class ServerService(BaseService):
         yield self.db.execute(sql, [params['name'], params['id']])
 
     @coroutine
-    def get_brief_list(self, cluster_id, provider='', region=''):
+    def get_brief_list(self, cluster_id, provider=[], region=[]):
         extra = ''
         arg = [cluster_id]
         if provider and region:
-            extra = 'WHERE i.provider=%s AND i.region_name=%s'
-            arg.extend([provider, region])
+            extra = 'WHERE {provider} AND {region}'.format(
+                                                        provider=get_in_formats(field='i.provider', contents=provider),
+                                                        region=get_in_formats(field='i.region_name', contents=region)
+                                                        )
+            arg.extend(provider)
+            arg.extend(region)
         elif provider and (not region):
-            extra = 'WHERE i.provider=%s'
-            arg.extend([provider])
+            extra = 'WHERE {provider}'.format(provider=get_in_formats(field='i.provider', contents=provider))
+            arg.extend(provider)
         elif (not provider) and region:
-            extra = 'WHERE i.region_name=%s'
-            arg.extend([region])
+            extra = 'WHERE {region}'.format(region=get_in_formats(field='i.region_name', contents=region))
+            arg.extend(region)
 
         ''' 集群详情中获取主机列表
         '''
