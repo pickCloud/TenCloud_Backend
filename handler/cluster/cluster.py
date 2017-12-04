@@ -224,7 +224,8 @@ class ClusterSearchHandler(BaseHandler):
                         provider=provider_name,
                         region=region_name
                     )
-                    yield Task(self.redis.setex, key, 60, json.dumps(data))
+                    data = json.dumps(data)
+                    yield Task(self.redis.setex, key, 60, data)
                 self.success(json.loads(data))
                 return
 
