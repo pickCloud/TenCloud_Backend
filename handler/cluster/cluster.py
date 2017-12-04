@@ -190,8 +190,13 @@ class ClusterSearchHandler(BaseHandler):
 
         @apiParam {Number} cluster_id
         @apiParam {String} server_name
+<<<<<<< HEAD
         @apiParam {[]String} region_name
         @apiParam {[]String} provider_name
+=======
+        @apiParam {String} region_name
+        @apiParam {String} provider_name
+>>>>>>> 4f594a185d8f76fdcedd7622de9d075398e77cf5
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
