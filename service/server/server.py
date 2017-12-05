@@ -172,7 +172,18 @@ class ServerService(BaseService):
             ORDER BY i.provider
             """.format(where=extra)
         cur = yield self.db.execute(sql, arg)
-        data = cur.fetchall()
+        # data = cur.fetchall()
+        data = []
+        for k in cur.fetchall():
+            net = json.loads(k['net_content'])
+            k['net_content'] = net
+            cpu = json.loads(k['cpu_content'])
+            k['cpu_content'] = cpu
+            memory = json.loads(k['memory_content'])
+            k['memory_content'] = memory
+            disk = json.loads(k['disk_content'])
+            k['disk_content'] = disk
+            data.append(k)
         return data
 
     @coroutine
@@ -222,7 +233,13 @@ class ServerService(BaseService):
               """.format(table=table, ids=ids)
         cur = yield self.db.execute(sql, choose_id)
 
-        data = [[x['created_time'], json.loads(x['content'])] for x in cur.fetchall()]
+        # data = [[x['created_time'], json.loads(x['content'])] for x in cur.fetchall()]
+        data = []
+        for x in cur.fetchall():
+            created_time = {'created_time': x['created_time']}
+            content = json.loads(x['content'])
+            content.update(created_time)
+            data.append(content)
         return data
 
     @coroutine
