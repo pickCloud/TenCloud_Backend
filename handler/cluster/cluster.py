@@ -5,7 +5,7 @@ import json
 
 from tornado.gen import coroutine, Task
 from handler.base import BaseHandler
-from constant import ALIYUN_REGION_NAME
+from constant import CLUSTER_SEARCH_TIMEOUT
 from utils.general import get_in_formats
 from utils.decorator import is_login
 
@@ -220,7 +220,7 @@ class ClusterSearchHandler(BaseHandler):
                         region=region_name
                     )
                     data = json.dumps(data)
-                    yield Task(self.redis.setex, key, 60, data)
+                    yield Task(self.redis.setex, key, CLUSTER_SEARCH_TIMEOUT, data)
                 self.success(json.loads(data))
                 return
 

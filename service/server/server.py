@@ -172,7 +172,6 @@ class ServerService(BaseService):
             ORDER BY i.provider
             """.format(where=extra)
         cur = yield self.db.execute(sql, arg)
-        # data = cur.fetchall()
         data = []
         for k in cur.fetchall():
             net = json.loads(k['net_content'])
