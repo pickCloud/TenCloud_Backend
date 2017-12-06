@@ -122,6 +122,7 @@ class BaseHandler(tornado.web.RequestHandler):
             self.log.error('Invalid token: {}'.format(auth_token))
             return ''
 
+
     @coroutine
     def prepare(self):
         ''' 获取用户信息 && 获取请求的参数, json类型

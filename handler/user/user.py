@@ -224,7 +224,7 @@ class UserReturnSMSCount(UserBase):
     @coroutine
     def get(self, mobile):
         """
-        @api {get} /api/user/sms/(\d+)/count
+        @api {get} /api/user/sms/(\d+)/count 验证码次数查询
         @apiName UserReturnSMSCount
         @apiGroup User
 
