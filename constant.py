@@ -438,7 +438,8 @@ INVITE_URL = SERVER_URL + '/#/invite?code='
 APPLICATION_STATUS = {
     'reject': -1,
     'process': 0,
-    'accept': 1
+    'accept': 1,
+    'founder': 2
 }
 MSG = {
     'application': {

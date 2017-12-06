@@ -44,7 +44,7 @@ class CompanyEmployeeService(BaseService):
 
         if status == APPLICATION_STATUS['process']:
             raise ValueError('您已经提交过申请，正在审核中...')
-        elif status == APPLICATION_STATUS['accept']:
+        elif status in [APPLICATION_STATUS['accept'], APPLICATION_STATUS['founder']]:
             raise ValueError('您已是公司员工，无需再次申请')
         elif status == APPLICATION_STATUS['reject']:
             yield self.update(sets=['status=%s'], conds=['cid=%s', 'uid=%s'], params=[APPLICATION_STATUS['process'], params['cid'], params['uid']])
