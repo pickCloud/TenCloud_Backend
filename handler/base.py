@@ -91,6 +91,15 @@ class BaseHandler(tornado.web.RequestHandler):
     def log(self):
         return self.application.log
 
+    @property
+    def options(self):
+
+        self.add_header('Access-Control-Allow-Methods', 'POST, GET, DELETE')
+        self.add_header('Access-Control-Allow-Origin', '*')
+        self.add_header('Access-Control-Allow-Headers', 'Content-type, Authorization')
+        self.set_status(status_code=204)
+        return
+
     @coroutine
     def prepare(self):
         ''' 获取用户信息 && 获取请求的参数, json类型
