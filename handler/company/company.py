@@ -358,16 +358,12 @@ class CompanyApplicationHandler(BaseHandler):
             for f in info['setting'].split(','):
                 self.guarantee(f)
 
-            # 是否申请中或已通过
-            yield self.company_employee_service.pre_application(info['cid'], self.current_user['id'])
-
             # 加入员工
             app_data = {
                 'cid': info['cid'],
-                'uid': self.current_user['id'],
-                'status': APPLICATION_STATUS['process']
+                'uid': self.current_user['id']
             }
-            yield self.company_employee_service.add(app_data)
+            yield self.company_employee_service.add_employee(app_data)
 
             # 给公司管理员发送消息
             admin = yield self.company_employee_service.select(fields='uid', conds=['cid=%s', 'is_admin=%s'], params=[info['cid'], 1], one=True)

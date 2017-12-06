@@ -3,12 +3,12 @@ __author__ = 'Jon'
 from tornado.gen import coroutine
 from service.base import BaseService
 from constant import APPLICATION_STATUS, FULL_DATE_FORMAT
-from utils.general import get_in_formats
+from utils.general import get_in_formats, get_formats
 
 
 class CompanyEmployeeService(BaseService):
     table  = 'company_employee'
-    fields = 'id, cid, uid, is_admin'
+    fields = 'id, cid, uid, is_admin, status'
 
     @coroutine
     def check_admin(self, cid, uid):
@@ -33,21 +33,24 @@ class CompanyEmployeeService(BaseService):
             raise ValueError('非公司员工')
 
     @coroutine
-    def pre_application(self, cid, uid):
-        ''' 提交申请前检验
-        :param cid: 公司id
-        :param uid: 用户id
-        :return: 审核中或审核通过会抛出异常
+    def add_employee(self, params):
+        ''' 添加员工，需先判断员工之前的状态
+        :param params: {'cid', 'uid'}
+        :return: 审核中或审核通过会抛出异常，已拒绝或新增会更新数据库
         '''
-        in_process = yield self.select(conds=['cid=%s', 'uid=%s', 'status=%s'], params=[cid, uid, APPLICATION_STATUS['process']])
+        data = yield self.select(fields='status', conds=['cid=%s', 'uid=%s'], params=[params['cid'], params['uid']], one=True)
 
-        if in_process:
+        status = data['status'] if data else ''
+
+        if status == APPLICATION_STATUS['process']:
             raise ValueError('您已经提交过申请，正在审核中...')
-
-        is_accept = yield self.select(conds=['cid=%s', 'uid=%s', 'status=%s'], params=[cid, uid, APPLICATION_STATUS['accept']])
-
-        if is_accept:
+        elif status == APPLICATION_STATUS['accept']:
             raise ValueError('您已是公司员工，无需再次申请')
+        elif status == APPLICATION_STATUS['reject']:
+            yield self.update(sets=['status=%s'], conds=['cid=%s', 'uid=%s'], params=[APPLICATION_STATUS['process'], params['cid'], params['uid']])
+        else:
+            params['status'] = APPLICATION_STATUS['process']
+            yield self.add(params)
 
     @coroutine
     def get_app_info(self, id):
