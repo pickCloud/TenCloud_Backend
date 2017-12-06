@@ -6,6 +6,47 @@ from handler.base import BaseHandler
 from utils.decorator import is_login
 
 
+class PermissionResourcesHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self, cid):
+        """
+        @api {get} /api/permission/resource/(\d+)
+        @apiName PermissionResourcesHandler
+        @apiGroup Permission
+
+        @apiParam {Number} cid 公司id
+
+        @apiSuccessExample {json} Success-Response
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "message": 成功,
+                "data": {
+                    "access_projects": [
+                        {"id": int, "name": str},
+                        ...
+                    ],
+                    "access_files": [
+                        {"id": int, "name": str},
+                        ...
+                    ],
+                    "access_servers": [
+                        {"id": int, "name": str},
+                        ..
+                    ],
+                }
+            }
+        """
+        try:
+            cid = int(cid)
+            data = yield self.permission_template_service.get_resources(cid)
+            self.success(data)
+        except Exception as e:
+            self.error(str(e))
+            self.log.error(traceback.format_exc())
+
+
 class PermissionTemplateListHandler(BaseHandler):
     @is_login
     @coroutine
@@ -68,9 +109,9 @@ class PermissionTemplateHandler(BaseHandler):
 
     @is_login
     @coroutine
-    def delete(self, ptid):
+    def post(self, ptid):
         """
-        @api {delete} /api/permission/template/(\d+) 删除权限模版
+        @api {post} /api/permission/template/(\d+) 删除权限模版
         @apiName PermissionTemplateHandler
         @apiGroup Permission
 
@@ -160,7 +201,6 @@ class PermissionTemplateAddHandler(BaseHandler):
         @apiUse Success
         """
         try:
-
             args = ['name', 'cid', 'permissions', 'access_servers', 'access_projects', 'access_filehub']
             self.guarantee(*args)
 
@@ -181,6 +221,7 @@ class PermissionTemplateAddHandler(BaseHandler):
             self.error(str(e))
             self.log.error(traceback.format_exc())
 
+
 class PermissionTemplateRenameHandler(BaseHandler):
     @is_login
     @coroutine
@@ -197,7 +238,7 @@ class PermissionTemplateRenameHandler(BaseHandler):
         @apiUse Success
         """
         try:
-            args = ['cid','name']
+            args = ['cid', 'name']
             self.guarantee(*args)
 
             yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])

@@ -3,12 +3,12 @@ from collections import defaultdict
 from tornado.gen import coroutine
 
 from service.base import BaseService
-
+from constant import  PERMISSIONS
 
 class PermissionBaseService(BaseService):
 
     @coroutine
-    def merge_dict(self, data):
+    def merge_servers(self, data):
 
         """
 
@@ -27,6 +27,7 @@ class PermissionBaseService(BaseService):
                         }
                     }
         """
+        res = list()
         result = defaultdict(dict)
 
         for d in data:
@@ -35,14 +36,54 @@ class PermissionBaseService(BaseService):
             if region not in result[provider]:
                 result[provider][region] = []
 
-            result[provider][region].append({'sid': d['sid'], 'name': d['name']})
-        return dict(result.items())
+            result[provider][region].append({'id': d['sid'], 'name': d['name']})
+        tmp = dict(result.items())
+        for k in tmp:
+            a_regions = list()
+            tmp_provider = {
+                'name': k,
+                'data': []
+            }
+            for x in tmp[k]:
+                tmp_region = {
+                    'name': x,
+                    'data': tmp[k][x]
+                }
+                a_regions.append(tmp_region)
+            tmp_provider['data'] = a_regions
+            res.append(tmp_provider)
+        return res
 
     @coroutine
-    def fetch_instance_info(self, server_ids):
+    def merge_permissions(self, data):
+        res = list()
+        result = dict()
+        for column in data:
+            tmp = {
+                'id': column['id'],
+                'name': column['name'],
+                'group': column['group']
+            }
+            if column['group'] not in result.keys():
+                result[column['group']] = [tmp]
+            else:
+                result[column['group']].append(tmp)
+        for k in result:
+            tmp_dict = {
+                'name': PERMISSIONS[k],
+                'data': [
+                    {'name': PERMISSIONS[k], 'data': result[k]}
+                ]
+            }
+            res.append(tmp_dict)
+        return res
+
+    @coroutine
+    def fetch_instance_info(self, extra=''):
         sql = """
-                SELECT i.provider, i.region_name, s.id as sid, s.name FROM instance i JOIN server s USING(instance_id) WHERE s.id in {ids}
-              """.format(ids=server_ids)
+                SELECT i.provider, i.region_name, s.id as sid, s.name FROM instance i 
+                JOIN server s USING(instance_id) {extra}
+              """.format(extra=extra)
         cur = yield self.db.execute(sql)
         info = cur.fetchall()
         return info

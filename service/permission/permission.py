@@ -2,7 +2,6 @@ from tornado.gen import coroutine
 
 from service.permission.permission_base import PermissionBaseService
 
-
 class PermissionService(PermissionBaseService):
     table = 'permission'
     fields = 'id, name, group'
@@ -18,6 +17,8 @@ class PermissionService(PermissionBaseService):
                                                     where_table='user_permission',
                                                     params=arg
         )
+        permission_data = yield self.merge_permissions(permission_data)
+
         project_data = yield self._get_user_permission(
                                                     fields='a.id, a.name',
                                                     table='project',
@@ -37,17 +38,34 @@ class PermissionService(PermissionBaseService):
                 SELECT sid FROM user_access_server WHERE uid=%s AND cid=%s 
               """
         cur = yield self.db.execute(sql, arg)
-        ids = ','.join([str(i['sid']) for i in cur.fetchall()])
-        server_ids = '({ids})'.format(ids=ids)
-        server_data = yield self.fetch_instance_info(server_ids)
-        server_data = yield self.merge_dict(server_data)
+        ids = [str(i['sid']) for i in cur.fetchall()]
+        ids = ','.join(ids)
+        server_data = yield self.fetch_instance_info(extra='WHERE s.id in ({ids})'.format(ids=ids))
+        server_data = yield self.merge_servers(server_data)
 
-        data = {
-            'permission': permission_data,
-            'servers': server_data,
-            'projects': project_data,
-            'filehub': filehub_data,
-        }
+        data = [
+            {
+                'name': '功能',
+                'categories': permission_data
+            },
+            {
+                'name': '数据',
+                'categories': [
+                    {
+                        'name': '文件',
+                        'data': filehub_data
+                    },
+                    {
+                        'name': '项目',
+                        'data': project_data
+                    },
+                    {
+                        'name': '云服务器',
+                        'data': server_data
+                    }
+                ]
+            }
+        ]
         return data
 
     @coroutine

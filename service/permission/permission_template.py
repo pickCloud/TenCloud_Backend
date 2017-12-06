@@ -6,8 +6,7 @@ from service.permission.permission_base import PermissionBaseService
 class PermissionTemplateService(PermissionBaseService):
     table = 'permission_template'
     fields = """
-            id, name, cid, permissions, access_servers, access_projects,
-            access_projects, access_filehub
+            id, name, cid, permissions, access_servers, access_projects, access_filehub
             """
 
     @coroutine
@@ -28,18 +27,41 @@ class PermissionTemplateService(PermissionBaseService):
         filehub_ids = '({ids})'.format(ids=id_data['access_filehub'])
 
         permission_data = yield self._get_template_permission(fields='id, name, `group`', table='permission', params=permission_ids)
+        permissions_data = yield self.merge_permissions(permission_data)
+
         project_data = yield self._get_template_permission(fields='id, name', table='project', params=project_ids)
         filehub_data = yield self._get_template_permission(fields='id, filename', table='filehub', params=filehub_ids, extra='type=1 AND')
 
-        server_data = yield self.fetch_instance_info(server_ids)
-        server_data = yield self.merge_dict(server_data)
+        server_data = yield self.fetch_instance_info(extra='WHERE s.id in {ids}'.format(ids=server_ids))
+        server_data = yield self.merge_servers(server_data)
 
-        data = {
-            'permission': permission_data,
-            'servers': server_data,
-            'projects': project_data,
-            'filehub': filehub_data
-        }
+        data = [
+            {
+                'name': '功能',
+                'data': permissions_data
+            },
+            {
+                'name': '数据',
+                'data': [
+                    {
+                        'name': '文件',
+                        'data': [
+                            {'name': '文件', 'data': filehub_data}
+                        ]
+                    },
+                    {
+                        'name': '项目',
+                        'data': [
+                            {'name': '项目', 'data': project_data}
+                        ]
+                    },
+                    {
+                        'name': '云服务器',
+                        'data': server_data
+                    }
+                ]
+            }
+        ]
         return data
 
     @coroutine
@@ -50,4 +72,52 @@ class PermissionTemplateService(PermissionBaseService):
         cur = yield self.db.execute(sql)
         return cur.fetchall()
 
+    @coroutine
+    def get_resources(self, cid):
+        # 暂时获取所有资源
+        files = yield self._get_resources(fields='id, filename', table='filehub', extra='where cid={cid} and type=1'.format(cid=cid))
+        projects = yield self._get_resources(fields='id, name', table='project', extra='where cid={cid}'.format(cid=cid))
 
+        permissions = yield self._get_resources(fields='id, name, `group`', table='permission')
+        permissions = yield self.merge_permissions(permissions)
+
+        servers = yield self.fetch_instance_info()
+        servers = yield self.merge_servers(servers)
+        data = [
+            {
+                'name': '功能',
+                'data': permissions
+            },
+            {
+                'name': '数据',
+                'data': [
+                    {
+                        'name': '文件',
+                        'data': [
+                            {'name': '文件', 'data': files}
+                        ]
+                    },
+                    {
+                        'name': '项目',
+                        'data': [
+                            {'name': '项目', 'data': projects}
+                        ]
+                    },
+                    {
+                        'name': '云服务器',
+                        'data': servers
+                    }
+                ]
+            }
+        ]
+        return data
+
+    @coroutine
+    def _get_resources(self, fields, table, extra=''):
+
+        sql = """
+            SELECT {fields} FROM {table} {extra}
+              """.format(fields=fields, table=table,extra=extra)
+        cur = yield self.db.execute(sql)
+        data = cur.fetchall()
+        return data

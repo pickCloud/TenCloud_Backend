@@ -99,7 +99,7 @@ class ClusterDetailHandler(BaseHandler):
     @coroutine
     def get(self, id):
         """
-         @api {get} /api/clusters/(\d+) 集群详情
+         @api {get} /api/cluster/(\d+) 集群详情
          @apiName ClusterDetailHandler
          @apiGroup Cluster
 
@@ -147,6 +147,21 @@ class ClusterDetailHandler(BaseHandler):
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())
+
+
+class ClusterSearchHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/cluster/search 集群名称
+        @apiName ClusterSearchHandler
+        @apiGroup Cluster
+
+        @apiParam {Number} cluster_id
+        :return:
+        """
+        pass
 
 
 class ClusterUpdateHandler(BaseHandler):

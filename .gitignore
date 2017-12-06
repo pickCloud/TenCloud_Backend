@@ -6,3 +6,4 @@ Dashboard.iml
 static/apidoc/*
 .vscode/*
 env
+nohup.out

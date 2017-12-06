@@ -9,7 +9,7 @@ class CompanyService(BaseService):
     fields = 'id, name, contact, mobile, description'
 
     @coroutine
-    def get_companies(self, uid):
+    def get_companies(self, uid, status=''):
         ''' 获取个人申请过的公司
         :param uid: 用户id
         :return: [{'cid', 'company_name', 'create_time', 'update_time', 'status'}]
@@ -19,8 +19,8 @@ class CompanyService(BaseService):
                    DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time, ce.status
             FROM company_employee ce
             JOIN company c ON ce.cid = c.id
-            WHERE ce.uid = %s
-        '''
+            WHERE ce.uid = %s {status}
+        '''.format(status=status)
         cur = yield self.db.execute(sql, [FULL_DATE_FORMAT, FULL_DATE_FORMAT, uid])
 
         data = cur.fetchall()
