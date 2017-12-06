@@ -6,9 +6,9 @@ from tornado.gen import Task, coroutine
 from geetest import GeetestLib
 import bcrypt
 import json
-from constant import AUTH_CODE, AUTH_CODE_ERROR_COUNT, AUTH_LOCK, AUTH_LOCK_TIMEOUT, COOKIE_EXPIRES_DAYS, \
+from constant import AUTH_CODE, AUTH_CODE_ERROR_COUNT, AUTH_LOCK, AUTH_LOCK_TIMEOUT, \
     SMS_FREQUENCE_LOCK, SMS_FREQUENCE_LOCK_TIMEOUT, SMS_TIMEOUT, SMS_SENT_COUNT, SMS_SENT_COUNT_LIMIT, \
-    SMS_SENT_COUNT_LIMIT_TIMEOUT, SMS_NEED_GEETEST_COUNT, ERR_TIP, AUTH_CODE_ERROR_COUNT_LIMIT, SMS_EXISTS_TIME
+    SMS_SENT_COUNT_LIMIT_TIMEOUT, SMS_NEED_GEETEST_COUNT, ERR_TIP, AUTH_CODE_ERROR_COUNT_LIMIT, SMS_EXISTS_TIME, LOGOUT_CID
 from handler.base import BaseHandler
 from setting import settings
 from utils.datetool import seconds_to_human
@@ -16,6 +16,20 @@ from utils.decorator import is_login
 from utils.security import password_strength
 from utils.general import gen_random_code, validate_auth_code, validate_mobile, validate_user_password
 
+
+"""
+@apiDefine Login
+@apiSuccessExample {json} Success-Response:
+  HTTP/1.1 200 ok
+    {
+        "status": int,
+        "message": str,
+        "data": {
+            "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MTI1NTAyMTMsImlhdCI6MTUxMTk0NTQxMywic3ViIjoxfQ.CmyWtufHH5jte3xFjvUPhiu_T2pv57qX6jxHyqju7Og",
+            "cid": 0=>个人，其他=>公司
+        }
+    }
+"""
 
 class UserBase(BaseHandler):
     @coroutine
@@ -32,14 +46,22 @@ class UserBase(BaseHandler):
 
     @coroutine
     def make_session(self, mobile):
+        '''
+        :param mobile: 用户手机号
+        :return: {'token'}
+        '''
         data = yield self.user_service.select(conds=['mobile=%s'], params=[mobile], one=True)
         if not data:
             yield self.user_service.add({'mobile': mobile})
             data = yield self.user_service.select(conds=['mobile=%s'], params=[mobile], one=True)
-        # 设置cookie
-        self.set_secure_cookie('user_id', str(data['id']), expires_days=COOKIE_EXPIRES_DAYS)
+
         # 设置session
         yield self.set_session(data['id'], data)
+
+        #设置token
+        token = self.encode_auth_token(data['id'])
+
+        return {'token': token}
 
 
 class NeedSMSMixin(BaseHandler):
@@ -203,12 +225,7 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
         @apiParam {String} auth_code
 
 
-        @apiSuccessExample {json} Success-Response:
-          HTTP/1.1 200 ok
-            {
-                "status": int,
-                "message": str,
-            }
+        @apiUse Login
         """
         try:
             # 参数认证
@@ -226,7 +243,12 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
             if not is_ok:
                 return
 
-            yield self.make_session(self.params['mobile'])
+            result = yield self.make_session(self.params['mobile'])
+
+            cid = yield Task(self.redis.hget, LOGOUT_CID, self.params['mobile'])
+
+            result['cid'] = int(cid) if cid else 0
+
             yield self.clean()
 
             is_exist = yield self.user_service.select(
@@ -239,7 +261,9 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
                 self.error(status=ERR_TIP['no_registered']['sts'], message=ERR_TIP['no_registered']['msg'])
                 return
 
-            self.success()
+            self.success(result)
+
+            self.log.stats('AuthcodeLogin, IP: {}, Mobile: {}'.format(self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.params['mobile']))
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())
@@ -254,11 +278,18 @@ class UserLogoutHandler(BaseHandler):
         @apiName UserLogoutHandler
         @apiGroup User
 
+        @apiParam {Int} cid
+
         @apiUse Success
         """
         try:
+            yield Task(self.redis.hset, LOGOUT_CID, self.current_user['mobile'], self.params.get('cid', 0))
+
             yield self.del_session(self.current_user['id'])
+
             self.success()
+
+            self.log.stats('Logout, IP: {}, Mobile: {}'.format(self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.current_user['mobile']))
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())
@@ -462,7 +493,7 @@ class PasswordLoginHandler(UserBase):
         @apiParam {String} mobile 手机号码
         @apiParam {String} password 密码
 
-        @apiUse Success
+        @apiUse Login
         """
         try:
             args = ['mobile', 'password']
@@ -488,10 +519,17 @@ class PasswordLoginHandler(UserBase):
             hashed = data['password'].encode('utf-8')
 
             if hashed and bcrypt.checkpw(password, hashed):
-                yield self.make_session(self.params['mobile'])
-                self.success()
+                result = yield self.make_session(self.params['mobile'])
+
+                cid = yield Task(self.redis.hget, LOGOUT_CID, self.params['mobile'])
+
+                result['cid'] = int(cid) if cid else 0
+
+                self.success(result)
             else:
                 self.error(status=ERR_TIP['password_error']['sts'], message=ERR_TIP['password_error']['msg'])
+
+            self.log.stats('PasswordLogin, IP: {}, Mobile: {}'.format(self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.params['mobile']))
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())
@@ -509,7 +547,15 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
         @apiParam {String} auth_code 验证码
         @apiParam {String} password 密码
 
-        @apiUse Success
+        @apiSuccessExample {json} Success-Response:
+          HTTP/1.1 200 ok
+            {
+                "status": int,
+                "message": str,
+                "data": {
+                    "token": 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MTI1NTAyMTMsImlhdCI6MTUxMTk0NTQxMywic3ViIjoxfQ.CmyWtufHH5jte3xFjvUPhiu_T2pv57qX6jxHyqju7Og'
+                }
+            }
         """
         try:
             args = ['mobile', 'auth_code', 'password']
@@ -543,9 +589,10 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
             }
             yield self.user_service.add(params=arg)
 
-            yield self.make_session(self.params['mobile'])
+            result = yield self.make_session(self.params['mobile'])
             yield self.clean()
-            self.success()
+
+            self.success(result)
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())
@@ -601,9 +648,11 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
                                             conds=['mobile=%s'],
                                             params=[hashed, p_strength, self.params['mobile']]
             )
-            yield self.make_session(self.params['mobile'])
+            result = yield self.make_session(self.params['mobile'])
+
             yield self.clean()
-            self.success()
+
+            self.success(result)
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())

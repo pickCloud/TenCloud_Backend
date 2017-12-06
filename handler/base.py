@@ -30,15 +30,17 @@ __author__ = 'Jon'
     }
 """
 
-
+import jwt
 import json
+import datetime
+import traceback
 
 import tornado.web
 from service.permission.permission_template import PermissionTemplateService
 from tornado.gen import coroutine, Task
 from tornado.websocket import WebSocketHandler
 
-from constant import SESSION_TIMEOUT, SESSION_KEY
+from constant import SESSION_TIMEOUT, SESSION_KEY, TOKEN_EXPIRES_DAYS
 from service.cluster.cluster import ClusterService
 from service.company.company import CompanyService
 from service.company.company_application import CompanyApplicationService
@@ -91,6 +93,35 @@ class BaseHandler(tornado.web.RequestHandler):
     def log(self):
         return self.application.log
 
+    def encode_auth_token(self, user_id):
+        ''' 创建token，包含用户id
+        '''
+        try:
+            payload = {
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=TOKEN_EXPIRES_DAYS),
+                'iat': datetime.datetime.utcnow(),
+                'sub': user_id
+            }
+            token = jwt.encode(payload, settings['token_secret'], algorithm='HS256')
+
+            return token.decode('UTF-8')
+        except Exception as e:
+            self.log.error(traceback.format_exc())
+            return e
+
+    def decode_auth_token(self, auth_token):
+        ''' 解析token，提取用户id
+        '''
+        try:
+            payload = jwt.decode(auth_token, settings['token_secret'])
+            return payload['sub']
+        except jwt.ExpiredSignatureError:
+            self.log.error('Signature expired: {}'.format(auth_token))
+            return ''
+        except jwt.InvalidTokenError:
+            self.log.error('Invalid token: {}'.format(auth_token))
+            return ''
+
     @coroutine
     def prepare(self):
         ''' 获取用户信息 && 获取请求的参数, json类型
@@ -99,14 +130,17 @@ class BaseHandler(tornado.web.RequestHandler):
                 >>> self.current_user['id']
                 >>> self.params['x']
         '''
-        user_id = self.get_secure_cookie('user_id')
+        token = self.request.headers.get('Authorization')
 
-        if user_id:
-            self.current_user = yield self.get_session(user_id.decode('utf-8'))
+        if token:
+            user_id = self.decode_auth_token(token)
+
+            if user_id:
+                self.current_user = yield self.get_session(user_id)
 
         self.params = {}
 
-        if self.request.headers.get("Content-Type", "").startswith("application/json") and self.request.body != "":
+        if self.request.headers.get('Content-Type', '').startswith('application/json') and self.request.body != '':
             self.params = json.loads(self.request.body.decode('utf-8'))
 
     def guarantee(self, *args):
@@ -130,7 +164,7 @@ class BaseHandler(tornado.web.RequestHandler):
     def error(self, message='', data=None, code=400, status=1):
         ''' 响应失败, 返回错误原因
         '''
-        self.set_status(code, message)
+        self.set_status(code)
         self.write({"status": status, "message": message, "data": data})
 
     @coroutine

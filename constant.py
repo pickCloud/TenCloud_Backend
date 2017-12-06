@@ -30,6 +30,7 @@ SMS_NEED_GEETEST_COUNT = 3
 SMS_SENT_COUNT_LIMIT_TIMEOUT = 86400 # 一天
 SESSION_KEY = 'session_{user_id}'
 GIT_TOKEN = 'git_token'
+LOGOUT_CID = 'logout_cid' # 记住退出时的状态，个人或是公司，方便下次登陆
 
 #################################################################################################
 # 错误代码及信息
@@ -331,6 +332,7 @@ SMS_TIMEOUT = 600 # 验证码有效期10分钟
 # Session相关
 #################################################################################################
 COOKIE_EXPIRES_DAYS = 7  # 一周
+TOKEN_EXPIRES_DAYS = 7   # 一周
 SESSION_TIMEOUT = 604800 # 一周
 
 #################################################################################################
@@ -439,7 +441,8 @@ INVITE_URL = SERVER_URL + '/#/invite?code='
 APPLICATION_STATUS = {
     'reject': -1,
     'process': 0,
-    'accept': 1
+    'accept': 1,
+    'founder': 2
 }
 MSG = {
     'application': {
