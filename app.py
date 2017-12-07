@@ -18,7 +18,7 @@ from constant import TORNADO_MAX_BODY_SIZE
 ####################################################################
 # 命令行解析 python `pwd`/app.py --port=xxxx &
 ####################################################################
-define('port', default=28010, help='启动端口', type=int)
+define('port', default=8010, help='启动端口', type=int)
 define('address', default='127.0.0.1', help='监听ip', type=str)
 
 parse_command_line()
