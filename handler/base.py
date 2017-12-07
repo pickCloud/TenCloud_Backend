@@ -123,6 +123,7 @@ class BaseHandler(tornado.web.RequestHandler):
             return ''
 
 
+
     @coroutine
     def prepare(self):
         ''' 获取用户信息 && 获取请求的参数, json类型
