@@ -299,7 +299,7 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
                 ct=False, ut=False, one=True
             )
             if not is_exist['password']:
-                self.error(status=ERR_TIP['no_registered']['sts'], message=ERR_TIP['no_registered']['msg'])
+                self.error(status=ERR_TIP['no_registered']['sts'], message=ERR_TIP['no_registered']['msg'], data=result)
                 return
 
             self.success(result)
