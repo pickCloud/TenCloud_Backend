@@ -31,12 +31,11 @@ class CompanyHandler(BaseHandler):
             }        """
         try:
             is_pass = int(is_pass)
-            if is_pass == 1:
-                status = 'and ce.status={is_pass}'.format(is_pass=is_pass)
-                data = yield self.company_service.get_companies(self.current_user['id'],status)
-                self.success(data)
-                return
-            data = yield self.company_service.get_companies(self.current_user['id'])
+            params = {
+                'uid': self.current_user['id'],
+                'is_pass': is_pass
+            }
+            data = yield self.company_service.get_companies(params)
 
             self.success(data)
         except Exception as e:
