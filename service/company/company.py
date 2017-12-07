@@ -15,14 +15,16 @@ class CompanyService(BaseService):
         :return: [{'cid', 'company_name', 'create_time', 'update_time', 'status'}]
         """
 
-        status = ''
         arg = [FULL_DATE_FORMAT, FULL_DATE_FORMAT, params['uid']]
         is_pass = params['is_pass']
         if is_pass == 1:
-            status = 'and ce.status={is_pass}'
+            status = 'and ce.status = %s'
             arg.append(is_pass)
         elif is_pass == 2:
-            status = 'and ce.status={is_pass}'
+            status = 'and ce.status = %s'
+            arg.append(is_pass)
+        else:
+            status = 'and ce.status = %s'
             arg.append(is_pass)
 
         sql = '''
