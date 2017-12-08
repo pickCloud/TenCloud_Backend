@@ -148,13 +148,13 @@ class ClusterDetailHandler(BaseHandler):
             self.error(str(e))
             self.log.error(traceback.format_exc())
 
-class ClustergAllProviders(BaseHandler):
+class ClusterAllProviders(BaseHandler):
     @is_login
     @coroutine
     def get(self, cluster_id):
         """
         @api {get} /api/cluster/(\d+)/providers 获取该集群下所有提供商
-        @apiName ClustergAllProviders
+        @apiName ClusterAllProviders
         @apiGroup Cluster
 
         @apiParam {Number} cluster_id

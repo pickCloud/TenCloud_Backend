@@ -303,19 +303,19 @@ class ServerPerformanceHandler(BaseHandler):
                 "msg": "success",
                 "data": {
                     "cpu": [
-                        [1496390702, {"percent": int}],
+                        {"timestamp": str, "percent": int},
                         ...
                     ],
                     "memory": [
-                        [1496390702, {"total": int, "available": int, "free": int, "percent": int}],
+                        {"timestamp": str, "total": int, "available": int, "free": int, "percent": int},
                         ...
                     ],
                     "disk": [
-                        [1496390702, {"total": int, "free": int, "percent": int}],
+                        {"timestamp": str, "total": int, "free": int, "percent": int},
                         ...
                     ],
                     "net": [
-                        [1496390702, {"input": int, "output": int}]
+                        {"timestamp":str, "input": int, "output": int},
                         ...
                     ]
                 }
@@ -495,7 +495,7 @@ class ServerStatusHandler(BaseHandler):
 
 
 class ServerContainerPerformanceHandler(BaseHandler):
-    # @is_login
+    @is_login
     @coroutine
     def post(self):
         """
@@ -726,7 +726,7 @@ class OperationLogHandler(BaseHandler):
     @coroutine
     def post(self):
         """
-        @api {get} /api/log/operation 操作记录
+        @api {post} /api/log/operation 操作记录
         @apiName OperationHandler
         @apiGroup Server
 

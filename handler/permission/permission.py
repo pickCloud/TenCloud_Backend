@@ -84,7 +84,7 @@ class PermissionTemplateHandler(BaseHandler):
     def get(self, ptid):
         """
         @api {get} /api/permission/template/(\d+) 获取权限模版
-        @apiName PermissionTemplateHandler
+        @apiName PermissionTemplateGetHandler
         @apiGroup Permission
 
         @apiParam {Number} id 权限模版id
@@ -112,7 +112,7 @@ class PermissionTemplateHandler(BaseHandler):
     def post(self, ptid):
         """
         @api {post} /api/permission/template/(\d+) 删除权限模版
-        @apiName PermissionTemplateHandler
+        @apiName PermissionTemplatePostHandler
         @apiGroup Permission
 
         @apiParam {Number} id 权限模版id
@@ -140,8 +140,8 @@ class PermissionTemplateHandler(BaseHandler):
     @coroutine
     def put(self, ptid):
         """
-        @api {pu} /api/permission/template/(\d+) 修改权限模版
-        @apiName PermissionTemplateHandler
+        @api {put} /api/permission/template/(\d+) 修改权限模版
+        @apiName PermissionTemplatePutHandler
         @apiGroup Permission
 
         @apiParam {Number} id 权限模版id

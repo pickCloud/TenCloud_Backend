@@ -319,7 +319,7 @@ class UserLogoutHandler(BaseHandler):
         @apiName UserLogoutHandler
         @apiGroup User
 
-        @apiParam {Int} cid
+        @apiParam {Number} cid
 
         @apiUse Success
         """

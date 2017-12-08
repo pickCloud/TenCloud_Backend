@@ -5,7 +5,7 @@ __author__ = 'Jon'
 '''
 
 from handler.cluster.cluster import ClusterHandler, ClusterNewHandler, ClusterDelHandler, \
-    ClusterDetailHandler, ClusterUpdateHandler, ClusterSearchHandler, ClustergAllProviders
+    ClusterDetailHandler, ClusterUpdateHandler, ClusterSearchHandler, ClusterAllProviders
 from handler.imagehub.imagehub import ImagehubHandler, ImagehubBySourceHandler, ImagehubByTypeHandler, \
     ImagehubSearchHandler
 from handler.permission.permission import PermissionTemplateListHandler, PermissionTemplateHandler, \
@@ -42,7 +42,7 @@ routes = [
     (r'/api/cluster/new', ClusterNewHandler),
     (r'/api/cluster/del', ClusterDelHandler),
     (r'/api/cluster/(\d+)', ClusterDetailHandler),
-    (r'/api/cluster/(\d+)/providers', ClustergAllProviders),
+    (r'/api/cluster/(\d+)/providers', ClusterAllProviders),
     (r'/api/cluster/update', ClusterUpdateHandler),
     (r'/api/cluster/search', ClusterSearchHandler),
     (r'/api/imagehub', ImagehubHandler),
