@@ -83,7 +83,7 @@ class Aliyun:
 
     @classmethod
     def reboot(cls, data):
-        return cls._common('StartInstance', data)
+        return cls._common('RebootInstance', data)
 
 
 if __name__ == '__main__':
