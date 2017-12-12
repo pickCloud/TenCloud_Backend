@@ -33,13 +33,16 @@ class MessageHandler(BaseHandler):
             }
         """
         try:
-            params = {'owner': self.current_user['id'], 'page': self.get_argument('page', None)}
+            params = {'owner': self.current_user['id']}
+
+            if self.get_argument('page', None):
+                params['page'] = int(self.get_argument('page'))
 
             if self.get_argument('mode', None):
-                params['mode'] = self.get_argument('mode')
+                params['mode'] = int(self.get_argument('mode'))
 
             if status:
-                params['status'] = status
+                params['status'] = int(status)
 
             data = yield self.message_service.fetch(params)
 
