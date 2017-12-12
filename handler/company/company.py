@@ -18,7 +18,7 @@ class CompanyHandler(BaseHandler):
         @apiName CompanyHandler
         @apiGroup Company
 
-        @apiParam {Number} is_pass 获取通过列表传1，其余传0
+        @apiParam {Number} is_pass -1拒绝, 0审核中, 1通过, 2创始人, 3获取所有和该用户相关的公司
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -31,12 +31,15 @@ class CompanyHandler(BaseHandler):
             }        """
         try:
             is_pass = int(is_pass)
-            if is_pass == 1:
-                status = 'and ce.status={is_pass}'.format(is_pass=is_pass)
-                data = yield self.company_service.get_companies(self.current_user['id'],status)
-                self.success(data)
+            if is_pass < 0 or is_pass > 3:
+                self.error("arg error, check again")
                 return
-            data = yield self.company_service.get_companies(self.current_user['id'])
+
+            params = {
+                'uid': self.current_user['id'],
+                'is_pass': is_pass
+            }
+            data = yield self.company_service.get_companies(params)
 
             self.success(data)
         except Exception as e:
