@@ -11,7 +11,7 @@ class MessageHandler(BaseHandler):
     @coroutine
     def get(self, status):
         """
-        @api {get} /api/messages/?(\d*)?page=\d 获取员工消息列表
+        @api {get} /api/messages/?(\d*)?page=\d&mode=\d 获取员工消息列表, mode值看下面的response
         @apiName MessageGetHandler
         @apiGroup Message
 
@@ -35,7 +35,11 @@ class MessageHandler(BaseHandler):
         try:
             params = {'owner': self.current_user['id'], 'page': self.get_argument('page', None)}
 
-            if status: params['status'] = status
+            if self.get_argument('mode', None):
+                params['mode'] = self.get_argument('mode')
+
+            if status:
+                params['status'] = status
 
             data = yield self.message_service.fetch(params)
 
