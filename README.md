@@ -265,7 +265,7 @@ CREATE TABLE `user` (
 
 ALTER TABLE user ADD COLUMN gender tinyint(4) COMMENT '性别 0: 男性 1: 女性'
 ALTER TABLE user ADD COLUMN birthday int(10) COMMENT '生日'
-ALTER TABLE user ADD COLUMN password_strength varchar(64) not null  DEFAULT '' COMMENT '密码强度'
+ALTER TABLE user ADD COLUMN password_strength varchar(64) not null DEFAULT '' COMMENT '密码强度'
 ```
 
 * 文件表
