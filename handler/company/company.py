@@ -14,11 +14,11 @@ class CompanyHandler(BaseHandler):
     @coroutine
     def get(self, is_pass):
         """
-        @api {get} /api/companies/list/(\d+) 公司列表
+        @api {get} /api/companies/list/(-?\d+) 公司列表
         @apiName CompanyHandler
         @apiGroup Company
 
-        @apiParam {Number} is_pass -1拒绝, 0审核中, 1通过, 2创始人, 3获取所有和该用户相关的公司
+        @apiParam {Number} is_pass -1拒绝, 0审核中, 1通过, 2创始人, 3获取通过的，以及作为创始人的公司列表, 4获取所有和该用户相关的公司列表
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -31,7 +31,7 @@ class CompanyHandler(BaseHandler):
             }        """
         try:
             is_pass = int(is_pass)
-            if is_pass < 0 or is_pass > 3:
+            if is_pass < 0 or is_pass > 4:
                 self.error("arg error, check again")
                 return
 
