@@ -46,7 +46,7 @@ ERR_TIP = {
     'mobile_has_exist':    {'sts': 10411, 'msg': '该手机号已被注册。'},
     'auth_code_has_error': {'sts': 10412, 'msg': '登陆验证码错误{count}次'},
     'auth_code_many_errors': {'sts': 10413, 'msg': '登陆验证码已连续错{count}次，请二个小时后再次尝试'.format(count=AUTH_CODE_ERROR_COUNT_LIMIT)},
-    'auth_code_timeout':   {'sts': 10414, 'msg': '登陆验证码已过期'},
+    'auth_code_timeout':   {'sts': 10414, 'msg': '短信验证码已过期，请重新获取'},
 
     # 公司
     'company_exists': {'sts': 10000, 'msg': '已存在公司'},
