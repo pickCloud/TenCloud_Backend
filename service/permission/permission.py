@@ -46,18 +46,22 @@ class PermissionService(PermissionBaseService):
         data = [
             {
                 'name': '功能',
-                'categories': permission_data
+                'data': permission_data
             },
             {
                 'name': '数据',
-                'categories': [
+                'data': [
                     {
                         'name': '文件',
-                        'data': filehub_data
+                        'data': [
+                            {'name': '文件', 'data': filehub_data}
+                        ]
                     },
                     {
                         'name': '项目',
-                        'data': project_data
+                        'data': [
+                            {'name': '项目', 'data': project_data}
+                        ]
                     },
                     {
                         'name': '云服务器',
