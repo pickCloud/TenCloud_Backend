@@ -1,10 +1,10 @@
 import traceback
 
-from tornado.gen import coroutine
+from tornado.gen import coroutine, Task
 
 from handler.base import BaseHandler
 from utils.decorator import is_login
-
+from constant import COMPANY_PERMISSION, USER_PERMISSION, PERMISSIONS_FLAG
 
 class PermissionResourcesHandler(BaseHandler):
     @is_login
@@ -276,6 +276,19 @@ class PermissionUserDetailHandler(BaseHandler):
         """
         try:
             cid, uid = int(cid), int(uid)
+
+            company_user = USER_PERMISSION.format(cid=cid, uid=uid)
+            has_set = yield Task(self.redis.hget, COMPANY_PERMISSION, company_user)
+            if not has_set:
+                data = {
+                    'access_servers': '',
+                    'access_projects': '',
+                    'access_filehub': '',
+                    'permission': '',
+                }
+                self.success(data)
+                return
+
             data = yield self.permission_service.get_user_permission(cid=cid, uid=uid)
             self.success(data)
         except Exception as e:
@@ -284,6 +297,22 @@ class PermissionUserDetailHandler(BaseHandler):
 
 
 class PermissionUserUpdateHandler(BaseHandler):
+
+    def deal_args(self, object_str):
+        arg = {
+            'table': '',
+            'fields': '',
+            'uid': self.params['uid'],
+            'cid': self.params['cid'],
+            'data': '',
+        }
+        data = []
+        for k in object_str.split(','):
+            value = '(' + str(self.params['uid']) + ',' + k + ',' + str(self.params['cid']) + ')'
+            data.append(value)
+        arg['data'] = ','.join(data)
+        return arg
+
     @is_login
     @coroutine
     def post(self):
@@ -294,10 +323,10 @@ class PermissionUserUpdateHandler(BaseHandler):
 
         @apiParam {Number} uid 用户id
         @apiParam {Number} cid 公司id
-        @apiParam {Number} server_id 服务器id
-        @apiParam {Number} project_id 项目id
-        @apiParam {Number} filehub_id 文件id
-        @apiParam {Number} permission_id 权限id
+        @apiParam {String} access_servers 服务器id 如: "1,2,3"
+        @apiParam {String} access_projects 项目id 如上
+        @apiParam {String} access_filehub 文件id  如上
+        @apiParam {String} permissions 权限id 如上
 
         @apiUse Success
         """
@@ -307,21 +336,36 @@ class PermissionUserUpdateHandler(BaseHandler):
 
             yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
 
-            server_ids = self.params.get('server_id', '')
-            if server_ids:
-                yield self.permission_service.update_user_access_server(self.params)
+            access_servers = self.params.get('access_servers', '')
+            if access_servers:
+                arg = self.deal_args(access_servers)
+                arg['table'] = 'user_access_server'
+                arg['fields'] = '(`uid`, `sid`, `cid`)'
+                yield self.permission_service.update_user(arg)
 
-            project_ids = self.params.get('project_id', '')
-            if project_ids:
-                yield self.permission_service.update_user_access_project(self.params)
+            access_projects = self.params.get('access_projects', '')
+            if access_projects:
+                arg = self.deal_args(access_projects)
+                arg['table'] = 'user_access_project'
+                arg['fields'] = '(`uid`, `pid`, `cid`)'
+                yield self.permission_service.update_user(arg)
 
-            filehub_ids = self.params.get('filehub_id', '')
-            if filehub_ids:
-                yield self.permission_service.update_user_access_filehub(self.params)
+            access_filehub = self.params.get('access_filehub', '')
+            if access_filehub:
+                arg = self.deal_args(access_filehub)
+                arg['table'] = 'user_access_filehub'
+                arg['fields'] = '(`uid`, `fid`, `cid`)'
+                yield self.permission_service.update_user(arg)
 
-            permission_ids = self.params.get('permission_id', '')
-            if permission_ids:
-                yield self.permission_service.update_user_permission(self.params)
+            permissions = self.params.get('permissions', '')
+            if permissions:
+                arg = self.deal_args(permissions)
+                arg['table'] = 'user_permission'
+                arg['fields'] = '(`uid`, `pid`, `cid`)'
+                yield self.permission_service.update_user(arg)
+
+            company_user = USER_PERMISSION.format(cid=self.params['cid'], uid=self.params['uid'])
+            yield Task(self.redis.hset, COMPANY_PERMISSION, company_user, PERMISSIONS_FLAG)
 
             self.success()
         except Exception as e:
