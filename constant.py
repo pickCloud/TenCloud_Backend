@@ -30,7 +30,10 @@ SMS_NEED_GEETEST_COUNT = 3
 SMS_SENT_COUNT_LIMIT_TIMEOUT = 86400 # 一天
 SESSION_KEY = 'session_{user_id}'
 GIT_TOKEN = 'git_token'
-LOGOUT_CID = 'logout_cid' # 记住退出时的状态，个人或是公司，方便下次登陆
+LOGOUT_CID = 'logout_cid'  # 记住退出时的状态，个人或是公司，方便下次登陆
+COMPANY_PERMISSION = 'company_permissons'
+USER_PERMISSION = 'cid_{cid}:uid_{uid}'
+PERMISSIONS_FLAG = 1
 
 #################################################################################################
 # 错误代码及信息

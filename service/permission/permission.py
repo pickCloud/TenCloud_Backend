@@ -86,44 +86,11 @@ class PermissionService(PermissionBaseService):
         return data
 
     @coroutine
-    def update_user_access_server(self, params):
-        table = 'user_access_server'
-        set_fields='sid={sid}'.format(sid=params['server_id'])
-        self.log.info(set_fields)
+    def update_user(self, params):
         yield self._delete_and_insert(
-                                            table=table,
-                                            set_fields=set_fields,
-                                            params=params
-        )
-
-    @coroutine
-    def update_user_access_project(self, params):
-        table = 'user_access_project'
-        set_fields='pid={pid}'.format(pid=params['project_id'])
-        yield self._delete_and_insert(
-                                            table=table,
-                                            set_fields=set_fields,
-                                            params=params
-        )
-
-    @coroutine
-    def update_user_access_filehub(self, params):
-        table = 'user_access_filehub'
-        set_fields='fid={fid}'.format(fid=params['filehub_id'])
-        yield self._delete_and_insert(
-                                            table=table,
-                                            set_fields=set_fields,
-                                            params=params
-        )
-
-    @coroutine
-    def update_user_permission(self, params):
-        table = 'user_permission'
-        set_fields='pid={pid}'.format(pid=params['permission_id'])
-        yield self._delete_and_insert(
-                                            table=table,
-                                            set_fields=set_fields,
-                                            params=params
+                                    table=params['table'],
+                                    set_fields=params['fields'],
+                                    params=params
         )
 
     @coroutine
@@ -135,10 +102,7 @@ class PermissionService(PermissionBaseService):
         yield self.db.execute(sql)
 
         sql = """
-                INSERT INTO {table} SET {set_fields}, uid={uid}, cid={cid}
-            """.format(
-                        table=table, set_fields=set_fields,
-                        uid=params['uid'], cid=params['cid']
-                        )
+                INSERT INTO {table} {set_fields} VALUES {values}
+            """.format(table=table, set_fields=set_fields, values=params['data'])
 
         yield self.db.execute(sql)
