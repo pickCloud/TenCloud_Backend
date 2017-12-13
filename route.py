@@ -118,7 +118,7 @@ routes = [
 
 
     # 公司相关
-    (r'/api/companies/list/(\d+)', CompanyHandler),
+    (r'/api/companies/list/(-?\d+)', CompanyHandler),
     (r'/api/company/(\d+)', CompanyDetailHandler),
     (r'/api/company/new', CompanyNewHandler),
     (r'/api/company/update', CompanyUpdateHandler),
