@@ -323,10 +323,10 @@ class PermissionUserUpdateHandler(BaseHandler):
 
         @apiParam {Number} uid 用户id
         @apiParam {Number} cid 公司id
-        @apiParam {Number} access_servers 服务器id
-        @apiParam {Number} access_projects 项目id
-        @apiParam {Number} access_filehub 文件id
-        @apiParam {Number} permissions 权限id
+        @apiParam {String} access_servers 服务器id 如: "1,2,3"
+        @apiParam {String} access_projects 项目id 如上
+        @apiParam {String} access_filehub 文件id  如上
+        @apiParam {String} permissions 权限id 如上
 
         @apiUse Success
         """

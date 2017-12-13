@@ -87,22 +87,14 @@ class PermissionService(PermissionBaseService):
 
     @coroutine
     def update_user(self, params):
-        yield self._delete_and_insert(
-                                    table=params['table'],
-                                    set_fields=params['fields'],
-                                    params=params
-        )
-
-    @coroutine
-    def _delete_and_insert(self, table, set_fields, params):
         sql = """
             DELETE FROM {table} WHERE cid={cid} AND uid={uid}
-            """.format(table=table, cid=params['cid'], uid=params['uid'])
+            """.format(table=params['table'], cid=params['cid'], uid=params['uid'])
 
         yield self.db.execute(sql)
 
         sql = """
-                INSERT INTO {table} {set_fields} VALUES {values}
-            """.format(table=table, set_fields=set_fields, values=params['data'])
+                INSERT INTO {table} {fields} VALUES {values}
+            """.format(table=params['table'], fields=params['fields'], values=params['data'])
 
         yield self.db.execute(sql)
