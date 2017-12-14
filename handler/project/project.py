@@ -4,10 +4,11 @@ import traceback
 import json
 
 from tornado.gen import coroutine
-from tornado.ioloop import PeriodicCallback, IOLoop
+from tornado.ioloop import IOLoop
 from handler.base import BaseHandler, WebSocketBaseHandler
 from utils.general import get_in_formats
 from utils.decorator import is_login
+from utils.context import catch
 from setting import settings
 from handler.user import user
 from constant import PROJECT_STATUS, SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, PROJECT_OPERATE_STATUS, OPERATE_STATUS
@@ -40,13 +41,10 @@ class ProjectHandler(BaseHandler):
                 ]
             }
         """
-        try:
+        with catch(self):
             result = yield self.project_service.select(ct=False)
 
             self.success(result)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ProjectNewHandler(BaseHandler):
@@ -79,8 +77,7 @@ class ProjectNewHandler(BaseHandler):
                 }
             }
         """
-
-        try:
+        with catch(self):
             if self.params.get('repos_url'):
                 is_duplicate_url = yield self.project_service.select(conds=['repos_url=%s'], params=[self.params['repos_url']], one=True)
 
@@ -103,9 +100,6 @@ class ProjectNewHandler(BaseHandler):
                 'operation_status': OPERATE_STATUS['success'],
             })
             self.success(result)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ProjectDelHandler(BaseHandler):
@@ -121,14 +115,11 @@ class ProjectDelHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             ids = self.params['id']
             yield self.project_service.delete(conds=[get_in_formats('id', ids)], params=ids)
 
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ProjectDetailHandler(BaseHandler):
@@ -166,13 +157,10 @@ class ProjectDetailHandler(BaseHandler):
                 ]
             }
         """
-        try:
+        with catch(self):
             result = yield self.project_service.select(conds=['id=%s'], params=[id])
 
             self.success(result)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ProjectUpdateHandler(BaseHandler):
@@ -195,7 +183,7 @@ class ProjectUpdateHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             data = yield self.server_operation_service.add(params={
                 'user_id': self.current_user['id'],
                 'object_id': self.params['id'],
@@ -225,9 +213,6 @@ class ProjectUpdateHandler(BaseHandler):
                     params=[OPERATE_STATUS['success'], data['id']]
             )
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ProjectDeploymentHandler(WebSocketBaseHandler):
@@ -330,7 +315,7 @@ class ProjectContainersListHanler(BaseHandler):
                 ]
             }
         """
-        try:
+        with catch(self):
             data = []
             for ip in json.loads(self.params['container_list']):
                 server_id = yield self.server_service.fetch_server_id(ip['public_ip'])
@@ -347,9 +332,6 @@ class ProjectContainersListHanler(BaseHandler):
                     one_ip.extend(i)
                 data.append(one_ip)
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ProjectImageCreationHandler(WebSocketBaseHandler):
@@ -447,15 +429,12 @@ class ProjectImageLogHandler(BaseHandler):
                 }
             }
         """
-        try:
+        with catch(self):
             out = yield self.project_versions_service.select(
                                                             fields='log', conds=['name=%s', 'version=%s'],
                                                             params=[prj_name, version], ct=False, one=True)
             data = {"log": json.loads(out['log']), "update_time": out['update_time']}
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
     @is_login
     @coroutine
@@ -470,7 +449,7 @@ class ProjectImageLogHandler(BaseHandler):
 
        @apiUse Success
        """
-        try:
+        with catch(self):
             data_id = yield self.project_service.select(fields='id',conds=['name=%s'], params=[prj_name], ct=False, ut=False, one=True)
             data = yield self.server_operation_service.add(params={
                 'user_id': self.current_user['id'],
@@ -488,9 +467,6 @@ class ProjectImageLogHandler(BaseHandler):
                     params=[OPERATE_STATUS['success'], data['id']]
             )
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ProjectVersionsHandler(BaseHandler):
@@ -514,12 +490,10 @@ class ProjectVersionsHandler(BaseHandler):
                 ]
             }
         """
-        try:
+        with catch(self):
             data = yield self.project_versions_service.version_list(prj_name)
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
+
 
 class ProjectImageFindHandler(BaseHandler):
     @is_login
@@ -543,7 +517,7 @@ class ProjectImageFindHandler(BaseHandler):
                 ]
             }
         """
-        try:
+        with catch(self):
             self.params.update({"prj_name": prj_name})
             login_info = yield self.server_service.fetch_ssh_login_info({'public_ip': settings['ip_for_image_creation']})
             self.params.update(login_info)
@@ -552,9 +526,6 @@ class ProjectImageFindHandler(BaseHandler):
                 self.error(err)
                 return
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ProjectImageUpload(user.FileUploadMixin):
@@ -569,13 +540,10 @@ class ProjectImageUpload(user.FileUploadMixin):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             filename = yield self.handle_file_upload()
             yield self.project_service.upload_image(filename)
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ProjectImageCloudDownload(BaseHandler):
@@ -591,11 +559,7 @@ class ProjectImageCloudDownload(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             yield self.project_service.cloud_download(self.params['image_url'])
             yield self.project_service.upload_image(self.params['image_url'].split('\\')[-1])
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
-

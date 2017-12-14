@@ -4,6 +4,7 @@ from tornado.gen import coroutine
 
 from handler.base import BaseHandler
 from utils.decorator import is_login
+from utils.context import catch
 
 
 class PermissionResourcesHandler(BaseHandler):
@@ -38,13 +39,10 @@ class PermissionResourcesHandler(BaseHandler):
                 }
             }
         """
-        try:
+        with catch(self):
             cid = int(cid)
             data = yield self.permission_template_service.get_resources(cid)
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class PermissionTemplateListHandler(BaseHandler):
@@ -68,14 +66,10 @@ class PermissionTemplateListHandler(BaseHandler):
                 ]
             }
         """
-        try:
+        with catch(self):
             cid = int(cid)
             data = yield self.permission_template_service.select(conds=['cid=%s'], params=[cid])
             self.success(data)
-
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class PermissionTemplateHandler(BaseHandler):
@@ -99,13 +93,10 @@ class PermissionTemplateHandler(BaseHandler):
                 ]
             }
         """
-        try:
+        with catch(self):
             ptid = int(ptid)
             data = yield self.permission_template_service.get_template_permission(ptid)
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
     @is_login
     @coroutine
@@ -120,8 +111,7 @@ class PermissionTemplateHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
-
+        with catch(self):
             args = ['cid']
             self.guarantee(*args)
 
@@ -131,10 +121,6 @@ class PermissionTemplateHandler(BaseHandler):
 
             yield self.permission_template_service.delete(conds=['id=%s'], params=[ptid])
             self.success()
-
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
     @is_login
     @coroutine
@@ -153,8 +139,7 @@ class PermissionTemplateHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
-
+        with catch(self):
             args = ['cid', 'permissions', 'access_servers', 'access_projects', 'access_filehub']
             self.guarantee(*args)
 
@@ -177,9 +162,6 @@ class PermissionTemplateHandler(BaseHandler):
                                                           params=params
                                                           )
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class PermissionTemplateAddHandler(BaseHandler):
@@ -200,7 +182,7 @@ class PermissionTemplateAddHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             args = ['name', 'cid', 'permissions', 'access_servers', 'access_projects', 'access_filehub']
             self.guarantee(*args)
 
@@ -217,9 +199,6 @@ class PermissionTemplateAddHandler(BaseHandler):
 
             yield self.permission_template_service.add(params)
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class PermissionTemplateRenameHandler(BaseHandler):
@@ -237,7 +216,7 @@ class PermissionTemplateRenameHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             args = ['cid', 'name']
             self.guarantee(*args)
 
@@ -250,9 +229,6 @@ class PermissionTemplateRenameHandler(BaseHandler):
                                                         params=[name, ptid]
             )
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class PermissionUserDetailHandler(BaseHandler):
@@ -274,13 +250,10 @@ class PermissionUserDetailHandler(BaseHandler):
                 ]
             }
         """
-        try:
+        with catch(self):
             cid, uid = int(cid), int(uid)
             data = yield self.permission_service.get_user_permission(cid=cid, uid=uid)
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class PermissionUserUpdateHandler(BaseHandler):
@@ -301,7 +274,7 @@ class PermissionUserUpdateHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             args = ['uid', 'cid']
             self.guarantee(*args)
 
@@ -324,6 +297,3 @@ class PermissionUserUpdateHandler(BaseHandler):
                 yield self.permission_service.update_user_permission(self.params)
 
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())

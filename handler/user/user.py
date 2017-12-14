@@ -15,6 +15,7 @@ from utils.datetool import seconds_to_human
 from utils.decorator import is_login
 from utils.security import password_strength
 from utils.general import gen_random_code, validate_auth_code, validate_mobile, validate_user_password
+from utils.context import catch
 
 
 """
@@ -146,7 +147,7 @@ class UserSMSHandler(UserBase):
                 "sms_count": int
             }
         """
-        try:
+        with catch(self):
             mobile = self.params['mobile']
             # 参数认证
             validate_mobile(mobile)
@@ -208,9 +209,6 @@ class UserSMSHandler(UserBase):
             self.log.info('mobile: {mobile}, auth_code: {auth_code}'.format(mobile=mobile, auth_code=auth_code))
 
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class UserLoginHandler(NeedSMSMixin, UserBase):
@@ -227,7 +225,7 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
 
         @apiUse Login
         """
-        try:
+        with catch(self):
             # 参数认证
             args = ['mobile', 'auth_code']
 
@@ -264,9 +262,6 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
             self.success(result)
 
             self.log.stats('AuthcodeLogin, IP: {}, Mobile: {}'.format(self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.params['mobile']))
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class UserLogoutHandler(BaseHandler):
@@ -282,7 +277,7 @@ class UserLogoutHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             yield Task(self.redis.hset, LOGOUT_CID, self.current_user['mobile'], self.params.get('cid', 0))
 
             yield self.del_session(self.current_user['id'])
@@ -290,10 +285,6 @@ class UserLogoutHandler(BaseHandler):
             self.success()
 
             self.log.stats('Logout, IP: {}, Mobile: {}'.format(self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.current_user['mobile']))
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
-
 
 
 class UserDetailHandler(BaseHandler):
@@ -323,11 +314,8 @@ class UserDetailHandler(BaseHandler):
                 }
             }
         """
-        try:
+        with catch(self):
             self.success(self.current_user)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class UserUpdateHandler(BaseHandler):
@@ -351,7 +339,7 @@ class UserUpdateHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             old = self.current_user
 
             new = {
@@ -374,9 +362,6 @@ class UserUpdateHandler(BaseHandler):
             yield self.set_session(new['id'], new)
 
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class UserUploadToken(BaseHandler):
@@ -399,12 +384,9 @@ class UserUploadToken(BaseHandler):
                 }
             }
         """
-        try:
+        with catch(self):
             data = yield self.user_service.get_qiniu_token()
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
     @is_login
     @coroutine
@@ -416,12 +398,9 @@ class UserUploadToken(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             yield self.user_service.delete_token(self.current_user['id'])
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class FileUploadMixin(BaseHandler):
@@ -469,7 +448,7 @@ class GetCaptchaHandler(BaseHandler):
                 }
             }
         """
-        try:
+        with catch(self):
             gt = GeetestLib(settings['gee_id'], settings['gee_key'])
             status = gt.pre_process()
             if not status:
@@ -477,9 +456,6 @@ class GetCaptchaHandler(BaseHandler):
             yield Task(self.redis.set, gt.GT_STATUS_SESSION_KEY, status)
             response_str = json.loads(gt.get_response_str())
             self.success(response_str)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class PasswordLoginHandler(UserBase):
@@ -495,7 +471,7 @@ class PasswordLoginHandler(UserBase):
 
         @apiUse Login
         """
-        try:
+        with catch(self):
             args = ['mobile', 'password']
 
             self.guarantee(*args)
@@ -530,9 +506,6 @@ class PasswordLoginHandler(UserBase):
                 self.error(status=ERR_TIP['password_error']['sts'], message=ERR_TIP['password_error']['msg'])
 
             self.log.stats('PasswordLogin, IP: {}, Mobile: {}'.format(self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.params['mobile']))
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class UserRegisterHandler(NeedSMSMixin, UserBase):
@@ -557,7 +530,7 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
                 }
             }
         """
-        try:
+        with catch(self):
             args = ['mobile', 'auth_code', 'password']
 
             self.guarantee(*args)
@@ -593,9 +566,6 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
             yield self.clean()
 
             self.success(result)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class UserResetPasswordHandler(NeedSMSMixin, UserBase):
@@ -613,7 +583,7 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
 
            @apiUse Success
            """
-        try:
+        with catch(self):
             args = ['mobile', 'new_password', 'auth_code']
             self.guarantee(*args)
             self.strip(*args)
@@ -653,9 +623,6 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
             yield self.clean()
 
             self.success(result)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class UserResetMobileHandler(NeedSMSMixin, UserBase):
@@ -673,7 +640,7 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             args = ['new_mobile', 'auth_code', 'password']
 
             self.guarantee(*args)
@@ -716,10 +683,6 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
             self.clean()
             self.success()
 
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
-
 
 class UserPasswordSetHandler(BaseHandler):
     @is_login
@@ -734,7 +697,7 @@ class UserPasswordSetHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             password = self.params['password'].encode('utf-8')
             hashed = bcrypt.hashpw(password, bcrypt.gensalt())
             p_strength = password_strength(self.params['password'])
@@ -744,9 +707,3 @@ class UserPasswordSetHandler(BaseHandler):
                 params=[hashed, p_strength, self.current_user['id']]
             )
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
-
-
-
