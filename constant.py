@@ -30,8 +30,12 @@ SMS_NEED_GEETEST_COUNT = 3
 SMS_SENT_COUNT_LIMIT_TIMEOUT = 86400 # 一天
 SESSION_KEY = 'session_{user_id}'
 GIT_TOKEN = 'git_token'
-LOGOUT_CID = 'logout_cid' # 记住退出时的状态，个人或是公司，方便下次登陆
 CLUSTER_SEARCH_TIMEOUT = 60 # 集群搜索结果缓存超时
+LOGOUT_CID = 'logout_cid'  # 记住退出时的状态，个人或是公司，方便下次登陆
+COMPANY_PERMISSION = 'company_permissons'
+USER_PERMISSION = 'cid_{cid}:uid_{uid}'
+PERMISSIONS_FLAG = 1
+
 #################################################################################################
 # 错误代码及信息
 #################################################################################################
@@ -46,7 +50,7 @@ ERR_TIP = {
     'mobile_has_exist':    {'sts': 10411, 'msg': '该手机号已被注册。'},
     'auth_code_has_error': {'sts': 10412, 'msg': '登陆验证码错误{count}次'},
     'auth_code_many_errors': {'sts': 10413, 'msg': '登陆验证码已连续错{count}次，请二个小时后再次尝试'.format(count=AUTH_CODE_ERROR_COUNT_LIMIT)},
-    'auth_code_timeout':   {'sts': 10414, 'msg': '登陆验证码已过期'},
+    'auth_code_timeout':   {'sts': 10414, 'msg': '短信验证码已过期，请重新获取'},
 
     # 公司
     'company_exists': {'sts': 10000, 'msg': '已存在公司'},
@@ -472,3 +476,4 @@ MSG_PAGE_NUM = 20
 # 权限模版 0云服务器, 1项目, 2文件服务, 3企业资料, 4员工管理, 5权限模版管理, 6平台管理
 #################################################################################################
 PERMISSIONS = ["云服务器", "项目", "文件服务", "企业资料", "员工管理", "权限模版管理", "平台管理"]
+PT_FORMAT = 1

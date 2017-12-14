@@ -8,6 +8,7 @@ from handler.base import BaseHandler
 from constant import CLUSTER_SEARCH_TIMEOUT
 from utils.general import get_in_formats
 from utils.decorator import is_login
+from utils.context import catch
 
 
 class ClusterHandler(BaseHandler):
@@ -30,13 +31,10 @@ class ClusterHandler(BaseHandler):
                 ]
             }
         """
-        try:
+        with catch(self):
             result = yield self.cluster_service.select()
 
             self.success(result)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ClusterNewHandler(BaseHandler):
@@ -62,13 +60,10 @@ class ClusterNewHandler(BaseHandler):
                 }
             }
         """
-        try:
+        with catch(self):
             result = yield self.cluster_service.add(self.params)
 
             self.success(result)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ClusterDelHandler(BaseHandler):
@@ -84,15 +79,12 @@ class ClusterDelHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             ids = self.params['id']
 
             yield self.cluster_service.delete(conds=[get_in_formats('id', ids)], params=ids)
 
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ClusterDetailHandler(BaseHandler):
@@ -135,7 +127,7 @@ class ClusterDetailHandler(BaseHandler):
                  ]
              }
          """
-        try:
+        with catch(self):
             id = int(id)
 
             basic_info = yield self.cluster_service.select(conds=['id=%s'], params=[id], ct=False)
@@ -144,9 +136,6 @@ class ClusterDetailHandler(BaseHandler):
                 'basic_info': basic_info,
                 'server_list': server_list
             })
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 class ClusterAllProviders(BaseHandler):
     @is_login
@@ -252,7 +241,7 @@ class ClusterUpdateHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             sets = ['name=%s', 'description=%s']
             conds = ['id=%s']
             params = [self.params['name'], self.params['description'], self.params['id']]
@@ -260,6 +249,3 @@ class ClusterUpdateHandler(BaseHandler):
             yield self.cluster_service.update(sets=sets, conds=conds, params=params)
 
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())

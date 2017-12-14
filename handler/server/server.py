@@ -13,7 +13,7 @@ from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG
 from utils.general import validate_ip
 from utils.security import Aes
 from utils.decorator import is_login
-from utils.ssh import SSH
+from utils.context import catch
 from constant import MONITOR_CMD, OPERATE_STATUS, OPERATION_OBJECT_STYPE, SERVER_OPERATE_STATUS, CONTAINER_OPERATE_STATUS
 
 
@@ -114,7 +114,7 @@ class ServerReport(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             deploying_msg = yield Task(self.redis.hget, DEPLOYING, self.params['public_ip'])
 
             is_deployed = yield Task(self.redis.hget, DEPLOYED, self.params['public_ip'])
@@ -139,9 +139,6 @@ class ServerReport(BaseHandler):
             yield self.server_service.save_report(self.params)
 
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ServerMigrationHandler(BaseHandler):
@@ -158,13 +155,10 @@ class ServerMigrationHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             yield self.server_service.migrate_server(self.params)
 
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ServerDelHandler(BaseHandler):
@@ -180,13 +174,10 @@ class ServerDelHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             yield self.server_service.delete_server(self.params)
 
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ServerDetailHandler(BaseHandler):
@@ -237,7 +228,7 @@ class ServerDetailHandler(BaseHandler):
             }
             }
         """
-        try:
+        with catch(self):
             data = yield self.server_service.get_detail(id)
 
             result = dict()
@@ -275,9 +266,6 @@ class ServerDetailHandler(BaseHandler):
             }
 
             self.success(result)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ServerPerformanceHandler(BaseHandler):
@@ -322,12 +310,9 @@ class ServerPerformanceHandler(BaseHandler):
             }
         :return:
         """
-        try:
+        with catch(self):
             data = yield self.server_service.get_performance(self.params)
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ServerUpdateHandler(BaseHandler):
@@ -344,7 +329,7 @@ class ServerUpdateHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             data = yield self.server_operation_service.add(params={
                 'user_id': self.current_user['id'],
                 'object_id': self.params['id'],
@@ -352,6 +337,11 @@ class ServerUpdateHandler(BaseHandler):
                 'operation': SERVER_OPERATE_STATUS['change'],
                 'operation_status': OPERATE_STATUS['fail'],
             })
+
+            old_name = yield self.server_service.select(fields='name', conds=['id=%s'], params=[self.params['id']], one=True)
+            if old_name['name'] == self.params['name']:
+                self.error("name has existed")
+                return
 
             yield self.server_service.update_server(self.params)
 
@@ -362,9 +352,6 @@ class ServerUpdateHandler(BaseHandler):
             )
 
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ServerStopHandler(BaseHandler):
@@ -381,7 +368,7 @@ class ServerStopHandler(BaseHandler):
         @apiUse Success
 
         """
-        try:
+        with catch(self):
             data = yield self.server_operation_service.add(params={
                                                             'user_id': self.current_user['id'],
                                                             'object_id': id,
@@ -396,9 +383,6 @@ class ServerStopHandler(BaseHandler):
                                                         params=[OPERATE_STATUS['success'], data['id']]
                                                     )
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ServerStartHandler(BaseHandler):
@@ -414,7 +398,7 @@ class ServerStartHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             data = yield self.server_operation_service.add(params={
                                                             'user_id': self.current_user['id'],
                                                             'object_id': id,
@@ -429,9 +413,7 @@ class ServerStartHandler(BaseHandler):
                                                         params=[OPERATE_STATUS['success'], data['id']]
                                                     )
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
+
 
 class ServerRebootHandler(BaseHandler):
     @is_login
@@ -446,7 +428,7 @@ class ServerRebootHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             data = yield self.server_operation_service.add(params={
                                                             'user_id': self.current_user['id'],
                                                             'object_id': id,
@@ -461,9 +443,6 @@ class ServerRebootHandler(BaseHandler):
                                                         params=[OPERATE_STATUS['success'], data['id']]
                                                     )
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ServerStatusHandler(BaseHandler):
@@ -485,13 +464,10 @@ class ServerStatusHandler(BaseHandler):
                 "data": "Running"
             }
         """
-        try:
+        with catch(self):
             data = yield self.server_service.get_instance_status(instance_id)
 
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ServerContainerPerformanceHandler(BaseHandler):
@@ -533,12 +509,9 @@ class ServerContainerPerformanceHandler(BaseHandler):
                 }
             }
         """
-        try:
+        with catch(self):
             data = yield self.server_service.get_docker_performance(self.params)
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ServerContainersHandler(BaseHandler):
@@ -568,13 +541,10 @@ class ServerContainersHandler(BaseHandler):
                 ]
             }
         """
-        try:
+        with catch(self):
             data = yield self.server_service.get_containers({"server_id": str(id)})
 
             self.success(data)
-        except Exception as e:
-            self.success()
-            self.log.error(traceback.format_exc())
 
 
 class ServerContainersInfoHandler(BaseHandler):
@@ -599,7 +569,7 @@ class ServerContainersInfoHandler(BaseHandler):
                 }
             }
         """
-        try:
+        with catch(self):
             params = yield self.server_service.fetch_ssh_login_info({'server_id': server_id})
             server_name = yield self.server_service.select(fields='name', conds=['id=%s'], params=[server_id], ct=False, ut=False, one=True)
             params.update({'container_id': container_id, 'server_name': server_name['name']})
@@ -608,9 +578,6 @@ class ServerContainersInfoHandler(BaseHandler):
                 self.error(err)
             else:
                 self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ServerContainerStartHandler(BaseHandler):
@@ -627,7 +594,7 @@ class ServerContainerStartHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             data = yield self.server_operation_service.add(params={
                 'user_id': self.current_user['id'],
                 'object_id': self.params['container_id'],
@@ -644,9 +611,6 @@ class ServerContainerStartHandler(BaseHandler):
                     params=[OPERATE_STATUS['success'], data['id']]
             )
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ServerContainerStopHandler(BaseHandler):
@@ -663,7 +627,7 @@ class ServerContainerStopHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             data = yield self.server_operation_service.add(params={
                 'user_id': self.current_user['id'],
                 'object_id': self.params['container_id'],
@@ -681,9 +645,6 @@ class ServerContainerStopHandler(BaseHandler):
             )
 
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ServerContainerDelHandler(BaseHandler):
@@ -700,7 +661,7 @@ class ServerContainerDelHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             data = yield self.server_operation_service.add(params={
                 'user_id': self.current_user['id'],
                 'object_id': self.params['container_id'],
@@ -717,9 +678,7 @@ class ServerContainerDelHandler(BaseHandler):
                     params=[OPERATE_STATUS['success'], data['id']]
             )
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
+
 
 class OperationLogHandler(BaseHandler):
     @is_login
@@ -749,9 +708,6 @@ class OperationLogHandler(BaseHandler):
                 ]
             }
         """
-        try:
+        with catch(self):
             data = yield self.server_operation_service.get_server_operation(self.params)
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
