@@ -81,13 +81,14 @@ class PermissionTemplateListHandler(BaseHandler):
 class PermissionTemplateHandler(BaseHandler):
     @is_login
     @coroutine
-    def get(self, ptid):
+    def get(self, pt_id, pt_format):
         """
-        @api {get} /api/permission/template/(\d+) 获取权限模版
+        @api {get} /api/permission/template/(\d+)/format/(\d+) 获取权限模版
         @apiName PermissionTemplateHandler
         @apiGroup Permission
 
-        @apiParam {Number} id 权限模版id
+        @apiParam {Number} pt_id 权限模版id
+        @apiParam {Number} pt_format 模版样式(差别为是否格式化) 0:标准 1:简单
 
         @apiSuccessExample {json} Success-Response
             HTTP/1.1 200 OK
@@ -100,8 +101,11 @@ class PermissionTemplateHandler(BaseHandler):
             }
         """
         try:
-            ptid = int(ptid)
-            data = yield self.permission_template_service.get_template_permission(ptid)
+            params = {
+                'id': int(pt_id),
+                'format': int(pt_format)
+            }
+            data = yield self.permission_template_service.get_template_permission(params)
             self.success(data)
         except Exception as e:
             self.error(str(e))

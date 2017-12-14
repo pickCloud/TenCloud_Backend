@@ -63,6 +63,14 @@ class UserBase(BaseHandler):
 
         return {'token': token}
 
+    @coroutine
+    def get_sms_count(self, mobile):
+        # 检查手机一天的发送次数
+        sms_sent_count_key = SMS_SENT_COUNT.format(mobile=mobile)
+        sms_sent_count = yield Task(self.redis.get, sms_sent_count_key)
+        sms_sent_count = int(sms_sent_count) if sms_sent_count else 0
+        return sms_sent_count
+
 
 class NeedSMSMixin(BaseHandler):
     """ 需要手机验证码操作的基类
@@ -161,8 +169,7 @@ class UserSMSHandler(UserBase):
 
             # 检查手机一天的发送次数
             sms_sent_count_key = SMS_SENT_COUNT.format(mobile=mobile)
-            sms_sent_count = yield Task(self.redis.get, sms_sent_count_key)
-            sms_sent_count = int(sms_sent_count) if sms_sent_count else 0
+            sms_sent_count = yield self.get_sms_count(mobile)
 
             data = {
                 'sms_count': sms_sent_count,
@@ -207,10 +214,44 @@ class UserSMSHandler(UserBase):
 
             self.log.info('mobile: {mobile}, auth_code: {auth_code}'.format(mobile=mobile, auth_code=auth_code))
 
+            data['sms_count'] = sms_sent_count +1
             self.success(data)
         except Exception as e:
             self.error(str(e))
             self.log.error(traceback.format_exc())
+
+
+class UserReturnSMSCountHandler(UserBase):
+    @coroutine
+    def get(self, mobile):
+        """
+        @api {get} /api/user/sms/(\d+)/count 验证码次数查询
+        @apiName UserReturnSMSCountHandler
+        @apiGroup User
+
+        @apiParam {Number} mobile
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+                {
+                    "status": 0,
+                    "message": "success",
+                    "data": {
+                        "sms_count": int
+                    }
+                }
+        """
+        try:
+            mobile = int(mobile)
+            sms_sent_count = yield self.get_sms_count(mobile)
+
+            data = {
+                'sms_count': sms_sent_count,
+            }
+            self.success(data)
+        except Exception as e:
+            self.log.error(str(e))
+            self.error(traceback.format_exc())
 
 
 class UserLoginHandler(NeedSMSMixin, UserBase):
@@ -644,7 +685,7 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
             hashed = bcrypt.hashpw(self.params['new_password'].encode('utf-8'), bcrypt.gensalt())
             p_strength = password_strength(self.params['new_password'])
             yield self.user_service.update(
-                                            sets=['password=%s','password_strength=%s'],
+                                            sets=['password=%s', 'password_strength=%s'],
                                             conds=['mobile=%s'],
                                             params=[hashed, p_strength, self.params['mobile']]
             )
@@ -713,6 +754,7 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
                 return
 
             yield self.user_service.update(sets=['mobile=%s'], conds=['id=%s'], params=[mobile, self.current_user['id']])
+            yield self.make_session(mobile)
             self.clean()
             self.success()
 
@@ -721,7 +763,7 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
             self.log.error(traceback.format_exc())
 
 
-class UserPasswordSetHandler(BaseHandler):
+class UserPasswordSetHandler(UserBase):
     @is_login
     @coroutine
     def post(self):
@@ -743,6 +785,7 @@ class UserPasswordSetHandler(BaseHandler):
                 conds=['id=%s'],
                 params=[hashed, p_strength, self.current_user['id']]
             )
+            yield self.make_session(self.current_user['mobile'])
             self.success()
         except Exception as e:
             self.error(str(e))
