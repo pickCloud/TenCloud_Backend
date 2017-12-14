@@ -685,7 +685,7 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
             hashed = bcrypt.hashpw(self.params['new_password'].encode('utf-8'), bcrypt.gensalt())
             p_strength = password_strength(self.params['new_password'])
             yield self.user_service.update(
-                                            sets=['password=%s','password_strength=%s'],
+                                            sets=['password=%s', 'password_strength=%s'],
                                             conds=['mobile=%s'],
                                             params=[hashed, p_strength, self.params['mobile']]
             )
@@ -754,6 +754,7 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
                 return
 
             yield self.user_service.update(sets=['mobile=%s'], conds=['id=%s'], params=[mobile, self.current_user['id']])
+            yield self.make_session(mobile)
             self.clean()
             self.success()
 
@@ -762,7 +763,7 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
             self.log.error(traceback.format_exc())
 
 
-class UserPasswordSetHandler(BaseHandler):
+class UserPasswordSetHandler(UserBase):
     @is_login
     @coroutine
     def post(self):
@@ -784,6 +785,7 @@ class UserPasswordSetHandler(BaseHandler):
                 conds=['id=%s'],
                 params=[hashed, p_strength, self.current_user['id']]
             )
+            yield self.make_session(self.current_user['mobile'])
             self.success()
         except Exception as e:
             self.error(str(e))
