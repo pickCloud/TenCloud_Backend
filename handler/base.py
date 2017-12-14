@@ -143,6 +143,13 @@ class BaseHandler(tornado.web.RequestHandler):
         if self.request.headers.get('Content-Type', '').startswith('application/json') and self.request.body != '':
             self.params = json.loads(self.request.body.decode('utf-8'))
 
+
+    def on_finish(self):
+        self.log.debug('{status} {method} {uri} {payload}'.format(status=self._status_code,
+                                                                  method=self.request.method,
+                                                                  uri=self.request.uri,
+                                                                  payload=str(self.params or '')))
+
     def guarantee(self, *args):
         ''' 接口参数是否完整
         '''
