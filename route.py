@@ -112,7 +112,7 @@ routes = [
     (r'/api/permission/resource/(\d+)', PermissionResourcesHandler),
     (r'/api/permission/template/add', PermissionTemplateAddHandler),
     (r'/api/permission/template/list/(\d+)', PermissionTemplateListHandler),
-    (r'/api/permission/template/(\d+)', PermissionTemplateHandler),
+    (r'/api/permission/template/(\d+)/format/(\d+)', PermissionTemplateHandler),
     (r'/api/permission/template/(\d+)/rename', PermissionTemplateRenameHandler),
     (r'/api/permission/(\d+)/user/(\d+)/detail', PermissionUserDetailHandler),
     (r'/api/permission/user/update', PermissionUserUpdateHandler),
