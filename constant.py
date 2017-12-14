@@ -30,7 +30,10 @@ SMS_NEED_GEETEST_COUNT = 3
 SMS_SENT_COUNT_LIMIT_TIMEOUT = 86400 # 一天
 SESSION_KEY = 'session_{user_id}'
 GIT_TOKEN = 'git_token'
-LOGOUT_CID = 'logout_cid' # 记住退出时的状态，个人或是公司，方便下次登陆
+LOGOUT_CID = 'logout_cid'  # 记住退出时的状态，个人或是公司，方便下次登陆
+COMPANY_PERMISSION = 'company_permissons'
+USER_PERMISSION = 'cid_{cid}:uid_{uid}'
+PERMISSIONS_FLAG = 1
 
 #################################################################################################
 # 错误代码及信息
@@ -472,3 +475,4 @@ MSG_PAGE_NUM = 20
 # 权限模版 0云服务器, 1项目, 2文件服务, 3企业资料, 4员工管理, 5权限模版管理, 6平台管理
 #################################################################################################
 PERMISSIONS = ["云服务器", "项目", "文件服务", "企业资料", "员工管理", "权限模版管理", "平台管理"]
+PT_FORMAT = 1

@@ -19,7 +19,7 @@ class ServerOperationService(BaseService):
                 FROM operation_log s
                 JOIN user u on s.user_id=u.id
                 WHERE s.object_type=%s AND s.object_id=%s
+                ORDER BY s.created_time DESC 
               """
-
         cur = yield self.db.execute(sql, [FULL_DATE_FORMAT, params['object_type'], params['object_id']])
         return cur.fetchall()
