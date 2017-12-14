@@ -1,7 +1,7 @@
 from tornado.gen import coroutine
 
 from service.permission.permission_base import PermissionBaseService
-
+from constant import  PT_FORMAT
 
 class PermissionTemplateService(PermissionBaseService):
     table = 'permission_template'
@@ -10,12 +10,12 @@ class PermissionTemplateService(PermissionBaseService):
             """
 
     @coroutine
-    def get_template_permission(self, id):
+    def get_template_permission(self, params):
         source_id_sql = """
                         SELECT permissions, access_servers, access_projects, access_filehub
                         FROM permission_template WHERE id=%s LIMIT 1
                         """
-        cur = yield self.db.execute(source_id_sql, [id])
+        cur = yield self.db.execute(source_id_sql, [params['id']])
         id_data = cur.fetchone()
 
         if not id_data:
@@ -26,13 +26,22 @@ class PermissionTemplateService(PermissionBaseService):
         server_ids = '({ids})'.format(ids=id_data['access_servers'])
         filehub_ids = '({ids})'.format(ids=id_data['access_filehub'])
 
-        permission_data = yield self._get_template_permission(fields='id, name, `group`', table='permission', params=permission_ids)
-        permissions_data = yield self.merge_permissions(permission_data)
-
         project_data = yield self._get_template_permission(fields='id, name', table='project', params=project_ids)
         filehub_data = yield self._get_template_permission(fields='id, filename', table='filehub', params=filehub_ids, extra='type=1 AND')
 
+        permission_data = yield self._get_template_permission(fields='id, name, `group`', table='permission', params=permission_ids)
         server_data = yield self.fetch_instance_info(extra='WHERE s.id in {ids}'.format(ids=server_ids))
+
+        if params['format'] == PT_FORMAT:
+            data = {
+                'permissions': permission_data,
+                'access_servers': server_data,
+                'access_projects': project_data,
+                'access_filehub': filehub_data
+            }
+            return data
+
+        permissions_data = yield self.merge_permissions(permission_data)
         server_data = yield self.merge_servers(server_data)
 
         data = [

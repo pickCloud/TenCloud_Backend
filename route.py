@@ -26,7 +26,7 @@ from handler.server.server import ServerNewHandler, ServerReport, ServerMigratio
 from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, \
                               UserUpdateHandler, UserUploadToken, GetCaptchaHandler, \
                               PasswordLoginHandler, UserRegisterHandler, UserResetPasswordHandler, \
-                              UserResetMobileHandler, UserPasswordSetHandler
+                              UserResetMobileHandler, UserPasswordSetHandler, UserReturnSMSCountHandler
 from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
                                 FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
 from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, CompanyEntrySettingHandler, \
@@ -101,6 +101,7 @@ routes = [
     (r'/api/user/login/password', PasswordLoginHandler),
     (r'/api/user/logout', UserLogoutHandler),
     (r'/api/user/sms', UserSMSHandler),
+    (r'/api/user/sms/(\d+)/count', UserReturnSMSCountHandler),
     (r'/api/user/token', UserUploadToken),
     (r'/api/user/captcha', GetCaptchaHandler),
     (r'/api/user/register', UserRegisterHandler),
@@ -111,14 +112,14 @@ routes = [
     (r'/api/permission/resource/(\d+)', PermissionResourcesHandler),
     (r'/api/permission/template/add', PermissionTemplateAddHandler),
     (r'/api/permission/template/list/(\d+)', PermissionTemplateListHandler),
-    (r'/api/permission/template/(\d+)', PermissionTemplateHandler),
+    (r'/api/permission/template/(\d+)/format/(\d+)', PermissionTemplateHandler),
     (r'/api/permission/template/(\d+)/rename', PermissionTemplateRenameHandler),
     (r'/api/permission/(\d+)/user/(\d+)/detail', PermissionUserDetailHandler),
     (r'/api/permission/user/update', PermissionUserUpdateHandler),
 
 
     # 公司相关
-    (r'/api/companies/list/(\d+)', CompanyHandler),
+    (r'/api/companies/list/(-?\d+)', CompanyHandler),
     (r'/api/company/(\d+)', CompanyDetailHandler),
     (r'/api/company/new', CompanyNewHandler),
     (r'/api/company/update', CompanyUpdateHandler),

@@ -5,6 +5,7 @@ from binascii import b2a_hex, a2b_hex
 from constant import AES_KEY
 import passwordmeter
 
+
 def password_strength(password):
     ratings = (
         '弱爆了',
@@ -15,9 +16,10 @@ def password_strength(password):
         '一般',
         '非常强',
     )
-    strength,_ = passwordmeter.test(password)
-    result = ratings[min(len(ratings) - 1, int(strength * len(ratings)))]
+    strength, _ = passwordmeter.test(password)
+    result = min(len(ratings) - 1, int(strength * len(ratings)))
     return result
+
 
 class Aes():
     key = AES_KEY

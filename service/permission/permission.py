@@ -46,18 +46,22 @@ class PermissionService(PermissionBaseService):
         data = [
             {
                 'name': '功能',
-                'categories': permission_data
+                'data': permission_data
             },
             {
                 'name': '数据',
-                'categories': [
+                'data': [
                     {
                         'name': '文件',
-                        'data': filehub_data
+                        'data': [
+                            {'name': '文件', 'data': filehub_data}
+                        ]
                     },
                     {
                         'name': '项目',
-                        'data': project_data
+                        'data': [
+                            {'name': '项目', 'data': project_data}
+                        ]
                     },
                     {
                         'name': '云服务器',
@@ -82,59 +86,15 @@ class PermissionService(PermissionBaseService):
         return data
 
     @coroutine
-    def update_user_access_server(self, params):
-        table = 'user_access_server'
-        set_fields='sid={sid}'.format(sid=params['server_id'])
-        self.log.info(set_fields)
-        yield self._delete_and_insert(
-                                            table=table,
-                                            set_fields=set_fields,
-                                            params=params
-        )
-
-    @coroutine
-    def update_user_access_project(self, params):
-        table = 'user_access_project'
-        set_fields='pid={pid}'.format(pid=params['project_id'])
-        yield self._delete_and_insert(
-                                            table=table,
-                                            set_fields=set_fields,
-                                            params=params
-        )
-
-    @coroutine
-    def update_user_access_filehub(self, params):
-        table = 'user_access_filehub'
-        set_fields='fid={fid}'.format(fid=params['filehub_id'])
-        yield self._delete_and_insert(
-                                            table=table,
-                                            set_fields=set_fields,
-                                            params=params
-        )
-
-    @coroutine
-    def update_user_permission(self, params):
-        table = 'user_permission'
-        set_fields='pid={pid}'.format(pid=params['permission_id'])
-        yield self._delete_and_insert(
-                                            table=table,
-                                            set_fields=set_fields,
-                                            params=params
-        )
-
-    @coroutine
-    def _delete_and_insert(self, table, set_fields, params):
+    def update_user(self, params):
         sql = """
             DELETE FROM {table} WHERE cid={cid} AND uid={uid}
-            """.format(table=table, cid=params['cid'], uid=params['uid'])
+            """.format(table=params['table'], cid=params['cid'], uid=params['uid'])
 
         yield self.db.execute(sql)
 
         sql = """
-                INSERT INTO {table} SET {set_fields}, uid={uid}, cid={cid}
-            """.format(
-                        table=table, set_fields=set_fields,
-                        uid=params['uid'], cid=params['cid']
-                        )
+                INSERT INTO {table} {fields} VALUES {values}
+            """.format(table=params['table'], fields=params['fields'], values=params['data'])
 
         yield self.db.execute(sql)
