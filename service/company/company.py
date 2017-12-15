@@ -11,6 +11,7 @@ class CompanyService(BaseService):
     @coroutine
     def get_companies(self, params):
 
+
         status = 'and ce.status = %s'
         arg = [FULL_DATE_FORMAT, FULL_DATE_FORMAT, params['uid']]
 
@@ -23,12 +24,14 @@ class CompanyService(BaseService):
             arg.append(is_pass)
 
         sql = """
+
             SELECT c.id AS cid, c.name AS company_name, ce.is_admin AS is_admin,
                    DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time, ce.status
             FROM company_employee ce
             JOIN company c ON ce.cid = c.id
             WHERE ce.uid = %s {status}
         """.format(status=status)
+
         cur = yield self.db.execute(sql, arg)
 
         data = cur.fetchall()

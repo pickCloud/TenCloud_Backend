@@ -27,6 +27,7 @@ from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandle
                               UserUpdateHandler, UserUploadToken, GetCaptchaHandler, \
                               PasswordLoginHandler, UserRegisterHandler, UserResetPasswordHandler, \
                               UserResetMobileHandler, UserPasswordSetHandler, UserReturnSMSCountHandler
+
 from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
                                 FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
 from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, CompanyEntrySettingHandler, \
@@ -43,6 +44,7 @@ routes = [
     (r'/api/cluster/del', ClusterDelHandler),
     (r'/api/cluster/(\d+)', ClusterDetailHandler),
     (r'/api/cluster/(\d+)/providers', ClusterAllProviders),
+
     (r'/api/cluster/update', ClusterUpdateHandler),
     (r'/api/cluster/search', ClusterSearchHandler),
     (r'/api/imagehub', ImagehubHandler),
