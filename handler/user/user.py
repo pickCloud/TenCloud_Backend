@@ -252,39 +252,6 @@ class UserReturnSMSCountHandler(UserBase):
             self.error(traceback.format_exc())
 
 
-class UserReturnSMSCount(UserBase):
-    @coroutine
-    def get(self, mobile):
-        """
-        @api {get} /api/user/sms/(\d+)/count 验证码次数查询
-        @apiName UserReturnSMSCount
-        @apiGroup User
-
-        @apiParam {Number} mobile
-
-        @apiSuccessExample {json} Success-Response:
-            HTTP/1.1 200 OK
-                {
-                    "status": 0,
-                    "message": "success",
-                    "data": {
-                        "sms_count": int
-                    }
-                }
-        """
-        try:
-            mobile = int(mobile)
-            sms_sent_count = yield self.get_sms_count(mobile)
-
-            data = {
-                'sms_count': sms_sent_count,
-            }
-            self.success(data)
-        except Exception as e:
-            self.log.error(str(e))
-            self.error(traceback.format_exc())
-
-
 class UserLoginHandler(NeedSMSMixin, UserBase):
     @coroutine
     def post(self):
@@ -326,7 +293,7 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
             user = yield self.user_service.select(conds=['mobile=%s'], params=[mobile], one=True)
             result['user'] = user
             if not user['password']:
-                self.error(status=ERR_TIP['no_registered']['sts'], message=ERR_TIP['no_registered']['msg'], data=result)
+                self.error(status=ERR_TIP['no_registered_jump']['sts'], message=ERR_TIP['no_registered_jump']['msg'], data=result)
                 return
 
             self.success(result)
