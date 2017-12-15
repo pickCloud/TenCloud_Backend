@@ -10,36 +10,33 @@ class CompanyService(BaseService):
 
     @coroutine
     def get_companies(self, params):
-        """
-        :param uid: 用户id, is_pass
-        :return: [{'cid', 'company_name', 'create_time', 'update_time', 'status'}]
-        """
 
+
+        status = 'and ce.status = %s'
         arg = [FULL_DATE_FORMAT, FULL_DATE_FORMAT, params['uid']]
+
         is_pass = params['is_pass']
-        if is_pass == 1:
-            status = 'and ce.status = %s'
-            arg.append(is_pass)
-        elif is_pass == 2:
-            status = 'and ce.status = %s'
-            arg.append(is_pass)
+        if is_pass == 3:
+            status = 'and ( ce.status = 1 or ce.status = 2 )'
+        elif is_pass == 4:
+            status = ''
         else:
-            status = 'and ce.status = %s'
             arg.append(is_pass)
 
-        sql = '''
+        sql = """
+
             SELECT c.id AS cid, c.name AS company_name, ce.is_admin AS is_admin,
                    DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time, ce.status
             FROM company_employee ce
             JOIN company c ON ce.cid = c.id
             WHERE ce.uid = %s {status}
-        '''.format(status=status)
+        """.format(status=status)
+
         cur = yield self.db.execute(sql, arg)
 
         data = cur.fetchall()
 
         return data
-
 
     @coroutine
     def fetch_with_code(self, code):

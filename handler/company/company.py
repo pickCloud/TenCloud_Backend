@@ -6,6 +6,7 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login
 from utils.general import validate_mobile
+from utils.context import catch
 from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING, MSG_SUB_MODE
 
 
@@ -14,11 +15,11 @@ class CompanyHandler(BaseHandler):
     @coroutine
     def get(self, is_pass):
         """
-        @api {get} /api/companies/list/(\d+) 公司列表
+        @api {get} /api/companies/list/(-?\d+) 公司列表
         @apiName CompanyHandler
         @apiGroup Company
 
-        @apiParam {Number} is_pass 获取通过列表传1，其余传0
+        @apiParam {Number} is_pass -1拒绝, 0审核中, 1通过, 2创始人, 3获取通过的，以及作为创始人的公司列表, 4获取所有和该用户相关的公司列表
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -29,8 +30,13 @@ class CompanyHandler(BaseHandler):
                     {"cid": 1, "company_name": "十全", "create_time": "申请时间", "update_time": "审核时间", "status": "-1拒绝, 0审核中, 1通过"}
                 ]
             }        """
-        try:
+        with catch(self):
             is_pass = int(is_pass)
+            if is_pass < 0 or is_pass > 4:
+                self.error("arg error, check again")
+                return
+
+
             params = {
                 'uid': self.current_user['id'],
                 'is_pass': is_pass
@@ -38,9 +44,6 @@ class CompanyHandler(BaseHandler):
             data = yield self.company_service.get_companies(params)
 
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class CompanyDetailHandler(BaseHandler):
@@ -60,13 +63,10 @@ class CompanyDetailHandler(BaseHandler):
                     {"id": 1, "name": "十全", "create_time": "申请时间", "update_time": "审核时间", "contact": "联系人", "mobile": "手机号", "description": "公司简介"}
                 ]
             }        """
-        try:
+        with catch(self):
             data = yield self.company_service.select(conds=['id=%s'], params=[id])
 
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class CompanyNewHandler(BaseHandler):
@@ -90,7 +90,7 @@ class CompanyNewHandler(BaseHandler):
                 "data": {}
             }
         """
-        try:
+        with catch(self):
             # 参数认证
             self.guarantee('name', 'contact', 'mobile')
 
@@ -115,9 +115,6 @@ class CompanyNewHandler(BaseHandler):
             yield self.company_employee_service.add(dict(cid=info['id'], uid=self.current_user['id'], status=APPLICATION_STATUS['founder'], is_admin=1))
 
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class CompanyUpdateHandler(BaseHandler):
@@ -136,7 +133,7 @@ class CompanyUpdateHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             # 参数认证
             self.guarantee('cid', 'name', 'contact', 'mobile')
 
@@ -167,9 +164,6 @@ class CompanyUpdateHandler(BaseHandler):
             })
 
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class CompanyEntrySettingHandler(BaseHandler):
@@ -201,7 +195,7 @@ class CompanyEntrySettingHandler(BaseHandler):
                 "data": {}
             }
         """
-        try:
+        with catch(self):
             cid = int(cid)
 
             yield self.company_employee_service.check_admin(cid, self.current_user['id'])
@@ -209,10 +203,6 @@ class CompanyEntrySettingHandler(BaseHandler):
             data = yield self.company_entry_setting_service.get_setting(cid)
 
             self.success(data)
-
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
     @is_login
     @coroutine
@@ -242,7 +232,7 @@ class CompanyEntrySettingHandler(BaseHandler):
                 "data": {}
             }
         """
-        try:
+        with catch(self):
             cid = int(cid)
 
             yield self.company_employee_service.check_admin(cid, self.current_user['id'])
@@ -251,10 +241,6 @@ class CompanyEntrySettingHandler(BaseHandler):
             url = yield self.company_entry_setting_service.save_setting(self.params)
 
             self.success({'url': url})
-
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class CompanyEntryUrlHandler(BaseHandler):
@@ -286,7 +272,7 @@ class CompanyEntryUrlHandler(BaseHandler):
                 "data": {}
             }
         """
-        try:
+        with catch(self):
             cid = int(cid)
 
             yield self.company_employee_service.check_admin(cid, self.current_user['id'])
@@ -300,10 +286,6 @@ class CompanyEntryUrlHandler(BaseHandler):
                 yield self.company_entry_setting_service.add(data)
 
             self.success({'url': self.company_entry_setting_service.produce_url(data['code'])})
-
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class CompanyApplicationHandler(BaseHandler):
@@ -328,7 +310,7 @@ class CompanyApplicationHandler(BaseHandler):
                 }
             }
         """
-        try:
+        with catch(self):
             code = self.get_argument('code')
 
             if not code:
@@ -338,9 +320,6 @@ class CompanyApplicationHandler(BaseHandler):
             info = yield self.company_service.fetch_with_code(code)
 
             self.success(info)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
     @is_login
     @coroutine
@@ -357,7 +336,7 @@ class CompanyApplicationHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             self.guarantee('mobile')
 
             validate_mobile(self.params['mobile'])
@@ -394,10 +373,6 @@ class CompanyApplicationHandler(BaseHandler):
 
             self.success()
 
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
-
 
 class CompanyApplicationVerifyMixin(BaseHandler):
     @coroutine
@@ -431,13 +406,10 @@ class CompanyApplicationAcceptHandler(CompanyApplicationVerifyMixin):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             yield self.verify('accept')
 
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class CompanyApplicationRejectHandler(CompanyApplicationVerifyMixin):
@@ -453,13 +425,10 @@ class CompanyApplicationRejectHandler(CompanyApplicationVerifyMixin):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             yield self.verify('reject')
 
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class CompanyEmployeeHandler(BaseHandler):
@@ -473,7 +442,7 @@ class CompanyEmployeeHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             cid = int(cid)
 
             yield self.company_employee_service.check_employee(cid, self.current_user['id'])
@@ -481,9 +450,6 @@ class CompanyEmployeeHandler(BaseHandler):
             employees = yield self.company_employee_service.get_employees(cid)
 
             self.success(employees)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class CompanyEmployeeDismissionHandler(BaseHandler):
@@ -499,7 +465,7 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             data = yield self.company_employee_service.select(conds=['id=%s','is_admin=%s', 'uid=%s'],
                                                               params=[self.params['id'], 1, self.current_user['id']])
 
@@ -510,9 +476,6 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
             yield self.company_employee_service.delete(conds=['id=%s', 'uid=%s'], params=[self.params['id'], self.current_user['id']])
 
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class CompanyAdminTransferHandler(BaseHandler):
@@ -529,7 +492,7 @@ class CompanyAdminTransferHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
 
             self.params['admin_id'] = self.current_user['id']
@@ -537,9 +500,6 @@ class CompanyAdminTransferHandler(BaseHandler):
             yield self.company_employee_service.transfer_adimin(self.params)
 
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class CompanyApplicationDismissionHandler(BaseHandler):
@@ -555,7 +515,7 @@ class CompanyApplicationDismissionHandler(BaseHandler):
 
         @apiUse Success
         """
-        try:
+        with catch(self):
             data = yield self.company_employee_service.select(fields='cid', conds=['id=%s'], params=[self.params['id']], one=True)
 
             yield self.company_employee_service.check_admin(data['cid'], self.current_user['id'])
@@ -563,6 +523,3 @@ class CompanyApplicationDismissionHandler(BaseHandler):
             yield self.company_employee_service.delete(conds=['id=%s'], params=[self.params['id']])
 
             self.success()
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())

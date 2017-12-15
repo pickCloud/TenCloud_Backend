@@ -5,6 +5,7 @@ import traceback
 from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login
+from utils.context import catch
 
 
 class ImagehubHandler(BaseHandler):
@@ -13,13 +14,10 @@ class ImagehubHandler(BaseHandler):
     def get(self):
         ''' 获取镜像仓库列表
         '''
-        try:
+        with catch(self):
             result = yield self.imagehub_service.get_list()
 
             self.success(result)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ImagehubBySourceHandler(BaseHandler):
@@ -28,14 +26,11 @@ class ImagehubBySourceHandler(BaseHandler):
     def get(self):
         ''' 通过来源获取镜像仓库列表
         '''
-        try:
+        with catch(self):
             source_id = int(self.params['source'])
             result = yield self.imagehub_service.get_by_source(source_id)
 
             self.success(result)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ImagehubByTypeHandler(BaseHandler):
@@ -44,14 +39,11 @@ class ImagehubByTypeHandler(BaseHandler):
     def get(self):
         ''' 通过类型获取镜像仓库列表
         '''
-        try:
+        with catch(self):
             type_id = int(self.params['type'])
             result = yield self.imagehub_service.get_by_type(type_id)
 
             self.success(result)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ImagehubSearchHandler(BaseHandler):
@@ -60,7 +52,7 @@ class ImagehubSearchHandler(BaseHandler):
     def get(self):
         ''' 通过搜索获取镜像仓库列表
         '''
-        try:
+        with catch(self):
             # 查询内容，名称，来源，类型
             query_data = {
                 "name": self.params['name'],
@@ -69,6 +61,3 @@ class ImagehubSearchHandler(BaseHandler):
             }
             result = yield self.imagehub_service.get_by_search(query_data)
             self.success(result)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())

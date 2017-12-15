@@ -4,6 +4,7 @@ import traceback
 from handler.base import BaseHandler
 from tornado.gen import coroutine, Task
 from utils.decorator import is_login
+from utils.context import catch
 from constant import GIT_TOKEN
 
 
@@ -38,7 +39,7 @@ class RepositoryHandler(BaseHandler):
                     }
                 }
         """
-        try:
+        with catch(self):
             token = yield Task(self.redis.hget, GIT_TOKEN, str(self.current_user['id']))
             if not token:
                 url = yield self.repos_service.auth_callback(self.params['url'])
@@ -48,9 +49,6 @@ class RepositoryHandler(BaseHandler):
             result = yield self.repos_service.fetch_repos(token)
 
             self.success(result)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class RepositoryBranchHandler(BaseHandler):
@@ -86,7 +84,7 @@ class RepositoryBranchHandler(BaseHandler):
                 }
             }
         """
-        try:
+        with catch(self):
             token = yield Task(self.redis.hget, GIT_TOKEN, str(self.current_user['id']))
 
             if not token:
@@ -99,21 +97,15 @@ class RepositoryBranchHandler(BaseHandler):
             result = yield self.repos_service.fetch_branches(repos_name, token)
 
             self.success(result)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class GithubOauthCallbackHandler(BaseHandler):
     @coroutine
     def get(self):
-        try:
+        with catch(self):
             code = self.get_argument('code')
             token = yield self.repos_service.fetch_token(code)
 
             yield Task(self.redis.hset, GIT_TOKEN, str(self.current_user['id']), token)
             url = self.get_argument('redirect_url')
             self.redirect(url=url, permanent=False, status=302)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
