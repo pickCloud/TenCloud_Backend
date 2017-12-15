@@ -3,7 +3,7 @@ import traceback
 from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login
-from constant import MSG_STATUS
+from utils.context import catch
 
 
 class MessageHandler(BaseHandler):
@@ -32,7 +32,7 @@ class MessageHandler(BaseHandler):
                 ]
             }
         """
-        try:
+        with catch(self):
             params = {'owner': self.current_user['id']}
 
             if self.get_argument('page', None):
@@ -47,6 +47,3 @@ class MessageHandler(BaseHandler):
             data = yield self.message_service.fetch(params)
 
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
