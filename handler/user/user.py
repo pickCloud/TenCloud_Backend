@@ -323,18 +323,13 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
 
             yield self.clean()
 
-            is_exist = yield self.user_service.select(
-                fields='password',
-                conds=['mobile=%s'],
-                params=[mobile],
-                ct=False, ut=False, one=True
-            )
-            if not is_exist['password']:
+            user = yield self.user_service.select(conds=['mobile=%s'], params=[mobile], one=True)
+            result['user'] = user
+            if not user['password']:
                 self.error(status=ERR_TIP['no_registered']['sts'], message=ERR_TIP['no_registered']['msg'], data=result)
                 return
 
             self.success(result)
-
             self.log.stats('AuthcodeLogin, IP: {}, Mobile: {}'.format(self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.params['mobile']))
 
 
@@ -555,13 +550,7 @@ class PasswordLoginHandler(UserBase):
             validate_user_password(self.params['password'])
 
             password = self.params['password'].encode('utf-8')
-            data = yield self.user_service.select(
-                                                            fields='password',
-                                                            conds=['mobile=%s'],
-                                                            params=[self.params['mobile']],
-                                                            ct=False, ut=False, one=True
-            )
-
+            data = yield self.user_service.select(conds=['mobile=%s'], params=[self.params['mobile']], one=True)
             if not data:
                 self.error(status=ERR_TIP['no_registered']['sts'], message=ERR_TIP['no_registered']['msg'])
                 return
@@ -574,7 +563,7 @@ class PasswordLoginHandler(UserBase):
                 cid = yield Task(self.redis.hget, LOGOUT_CID, self.params['mobile'])
 
                 result['cid'] = int(cid) if cid else 0
-
+                result['user'] = data
                 self.success(result)
             else:
                 self.error(status=ERR_TIP['password_error']['sts'], message=ERR_TIP['password_error']['msg'])
@@ -638,7 +627,7 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
 
             result = yield self.make_session(self.params['mobile'])
             yield self.clean()
-
+            result['user'] = arg
             self.success(result)
 
 
