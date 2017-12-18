@@ -17,7 +17,8 @@ class PermissionService(PermissionBaseService):
                                                     where_table='user_permission',
                                                     params=arg
         )
-        permission_data = yield self.merge_permissions(permission_data)
+        if permission_data:
+            permission_data = yield self.merge_permissions(permission_data)
 
         project_data = yield self._get_user_permission(
                                                     fields='a.id, a.name',
@@ -39,6 +40,16 @@ class PermissionService(PermissionBaseService):
               """
         cur = yield self.db.execute(sql, arg)
         ids = [str(i['sid']) for i in cur.fetchall()]
+
+        if not ids:
+            data = {
+                'access_servers': '',
+                'access_projects': project_data,
+                'access_filehub': filehub_data,
+                'permission': permission_data,
+            }
+            return data
+
         ids = ','.join(ids)
         server_data = yield self.fetch_instance_info(extra='WHERE s.id in ({ids})'.format(ids=ids))
         server_data = yield self.merge_servers(server_data)

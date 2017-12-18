@@ -260,7 +260,7 @@ class PermissionUserDetailHandler(BaseHandler):
         @apiGroup Permission
 
         @apiParam {Number} cid 公司id
-        @apiParam {Number} pt_id 公司id
+        @apiParam {Number} uid 公司id
 
         @apiSuccessExample {json} Success-Response
             HTTP/1.1 200 OK
