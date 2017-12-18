@@ -17,9 +17,6 @@ class PermissionService(PermissionBaseService):
                                                     where_table='user_permission',
                                                     params=arg
         )
-        if permission_data:
-            permission_data = yield self.merge_permissions(permission_data)
-
         project_data = yield self._get_user_permission(
                                                     fields='a.id, a.name',
                                                     table='project',
@@ -44,7 +41,6 @@ class PermissionService(PermissionBaseService):
         if ids:
             ids = ','.join(ids)
             server_data = yield self.fetch_instance_info(extra='WHERE s.id in ({ids})'.format(ids=ids))
-            server_data = yield self.merge_servers(server_data)
 
         if params['format'] == PT_FORMAT:
             data = {
@@ -55,6 +51,8 @@ class PermissionService(PermissionBaseService):
             }
             return data
 
+        server_data = yield self.merge_servers(server_data)
+        permission_data = yield self.merge_permissions(permission_data)
         data = [
             {
                 'name': '功能',
