@@ -26,11 +26,22 @@ class PermissionTemplateService(PermissionBaseService):
         server_ids = '({ids})'.format(ids=id_data['access_servers'])
         filehub_ids = '({ids})'.format(ids=id_data['access_filehub'])
 
-        project_data = yield self._get_template_permission(fields='id, name', table='project', params=project_ids)
-        filehub_data = yield self._get_template_permission(fields='id, filename', table='filehub', params=filehub_ids, extra='type=1 AND')
+        permission_data = ''
+        server_data = ''
+        project_data = ''
+        filehub_data = ''
 
-        permission_data = yield self._get_template_permission(fields='id, name, `group`', table='permission', params=permission_ids)
-        server_data = yield self.fetch_instance_info(extra='WHERE s.id in {ids}'.format(ids=server_ids))
+        if permission_ids:
+            project_data = yield self._get_template_permission(fields='id, name', table='project', params=project_ids)
+
+        if filehub_ids:
+            filehub_data = yield self._get_template_permission(fields='id, filename', table='filehub', params=filehub_ids, extra='type=1 AND')
+
+        if permission_ids:
+            permission_data = yield self._get_template_permission(fields='id, name, `group`', table='permission', params=permission_ids)
+
+        if server_ids:
+            server_data = yield self.fetch_instance_info(extra='WHERE s.id in {ids}'.format(ids=server_ids))
 
         if params['format'] == PT_FORMAT:
             data = {
