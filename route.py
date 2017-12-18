@@ -27,7 +27,8 @@ from handler.server.server import ServerNewHandler, ServerReport, ServerMigratio
 from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, \
                               UserUpdateHandler, UserUploadToken, GetCaptchaHandler, \
                               PasswordLoginHandler, UserRegisterHandler, UserResetPasswordHandler, \
-                              UserResetMobileHandler, UserPasswordSetHandler, UserReturnSMSCountHandler
+                              UserResetMobileHandler, UserPasswordSetHandler, UserReturnSMSCountHandler, \
+                              UserSmsSetHandler, UserDeleteHandler
 
 from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
                                 FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
@@ -106,6 +107,10 @@ routes = [
     (r'/api/user/login/password', PasswordLoginHandler),
     (r'/api/user/logout', UserLogoutHandler),
     (r'/api/user/sms', UserSMSHandler),
+
+    # 测试用
+    (r'/api/tmp/user/sms/count/(\d+)', UserSmsSetHandler), # 设置短信验证次数
+    (r'/api/tmp/user/delete', UserDeleteHandler), # 删除用户
 
     (r'/api/user/sms/(\d+)/count', UserReturnSMSCountHandler),
     (r'/api/user/token', UserUploadToken),
