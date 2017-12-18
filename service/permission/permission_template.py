@@ -31,7 +31,7 @@ class PermissionTemplateService(PermissionBaseService):
         project_data = ''
         filehub_data = ''
 
-        if permission_ids:
+        if project_ids:
             project_data = yield self._get_template_permission(fields='id, name', table='project', params=project_ids)
 
         if filehub_ids:
