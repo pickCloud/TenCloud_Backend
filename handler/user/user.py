@@ -357,6 +357,29 @@ class UserLogoutHandler(BaseHandler):
 
             self.log.stats('Logout, IP: {}, Mobile: {}'.format(self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.current_user['mobile']))
 
+# tmp api for test
+class UserSmsSetHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self, count):
+        with catch(self):
+            sms_sent_count_key = SMS_SENT_COUNT.format(mobile=self.current_user['mobile'])
+            yield Task(self.redis.setex, sms_sent_count_key, SMS_SENT_COUNT_LIMIT_TIMEOUT, str(count))
+            self.success()
+            self.log.stats('Logout, IP: {}, Mobile: {}'.format(self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.current_user['mobile']))
+
+
+class UserDeleteHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        with catch(self):
+            yield self.del_session(self.current_user['id'])
+            yield self.user_service.delete(conds=['id=%s'], params=[self.current_user['id']])
+            self.success()
+
+            self.log.stats('Logout, IP: {}, Mobile: {}'.format(self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.current_user['mobile']))
+
 
 class UserDetailHandler(BaseHandler):
     @is_login
