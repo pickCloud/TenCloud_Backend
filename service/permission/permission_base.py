@@ -11,7 +11,6 @@ class PermissionBaseService(BaseService):
     def merge_servers(self, data):
 
         """
-
         :param [
                   {"a":{"b":[1,2]}},
                   {"a":{"b":[3,4]}},

@@ -7,6 +7,7 @@ from utils.decorator import is_login
 from utils.context import catch
 from constant import COMPANY_PERMISSION, USER_PERMISSION, PERMISSIONS_FLAG
 
+
 class PermissionResourcesHandler(BaseHandler):
     @is_login
     @coroutine
@@ -110,6 +111,7 @@ class PermissionTemplateAddHandler(BaseHandler):
         """
         @api {post} /api/permission/template/add 增加权限模版
         @apiName PermissionTemplateAddHandler
+
         @apiGroup Permission
 
         @apiParam {String} name 名字
@@ -149,6 +151,7 @@ class PermissionTemplateDelHandler(BaseHandler):
         """
         @api {post} /api/permission/template/(\d+)/del 删除权限模版
         @apiName PermissionTemplateDelHandler
+
         @apiGroup Permission
 
         @apiParam {Number} pt_id 权限模版id
