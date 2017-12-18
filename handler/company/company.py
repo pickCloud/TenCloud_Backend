@@ -36,6 +36,7 @@ class CompanyHandler(BaseHandler):
                 self.error("arg error, check again")
                 return
 
+
             params = {
                 'uid': self.current_user['id'],
                 'is_pass': is_pass
