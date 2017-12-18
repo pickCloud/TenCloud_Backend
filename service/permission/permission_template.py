@@ -21,26 +21,25 @@ class PermissionTemplateService(PermissionBaseService):
         if not id_data:
             raise ValueError('id不存在')
 
-        permission_ids = '({ids})'.format(ids=id_data['permissions'])
-        project_ids = '({ids})'.format(ids=id_data['access_projects'])
-        server_ids = '({ids})'.format(ids=id_data['access_servers'])
-        filehub_ids = '({ids})'.format(ids=id_data['access_filehub'])
-
         permission_data = ''
         server_data = ''
         project_data = ''
         filehub_data = ''
 
-        if project_ids:
+        if id_data.get('access_projects', ''):
+            project_ids = '({ids})'.format(ids=id_data['access_projects'])
             project_data = yield self._get_template_permission(fields='id, name', table='project', params=project_ids)
 
-        if filehub_ids:
+        if id_data.get('access_filehub', ''):
+            filehub_ids = '({ids})'.format(ids=id_data['access_filehub'])
             filehub_data = yield self._get_template_permission(fields='id, filename', table='filehub', params=filehub_ids, extra='type=1 AND')
 
-        if permission_ids:
+        if id_data.get('permissions', ''):
+            permission_ids = '({ids})'.format(ids=id_data['permissions'])
             permission_data = yield self._get_template_permission(fields='id, name, `group`', table='permission', params=permission_ids)
 
-        if server_ids:
+        if id_data.get('access_servers', ''):
+            server_ids = '({ids})'.format(ids=id_data['access_servers'])
             server_data = yield self.fetch_instance_info(extra='WHERE s.id in {ids}'.format(ids=server_ids))
 
         if params['format'] == PT_FORMAT:
