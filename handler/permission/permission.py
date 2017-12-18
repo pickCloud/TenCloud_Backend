@@ -253,14 +253,15 @@ class PermissionTemplateUpdateHandler(BaseHandler):
 class PermissionUserDetailHandler(BaseHandler):
     @is_login
     @coroutine
-    def get(self, cid, uid):
+    def get(self, cid, uid, pt_format):
         """
-        @api {get} /api/permission/(\d+)/user/(\d+)/detail 用户权限详情
+        @api {get} /api/permission/(\d+)/user/(\d+)/detail/format/(\d+) 用户权限详情
         @apiName PermissionUserDetailHandler
         @apiGroup Permission
 
         @apiParam {Number} cid 公司id
         @apiParam {Number} uid 公司id
+        @apiParam {Number} pt_format 模版样式(差别为是否格式化) 0:标准 1:简单
 
         @apiSuccessExample {json} Success-Response
             HTTP/1.1 200 OK
@@ -273,21 +274,25 @@ class PermissionUserDetailHandler(BaseHandler):
             }
         """
         with catch(self):
-            cid, uid = int(cid), int(uid)
+            params = {
+                'uid': int(uid),
+                'cid': int(cid),
+                'format': int(pt_format)
+            }
 
-            company_user = USER_PERMISSION.format(cid=cid, uid=uid)
+            company_user = USER_PERMISSION.format(cid=int(cid), uid=int(uid))
             has_set = yield Task(self.redis.hget, COMPANY_PERMISSION, company_user)
             if not has_set:
                 data = {
                     'access_servers': '',
                     'access_projects': '',
                     'access_filehub': '',
-                    'permission': '',
+                    'permissions': '',
                 }
                 self.success(data)
                 return
 
-            data = yield self.permission_service.get_user_permission(cid=cid, uid=uid)
+            data = yield self.permission_service.get_user_permission(params)
             self.success(data)
 
 
