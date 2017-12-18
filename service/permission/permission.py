@@ -1,15 +1,15 @@
 from tornado.gen import coroutine
 
 from service.permission.permission_base import PermissionBaseService
+from constant import PT_FORMAT
 
 class PermissionService(PermissionBaseService):
     table = 'permission'
     fields = 'id, name, group'
 
     @coroutine
-    def get_user_permission(self, cid,uid):
-        arg = [uid, cid]
-
+    def get_user_permission(self, params):
+        arg = [params['uid'], params['cid']]
         permission_data = yield self._get_user_permission(
                                                     fields='a.id, a.name, `group`',
                                                     table='permission',
@@ -45,6 +45,15 @@ class PermissionService(PermissionBaseService):
             ids = ','.join(ids)
             server_data = yield self.fetch_instance_info(extra='WHERE s.id in ({ids})'.format(ids=ids))
             server_data = yield self.merge_servers(server_data)
+
+        if params['format'] == PT_FORMAT:
+            data = {
+                'permissions': permission_data,
+                'access_servers': server_data,
+                'access_projects': project_data,
+                'access_filehub': filehub_data,
+            }
+            return data
 
         data = [
             {

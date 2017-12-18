@@ -122,7 +122,7 @@ routes = [
     (r'/api/permission/template/(\d+)/del', PermissionTemplateDelHandler),
     (r'/api/permission/template/(\d+)/update', PermissionTemplateUpdateHandler),
     (r'/api/permission/template/(\d+)/rename', PermissionTemplateRenameHandler),
-    (r'/api/permission/(\d+)/user/(\d+)/detail', PermissionUserDetailHandler),
+    (r'/api/permission/(\d+)/user/(\d+)/detail/format/(\d+)', PermissionUserDetailHandler),
     (r'/api/permission/user/update', PermissionUserUpdateHandler),
 
 
