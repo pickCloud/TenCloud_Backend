@@ -10,7 +10,8 @@ from handler.imagehub.imagehub import ImagehubHandler, ImagehubBySourceHandler, 
     ImagehubSearchHandler
 from handler.permission.permission import PermissionTemplateListHandler, PermissionTemplateHandler, \
     PermissionTemplateRenameHandler, PermissionUserDetailHandler, PermissionUserUpdateHandler, \
-    PermissionTemplateAddHandler, PermissionResourcesHandler
+    PermissionTemplateAddHandler, PermissionResourcesHandler, PermissionTemplateDelHandler, \
+    PermissionTemplateUpdateHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
     ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler, \
@@ -115,9 +116,11 @@ routes = [
     # (r'/api/user/mobile/reset', UserResetMobileHandler),
 
     (r'/api/permission/resource/(\d+)', PermissionResourcesHandler),
-    (r'/api/permission/template/add', PermissionTemplateAddHandler),
     (r'/api/permission/template/list/(\d+)', PermissionTemplateListHandler),
     (r'/api/permission/template/(\d+)/format/(\d+)', PermissionTemplateHandler),
+    (r'/api/permission/template/add', PermissionTemplateAddHandler),
+    (r'/api/permission/template/(\d+)/del', PermissionTemplateDelHandler),
+    (r'/api/permission/template/(\d+)/update', PermissionTemplateUpdateHandler),
     (r'/api/permission/template/(\d+)/rename', PermissionTemplateRenameHandler),
     (r'/api/permission/(\d+)/user/(\d+)/detail', PermissionUserDetailHandler),
     (r'/api/permission/user/update', PermissionUserUpdateHandler),

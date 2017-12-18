@@ -120,7 +120,7 @@ class NeedSMSMixin(BaseHandler):
                     message=ERR_TIP['auth_code_many_errors']['msg']
                 )
             else:
-                yield Task(self.redis.set, self.err_count_key, err_count)
+                yield Task(self.redis.setex, self.err_count_key, SMS_SENT_COUNT_LIMIT_TIMEOUT, err_count)
                 self.error(
                         status=ERR_TIP['auth_code_has_error']['sts'],
                         message=ERR_TIP['auth_code_has_error']['msg'].format(count=err_count),

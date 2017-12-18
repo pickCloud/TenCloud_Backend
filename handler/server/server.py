@@ -338,8 +338,9 @@ class ServerUpdateHandler(BaseHandler):
                 'operation_status': OPERATE_STATUS['fail'],
             })
 
-            old_name = yield self.server_service.select(fields='name', conds=['id=%s'], params=[self.params['id']], one=True)
-            if old_name['name'] == self.params['name']:
+            old_name = yield self.server_service.select(fields='name', ut=False, ct=False)
+            old_name = [i['name'] for i in old_name]
+            if self.params['name'] in old_name:
                 self.error("name has existed")
                 return
 
