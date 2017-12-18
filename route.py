@@ -5,7 +5,7 @@ __author__ = 'Jon'
 '''
 
 from handler.cluster.cluster import ClusterHandler, ClusterNewHandler, ClusterDelHandler, \
-    ClusterDetailHandler, ClusterUpdateHandler
+    ClusterDetailHandler, ClusterUpdateHandler, ClusterSearchHandler, ClusterAllProviders
 from handler.imagehub.imagehub import ImagehubHandler, ImagehubBySourceHandler, ImagehubByTypeHandler, \
     ImagehubSearchHandler
 from handler.permission.permission import PermissionTemplateListHandler, PermissionTemplateHandler, \
@@ -28,6 +28,7 @@ from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandle
                               UserUpdateHandler, UserUploadToken, GetCaptchaHandler, \
                               PasswordLoginHandler, UserRegisterHandler, UserResetPasswordHandler, \
                               UserResetMobileHandler, UserPasswordSetHandler, UserReturnSMSCountHandler
+
 from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
                                 FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
 from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, CompanyEntrySettingHandler, \
@@ -43,7 +44,10 @@ routes = [
     (r'/api/cluster/new', ClusterNewHandler),
     (r'/api/cluster/del', ClusterDelHandler),
     (r'/api/cluster/(\d+)', ClusterDetailHandler),
+    (r'/api/cluster/(\d+)/providers', ClusterAllProviders),
+
     (r'/api/cluster/update', ClusterUpdateHandler),
+    (r'/api/cluster/search', ClusterSearchHandler),
     (r'/api/imagehub', ImagehubHandler),
     (r'/api/imagehub/source', ImagehubBySourceHandler),
     (r'/api/imagehub/type', ImagehubByTypeHandler),
@@ -102,6 +106,7 @@ routes = [
     (r'/api/user/login/password', PasswordLoginHandler),
     (r'/api/user/logout', UserLogoutHandler),
     (r'/api/user/sms', UserSMSHandler),
+
     (r'/api/user/sms/(\d+)/count', UserReturnSMSCountHandler),
     (r'/api/user/token', UserUploadToken),
     (r'/api/user/captcha', GetCaptchaHandler),

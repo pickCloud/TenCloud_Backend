@@ -19,6 +19,7 @@ from constant import TORNADO_MAX_BODY_SIZE
 # 命令行解析 python `pwd`/app.py --port=xxxx &
 ####################################################################
 define('port', default=8010, help='启动端口', type=int)
+define('address', default='127.0.0.1', help='监听ip', type=str)
 
 parse_command_line()
 
@@ -36,7 +37,7 @@ class Application(tornado.web.Application):
 def main():
     try:
         app = Application()
-        app.listen(options.port, max_body_size=TORNADO_MAX_BODY_SIZE)
+        app.listen(address=options.address, port=options.port, max_body_size=TORNADO_MAX_BODY_SIZE)
         LOG.info('Sever Listen {port}...'.format(port=options.port))
         tornado.ioloop.IOLoop.instance().start()
     except:

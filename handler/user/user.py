@@ -32,6 +32,7 @@ from utils.context import catch
     }
 """
 
+
 class UserBase(BaseHandler):
     @coroutine
     def validate_captcha(self, challenge='', validate='', seccode=''):
@@ -168,7 +169,6 @@ class UserSMSHandler(UserBase):
                 self.error(status=ERR_TIP['sms_too_frequency']['sts'], message=ERR_TIP['sms_too_frequency']['msg'])
                 return
 
-            # 检查手机一天的发送次数
             sms_sent_count_key = SMS_SENT_COUNT.format(mobile=mobile)
             sms_sent_count = yield self.get_sms_count(mobile)
 
@@ -246,10 +246,45 @@ class UserReturnSMSCountHandler(UserBase):
             data = {
                 'sms_count': sms_sent_count,
             }
+
             self.success(data)
         except Exception as e:
             self.log.error(str(e))
             self.error(traceback.format_exc())
+
+
+class UserReturnSMSCount(UserBase):
+    @coroutine
+    def get(self, mobile):
+        """
+        @api {get} /api/user/sms/(\d+)/count 验证码次数查询
+        @apiName UserReturnSMSCount
+        @apiGroup User
+
+        @apiParam {Number} mobile
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+                {
+                    "status": 0,
+                    "message": "success",
+                    "data": {
+                        "sms_count": int
+                    }
+                }
+        """
+        try:
+            mobile = int(mobile)
+            sms_sent_count = yield self.get_sms_count(mobile)
+
+            data = {
+                'sms_count': sms_sent_count,
+            }
+            self.success(data)
+        except Exception as e:
+            self.log.error(str(e))
+            self.error(traceback.format_exc())
+
 
 
 class UserLoginHandler(NeedSMSMixin, UserBase):
@@ -290,18 +325,13 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
 
             yield self.clean()
 
-            is_exist = yield self.user_service.select(
-                fields='password',
-                conds=['mobile=%s'],
-                params=[mobile],
-                ct=False, ut=False, one=True
-            )
-            if not is_exist['password']:
-                self.error(status=ERR_TIP['no_registered']['sts'], message=ERR_TIP['no_registered']['msg'], data=result)
+            user = yield self.user_service.select(conds=['mobile=%s'], params=[mobile], one=True)
+            result['user'] = user
+            if not user['password']:
+                self.error(status=ERR_TIP['no_registered_jump']['sts'], message=ERR_TIP['no_registered_jump']['msg'], data=result)
                 return
 
             self.success(result)
-
             self.log.stats('AuthcodeLogin, IP: {}, Mobile: {}'.format(self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.params['mobile']))
 
 
@@ -314,7 +344,7 @@ class UserLogoutHandler(BaseHandler):
         @apiName UserLogoutHandler
         @apiGroup User
 
-        @apiParam {Int} cid
+        @apiParam {Number} cid
 
         @apiUse Success
         """
@@ -522,13 +552,7 @@ class PasswordLoginHandler(UserBase):
             validate_user_password(self.params['password'])
 
             password = self.params['password'].encode('utf-8')
-            data = yield self.user_service.select(
-                                                            fields='password',
-                                                            conds=['mobile=%s'],
-                                                            params=[self.params['mobile']],
-                                                            ct=False, ut=False, one=True
-            )
-
+            data = yield self.user_service.select(conds=['mobile=%s'], params=[self.params['mobile']], one=True)
             if not data:
                 self.error(status=ERR_TIP['no_registered']['sts'], message=ERR_TIP['no_registered']['msg'])
                 return
@@ -541,7 +565,7 @@ class PasswordLoginHandler(UserBase):
                 cid = yield Task(self.redis.hget, LOGOUT_CID, self.params['mobile'])
 
                 result['cid'] = int(cid) if cid else 0
-
+                result['user'] = data
                 self.success(result)
             else:
                 self.error(status=ERR_TIP['password_error']['sts'], message=ERR_TIP['password_error']['msg'])
@@ -605,7 +629,7 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
 
             result = yield self.make_session(self.params['mobile'])
             yield self.clean()
-
+            result['user'] = arg
             self.success(result)
 
 
