@@ -490,12 +490,31 @@ class ServerService(BaseService):
         }
         for x in cur.fetchall():
             content = json.loads(x['content'])
-            data['cpu'].append([x['created_time'], {'percent':content['cpu']}])
-            data['memory'].append([x['created_time'], {'percent':content['mem_percent']}])
-            data['net'].append([x['created_time'], {'input': content['net_input'],
-                                                'output': content['net_output']}])
-            data['block'].append([x['created_time'], {'input': content['block_input'],
-                                                'output': content['block_output']}])
+            cpu = {
+                    'percent': content['cpu'],
+                    'created_time': x['created_time'],
+                }
+            data['cpu'].append(cpu)
+
+            memory = {
+                    'percent': content['mem_percent'],
+                    'created_time': x['created_time'],
+                }
+            data['memory'].append(memory)
+
+            net = {
+                    'input': content['net_input'],
+                    'output': content['net_output'],
+                    'created_time': x['created_time'],
+            }
+            data['net'].append(net)
+
+            block = {
+                    'input': content['block_input'],
+                    'output': content['block_output'],
+                    'created_time': x['created_time'],
+            }
+            data['block'].append(block)
 
         return data
 
