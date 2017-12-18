@@ -212,6 +212,7 @@ class PermissionTemplateUpdateHandler(BaseHandler):
 
         @apiParam {Number} pt_id 权限模版id
         @apiParam {Number} cid 公司id
+        @apiParam {String} name 名字
         @apiParam {[]Number} permissions 权限列表
         @apiParam {[]Number} access_servers 服务器列表
         @apiParam {[]Number} access_projects 项目列表
@@ -235,11 +236,13 @@ class PermissionTemplateUpdateHandler(BaseHandler):
             access_filehub = self.params['access_filehub']
 
             sets = [
+                'name=%s',
                 'permissions=%s',
-                'access_servers=%s', 'access_projects=%s',
+                'access_servers=%s',
+                'access_projects=%s',
                 'access_filehub=%s'
             ]
-            params = [permissions, access_servers, access_projects, access_filehub, pt_id]
+            params = [self.params['name'], permissions, access_servers, access_projects, access_filehub, pt_id]
             yield self.permission_template_service.update(sets=sets,
                                                           conds=['id=%s'],
                                                           params=params

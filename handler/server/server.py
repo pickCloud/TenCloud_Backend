@@ -9,7 +9,7 @@ from tornado.websocket import WebSocketHandler
 from tornado.gen import coroutine, Task
 from tornado.ioloop import PeriodicCallback, IOLoop
 from handler.base import BaseHandler
-from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG
+from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG, ERR_TIP
 from utils.general import validate_ip
 from utils.security import Aes
 from utils.decorator import is_login
@@ -341,7 +341,10 @@ class ServerUpdateHandler(BaseHandler):
             old_name = yield self.server_service.select(fields='name', ut=False, ct=False)
             old_name = [i['name'] for i in old_name]
             if self.params['name'] in old_name:
-                self.error("name has existed")
+                self.error(
+                    status=ERR_TIP['server_name_repeat']['sts'],
+                    message=ERR_TIP['server_name_repeat']['mgs']
+                )
                 return
 
             yield self.server_service.update_server(self.params)
