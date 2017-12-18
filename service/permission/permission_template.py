@@ -12,7 +12,7 @@ class PermissionTemplateService(PermissionBaseService):
     @coroutine
     def get_template_permission(self, params):
         source_id_sql = """
-                        SELECT permissions, access_servers, access_projects, access_filehub
+                        SELECT name, permissions, access_servers, access_projects, access_filehub
                         FROM permission_template WHERE id=%s LIMIT 1
                         """
         cur = yield self.db.execute(source_id_sql, [params['id']])
@@ -44,6 +44,7 @@ class PermissionTemplateService(PermissionBaseService):
 
         if params['format'] == PT_FORMAT:
             data = {
+                'name': id_data['name'],
                 'permissions': permission_data,
                 'access_servers': server_data,
                 'access_projects': project_data,
@@ -54,33 +55,36 @@ class PermissionTemplateService(PermissionBaseService):
         permissions_data = yield self.merge_permissions(permission_data)
         server_data = yield self.merge_servers(server_data)
 
-        data = [
-            {
-                'name': '功能',
-                'data': permissions_data
-            },
-            {
-                'name': '数据',
-                'data': [
-                    {
-                        'name': '文件',
-                        'data': [
-                            {'name': '文件', 'data': filehub_data}
-                        ]
-                    },
-                    {
-                        'name': '项目',
-                        'data': [
-                            {'name': '项目', 'data': project_data}
-                        ]
-                    },
-                    {
-                        'name': '云服务器',
-                        'data': server_data
-                    }
+        data = {
+            'name': id_data['name'],
+            'data': [
+                        {
+                            'name': '功能',
+                            'data': permissions_data
+                        },
+                        {
+                            'name': '数据',
+                            'data': [
+                                {
+                                    'name': '文件',
+                                    'data': [
+                                        {'name': '文件', 'data': filehub_data}
+                                    ]
+                                },
+                                {
+                                    'name': '项目',
+                                    'data': [
+                                        {'name': '项目', 'data': project_data}
+                                    ]
+                                },
+                                {
+                                    'name': '云服务器',
+                                    'data': server_data
+                                }
+                            ]
+                        }
                 ]
-            }
-        ]
+        }
         return data
 
     @coroutine
