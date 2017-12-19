@@ -343,7 +343,7 @@ class ServerUpdateHandler(BaseHandler):
             if self.params['name'] in old_name:
                 self.error(
                     status=ERR_TIP['server_name_repeat']['sts'],
-                    message=ERR_TIP['server_name_repeat']['mgs']
+                    message=ERR_TIP['server_name_repeat']['msg']
                 )
                 return
 
