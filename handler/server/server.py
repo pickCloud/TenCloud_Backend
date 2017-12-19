@@ -338,8 +338,8 @@ class ServerUpdateHandler(BaseHandler):
                 'operation_status': OPERATE_STATUS['fail'],
             })
 
-            old_name = yield self.server_service.select(fields='name', ut=False, ct=False)
-            old_name = [i['name'] for i in old_name]
+            old_name = yield self.server_service.select(fields='id,name', ut=False, ct=False)
+            old_name = [i['name'] for i in old_name if i['id'] != self.params['id']]
             if self.params['name'] in old_name:
                 self.error(
                     status=ERR_TIP['server_name_repeat']['sts'],
