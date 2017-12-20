@@ -5,6 +5,7 @@ from tornado.gen import coroutine
 from service.base import BaseService
 from utils.general import fuzzyfinder
 
+
 class ClusterService(BaseService):
     table  = 'cluster'
     fields = 'id, name, description, status'
@@ -31,16 +32,16 @@ class ClusterService(BaseService):
             ORDER BY i.provider
             """
         cur = yield self.db.execute(sql, [cluster_id])
-        data = [dict(t) for t in set([tuple(d.items()) for d in cur.fetchall()])]
         result = dict()
         res = []
-        for i in data:
-            result.setdefault(i['provider'], []).append(i['region_name'])
+        for i in cur.fetchall():
+            result.setdefault(i['provider'], set()).add(i['region_name'])
 
         for k in result:
             tmp = {
                 'provider': k,
-                'regions': result[k]
+                'regions': list(result[k])
             }
             res.append(tmp)
+        self.log.info(res)
         return res
