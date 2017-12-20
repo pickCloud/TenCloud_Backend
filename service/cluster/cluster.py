@@ -5,6 +5,7 @@ from tornado.gen import coroutine
 from service.base import BaseService
 from utils.general import fuzzyfinder
 
+
 class ClusterService(BaseService):
     table  = 'cluster'
     fields = 'id, name, description, status'
