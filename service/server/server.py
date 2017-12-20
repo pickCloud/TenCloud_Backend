@@ -121,23 +121,24 @@ class ServerService(BaseService):
         yield self.db.execute(sql, [params['name'], params['id']])
 
     @coroutine
-    def get_brief_list(self, cluster_id, provider=[], region=[]):
+    def get_brief_list(self, **cond):
+        arg = [cond['cluster_id']]
         extra = ''
-        arg = [cluster_id]
-        if provider and region:
+        if cond.get('provider') and cond.get('region'):
             extra = 'WHERE {provider} AND {region}'.format(
-                                                        provider=get_in_formats(field='i.provider', contents=provider),
-                                                        region=get_in_formats(field='i.region_name', contents=region)
-                                                        )
-            arg.extend(provider)
-            arg.extend(region)
-        elif provider and (not region):
-            extra = 'WHERE {provider}'.format(provider=get_in_formats(field='i.provider', contents=provider))
-            arg.extend(provider)
-        elif (not provider) and region:
-            extra = 'WHERE {region}'.format(region=get_in_formats(field='i.region_name', contents=region))
-            arg.extend(region)
-
+                                                            provider=get_in_formats(field='i.provider', contents=cond['provider']),
+                                                            region=get_in_formats(field='i.region_name', contents=cond['region'])
+            )
+            arg.extend(cond['provider'])
+            arg.extend(cond['region'])
+            # arg.extend([cond['provider'], cond['region']])
+        elif cond.get('provider') and (not cond.get('region')):
+            extra = 'WHERE {provider}'.format(provider=get_in_formats(field='i.provider', contents=cond['provider']))
+            arg.extend(cond['provider'])
+        elif cond.get('region') and (not cond.get('provider')):
+            extra = 'WHERE {region}'.format(region=get_in_formats(field='i.region_name', contents=cond['region']))
+            arg.extend(cond['region'])
+        self.log.info(arg)
         ''' 集群详情中获取主机列表
         '''
         sql = """
@@ -227,7 +228,6 @@ class ServerService(BaseService):
               """.format(table=table, ids=ids)
         cur = yield self.db.execute(sql, choose_id)
 
-        # data = [[x['created_time'], json.loads(x['content'])] for x in cur.fetchall()]
         data = []
         for x in cur.fetchall():
             created_time = {'created_time': x['created_time']}
