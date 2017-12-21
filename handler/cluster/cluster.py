@@ -167,36 +167,6 @@ class ClusterAllProviders(BaseHandler):
             self.error(str(e))
             self.log.error(traceback.format_exc())
 
-class ClustergAllProviders(BaseHandler):
-    @is_login
-    @coroutine
-    def get(self, cluster_id):
-        """
-        @api {get} /api/cluster/(\d+)/providers 获取该集群下所有提供商
-        @apiName ClustergAllProviders
-        @apiGroup Cluster
-
-        @apiParam {Number} cluster_id
-
-        @apiSuccessExample {json} Success-Response:
-            HTTP/1.1 200 OK
-            {
-                "status": 0,
-                "message": "success",
-                "data": [
-                    {"provider": str,"regions": []str}
-                    ...
-                ]
-            }
-        """
-        try:
-            cluster_id = int(cluster_id)
-            data = yield self.cluster_service.get_all_providers(cluster_id)
-            self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
-
 
 class ClusterSearchHandler(BaseHandler):
     @is_login
