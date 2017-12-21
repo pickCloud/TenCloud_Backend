@@ -11,7 +11,6 @@ class CompanyService(BaseService):
     @coroutine
     def get_companies(self, params):
 
-
         status = 'and ce.status = %s'
         arg = [FULL_DATE_FORMAT, FULL_DATE_FORMAT, params['uid']]
 
