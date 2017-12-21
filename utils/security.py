@@ -2,7 +2,7 @@ __author__ = 'Jon'
 
 from Crypto.Cipher import AES
 from binascii import b2a_hex, a2b_hex
-from constant import AES_KEY
+from setting import settings
 import passwordmeter
 
 
@@ -22,7 +22,7 @@ def password_strength(password):
 
 
 class Aes():
-    key = AES_KEY
+    key = settings['aes_key']
     length = len(key)
     mode = AES.MODE_CBC
 
