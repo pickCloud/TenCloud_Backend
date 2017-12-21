@@ -137,6 +137,7 @@ class ClusterDetailHandler(BaseHandler):
                 'server_list': server_list
             })
 
+
 class ClusterAllProviders(BaseHandler):
     @is_login
     @coroutine
@@ -159,13 +160,10 @@ class ClusterAllProviders(BaseHandler):
                 ]
             }
         """
-        try:
+        with catch(self):
             cluster_id = int(cluster_id)
             data = yield self.cluster_service.get_all_providers(cluster_id)
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ClusterSearchHandler(BaseHandler):
@@ -193,7 +191,7 @@ class ClusterSearchHandler(BaseHandler):
                 ]
             }
         """
-        try:
+        with catch(self):
             cluster_id = self.params['cluster_id']
             region_name = self.params.get('region_name', [])
             provider_name = self.params.get('provider_name', [])
@@ -221,9 +219,6 @@ class ClusterSearchHandler(BaseHandler):
             if server_name:
                 data = yield self.cluster_service.select_by_name(data=data, server_name=server_name)
             self.success(data)
-        except Exception as e:
-            self.error(str(e))
-            self.log.error(traceback.format_exc())
 
 
 class ClusterUpdateHandler(BaseHandler):
