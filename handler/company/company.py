@@ -1,7 +1,5 @@
 __author__ = 'Jon'
 
-import traceback
-
 from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login
@@ -64,7 +62,7 @@ class CompanyDetailHandler(BaseHandler):
                 ]
             }        """
         with catch(self):
-            data = yield self.company_service.select(conds=['id=%s'], params=[id])
+            data = yield self.company_service.select({'id': int(id)})
 
             self.success(data)
 
@@ -97,12 +95,12 @@ class CompanyNewHandler(BaseHandler):
             validate_mobile(self.params['mobile'])
 
             # 公司是否存在／是否已经公司员工
-            company_info = yield self.company_service.select(conds=['name=%s'], params=[self.params['name']], one=True)
+            company_info = yield self.company_service.select({'name': self.params['name']}, one=True)
 
             if company_info:
                 err_key = 'company_exists'
 
-                employee_info = yield self.company_employee_service.select(conds=['cid=%s', 'uid=%s'], params=[company_info['id'], self.current_user['id']])
+                employee_info = yield self.company_employee_service.select({'cid': company_info['id'], 'uid': self.current_user['id']})
 
                 if employee_info: err_key = 'is_employee'
 
@@ -156,9 +154,9 @@ class CompanyUpdateHandler(BaseHandler):
                 if i['id'] == self.params['cid']:
                     old = i
 
-            yield self.company_service.update(sets=['name=%s', 'contact=%s', 'mobile=%s'],
-                                              conds=['id=%s'],
-                                              params=[self.params['name'], self.params['contact'], self.params['mobile'], self.params['cid']])
+            yield self.company_service.update(sets={'name': self.params['name'], 'contact': self.params['contact'], 'mobile': self.params['mobile']},
+                                              conds={'id': self.params['cid']},
+                                              )
 
             # 通知
             yield self.company_service.notify_change({
@@ -281,7 +279,7 @@ class CompanyEntryUrlHandler(BaseHandler):
 
             yield self.company_employee_service.check_admin(cid, self.current_user['id'])
 
-            data = yield self.company_entry_setting_service.select(fields='code', conds=['cid=%s'], params=[cid], one=True)
+            data = yield self.company_entry_setting_service.select(fields='code', conds={'cid': cid}, one=True)
 
             if not data:
                 # 默认配置手机号与姓名
@@ -315,13 +313,11 @@ class CompanyApplicationHandler(BaseHandler):
             }
         """
         with catch(self):
-            code = self.get_argument('code')
-
-            if not code:
+            if not self.params['code']:
                 self.error('缺少code')
                 return
 
-            info = yield self.company_service.fetch_with_code(code)
+            info = yield self.company_service.fetch_with_code(self.params['code'])
 
             self.success(info)
 
@@ -363,7 +359,7 @@ class CompanyApplicationHandler(BaseHandler):
             yield self.company_employee_service.add_employee(app_data)
 
             # 给公司管理员发送消息
-            admin = yield self.company_employee_service.select(fields='uid', conds=['cid=%s', 'is_admin=%s'], params=[info['cid'], 1], one=True)
+            admin = yield self.company_employee_service.select(fields='uid', conds={'cid': info['cid'], 'is_admin': 1}, one=True)
 
             admin_data = {
                 'owner': admin['uid'],
@@ -449,8 +445,6 @@ class CompanyEmployeeHandler(BaseHandler):
         with catch(self):
             cid = int(cid)
 
-            yield self.company_employee_service.check_employee(cid, self.current_user['id'])
-
             employees = yield self.company_employee_service.get_employees(cid)
 
             self.success(employees)
@@ -470,14 +464,13 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
         @apiUse Success
         """
         with catch(self):
-            data = yield self.company_employee_service.select(conds=['id=%s','is_admin=%s', 'uid=%s'],
-                                                              params=[self.params['id'], 1, self.current_user['id']])
+            data = yield self.company_employee_service.select(conds={'id': self.params['id'], 'is_admin': 1, 'uid': self.current_user['id']})
 
             if data:
                 self.error('管理员不能解除公司，需要先进行管理员转移')
                 return
 
-            yield self.company_employee_service.delete(conds=['id=%s', 'uid=%s'], params=[self.params['id'], self.current_user['id']])
+            yield self.company_employee_service.delete(conds={'id': self.params['id'], 'uid': self.current_user['id']})
 
             self.success(data)
 
@@ -520,10 +513,10 @@ class CompanyApplicationDismissionHandler(BaseHandler):
         @apiUse Success
         """
         with catch(self):
-            data = yield self.company_employee_service.select(fields='cid', conds=['id=%s'], params=[self.params['id']], one=True)
+            data = yield self.company_employee_service.select(fields='cid', conds={'id': self.params['id']}, one=True)
 
             yield self.company_employee_service.check_admin(data['cid'], self.current_user['id'])
 
-            yield self.company_employee_service.delete(conds=['id=%s'], params=[self.params['id']])
+            yield self.company_employee_service.delete({'id': self.params['id']})
 
             self.success()

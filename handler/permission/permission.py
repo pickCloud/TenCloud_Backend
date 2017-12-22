@@ -69,7 +69,7 @@ class PermissionTemplateListHandler(BaseHandler):
         """
         with catch(self):
             cid = int(cid)
-            data = yield self.permission_template_service.select(conds=['cid=%s'], params=[cid])
+            data = yield self.permission_template_service.select({'cid': cid})
             self.success(data)
 
 
@@ -140,6 +140,7 @@ class PermissionTemplateAddHandler(BaseHandler):
             }
 
             yield self.permission_template_service.add(params)
+            
             self.success()
 
 
@@ -165,7 +166,8 @@ class PermissionTemplateDelHandler(BaseHandler):
             pt_id = int(pt_id)
             yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
 
-            yield self.permission_template_service.delete(conds=['id=%s'], params=[pt_id])
+            yield self.permission_template_service.delete({'id': pt_id})
+  
             self.success()
 
 

@@ -16,18 +16,18 @@ class CompanyEmployeeService(BaseService):
         :param cid: 公司id
         :param uid: 用户id
         '''
-        data = yield self.select(conds=['cid=%s', 'uid=%s', 'is_admin=%s'], params=[cid, uid, 1], one=True)
+        data = yield self.select({'cid': cid, 'uid': uid, 'is_admin': 1}, one=True)
 
         if not data:
             raise ValueError('需要管理员权限')
 
     @coroutine
-    def check_employee(self, cid, uid):
+    def check_staff(self, cid, uid):
         ''' 是否公司员工
         :param cid: 公司id
         :param uid: 用户id
         '''
-        data = yield self.select(conds=['cid=%s', 'uid=%s'], params=[cid, uid], one=True)
+        data = yield self.select({'cid': cid, 'uid': uid}, one=True)
 
         if not data:
             raise ValueError('非公司员工')
@@ -38,7 +38,7 @@ class CompanyEmployeeService(BaseService):
         :param params: {'cid', 'uid'}
         :return: 审核中或审核通过会抛出异常，已拒绝或新增会更新数据库
         '''
-        data = yield self.select(fields='status', conds=['cid=%s', 'uid=%s'], params=[params['cid'], params['uid']], one=True)
+        data = yield self.select(fields='status', conds={'cid': params['cid'], 'uid': params['uid']}, one=True)
 
         status = data['status'] if data else ''
 
@@ -47,7 +47,7 @@ class CompanyEmployeeService(BaseService):
         elif status in [APPLICATION_STATUS['accept'], APPLICATION_STATUS['founder']]:
             raise ValueError('您已是公司员工，无需再次申请')
         elif status == APPLICATION_STATUS['reject']:
-            yield self.update(sets=['status=%s'], conds=['cid=%s', 'uid=%s'], params=[APPLICATION_STATUS['process'], params['cid'], params['uid']])
+            yield self.update(sets={'status': APPLICATION_STATUS['process']}, conds={'cid': params['cid'], 'uid': params['uid']})
         else:
             params['status'] = APPLICATION_STATUS['process']
             yield self.add(params)
@@ -77,12 +77,12 @@ class CompanyEmployeeService(BaseService):
         :param id: 员工表id
         :param mode: APPLICATION_STATUS的key
         '''
-        is_repeat = yield self.select(conds=['id=%s', 'status=%s'], params=[id, APPLICATION_STATUS[mode]])
+        is_repeat = yield self.select({'id': id, 'status': APPLICATION_STATUS[mode]})
 
         if is_repeat:
             raise ValueError('请勿重复操作')
 
-        yield self.update(sets=['status=%s'], conds=['id=%s'], params=[APPLICATION_STATUS[mode], id])
+        yield self.update(sets={'status': APPLICATION_STATUS[mode]}, conds={'id': id})
 
     @coroutine
     def get_employees(self, cid):
@@ -105,8 +105,7 @@ class CompanyEmployeeService(BaseService):
         ''' 转换管理员
         :param params: {'admin_id', 'cid', 'uids'}
         '''
-        yield self.update(sets=['is_admin=%s'], conds=['uid=%s', 'cid=%s'], params=[0, params['admin_id'], params['cid']])
+        yield self.update(sets={'is_admin': 0}, conds={'uid': params['admin_id'], 'cid': params['cid']})
 
-        yield self.update(sets=['is_admin=%s'],
-                          conds=[get_in_formats('uid', params['uids']), 'cid=%s'],
-                          params=[1] + params['uids'] + [params['cid']])
+        yield self.update(sets={'is_admin': 1},
+                          conds={'uid': params['uids'], 'cid': params['cid']})

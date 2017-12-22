@@ -52,10 +52,12 @@ class UserBase(BaseHandler):
         :param mobile: 用户手机号
         :return: {'token'}
         '''
-        data = yield self.user_service.select(conds=['mobile=%s'], params=[mobile], one=True)
+        params = {'mobile': mobile}
+
+        data = yield self.user_service.select(params, one=True)
         if not data:
-            yield self.user_service.add({'mobile': mobile})
-            data = yield self.user_service.select(conds=['mobile=%s'], params=[mobile], one=True)
+            yield self.user_service.add(params)
+            data = yield self.user_service.select(params, one=True)
 
         # 设置session
         yield self.set_session(data['id'], data)
@@ -412,9 +414,18 @@ class UserUpdateHandler(BaseHandler):
                 'birthday': self.params.get('birthday') or int(old.get('birthday', 0))
             }
 
-            yield self.user_service.update(sets=['name=%s', 'email=%s', 'image_url=%s', 'mobile=%s', 'gender=%s', 'birthday=%s'],
-                                           conds=['id=%s'],
-                                           params=[new['name'], new['email'], new['image_url'], new['mobile'], new['gender'], new['birthday'], new['id']])
+            sets = {
+                'name': new['name'],
+                'email': new['email'],
+                'image_url': new['image_url'],
+                'mobile': new['mobile'],
+                'gender': new['gender'],
+                'birthday': new['birthday']
+            }
+
+            yield self.user_service.update(sets=sets,
+                                           conds={'id': new['id']}
+                                           )
 
             yield self.set_session(new['id'], new)
 
@@ -467,7 +478,7 @@ class FileUploadMixin(BaseHandler):
         :return 文件名, 文件内容
         """
         if len(self.request.files) == 0:
-            filename, content = self.get_argument(param), self.request.body
+            filename, content = self.params['param'], self.request.body
         else:
             filename, content = self.request.files[param][0]['filename'], self.request.files[param][0]['body']
 
@@ -538,7 +549,8 @@ class PasswordLoginHandler(UserBase):
             validate_user_password(self.params['password'])
 
             password = self.params['password'].encode('utf-8')
-            data = yield self.user_service.select(conds=['mobile=%s'], params=[self.params['mobile']], one=True)
+
+            data = yield self.user_service.select({'mobile': self.params['mobile']}, one=True)
             if not data:
                 self.error(status=ERR_TIP['no_registered']['sts'], message=ERR_TIP['no_registered']['msg'])
                 return
@@ -591,12 +603,10 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
             validate_auth_code(self.params['auth_code'])
             validate_user_password(self.params['password'])
 
-            data = yield self.user_service.select(
-                                                    fields='id',
-                                                    conds=['mobile=%s'],
-                                                    params=[self.params['mobile']],
-                                                    ct=False, ut=False, one=True
-                                                )
+            data = yield self.user_service.select(fields='id',
+                                                  conds={'mobile': self.params['mobile']},
+                                                  ct=False, ut=False, one=True
+                                                 )
             if data:
                 self.error(status=ERR_TIP['mobile_has_exist']['sts'],message=ERR_TIP['mobile_has_exist']['msg'])
                 return
@@ -653,8 +663,7 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
                 old_password = old_password.encode('utf-8')
                 hashed = yield self.user_service.select(
                     fields='password',
-                    conds=['mobile=%s'],
-                    params=[self.params['mobile']],
+                    conds={'mobile': self.params['mobile']},
                     ct=False, ut=False, one=True
                 )
                 result = bcrypt.checkpw(old_password, hashed['password'].encode('utf-8'))
@@ -665,9 +674,8 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
             hashed = bcrypt.hashpw(self.params['new_password'].encode('utf-8'), bcrypt.gensalt())
             p_strength = password_strength(self.params['new_password'])
             yield self.user_service.update(
-                                            sets=['password=%s', 'password_strength=%s'],
-                                            conds=['mobile=%s'],
-                                            params=[hashed, p_strength, self.params['mobile']]
+                                            sets={'password': hashed, 'password_strength': p_strength},
+                                            conds={'mobile': self.params['mobile']}
             )
             result = yield self.make_session(self.params['mobile'])
 
@@ -707,8 +715,7 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
 
             data = yield self.user_service.select(
                 fields='id',
-                conds=['mobile=%s'],
-                params=[mobile],
+                conds={'mobile': mobile},
                 ct=False, ut=False, one=True
             )
             if data:
@@ -721,8 +728,7 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
 
             hashed = yield self.user_service.select(
                 fields='password',
-                conds=['id=%s'],
-                params=[self.current_user['id']],
+                conds={'id': self.current_user['id']},
                 ct=False, ut=False, one=True
             )
             result = bcrypt.checkpw(password, hashed['password'].encode('utf-8'))
@@ -730,7 +736,7 @@ class UserResetMobileHandler(NeedSMSMixin, UserBase):
                 self.error(status=ERR_TIP['password_error']['sts'], message=ERR_TIP['password']['msg'])
                 return
 
-            yield self.user_service.update(sets=['mobile=%s'], conds=['id=%s'], params=[mobile, self.current_user['id']])
+            yield self.user_service.update(sets={'mobile': mobile}, conds={'id': self.current_user['id']})
             yield self.make_session(mobile)
             self.clean()
             self.success()
@@ -754,9 +760,8 @@ class UserPasswordSetHandler(UserBase):
             hashed = bcrypt.hashpw(password, bcrypt.gensalt())
             p_strength = password_strength(self.params['password'])
             yield self.user_service.update(
-                sets=['password=%s', 'password_strength=%s'],
-                conds=['id=%s'],
-                params=[hashed, p_strength, self.current_user['id']]
+                sets={'password': hashed, 'password_strength': p_strength},
+                conds={'id': self.current_user['id']}
             )
             yield self.make_session(self.current_user['mobile'])
             self.success()

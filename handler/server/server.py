@@ -350,9 +350,8 @@ class ServerUpdateHandler(BaseHandler):
             yield self.server_service.update_server(self.params)
 
             yield self.server_operation_service.update(
-                    sets=['operation_status=%s'],
-                    conds=['id=%s'],
-                    params=[OPERATE_STATUS['success'], data['id']]
+                    sets={'operation_status': OPERATE_STATUS['success']},
+                    conds={'id': data['id']}
             )
 
             self.success()
@@ -382,9 +381,8 @@ class ServerStopHandler(BaseHandler):
                                                         })
             yield self.server_service.stop_server(id)
             yield self.server_operation_service.update(
-                                                        sets=['operation_status=%s'],
-                                                        conds=['id=%s'],
-                                                        params=[OPERATE_STATUS['success'], data['id']]
+                                                        sets={'operation_status': OPERATE_STATUS['success']},
+                                                        conds={'id': data['id']}
                                                     )
             self.success()
 
@@ -412,9 +410,8 @@ class ServerStartHandler(BaseHandler):
                                                         })
             yield self.server_service.start_server(id)
             yield self.server_operation_service.update(
-                                                        sets=['operation_status=%s'],
-                                                        conds=['id=%s'],
-                                                        params=[OPERATE_STATUS['success'], data['id']]
+                                                        sets={'operation_status': OPERATE_STATUS['success']},
+                                                        conds={'id': data['id']}
                                                     )
             self.success()
 
@@ -442,9 +439,8 @@ class ServerRebootHandler(BaseHandler):
                                                         })
             yield self.server_service.reboot_server(id)
             yield self.server_operation_service.update(
-                                                        sets=['operation_status=%s'],
-                                                        conds=['id=%s'],
-                                                        params=[OPERATE_STATUS['success'], data['id']]
+                                                        sets={'operation_status': OPERATE_STATUS['success']},
+                                                        conds={'id': data['id']}
                                                     )
             self.success()
 
@@ -575,7 +571,7 @@ class ServerContainersInfoHandler(BaseHandler):
         """
         with catch(self):
             params = yield self.server_service.fetch_ssh_login_info({'server_id': server_id})
-            server_name = yield self.server_service.select(fields='name', conds=['id=%s'], params=[server_id], ct=False, ut=False, one=True)
+            server_name = yield self.server_service.select(fields='name', conds={'id': server_id}, ct=False, ut=False, one=True)
             params.update({'container_id': container_id, 'server_name': server_name['name']})
             data, err = yield self.server_service.get_container_info(params)
             if err:
@@ -610,9 +606,8 @@ class ServerContainerStartHandler(BaseHandler):
             yield self.server_service.start_container(self.params)
 
             yield self.server_operation_service.update(
-                    sets=['operation_status=%s'],
-                    conds=['id=%s'],
-                    params=[OPERATE_STATUS['success'], data['id']]
+                    sets={'operation_status': OPERATE_STATUS['success']},
+                    conds={'id': data['id']}
             )
             self.success()
 
@@ -643,9 +638,8 @@ class ServerContainerStopHandler(BaseHandler):
             yield self.server_service.stop_container(self.params)
 
             yield self.server_operation_service.update(
-                    sets=['operation_status=%s'],
-                    conds=['id=%s'],
-                    params=[OPERATE_STATUS['success'], data['id']]
+                    sets={'operation_status': OPERATE_STATUS['success']},
+                    conds={'id': data['id']}
             )
 
             self.success()
@@ -677,9 +671,8 @@ class ServerContainerDelHandler(BaseHandler):
             yield self.server_service.del_container(self.params)
 
             yield self.server_operation_service.update(
-                    sets=['operation_status=%s'],
-                    conds=['id=%s'],
-                    params=[OPERATE_STATUS['success'], data['id']]
+                    sets={'operation_status': OPERATE_STATUS['success']},
+                    conds={'id': data['id']}
             )
             self.success()
 

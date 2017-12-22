@@ -183,24 +183,16 @@ class FileUpdateHandler(BaseHandler):
         """
         with catch(self):
             if self.params['status'] == 1:
-                yield self.file_service.delete(conds=['id=%s'], params=[self.params['file_id']])
+                yield self.file_service.delete({'id': self.params['file_id']})
                 self.success()
                 return
-            arg = [
-                    self.params.get('size'),
-                    self.params.get('qiniu_id'),
-                    self.params.get('mime'),
-                    self.params['file_id'],
-                    self.current_user['id']
-            ]
-            yield self.file_service.update(
-                                            sets=[
-                                                    'size=%s',
-                                                    'qiniu_id=%s',
-                                                    'mime=%s',
-                                            ],
-                                            conds=['id=%s', 'owner=%s'],
-                                            params=arg
+
+            yield self.file_service.update(sets={
+                                                'size': self.params.get('size'),
+                                                'qiniu_id': self.params.get('qiniu_id'),
+                                                'mime': self.params.get('mime')
+                                            },
+                                            conds={'id': self.params['file_id'], 'owner': self.current_user['id']},
                                         )
             self.success()
 
@@ -298,13 +290,10 @@ class FileDeleteHandler(BaseHandler):
             }
         """
         with catch(self):
-            ids = get_in_formats(field='id', contents=self.params['file_ids'])
-            files = yield self.file_service.select(
-                                                    fields='id, owner',
-                                                    conds=[ids],
-                                                    params=self.params['file_ids'],
-                                                    ct=False, ut=False
-                                                    )
+            files = yield self.file_service.select(fields='id, owner',
+                                                   conds={'id': self.params['file_ids']},
+                                                   ct=False, ut=False
+                                                   )
             correct_ids = []
             incorrect_ids = []
             for file in files:
@@ -314,11 +303,7 @@ class FileDeleteHandler(BaseHandler):
                 incorrect_ids.append(file['id'])
 
             if correct_ids:
-                arg = get_in_formats(field='id', contents=correct_ids)
-                yield self.file_service.delete(
-                                            conds=[arg],
-                                            params=correct_ids
-                )
+                yield self.file_service.delete({'id': correct_ids})
             if incorrect_ids:
                 self.error(data={'file_ids': incorrect_ids})
                 return

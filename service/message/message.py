@@ -23,9 +23,7 @@ class MessageService(BaseService):
         if page:
             extra += 'LIMIT {},{}'.format((page - 1) * MSG_PAGE_NUM, MSG_PAGE_NUM)
 
-        c, p = self.make_pair(params)
-
-        data = yield self.select(conds=c, params=p, extra=extra)
+        data = yield self.select(params, extra=extra)
 
         unread = [d['id'] for d in data if d['status']==0]
         if unread:
@@ -39,16 +37,14 @@ class MessageService(BaseService):
         :param ids: [1, 2]
         '''
         if ids:
-            yield self.update(sets=['status=%s'], conds=[get_in_formats('id', ids)], params=[MSG_STATUS['read']] + ids)
+            yield self.update(sets={'status': MSG_STATUS['read']}, conds={'id': ids})
 
     @coroutine
     def check_owner(self, params):
         ''' 检验消息所有者
         :param params: {'owner', 'id'}
         '''
-        c, p = self.make_pair(params)
-
-        data = yield self.select(conds=c, params=p)
+        data = yield self.select(params)
 
         if not data:
             raise ValueError('非消息所有者')

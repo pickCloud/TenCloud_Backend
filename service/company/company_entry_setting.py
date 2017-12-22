@@ -29,10 +29,10 @@ class CompanyEntrySettingService(BaseService):
 
         code = self.create_code(str(cid), setting)
 
-        data = yield self.select(conds=['cid=%s'], params=[cid], one=True)
+        data = yield self.select({'cid': cid}, one=True)
 
         if data and data['code'] != code:
-            yield self.update(sets=['code=%s', 'setting=%s'], conds=['cid=%s'], params=[code, setting, cid])
+            yield self.update(sets={'code': code, 'setting': setting}, conds={'cid': cid})
         else:
             params['code'] = code
             yield self.add(params=params)
@@ -45,6 +45,6 @@ class CompanyEntrySettingService(BaseService):
         :param cid: 公司id
         :return: {'setting': 'mobile,name'}
         '''
-        data = yield self.select(fields='setting', conds=['cid=%s'], params=[cid], one=True)
+        data = yield self.select(fields='setting', conds={'cid': cid}, one=True)
 
         return data
