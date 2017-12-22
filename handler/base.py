@@ -7,13 +7,13 @@ __author__ = 'Jon'
 ---------------
 * 所有service的初始化
 * 复写tornado.web.RequestHandler的一些常用方法
-* 子类使用的共同函数抽象
-* api需要发送json, 存储在self.params
-* handler都需要try...catch
-    try:
-    except:
-        self.error()
-        self.log.error(traceback.format_exc())
+* handler子类使用的共同函数抽象
+* api发送的参数, 存储在self.params
+* handler都需要catch exception
+    from util.context import catch
+
+    with catch(self):
+        self.success()
 '''
 
 #################################################################################
@@ -47,9 +47,8 @@ from service.company.company_application import CompanyApplicationService
 from service.company.company_employee import CompanyEmployeeService
 from service.company.company_entry_setting import CompanyEntrySettingService
 from service.file.file import FileService
-from service.imagehub.imagehub import ImagehubService
 from service.message.message import MessageService
-from service.permission.permission import PermissionService
+from service.permission.permission import PermissionService, UserPermissionService
 from service.project.project import ProjectService
 from service.project.project_versions import ProjectVersionService
 from service.repository.repository import RepositoryService
@@ -63,7 +62,6 @@ from utils.general import json_dumps, json_loads
 
 class BaseHandler(tornado.web.RequestHandler):
     cluster_service = ClusterService()
-    imagehub_service = ImagehubService()
     server_service = ServerService()
     project_service = ProjectService()
     repos_service = RepositoryService()
@@ -79,6 +77,7 @@ class BaseHandler(tornado.web.RequestHandler):
     message_service = MessageService()
     permission_template_service = PermissionTemplateService()
     permission_service = PermissionService()
+    user_permission_service = UserPermissionService()
 
 
     @property
@@ -123,13 +122,7 @@ class BaseHandler(tornado.web.RequestHandler):
             return ''
 
     @coroutine
-    def prepare(self):
-        ''' 获取用户信息 && 获取请求的参数, json类型
-
-            Usage:
-                >>> self.current_user['id']
-                >>> self.params['x']
-        '''
+    def _with_token(self):
         token = self.request.headers.get('Authorization')
 
         if token:
@@ -138,11 +131,32 @@ class BaseHandler(tornado.web.RequestHandler):
             if user_id:
                 self.current_user = yield self.get_session(user_id)
 
+    def _decode_params(self):
+        ''' 对self.params的values进行decode, 而且如果value长度为1, 返回最后一个元素
+        '''
+        for k, v in self.params.items():
+            if len(v) == 1:
+                self.params[k] = v[-1].decode('utf-8')
+            else:
+                self.params[k] = [e.decode('utf-8') for e in v]
+
+    @coroutine
+    def prepare(self):
+        ''' 获取用户信息 && 获取请求的参数, json类型
+
+            Usage:
+                >>> self.current_user['id']
+                >>> self.params['x']
+        '''
+        yield self._with_token()
+
         self.params = {}
 
         if self.request.headers.get('Content-Type', '').startswith('application/json') and self.request.body != '':
             self.params = json.loads(self.request.body.decode('utf-8'))
-
+        else:
+            self.params = self.request.arguments.copy()
+            self._decode_params()
 
     def on_finish(self):
         self.log.debug('{status} {method} {uri} {payload}'.format(status=self._status_code,

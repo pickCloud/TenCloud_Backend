@@ -79,7 +79,7 @@ class ProjectNewHandler(BaseHandler):
         """
         with catch(self):
             if self.params.get('repos_url'):
-                is_duplicate_url = yield self.project_service.select(conds=['repos_url=%s'], params=[self.params['repos_url']], one=True)
+                is_duplicate_url = yield self.project_service.select(conds={'repos_url': self.params['repos_url']}, one=True)
 
                 if is_duplicate_url:
                     self.error('你选择的代码仓库，已有项目存在，项目名称【{prj_name}】'.format(prj_name=is_duplicate_url['name']))
@@ -117,7 +117,7 @@ class ProjectDelHandler(BaseHandler):
         """
         with catch(self):
             ids = self.params['id']
-            yield self.project_service.delete(conds=[get_in_formats('id', ids)], params=ids)
+            yield self.project_service.delete({'id': ids})
 
             self.success()
 
@@ -158,7 +158,7 @@ class ProjectDetailHandler(BaseHandler):
             }
         """
         with catch(self):
-            result = yield self.project_service.select(conds=['id=%s'], params=[id])
+            result = yield self.project_service.select(conds={'id': id})
 
             self.success(result)
 
@@ -192,8 +192,6 @@ class ProjectUpdateHandler(BaseHandler):
                 'operation_status': OPERATE_STATUS['fail'],
             })
 
-            sets = ['name=%s', 'description=%s', 'repos_name=%s', 'repos_url=%s', 'http_url=%s', 'mode=%s', 'image_name=%s']
-            conds = ['id=%s']
             params = [
                     self.params['name'],
                     self.params['description'],
@@ -204,13 +202,22 @@ class ProjectUpdateHandler(BaseHandler):
                     self.params['image_name'],
                     self.params['id']
                     ]
+            sets = {
+                'name': self.params['name'],
+                'description': self.params['description'],
+                'repos_name': self.params['repos_name'],
+                'repos_url': self.params['repos_url'],
+                'http_url': self.params['http_url'],
+                'mode': self.params['mode'],
+                'image_name': self.params['image_name']
+            }
+            conds = {'id': self.params['id']}
 
-            yield self.project_service.update(sets=sets, conds=conds, params=params)
+            yield self.project_service.update(sets=sets, conds=conds)
 
             yield self.server_operation_service.update(
-                    sets=['operation_status=%s'],
-                    conds=['id=%s'],
-                    params=[OPERATE_STATUS['success'], data['id']]
+                    sets={'operation_status': OPERATE_STATUS['success']},
+                    conds={'id': data['id']}
             )
             self.success()
 
@@ -270,20 +277,14 @@ class ProjectDeploymentHandler(WebSocketBaseHandler):
 
     @coroutine
     def finish_operation_log(self, log_params):
-        arg = [
-                OPERATE_STATUS['success'],
-                log_params['user_id'],
-                log_params['object_id'],
-                log_params['object_type']
-        ]
+
         yield self.server_operation_service.update(
-                sets=['operation_status=%s'],
-                conds=[
-                        'user_id=%s',
-                        'object_id=%s',
-                        'object_type=%s'
-                ],
-                params=arg
+                sets={'operation_status': OPERATE_STATUS['success']},
+                conds={
+                    'user_id': log_params['user_id'],
+                    'object_id': log_params['object_id'],
+                    'object_type': log_params['object_type']
+                }
         )
 
 class ProjectContainersListHanler(BaseHandler):
@@ -387,20 +388,14 @@ class ProjectImageCreationHandler(WebSocketBaseHandler):
 
     @coroutine
     def finish_operation_log(self, log_params):
-        arg = [
-                OPERATE_STATUS['success'],
-                log_params['user_id'],
-                log_params['object_id'],
-                log_params['object_type']
-        ]
+
         yield self.server_operation_service.update(
-                sets=['operation_status=%s'],
-                conds=[
-                        'user_id=%s',
-                        'object_id=%s',
-                        'object_type=%s'
-                ],
-                params=arg
+                sets={'operation_status': OPERATE_STATUS['success']},
+                conds={
+                    'user_id': log_params['user_id'],
+                    'object_id': log_params['object_id'],
+                    'object_type': log_params['object_type']
+                }
         )
 
 class ProjectImageLogHandler(BaseHandler):
@@ -430,9 +425,8 @@ class ProjectImageLogHandler(BaseHandler):
             }
         """
         with catch(self):
-            out = yield self.project_versions_service.select(
-                                                            fields='log', conds=['name=%s', 'version=%s'],
-                                                            params=[prj_name, version], ct=False, one=True)
+            out = yield self.project_versions_service.select(fields='log', conds={'name': prj_name, 'version': version},
+                                                             ct=False, one=True)
             data = {"log": json.loads(out['log']), "update_time": out['update_time']}
             self.success(data)
 
@@ -450,7 +444,7 @@ class ProjectImageLogHandler(BaseHandler):
        @apiUse Success
        """
         with catch(self):
-            data_id = yield self.project_service.select(fields='id',conds=['name=%s'], params=[prj_name], ct=False, ut=False, one=True)
+            data_id = yield self.project_service.select(fields='id',conds={'name': prj_name}, ct=False, ut=False, one=True)
             data = yield self.server_operation_service.add(params={
                 'user_id': self.current_user['id'],
                 'object_id': data_id['id'],
@@ -459,12 +453,11 @@ class ProjectImageLogHandler(BaseHandler):
                 'operation_status': OPERATE_STATUS['fail'],
             })
 
-            yield self.project_versions_service.delete(conds=['name=%s', 'version=%s'], params=[prj_name, version])
+            yield self.project_versions_service.delete({'name': prj_name, 'version': version})
 
             yield self.server_operation_service.update(
-                    sets=['operation_status=%s'],
-                    conds=['id=%s'],
-                    params=[OPERATE_STATUS['success'], data['id']]
+                    sets={'operation_status': OPERATE_STATUS['success']},
+                    conds={'id': data['id']}
             )
             self.success()
 

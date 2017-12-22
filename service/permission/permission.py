@@ -98,3 +98,22 @@ class PermissionService(PermissionBaseService):
             """.format(table=params['table'], fields=params['fields'], values=params['data'])
 
         yield self.db.execute(sql)
+
+
+class UserPermissionService(PermissionBaseService):
+    table = 'user_permission'
+    fields = 'id, uid, pid, cid'
+
+    @coroutine
+    def check_permission(self, params):
+        ''' 检查pids是否为员工所拥有权限的子集
+        :param params: {'uid', 'cid', 'pids'}
+        :return: 如果权限不够，raise
+        '''
+        data = yield self.select(fields='pid', conds={'uid': params['uid'], 'cid': params['cid']})
+        limits = set([d['pid'] for d in data])
+
+        pids = set(params['pids']) if params.get('pids') else set()
+
+        if not pids.issubset(limits):
+            raise ValueError('您没有操作的权限')

@@ -35,56 +35,6 @@ class ClusterHandler(BaseHandler):
             self.success(result)
 
 
-class ClusterNewHandler(BaseHandler):
-    @is_login
-    @coroutine
-    def post(self):
-        """
-        @api {post} /api/cluster/new 新建集群
-        @apiName ClusterNewHandler
-        @apiGroup Cluster
-
-        @apiParam {String} name 名称
-        @apiParam {String} description 描述
-
-        @apiSuccessExample {json} Success-Response:
-            HTTP/1.1 200 OK
-            {
-                "status": 0,
-                "message": "success",
-                "data": {
-                    "id": int,
-                    "update_time": str
-                }
-            }
-        """
-        with catch(self):
-            result = yield self.cluster_service.add(self.params)
-
-            self.success(result)
-
-
-class ClusterDelHandler(BaseHandler):
-    @is_login
-    @coroutine
-    def post(self):
-        """
-        @api {post} /api/cluster/del 删除集群
-        @apiName ClusterDelHandler
-        @apiGroup Cluster
-
-        @apiParam {Number} id 集群id
-
-        @apiUse Success
-        """
-        with catch(self):
-            ids = self.params['id']
-
-            yield self.cluster_service.delete(conds=[get_in_formats('id', ids)], params=ids)
-
-            self.success()
-
-
 class ClusterDetailHandler(BaseHandler):
     @is_login
     @coroutine
@@ -128,7 +78,7 @@ class ClusterDetailHandler(BaseHandler):
         with catch(self):
             id = int(id)
 
-            basic_info = yield self.cluster_service.select(conds=['id=%s'], params=[id], ct=False)
+            basic_info = yield self.cluster_service.select({'id': id}, ct=False)
             server_list = yield self.server_service.get_brief_list(id)
 
             self.success({
@@ -150,28 +100,3 @@ class ClusterSearchHandler(BaseHandler):
         :return:
         """
         pass
-
-
-class ClusterUpdateHandler(BaseHandler):
-    @is_login
-    @coroutine
-    def post(self):
-        """
-        @api {post} /api/cluster/update 更新集群
-        @apiName ClusterUpdateHandler
-        @apiGroup Cluster
-
-        @apiParam {Number} id 集群id
-        @apiParam {String} name 名称
-        @apiParam {String} description 描述
-
-        @apiUse Success
-        """
-        with catch(self):
-            sets = ['name=%s', 'description=%s']
-            conds = ['id=%s']
-            params = [self.params['name'], self.params['description'], self.params['id']]
-
-            yield self.cluster_service.update(sets=sets, conds=conds, params=params)
-
-            self.success()

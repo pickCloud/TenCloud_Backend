@@ -103,8 +103,7 @@ class GithubOauthCallbackHandler(BaseHandler):
     @coroutine
     def get(self):
         with catch(self):
-            code = self.get_argument('code')
-            token = yield self.repos_service.fetch_token(code)
+            token = yield self.repos_service.fetch_token(self.params.get('code'))
 
             yield Task(self.redis.hset, GIT_TOKEN, str(self.current_user['id']), token)
             url = self.get_argument('redirect_url')

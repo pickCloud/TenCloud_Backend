@@ -35,11 +35,11 @@ class MessageHandler(BaseHandler):
         with catch(self):
             params = {'owner': self.current_user['id']}
 
-            if self.get_argument('page', None):
-                params['page'] = int(self.get_argument('page'))
+            if self.params.get('page'):
+                params['page'] = int(self.params['page'])
 
-            if self.get_argument('mode', None):
-                params['mode'] = int(self.get_argument('mode'))
+            if self.params.get('mode'):
+                params['mode'] = int(self.params['mode'])
 
             if status:
                 params['status'] = int(status)

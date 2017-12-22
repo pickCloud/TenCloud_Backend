@@ -68,7 +68,7 @@ class PermissionTemplateListHandler(BaseHandler):
         """
         with catch(self):
             cid = int(cid)
-            data = yield self.permission_template_service.select(conds=['cid=%s'], params=[cid])
+            data = yield self.permission_template_service.select({'cid': cid})
             self.success(data)
 
 
@@ -123,7 +123,7 @@ class PermissionTemplateHandler(BaseHandler):
 
             yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
 
-            yield self.permission_template_service.delete(conds=['id=%s'], params=[ptid])
+            yield self.permission_template_service.delete({'id': ptid})
             self.success()
 
     @is_login
@@ -150,21 +150,16 @@ class PermissionTemplateHandler(BaseHandler):
             yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
 
             ptid = int(ptid)
-            permissions = self.params['permissions']
-            access_servers = self.params['access_servers']
-            access_projects = self.params['access_projects']
-            access_filehub = self.params['access_filehub']
 
-            sets = [
-                'permissions=%s',
-                'access_servers=%s', 'access_projects=%s',
-                'access_filehub=%s'
-            ]
-            params = [permissions, access_servers, access_projects, access_filehub, ptid]
-            yield self.permission_template_service.update(sets=sets,
-                                                          conds=['id=%s'],
-                                                          params=params
-                                                          )
+            sets = {
+                'permissions': self.params['permissions'],
+                'access_servers': self.params['access_servers'],
+                'access_projects': self.params['access_projects'],
+                'access_filehub': self.params['access_filehub']
+            }
+            conds = {'id': ptid}
+            yield self.permission_template_service.update(sets=sets, conds=conds)
+
             self.success()
 
 
@@ -227,11 +222,8 @@ class PermissionTemplateRenameHandler(BaseHandler):
             yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
 
             name, ptid = self.params['name'], int(ptid)
-            yield self.permission_template_service.update(
-                                                        sets=['name=%s'],
-                                                        conds=['id=%s'],
-                                                        params=[name, ptid]
-            )
+            yield self.permission_template_service.update(sets={'name': name}, conds={'id': ptid})
+
             self.success()
 
 

@@ -21,7 +21,7 @@ from urllib.parse import urlencode
 from utils.db import DB, REDIS, SYNC_DB
 from utils.log import LOG
 from utils.ssh import SSH
-from utils.general import get_formats, choose_user_agent
+from utils.general import get_formats, get_in_formats, choose_user_agent
 from constant import FULL_DATE_FORMAT, FULL_DATE_FORMAT_ESCAPE, POOL_COUNT, HTTP_TIMEOUT, ALIYUN_DOMAIN
 
 
@@ -38,11 +38,10 @@ class BaseService():
     # DB SELECT
     ############################################################################################
     @coroutine
-    def select(self, fields=None, conds=None, params=None, ct=True, ut=True, df=None, one=False, extra=''):
+    def select(self, conds=None, fields=None, ct=True, ut=True, df=None, one=False, extra=''):
         '''
         :param fields 字段名, str类型, 默认为类变量fields, 可传'id, name, ...'
-        :param conds  条件, list类型, 可传['id=%s', 'name=%s']
-        :param params 条件值, list类型, 对应conds, 可传[1, 'foo']
+        :param conds  条件, dict类型, 可传{'name': 'foo'} or {'age': [10, 20]}
         :param ct     是否获取创建时间, True/False
         :param ut     是否获取更新时间, True/False
         :param df     创建时间/更新时间的字符串格式, 可传'%Y-%m-%d %H:%M:%S'
@@ -50,10 +49,12 @@ class BaseService():
         :param extra   额外
 
         Usage::
-            >>> self.select(conds=['id=%s'], params=[1], ct=False)
+            >>> self.select(conds={'id': 1}, ct=False)
 
         :return: [{'id': 1, ...}, ...]
         '''
+        conds, params = self.make_pair(conds)
+
         sql_params = self._create_query(fields=fields, conds=conds, params=params, ct=ct, ut=ut, df=df, extra=extra)
         cur = yield self.db.execute(*sql_params)
 
@@ -119,31 +120,32 @@ class BaseService():
     # DB UPDATE
     ############################################################################################
     @coroutine
-    def update(self, sets=None, conds=None, params=None):
+    def update(self, sets=None, conds=None):
         '''
-        :param sets:   list e.g. ['name=%s', 'description=%s']
-        :param conds:  list e.g. ['id in (%s, %s)']
-        :param params: list e.g. ['foo', 'boo', 1, 2]
-        :return:
+        :param sets:   dict e.g. {'name': 'foo', 'description': 'boo'}
+        :param conds:  dict 同select
         '''
+        sets, s_params = self.make_pair(sets)
+        conds, c_params = self.make_pair(conds)
+
         sql = "UPDATE {table} SET ".format(table=self.table)
 
         sql += ','.join(sets)
 
         sql += ' WHERE ' + ' AND '.join(conds)
 
-        yield self.db.execute(sql, params)
+        yield self.db.execute(sql, s_params + c_params)
 
     ############################################################################################
     # DB DELETE
     ############################################################################################
     @coroutine
-    def delete(self, conds=None, params=None):
+    def delete(self, conds=None):
         '''
-        :param conds:  list 同select 必需的
-        :param params: list 同select 必需的
-        :return:
+        :param conds:  dict 同select 必需的
         '''
+        conds, params = self.make_pair(conds)
+
         sql = " DELETE FROM {table} ".format(table=self.table)
 
         sql += ' WHERE ' + ' AND '.join(conds)
@@ -153,12 +155,24 @@ class BaseService():
     ############################################################################################
     # DB SQL TOOLS
     ############################################################################################
-    def make_pair(self, args):
+    def make_pair(self, args=None):
         ''' 根据args生成conds, params
-        :param args: {'name': 'foo', 'status': 1}
-        :return ['name=%s', 'status=%s'], ['foo', 1]
+        :param args: {'name': 'foo', 'age': [20, 30]}
+        :return ['name=%s', 'status in (%s, %s)'], ['foo', 20, 30]
         '''
-        return [k + '=%s' for k in args.keys()], list(args.values())
+        if args is None: args = {}
+
+        conds, params = [], []
+
+        for k, v in args.items():
+            if isinstance(v, list):
+                conds.append(get_in_formats(k, v))
+                params.extend(v)
+            else:
+                conds.append(k + '=%s')
+                params.append(v)
+
+        return conds, params
 
     ############################################################################################
     # HTTP GET

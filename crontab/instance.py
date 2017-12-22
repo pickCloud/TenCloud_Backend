@@ -1,6 +1,6 @@
 __author__ = 'Jon'
 
-'''获取阿里云的实例,并更新数据库
+'''获取各种云的实例,并更新数据库
 '''
 import sys
 import argparse
