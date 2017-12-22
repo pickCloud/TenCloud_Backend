@@ -21,8 +21,8 @@ from urllib.parse import urlencode
 from utils.db import DB, REDIS, SYNC_DB
 from utils.log import LOG
 from utils.ssh import SSH
-from utils.general import get_formats, get_in_formats, choose_user_agent
-from constant import FULL_DATE_FORMAT, FULL_DATE_FORMAT_ESCAPE, POOL_COUNT, HTTP_TIMEOUT, ALIYUN_DOMAIN
+from utils.general import get_formats, get_in_formats, get_not_in_formats, choose_user_agent
+from constant import FULL_DATE_FORMAT, FULL_DATE_FORMAT_ESCAPE, POOL_COUNT, HTTP_TIMEOUT, ALIYUN_DOMAIN, NEG
 
 
 class BaseService():
@@ -41,7 +41,7 @@ class BaseService():
     def select(self, conds=None, fields=None, ct=True, ut=True, df=None, one=False, extra=''):
         '''
         :param fields 字段名, str类型, 默认为类变量fields, 可传'id, name, ...'
-        :param conds  条件, dict类型, 可传{'name': 'foo'} or {'age': [10, 20]}
+        :param conds  条件, dict类型, 可传{'name': 'foo'}/{'name~': 'foo'} or {'age': [10, 20]}/{'age~': [10, 20]}
         :param ct     是否获取创建时间, True/False
         :param ut     是否获取更新时间, True/False
         :param df     创建时间/更新时间的字符串格式, 可传'%Y-%m-%d %H:%M:%S'
@@ -155,6 +155,16 @@ class BaseService():
     ############################################################################################
     # DB SQL TOOLS
     ############################################################################################
+    def _has_neg(self, s):
+        ''' 如果s尾部有NEG，则去掉, 并且返回True
+        :param s: name or name~
+        :return: False, name or True name
+        '''
+        if s[-1] == NEG:
+            return True, s[:-1]
+
+        return False, s
+
     def make_pair(self, args=None):
         ''' 根据args生成conds, params
         :param args: {'name': 'foo', 'age': [20, 30]}
@@ -166,10 +176,14 @@ class BaseService():
 
         for k, v in args.items():
             if isinstance(v, list):
-                conds.append(get_in_formats(k, v))
+                flag, k = self._has_neg(k)
+                c = get_not_in_formats(k) if flag else get_in_formats(v)
+                conds.append(c)
                 params.extend(v)
             else:
-                conds.append(k + '=%s')
+                flag, k = self._has_neg(k)
+                c = k + '!=%s' if flag else k + '=%s'
+                conds.append(c)
                 params.append(v)
 
         return conds, params
