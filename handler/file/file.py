@@ -112,7 +112,7 @@ class FileInfoHandler(BaseHandler):
             }
         """
         with catch(self):
-            data = yield self.file_service.select(conds=['id=%s'], params=[file_id], one=True)
+            data = yield self.file_service.select({'id': int(file_id)}, one=True)
             self.success(data)
 
 
@@ -264,7 +264,7 @@ class FileDirCreateHandler(BaseHandler):
                 'hash': '',
             }
             data = yield self.file_service.add(arg)
-            resp = yield self.file_service.select(conds=['id=%s'], params=[data['id']])
+            resp = yield self.file_service.select(conds={'id': data['id']})
             self.success(resp)
 
 

@@ -195,11 +195,8 @@ class PermissionTemplateRenameHandler(BaseHandler):
             yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
 
             name, pt_id = self.params['name'], int(pt_id)
-            yield self.permission_template_service.update(
-                                                        sets=['name=%s'],
-                                                        conds=['id=%s'],
-                                                        params=[name, pt_id]
-            )
+            yield self.permission_template_service.update(sets={'name': name}, conds={'id': pt_id})
+
             self.success()
 
 
@@ -232,23 +229,15 @@ class PermissionTemplateUpdateHandler(BaseHandler):
 
             pt_id = int(pt_id)
 
-            permissions = self.params['permissions']
-            access_servers = self.params['access_servers']
-            access_projects = self.params['access_projects']
-            access_filehub = self.params['access_filehub']
+            sets = {
+                'name': self.params['name'],
+                'permissions': self.params['permissions'],
+                'access_servers': self.params['access_servers'],
+                'access_projects': self.params['access_projects'],
+                'access_filehub': self.params['access_filehub']
+            }
+            yield self.permission_template_service.update(sets=sets, conds={'id': pt_id})
 
-            sets = [
-                'name=%s',
-                'permissions=%s',
-                'access_servers=%s',
-                'access_projects=%s',
-                'access_filehub=%s'
-            ]
-            params = [self.params['name'], permissions, access_servers, access_projects, access_filehub, pt_id]
-            yield self.permission_template_service.update(sets=sets,
-                                                          conds=['id=%s'],
-                                                          params=params
-                                                          )
             self.success()
 
 
