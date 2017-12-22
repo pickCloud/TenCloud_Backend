@@ -25,6 +25,15 @@ def get_in_formats(field, contents):
     '''
     return '{field} in ({formats})'.format(field=field, formats=get_formats(contents))
 
+def get_not_in_formats(field, contents):
+    '''
+    :param field: e.g. id
+    :param contents: e.g. [1, 2, 3]
+    :return: 'id not in (%s, %s, %s)'
+    '''
+    return '{field} not in ({formats})'.format(field=field, formats=get_formats(contents))
+
+
 def _validate(regex, value, err_msg):
     pattern = re.compile(regex)
 

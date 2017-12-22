@@ -357,6 +357,7 @@ QINIU_POLICY = {
     "persistentPipeline": ""
 }
 QINIU_THUMB = 'imageView2/1/w/50/h/50/format/webp/q/75|imageslim'
+NEG = '~'
 
 
 #################################################################################################
