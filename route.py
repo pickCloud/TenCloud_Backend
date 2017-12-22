@@ -4,7 +4,7 @@ __author__ = 'Jon'
 项目路由文件
 '''
 
-from handler.cluster.cluster import ClusterHandler, ClusterDetailHandler
+from handler.cluster.cluster import ClusterHandler, ClusterDetailHandler, ClusterAllProviders, ClusterSearchHandler
 from handler.permission.permission import PermissionTemplateListHandler, PermissionTemplateHandler, \
     PermissionTemplateRenameHandler, PermissionUserDetailHandler, PermissionUserUpdateHandler, \
     PermissionTemplateAddHandler, PermissionResourcesHandler, PermissionTemplateDelHandler, \
