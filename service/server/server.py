@@ -121,7 +121,24 @@ class ServerService(BaseService):
         yield self.db.execute(sql, [params['name'], params['id']])
 
     @coroutine
-    def get_brief_list(self, cluster_id):
+    def get_brief_list(self, **cond):
+        arg = [cond['cluster_id']]
+        extra = ''
+        if cond.get('provider') and cond.get('region'):
+            extra = 'WHERE {provider} AND {region}'.format(
+                                                            provider=get_in_formats(field='i.provider', contents=cond['provider']),
+                                                            region=get_in_formats(field='i.region_name', contents=cond['region'])
+            )
+            arg.extend(cond['provider'])
+            arg.extend(cond['region'])
+            # arg.extend([cond['provider'], cond['region']])
+        elif cond.get('provider') and (not cond.get('region')):
+            extra = 'WHERE {provider}'.format(provider=get_in_formats(field='i.provider', contents=cond['provider']))
+            arg.extend(cond['provider'])
+        elif cond.get('region') and (not cond.get('provider')):
+            extra = 'WHERE {region}'.format(region=get_in_formats(field='i.region_name', contents=cond['region']))
+            arg.extend(cond['region'])
+        self.log.info(arg)
         ''' 集群详情中获取主机列表
         '''
         sql = """
@@ -150,11 +167,18 @@ class ServerService(BaseService):
                 LEFT JOIN net AS n ON ss.public_ip = n.public_ip AND ss.report_time = n.created_time
                 LEFT JOIN memory AS m ON ss.public_ip = m.public_ip AND ss.report_time = m.created_time
             ) sss
-            LEFT JOIN instance AS i ON sss.public_ip = i.public_ip
+            LEFT JOIN instance AS i ON sss.instance_id = i.instance_id
+            """+"""
+            {where}
             ORDER BY i.provider
-        """
-        cur = yield self.db.execute(sql, cluster_id)
+            """.format(where=extra)
+        cur = yield self.db.execute(sql, arg)
         data = cur.fetchall()
+        for k in data:
+            k['net_content'] = json.loads(k['net_content'])
+            k['cpu_content'] = json.loads(k['cpu_content'])
+            k['memory_content'] = json.loads(k['memory_content'])
+            k['disk_content'] = json.loads(k['disk_content'])
         return data
 
     @coroutine
@@ -204,7 +228,12 @@ class ServerService(BaseService):
               """.format(table=table, ids=ids)
         cur = yield self.db.execute(sql, choose_id)
 
-        data = [[x['created_time'], json.loads(x['content'])] for x in cur.fetchall()]
+        data = []
+        for x in cur.fetchall():
+            created_time = {'created_time': x['created_time']}
+            content = json.loads(x['content'])
+            content.update(created_time)
+            data.append(content)
         return data
 
     @coroutine
@@ -456,12 +485,31 @@ class ServerService(BaseService):
         }
         for x in cur.fetchall():
             content = json.loads(x['content'])
-            data['cpu'].append([x['created_time'], {'percent':content['cpu']}])
-            data['memory'].append([x['created_time'], {'percent':content['mem_percent']}])
-            data['net'].append([x['created_time'], {'input': content['net_input'],
-                                                'output': content['net_output']}])
-            data['block'].append([x['created_time'], {'input': content['block_input'],
-                                                'output': content['block_output']}])
+            cpu = {
+                    'percent': content['cpu'],
+                    'created_time': x['created_time'],
+                }
+            data['cpu'].append(cpu)
+
+            memory = {
+                    'percent': content['mem_percent'],
+                    'created_time': x['created_time'],
+                }
+            data['memory'].append(memory)
+
+            net = {
+                    'input': content['net_input'],
+                    'output': content['net_output'],
+                    'created_time': x['created_time'],
+            }
+            data['net'].append(net)
+
+            block = {
+                    'input': content['block_input'],
+                    'output': content['block_output'],
+                    'created_time': x['created_time'],
+            }
+            data['block'].append(block)
 
         return data
 

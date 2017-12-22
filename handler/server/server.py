@@ -9,7 +9,7 @@ from tornado.websocket import WebSocketHandler
 from tornado.gen import coroutine, Task
 from tornado.ioloop import PeriodicCallback, IOLoop
 from handler.base import BaseHandler
-from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG
+from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG, ERR_TIP
 from utils.general import validate_ip
 from utils.security import Aes
 from utils.decorator import is_login
@@ -291,19 +291,19 @@ class ServerPerformanceHandler(BaseHandler):
                 "msg": "success",
                 "data": {
                     "cpu": [
-                        [1496390702, {"percent": int}],
+                        {"timestamp": str, "percent": int},
                         ...
                     ],
                     "memory": [
-                        [1496390702, {"total": int, "available": int, "free": int, "percent": int}],
+                        {"timestamp": str, "total": int, "available": int, "free": int, "percent": int},
                         ...
                     ],
                     "disk": [
-                        [1496390702, {"total": int, "free": int, "percent": int}],
+                        {"timestamp": str, "total": int, "free": int, "percent": int},
                         ...
                     ],
                     "net": [
-                        [1496390702, {"input": int, "output": int}]
+                        {"timestamp":str, "input": int, "output": int},
                         ...
                     ]
                 }
@@ -338,9 +338,13 @@ class ServerUpdateHandler(BaseHandler):
                 'operation_status': OPERATE_STATUS['fail'],
             })
 
-            old_name = yield self.server_service.select(fields='name', conds={'id': self.params['id']}, one=True)
-            if old_name['name'] == self.params['name']:
-                self.error("name has existed")
+            old_name = yield self.server_service.select(fields='id,name', ut=False, ct=False)
+            old_name = [i['name'] for i in old_name if i['id'] != self.params['id']]
+            if self.params['name'] in old_name:
+                self.error(
+                    status=ERR_TIP['server_name_repeat']['sts'],
+                    message=ERR_TIP['server_name_repeat']['msg']
+                )
                 return
 
             yield self.server_service.update_server(self.params)
@@ -467,7 +471,7 @@ class ServerStatusHandler(BaseHandler):
 
 
 class ServerContainerPerformanceHandler(BaseHandler):
-    # @is_login
+    @is_login
     @coroutine
     def post(self):
         """
@@ -678,7 +682,7 @@ class OperationLogHandler(BaseHandler):
     @coroutine
     def post(self):
         """
-        @api {get} /api/log/operation 操作记录
+        @api {post} /api/log/operation 操作记录
         @apiName OperationHandler
         @apiGroup Server
 

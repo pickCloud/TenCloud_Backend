@@ -121,6 +121,8 @@ class BaseHandler(tornado.web.RequestHandler):
             self.log.error('Invalid token: {}'.format(auth_token))
             return ''
 
+
+
     @coroutine
     def _with_token(self):
         token = self.request.headers.get('Authorization')

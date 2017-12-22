@@ -1,9 +1,11 @@
 __author__ = 'Jon'
 
 import traceback
+import json
 
-from tornado.gen import coroutine
+from tornado.gen import coroutine, Task
 from handler.base import BaseHandler
+from constant import CLUSTER_SEARCH_TIMEOUT
 from utils.general import get_in_formats
 from utils.decorator import is_login
 from utils.context import catch
@@ -79,7 +81,7 @@ class ClusterDetailHandler(BaseHandler):
             id = int(id)
 
             basic_info = yield self.cluster_service.select({'id': id}, ct=False)
-            server_list = yield self.server_service.get_brief_list(id)
+            server_list = yield self.server_service.get_brief_list(cluster_id=id)
 
             self.success({
                 'basic_info': basic_info,
@@ -87,16 +89,84 @@ class ClusterDetailHandler(BaseHandler):
             })
 
 
+class ClusterAllProviders(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self, cluster_id):
+        """
+        @api {get} /api/cluster/(\d+)/providers 获取该集群下所有提供商
+        @apiName ClusterAllProviders
+        @apiGroup Cluster
+
+        @apiParam {Number} cluster_id
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "message": "success",
+                "data": [
+                    {"provider": str,"regions": []str}
+                    ...
+                ]
+            }
+        """
+        with catch(self):
+            cluster_id = int(cluster_id)
+            data = yield self.cluster_service.get_all_providers(cluster_id)
+            self.success(data)
+
+
 class ClusterSearchHandler(BaseHandler):
     @is_login
     @coroutine
     def post(self):
         """
-        @api {post} /api/cluster/search 集群名称
+        @api {post} /api/cluster/search 服务器搜索
         @apiName ClusterSearchHandler
         @apiGroup Cluster
 
         @apiParam {Number} cluster_id
-        :return:
+        @apiParam {String} server_name
+        @apiParam {[]String} region_name
+        @apiParam {[]String} provider_name
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "message": "success",
+                "data": [
+                    {}
+                    ...
+                ]
+            }
         """
-        pass
+        with catch(self):
+            cluster_id = self.params['cluster_id']
+            region_name = self.params.get('region_name', [])
+            provider_name = self.params.get('provider_name', [])
+            server_name = self.params.get('server_name', '')
+
+            if not(server_name or provider_name or region_name):
+                key = 'cluster_{id}'.format(id=str(cluster_id))
+                data = yield Task(self.redis.get, key)
+                if not data:
+                    data = yield self.server_service.get_brief_list(
+                        cluster_id=cluster_id,
+                        provider=provider_name,
+                        region=region_name
+                    )
+                    data = json.dumps(data)
+                    yield Task(self.redis.setex, key, CLUSTER_SEARCH_TIMEOUT, data)
+                self.success(json.loads(data))
+                return
+
+            data = yield self.server_service.get_brief_list(
+                                                            cluster_id=cluster_id,
+                                                            provider=provider_name,
+                                                            region=region_name
+                                                            )
+            if server_name:
+                data = yield self.cluster_service.select_by_name(data=data, server_name=server_name)
+            self.success(data)

@@ -5,13 +5,13 @@ from tornado.gen import coroutine
 from service.base import BaseService
 from constant import  PERMISSIONS
 
+
 class PermissionBaseService(BaseService):
 
     @coroutine
     def merge_servers(self, data):
 
         """
-
         :param [
                   {"a":{"b":[1,2]}},
                   {"a":{"b":[3,4]}},
@@ -27,6 +27,9 @@ class PermissionBaseService(BaseService):
                         }
                     }
         """
+        if len(data) == 0:
+            return
+
         res = list()
         result = defaultdict(dict)
 
@@ -56,6 +59,9 @@ class PermissionBaseService(BaseService):
 
     @coroutine
     def merge_permissions(self, data):
+        if len(data) == 0:
+            return
+
         res = list()
         result = dict()
         for column in data:

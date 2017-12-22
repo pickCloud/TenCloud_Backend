@@ -34,6 +34,7 @@ class CompanyHandler(BaseHandler):
                 self.error("arg error, check again")
                 return
 
+
             params = {
                 'uid': self.current_user['id'],
                 'is_pass': is_pass
@@ -140,14 +141,18 @@ class CompanyUpdateHandler(BaseHandler):
             yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
 
             # 公司名字是否存在
-            company_info = yield self.company_service.select({'name': self.params['name']}, one=True)
-            if company_info:
+            data = yield self.company_service.select(fields='id, name', ut=False, ct=False)
+            names = [i['name'] for i in data if i['id'] != self.params['cid']]
+            if self.params['name'] in names:
                 err_key = 'company_name_repeat'
                 self.error(status=ERR_TIP[err_key]['sts'], message=ERR_TIP[err_key]['msg'])
                 return
 
             # 更新数据
-            old = yield self.company_service.select(fields='name', conds={'id': self.params['cid']}, one=True)
+            old = {}
+            for i in data:
+                if i['id'] == self.params['cid']:
+                    old = i
 
             yield self.company_service.update(sets={'name': self.params['name'], 'contact': self.params['contact'], 'mobile': self.params['mobile']},
                                               conds={'id': self.params['cid']},

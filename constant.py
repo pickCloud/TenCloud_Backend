@@ -27,9 +27,10 @@ SMS_FREQUENCE_LOCK_TIMEOUT = 60 # 一分钟
 SMS_SENT_COUNT = 'sms_sent_count_{mobile}'
 SMS_SENT_COUNT_LIMIT = 10
 SMS_NEED_GEETEST_COUNT = 3
-SMS_SENT_COUNT_LIMIT_TIMEOUT = 86400 # 一天
+SMS_SENT_COUNT_LIMIT_TIMEOUT = 86400 # 一天， 也是验证码锁定次数超时
 SESSION_KEY = 'session_{user_id}'
 GIT_TOKEN = 'git_token'
+CLUSTER_SEARCH_TIMEOUT = 60 # 集群搜索结果缓存超时
 LOGOUT_CID = 'logout_cid'  # 记住退出时的状态，个人或是公司，方便下次登陆
 COMPANY_PERMISSION = 'company_permissons'
 USER_PERMISSION = 'cid_{cid}:uid_{uid}'
@@ -40,7 +41,8 @@ PERMISSIONS_FLAG = 1
 #################################################################################################
 ERR_TIP = {
     # 注册与登陆
-    'no_registered':     {'sts': 10404, 'msg': '你的账户还未注册，请先注册账户。'},
+    'no_registered':     {'sts': 10403, 'msg': '账号不存在。'},
+    'no_registered_jump':     {'sts': 10404, 'msg': '你的账户还未注册，请先注册账户。'},
     'sms_over_three':    {'sts': 10405, 'msg': '该手机号码发送短信超过3次'},
     'sms_over_limit':      {'sts': 10407, 'msg': '每个手机号24小时内仅允许有10次获取短信验证码的机会，请24小时后再尝试'},
     'sms_too_frequency': {'sts': 10408, 'msg': '一分钟内一个手机只能发送一次'},
@@ -54,7 +56,10 @@ ERR_TIP = {
     # 公司
     'company_exists': {'sts': 10000, 'msg': '已存在公司'},
     'is_employee':    {'sts': 10001, 'msg': '已是公司员工'},
-    'company_name_repeat': {'sts': 10002, 'msg': '公司名字重复，请重新输入'}
+    'company_name_repeat': {'sts': 10002, 'msg': '公司名字重复，请重新输入'},
+
+    # server
+    'server_name_repeat': {'sts': 10501, 'msg': '名称不能重复'}
 }
 
 #################################################################################################

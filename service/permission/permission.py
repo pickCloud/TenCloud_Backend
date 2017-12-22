@@ -1,15 +1,15 @@
 from tornado.gen import coroutine
 
 from service.permission.permission_base import PermissionBaseService
+from constant import PT_FORMAT
 
 class PermissionService(PermissionBaseService):
     table = 'permission'
     fields = 'id, name, group'
 
     @coroutine
-    def get_user_permission(self, cid,uid):
-        arg = [uid, cid]
-
+    def get_user_permission(self, params):
+        arg = [params['uid'], params['cid']]
         permission_data = yield self._get_user_permission(
                                                     fields='a.id, a.name, `group`',
                                                     table='permission',
@@ -17,8 +17,6 @@ class PermissionService(PermissionBaseService):
                                                     where_table='user_permission',
                                                     params=arg
         )
-        permission_data = yield self.merge_permissions(permission_data)
-
         project_data = yield self._get_user_permission(
                                                     fields='a.id, a.name',
                                                     table='project',
@@ -39,10 +37,22 @@ class PermissionService(PermissionBaseService):
               """
         cur = yield self.db.execute(sql, arg)
         ids = [str(i['sid']) for i in cur.fetchall()]
-        ids = ','.join(ids)
-        server_data = yield self.fetch_instance_info(extra='WHERE s.id in ({ids})'.format(ids=ids))
-        server_data = yield self.merge_servers(server_data)
+        server_data = ''
+        if ids:
+            ids = ','.join(ids)
+            server_data = yield self.fetch_instance_info(extra='WHERE s.id in ({ids})'.format(ids=ids))
 
+        if params['format'] == PT_FORMAT:
+            data = {
+                'permissions': permission_data,
+                'access_servers': server_data,
+                'access_projects': project_data,
+                'access_filehub': filehub_data,
+            }
+            return data
+
+        server_data = yield self.merge_servers(server_data)
+        permission_data = yield self.merge_permissions(permission_data)
         data = [
             {
                 'name': '功能',

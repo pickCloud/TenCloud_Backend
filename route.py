@@ -7,7 +7,8 @@ __author__ = 'Jon'
 from handler.cluster.cluster import ClusterHandler, ClusterDetailHandler
 from handler.permission.permission import PermissionTemplateListHandler, PermissionTemplateHandler, \
     PermissionTemplateRenameHandler, PermissionUserDetailHandler, PermissionUserUpdateHandler, \
-    PermissionTemplateAddHandler, PermissionResourcesHandler
+    PermissionTemplateAddHandler, PermissionResourcesHandler, PermissionTemplateDelHandler, \
+    PermissionTemplateUpdateHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
     ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler, \
@@ -23,7 +24,9 @@ from handler.server.server import ServerNewHandler, ServerReport, ServerMigratio
 from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, \
                               UserUpdateHandler, UserUploadToken, GetCaptchaHandler, \
                               PasswordLoginHandler, UserRegisterHandler, UserResetPasswordHandler, \
-                              UserResetMobileHandler, UserPasswordSetHandler, UserReturnSMSCountHandler
+                              UserResetMobileHandler, UserPasswordSetHandler, UserReturnSMSCountHandler, \
+                              UserSmsSetHandler, UserDeleteHandler
+
 from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
                                 FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
 from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, CompanyEntrySettingHandler, \
@@ -37,6 +40,8 @@ routes = [
     # 集群相关
     (r'/api/clusters', ClusterHandler),
     (r'/api/cluster/(\d+)', ClusterDetailHandler),
+    (r'/api/cluster/(\d+)/providers', ClusterAllProviders),
+    (r'/api/cluster/search', ClusterSearchHandler),
 
     # 主机相关
     (r'/api/server/new', ServerNewHandler),
@@ -91,6 +96,11 @@ routes = [
     (r'/api/user/login/password', PasswordLoginHandler),
     (r'/api/user/logout', UserLogoutHandler),
     (r'/api/user/sms', UserSMSHandler),
+
+    # 测试用
+    (r'/api/tmp/user/sms/count/(\d+)', UserSmsSetHandler), # 设置短信验证次数
+    (r'/api/tmp/user/delete', UserDeleteHandler), # 删除用户
+
     (r'/api/user/sms/(\d+)/count', UserReturnSMSCountHandler),
     (r'/api/user/token', UserUploadToken),
     (r'/api/user/captcha', GetCaptchaHandler),
@@ -100,11 +110,13 @@ routes = [
     # (r'/api/user/mobile/reset', UserResetMobileHandler),
 
     (r'/api/permission/resource/(\d+)', PermissionResourcesHandler),
-    (r'/api/permission/template/add', PermissionTemplateAddHandler),
     (r'/api/permission/template/list/(\d+)', PermissionTemplateListHandler),
     (r'/api/permission/template/(\d+)/format/(\d+)', PermissionTemplateHandler),
+    (r'/api/permission/template/add', PermissionTemplateAddHandler),
+    (r'/api/permission/template/(\d+)/del', PermissionTemplateDelHandler),
+    (r'/api/permission/template/(\d+)/update', PermissionTemplateUpdateHandler),
     (r'/api/permission/template/(\d+)/rename', PermissionTemplateRenameHandler),
-    (r'/api/permission/(\d+)/user/(\d+)/detail', PermissionUserDetailHandler),
+    (r'/api/permission/(\d+)/user/(\d+)/detail/format/(\d+)', PermissionUserDetailHandler),
     (r'/api/permission/user/update', PermissionUserUpdateHandler),
 
 
