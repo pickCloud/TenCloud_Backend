@@ -464,7 +464,7 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
         @apiUse Success
         """
         with catch(self):
-            data = yield self.company_employee_service.select(conds={'id': self.params['id'], 'is_admin': 1, 'uid': self.current_user['id']})
+            data = yield self.company_employee_service.select({'id': self.params['id'], 'is_admin': 1, 'uid': self.current_user['id']})
 
             if data:
                 self.error('管理员不能解除公司，需要先进行管理员转移')

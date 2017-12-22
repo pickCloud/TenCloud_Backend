@@ -158,7 +158,7 @@ class ProjectDetailHandler(BaseHandler):
             }
         """
         with catch(self):
-            result = yield self.project_service.select(conds={'id': id})
+            result = yield self.project_service.select({'id': id})
 
             self.success(result)
 

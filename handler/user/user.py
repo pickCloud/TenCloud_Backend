@@ -290,7 +290,7 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
 
             yield self.clean()
 
-            user = yield self.user_service.select(conds=['mobile=%s'], params=[mobile], one=True)
+            user = yield self.user_service.select({'mobile': mobile}, one=True)
             result['user'] = user
             if not user['password']:
                 self.error(status=ERR_TIP['no_registered_jump']['sts'], message=ERR_TIP['no_registered_jump']['msg'], data=result)
