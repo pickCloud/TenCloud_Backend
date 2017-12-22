@@ -72,7 +72,7 @@ def require(*pids):
             self.success()
     '''
     def allow(method):
-        @is_login
+        @auth('staff')
         @coroutine
         def wrapper(self, *args, **kwargs):
 
