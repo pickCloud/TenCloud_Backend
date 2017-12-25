@@ -54,6 +54,26 @@ class GetMessageNumHandler(BaseHandler):
     @is_login
     @coroutine
     def get(self):
+        """
+        @api {get} /api/messages/count?status=\d 获取员工消息数目
+        @apiName GetMessageNumHandler
+        @apiGroup Message
+
+        @apiParam {status} 代表需要查询的消息状态 /0未读,  /1已读, 不传递代表查询所有类型的消息
+        @apiDescription
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": [
+                    {
+                        "num" : 0
+                    }
+                ]
+            }
+        """
         with catch(self):
             # 封装参数，用户id直接获取，status通过api参数传入
             params = {'owner': self.current_user['id']}
