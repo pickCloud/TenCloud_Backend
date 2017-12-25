@@ -49,18 +49,18 @@ class MessageHandler(BaseHandler):
             self.success(data)
 
 
-# 获取当前用户未读取的消息数量
-class GetMessageNumHandler(BaseHandler):
+# 获取当前用户的消息数量
+class MessageCountHandler(BaseHandler):
     @is_login
     @coroutine
     def get(self):
         """
-        @api {get} /api/messages/count?status=\d 获取员工消息数目
-        @apiName GetMessageNumHandler
+        @api {get} /api/messages/count 获取员工消息数目
+        @apiName MessageCountHandler
         @apiGroup Message
 
-        @apiParam {status} 代表需要查询的消息状态 /0未读,  /1已读, 不传递代表查询所有类型的消息
-        @apiDescription
+        @apiParam {Number} status 消息状态
+        @apiDescription status代表需要查询的消息状态 /0未读,  /1已读, 不传递代表查询所有类型的消息
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -77,8 +77,8 @@ class GetMessageNumHandler(BaseHandler):
         with catch(self):
             # 封装参数，用户id直接获取，status通过api参数传入
             params = {'owner': self.current_user['id']}
-            if self.get_argument('status', None):
-                params['status'] = int(self.get_argument('status'))
+            if self.params.get('status'):
+                params['status'] = self.params.get('status')
 
             # 调用service层数据库查询接口，取出指定参数对应的数据
             message_data = yield self.message_service.select(params)

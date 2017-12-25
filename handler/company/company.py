@@ -151,7 +151,7 @@ class CompanyUpdateHandler(BaseHandler):
             # 更新数据
             old = {}
             for i in data:
-                if i['id'] == int(self.params['cid']):
+                if i['id'] == self.params['cid']:
                     old = i
 
             yield self.company_service.update(sets={'name': self.params['name'], 'contact': self.params['contact'], 'mobile': self.params['mobile']},
