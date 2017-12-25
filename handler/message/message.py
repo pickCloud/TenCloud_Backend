@@ -47,3 +47,23 @@ class MessageHandler(BaseHandler):
             data = yield self.message_service.fetch(params)
 
             self.success(data)
+
+
+# 获取当前用户未读取的消息数量
+class GetMessageNumHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        with catch(self):
+            # 封装参数，用户id直接获取，status通过api参数传入
+            params = {'owner': self.current_user['id']}
+            if self.get_argument('status', None):
+                params['status'] = int(self.get_argument('status'))
+
+            # 调用service层数据库查询接口，取出指定参数对应的数据
+            message_data = yield self.message_service.select(params)
+
+            data = {
+                'num': len(message_data)
+            }
+            self.success(data)
