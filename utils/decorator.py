@@ -79,7 +79,11 @@ def require(*pids):
             try:
                 cid = find_cid(self, args)
 
-                yield self.user_permission_service.check_permission({'cid': cid, 'uid': self.current_user['id'], 'pids': pids})
+                # 管理员不需要检查
+                try:
+                    yield self.company_employee_service.check_admin(cid, self.current_user['id'])
+                except ValueError:
+                    yield self.user_permission_service.check_permission({'cid': cid, 'uid': self.current_user['id'], 'pids': pids})
             except Exception as e:
                 self.error(str(e))
                 return
