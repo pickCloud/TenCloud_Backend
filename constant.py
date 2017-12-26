@@ -455,9 +455,10 @@ APPLICATION_STATUS = {
 }
 MSG = {
     'application': {
-        'admin': '【{name}】【{mobile}】审核加入【{company_name}】，请及时审核 ',
-        'accept': '【{admin_name}】审核通过了了你加入【{company_name}】的申请，你可以进入企业了',
-        'reject': '【{admin_name}】拒绝了你加入【{company_name}】的申请，你可以核对信息后重新提交申请'
+        'admin': '【{name}】【{mobile}】申请加入【{company_name}】，请及时审核 ',
+        'accept': '【{admin_name}】审核通过了你加入【{company_name}】的申请，你可以进入企业了',
+        'reject': '【{admin_name}】拒绝了你加入【{company_name}】的申请，你可以核对信息后重新提交申请',
+        'demission': '【{name}】【{mobile}】离开了【{company_name}】'
     },
     'change': '你的企业【{company_name}】被管理员 【{admin_name}】修改了资料'
 }

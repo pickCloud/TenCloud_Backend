@@ -468,10 +468,30 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
                 self.error('管理员不能解除公司，需要先进行管理员转移')
                 return
 
+            #将此员工解除公司的消息通知给管理员
+            yield self.notify_demission()
+
             yield self.company_employee_service.delete(conds={'id': self.params['id'], 'uid': self.current_user['id']})
 
             self.success(data)
 
+    @coroutine
+    def notify_demission(self):
+        # 获取公司员工信息
+        app_info = yield self.company_employee_service.get_app_info(self.params['id'])
+
+        # 获取管理员列表
+        cid = app_info['cid']
+        admin_info = yield self.company_employee_service.select(fields='uid', conds={'cid': cid, 'is_admin': 1})
+
+        content = MSG['application']['demission'].format(name=self.current_user['name'], mobile=self.current_user['mobile'], company_name=app_info['company_name'])
+        for info in admin_info:
+            yield self.message_service.add({
+                'owner': info['uid'],
+                'content': content,
+                'mode': MSG_MODE['application'],
+                'sub_mode': MSG_SUB_MODE['change'],
+                'tip': '{}:{}'.format(app_info.get('cid', ''), app_info.get('code', ''))})
 
 class CompanyAdminTransferHandler(BaseHandler):
     @is_login
