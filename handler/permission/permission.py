@@ -13,7 +13,7 @@ class PermissionResourcesHandler(BaseHandler):
     @coroutine
     def get(self, cid):
         """
-        @api {get} /api/permission/resource/(\d+)
+        @api {get} /api/permission/resource/(\d+) 权限模版资源
         @apiName PermissionResourcesHandler
         @apiGroup Permission
 

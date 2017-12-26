@@ -54,8 +54,8 @@ ERR_TIP = {
     'auth_code_timeout':   {'sts': 10414, 'msg': '短信验证码已过期，请重新获取'},
 
     # 公司
-    'company_exists': {'sts': 10000, 'msg': '已存在公司'},
-    'is_employee':    {'sts': 10001, 'msg': '已是公司员工'},
+    'company_exists': {'sts': 10000, 'msg': '企业已存在，可以让管理员邀请加入。'},
+    'is_employee':    {'sts': 10001, 'msg': '已是企业员工，无需重复添加企业。'},
     'company_name_repeat': {'sts': 10002, 'msg': '公司名字重复，请重新输入'},
 
     # server
