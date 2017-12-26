@@ -32,7 +32,7 @@ class ClusterHandler(BaseHandler):
             }
         """
         with catch(self):
-            result = yield self.cluster_service.select({'id~': 1})
+            result = yield self.cluster_service.select({'id': 1})
 
             self.success(result)
 

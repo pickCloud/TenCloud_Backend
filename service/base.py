@@ -177,7 +177,7 @@ class BaseService():
         for k, v in args.items():
             if isinstance(v, list):
                 flag, k = self._has_neg(k)
-                c = get_not_in_formats(k) if flag else get_in_formats(v)
+                c = get_not_in_formats(k, v) if flag else get_in_formats(k, v)
                 conds.append(c)
                 params.extend(v)
             else:
