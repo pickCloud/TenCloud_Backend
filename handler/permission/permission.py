@@ -3,9 +3,9 @@ import traceback
 from tornado.gen import coroutine, Task
 
 from handler.base import BaseHandler
-from utils.decorator import is_login
+from utils.decorator import is_login, require
 from utils.context import catch
-from constant import COMPANY_PERMISSION, USER_PERMISSION, PERMISSIONS_FLAG
+from constant import COMPANY_PERMISSION, USER_PERMISSION, PERMISSIONS_FLAG, PERMISSIONS_TO_CODE
 
 
 class PermissionResourcesHandler(BaseHandler):
@@ -13,7 +13,7 @@ class PermissionResourcesHandler(BaseHandler):
     @coroutine
     def get(self, cid):
         """
-        @api {get} /api/permission/resource/(\d+)
+        @api {get} /api/permission/resource/(\d+) 获取所有模版资源
         @apiName PermissionResourcesHandler
         @apiGroup Permission
 
@@ -106,6 +106,7 @@ class PermissionTemplateHandler(BaseHandler):
 
 class PermissionTemplateAddHandler(BaseHandler):
     @is_login
+    @require(PERMISSIONS_TO_CODE['add_permission_template'])
     @coroutine
     def post(self):
         """
@@ -174,6 +175,7 @@ class PermissionTemplateDelHandler(BaseHandler):
 
 class PermissionTemplateRenameHandler(BaseHandler):
     @is_login
+    @require(PERMISSIONS_TO_CODE['rename_permission_template'])
     @coroutine
     def post(self, pt_id):
         """
@@ -202,6 +204,7 @@ class PermissionTemplateRenameHandler(BaseHandler):
 
 class PermissionTemplateUpdateHandler(BaseHandler):
     @is_login
+    @require(PERMISSIONS_TO_CODE['modify_permission_template'])
     @coroutine
     def put(self, pt_id):
         """
@@ -305,6 +308,7 @@ class PermissionUserUpdateHandler(BaseHandler):
         return arg
 
     @is_login
+    @require(PERMISSIONS_TO_CODE['set_employee_permission'])
     @coroutine
     def post(self):
         """
