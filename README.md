@@ -436,6 +436,7 @@ CREATE TABLE `permission_template` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
+alter table `premission_template` add column type tinyint(4) not null default 0 COMMENT '权限模版类型，0:预设,1:新增'
 
 * 权限表
 ```

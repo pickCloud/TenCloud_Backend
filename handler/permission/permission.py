@@ -5,7 +5,8 @@ from tornado.gen import coroutine, Task
 from handler.base import BaseHandler
 from utils.decorator import is_login, require
 from utils.context import catch
-from constant import COMPANY_PERMISSION, USER_PERMISSION, PERMISSIONS_FLAG, PERMISSIONS_TO_CODE
+from constant import COMPANY_PERMISSION, USER_PERMISSION, PERMISSIONS_FLAG, PERMISSIONS_TO_CODE, \
+    PERMISSIONS_TEMPLATE_TYPE, ERR_TIP
 
 
 class PermissionResourcesHandler(BaseHandler):
@@ -129,8 +130,6 @@ class PermissionTemplateAddHandler(BaseHandler):
             args = ['cid','name']
             self.guarantee(*args)
 
-            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
-
             params = {
                 'name': self.params['name'],
                 'cid': self.params['cid'],
@@ -145,9 +144,9 @@ class PermissionTemplateAddHandler(BaseHandler):
             self.success()
 
 
-
 class PermissionTemplateDelHandler(BaseHandler):
     @is_login
+    @require(PERMISSIONS_TO_CODE['delete_permission_template'])
     @coroutine
     def post(self, pt_id):
         """
@@ -165,17 +164,20 @@ class PermissionTemplateDelHandler(BaseHandler):
             args = ['cid']
             self.guarantee(*args)
             pt_id = int(pt_id)
-            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
+
+            pt_info = yield self.permission_template_service.select({'id': pt_id})
+            if pt_info['type'] == PERMISSIONS_TEMPLATE_TYPE['default']:
+                err_key = 'permission_template_cannot_operate'
+                self.error(status=ERR_TIP[err_key]['sts'], message=ERR_TIP[err_key]['msg'])
+                return
 
             yield self.permission_template_service.delete({'id': pt_id})
   
             self.success()
 
 
-
 class PermissionTemplateRenameHandler(BaseHandler):
     @is_login
-    @require(PERMISSIONS_TO_CODE['rename_permission_template'])
     @coroutine
     def post(self, pt_id):
         """
@@ -193,8 +195,6 @@ class PermissionTemplateRenameHandler(BaseHandler):
         with catch(self):
             args = ['name', 'cid']
             self.guarantee(*args)
-
-            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
 
             name, pt_id = self.params['name'], int(pt_id)
             yield self.permission_template_service.update(sets={'name': name}, conds={'id': pt_id})
@@ -228,9 +228,13 @@ class PermissionTemplateUpdateHandler(BaseHandler):
 
             self.guarantee(*args)
 
-            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
-
             pt_id = int(pt_id)
+
+            pt_info = yield self.permission_template_service.select({'id': pt_id})
+            if pt_info['type'] == PERMISSIONS_TEMPLATE_TYPE['default']:
+                err_key = 'permission_template_cannot_operate'
+                self.error(status=ERR_TIP[err_key]['sts'], message=ERR_TIP[err_key]['msg'])
+                return
 
             sets = {
                 'name': self.params['name'],
@@ -328,8 +332,6 @@ class PermissionUserUpdateHandler(BaseHandler):
         with catch(self):
             args = ['uid', 'cid']
             self.guarantee(*args)
-
-            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
 
             access_servers = self.params.get('access_servers', '')
             if access_servers:

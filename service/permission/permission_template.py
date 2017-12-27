@@ -3,10 +3,11 @@ from tornado.gen import coroutine
 from service.permission.permission_base import PermissionBaseService
 from constant import  PT_FORMAT
 
+
 class PermissionTemplateService(PermissionBaseService):
     table = 'permission_template'
     fields = """
-            id, name, cid, permissions, access_servers, access_projects, access_filehub
+            id, name, cid, permissions, access_servers, access_projects, access_filehub， type
             """
 
     @coroutine
@@ -21,10 +22,10 @@ class PermissionTemplateService(PermissionBaseService):
         if not id_data:
             raise ValueError('id不存在')
 
-        permission_data = ''
-        server_data = ''
-        project_data = ''
-        filehub_data = ''
+        permission_data = []
+        server_data = []
+        project_data = []
+        filehub_data = []
 
         if id_data.get('access_projects', ''):
             project_ids = '({ids})'.format(ids=id_data['access_projects'])

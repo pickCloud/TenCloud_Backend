@@ -59,7 +59,10 @@ ERR_TIP = {
     'company_name_repeat': {'sts': 10002, 'msg': '公司名字重复，请重新输入'},
 
     # server
-    'server_name_repeat': {'sts': 10501, 'msg': '名称不能重复'}
+    'server_name_repeat': {'sts': 10501, 'msg': '名称不能重复'},
+
+    # permission template
+    'permission_template_cannot_operate': {'sts': 10601, 'msg': '该模版不可操作'}
 }
 
 #################################################################################################
@@ -483,6 +486,12 @@ MSG_PAGE_NUM = 20
 PERMISSIONS = ["云服务器", "项目", "文件服务", "企业资料", "员工管理", "权限模版管理", "平台管理"]
 PT_FORMAT = 1
 
+# 模版类型
+PERMISSIONS_TEMPLATE_TYPE = {
+    'default': 0,  # 预设
+    'add': 1  # 新增
+}
+
 PERMISSIONS_TO_CODE = {
     'modify_server_info': 33,  # 修改主机信息
     'start_stop_server': 32,  # 开机关机
@@ -514,7 +523,7 @@ PERMISSIONS_TO_CODE = {
     'audit_employee': 23,  # 审核员工
     'view_employee_id_info': 22,  # 查看员工身份证信息
     'modify_permission_template': 28,  # 修改权限模版
-    'rename_permission_template': 29,  # 模版重命名
+    'delete_permission_template': 29,  # 删除权限模版
     'add_permission_template': 5,  # 新增权限模版
     'audit_user_id': 6,  # 个人实名制审核
     'company_issue': 7,  # 用户提起企业异议处理
