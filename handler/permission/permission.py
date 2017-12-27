@@ -120,10 +120,10 @@ class PermissionTemplateAddHandler(BaseHandler):
 
         @apiParam {String} name 名字
         @apiParam {Number} cid 公司id
-        @apiParam {[]Number} permissions 权限列表
-        @apiParam {[]Number} access_servers 服务器列表
-        @apiParam {[]Number} access_projects 项目列表
-        @apiParam {[]Number} access_filehub 文件列表
+        @apiParam {String} permissions 权限列表 如: "1,2,3"
+        @apiParam {String} access_servers 服务器列表 如上
+        @apiParam {String} access_projects 项目列表 如上
+        @apiParam {String} access_filehub 文件列表  如上
 
         @apiUse Success
         """
@@ -135,12 +135,11 @@ class PermissionTemplateAddHandler(BaseHandler):
             sets = {
                 'cid': self.params['cid'],
                 'name': self.params['name'],
-                'permissions': self.params['permissions'] if self.params['permissions'] else '',
-                'access_projects': self.params['access_projects'] if self.params['access_projects'] else '',
-                'access_servers': self.params['access_servers'] if self.params['access_servers'] else '',
-                'access_filehub': self.params['access_filehub'] if self.params['access_filehub'] else ''
+                'permissions': self.params['permissions'],
+                'access_projects': self.params['access_projects'],
+                'access_servers': self.params['access_servers'],
+                'access_filehub': self.params['access_filehub']
             }
-
             yield self.permission_template_service.add(sets)
             
             self.success()
@@ -218,10 +217,10 @@ class PermissionTemplateUpdateHandler(BaseHandler):
         @apiParam {Number} pt_id 权限模版id
         @apiParam {Number} cid 公司id
         @apiParam {String} name 名字
-        @apiParam {[]Number} permissions 权限列表
-        @apiParam {[]Number} access_servers 服务器列表
-        @apiParam {[]Number} access_projects 项目列表
-        @apiParam {[]Number} access_filehub 文件列表
+        @apiParam {String} permissions 权限列表 如: "1,2,3"
+        @apiParam {String} access_servers 服务器列表 如上
+        @apiParam {String} access_projects 项目列表 如上
+        @apiParam {String} access_filehub 文件列表 如上
 
         @apiUse Success
         """
@@ -245,7 +244,7 @@ class PermissionTemplateUpdateHandler(BaseHandler):
                 sets.update({'name':self.params['name']})
 
             if self.params.get('permissions', ''):
-                sets.update({'permission': self.params['permission']})
+                sets.update({'permissions': self.params['permissions']})
 
             if self.params.get('access_servers', ''):
                 sets.update({'access_servers': self.params['access_servers']})
