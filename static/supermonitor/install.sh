@@ -6,6 +6,8 @@ echoerr() {
     echo "$@" 1>&2;
 }
 
+`sudo hostname -b localhost`
+
 DownloadFunc() {
     name=${1}
     url=${2}
