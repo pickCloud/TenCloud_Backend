@@ -541,10 +541,12 @@ class ServerContainersHandler(BaseHandler):
                 ]
             }
         """
-        with catch(self):
+        try:
             data = yield self.server_service.get_containers({"server_id": str(id)})
 
             self.success(data)
+        except:
+            self.success()
 
 
 class ServerContainersInfoHandler(BaseHandler):
