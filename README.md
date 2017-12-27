@@ -433,10 +433,10 @@ CREATE TABLE `permission_template` (
   `access_filehub` varchar(1024) NOT NULL DEFAULT '' COMMENT '表filehub对应的id集合, 比如1,2,3',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  ｀type` tinyint(4) not null default 0 COMMENT '权限模版类型，0:预设,1:新增',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
-alter table `premission_template` add column type tinyint(4) not null default 0 COMMENT '权限模版类型，0:预设,1:新增'
 
 * 权限表
 ```

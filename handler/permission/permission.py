@@ -107,7 +107,6 @@ class PermissionTemplateHandler(BaseHandler):
 
 
 class PermissionTemplateAddHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['add_permission_template'])
     @coroutine
     def post(self):
@@ -116,6 +115,8 @@ class PermissionTemplateAddHandler(BaseHandler):
         @apiName PermissionTemplateAddHandler
 
         @apiGroup Permission
+
+        @apiUse apiHeader
 
         @apiParam {String} name 名字
         @apiParam {Number} cid 公司id
@@ -146,7 +147,6 @@ class PermissionTemplateAddHandler(BaseHandler):
 
 
 class PermissionTemplateDelHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['delete_permission_template'])
     @coroutine
     def post(self, pt_id):
@@ -155,6 +155,7 @@ class PermissionTemplateDelHandler(BaseHandler):
         @apiName PermissionTemplateDelHandler
 
         @apiGroup Permission
+        @apiUse apiHeader
 
         @apiParam {Number} pt_id 权限模版id
         @apiParam {Number} cid 公司id
@@ -204,7 +205,6 @@ class PermissionTemplateRenameHandler(BaseHandler):
 
 
 class PermissionTemplateUpdateHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['modify_permission_template'])
     @coroutine
     def put(self, pt_id):
@@ -212,6 +212,8 @@ class PermissionTemplateUpdateHandler(BaseHandler):
         @api {put} /api/permission/template/(\d+)/update 修改权限模版
         @apiName PermissionTemplateUpdateHandler
         @apiGroup Permission
+
+        @apiUse apiHeader
 
         @apiParam {Number} pt_id 权限模版id
         @apiParam {Number} cid 公司id
@@ -322,7 +324,6 @@ class PermissionUserUpdateHandler(BaseHandler):
         arg['data'] = ','.join(data)
         return arg
 
-    @is_login
     @require(PERMISSIONS_TO_CODE['set_employee_permission'])
     @coroutine
     def post(self):
@@ -330,6 +331,8 @@ class PermissionUserUpdateHandler(BaseHandler):
         @api {post} /api/permission/user/update 更新用户权限详情
         @apiName PermissionUserUpdateHandler
         @apiGroup Permission
+
+        @apiUse apiHeader
 
         @apiParam {Number} uid 用户id
         @apiParam {Number} cid 公司id

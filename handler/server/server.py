@@ -163,7 +163,6 @@ class ServerMigrationHandler(BaseHandler):
 
 
 class ServerDelHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['delete_server'])
     @coroutine
     def post(self):
@@ -171,6 +170,8 @@ class ServerDelHandler(BaseHandler):
         @api {post} /api/server/del 主机删除
         @apiName ServerDelHandler
         @apiGroup Server
+
+        @apiUse apiHeader
 
         @apiParam {Number[]} id 主机ID
 
@@ -318,7 +319,6 @@ class ServerPerformanceHandler(BaseHandler):
 
 
 class ServerUpdateHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['modify_server_info'])
     @coroutine
     def post(self):
@@ -326,6 +326,8 @@ class ServerUpdateHandler(BaseHandler):
         @api {post} /api/server/update 主机信息更新
         @apiName ServerUpdateHandler
         @apiGroup Server
+
+        @apiUse apiHeader
 
         @apiParam {Number} id 主机id
         @apiParam {String} name 主机名字
@@ -361,7 +363,6 @@ class ServerUpdateHandler(BaseHandler):
 
 
 class ServerStopHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['start_stop_server'])
     @coroutine
     def get(self, id):
@@ -369,6 +370,8 @@ class ServerStopHandler(BaseHandler):
         @api {get} /api/server/stop/(\d+) 停止主机
         @apiName ServerStopHandler
         @apiGroup Server
+
+        @apiUse apiHeader
 
         @apiParam {Number} id 主机id
 
@@ -392,7 +395,6 @@ class ServerStopHandler(BaseHandler):
 
 
 class ServerStartHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['start_stop_server'])
     @coroutine
     def get(self, id):
@@ -400,6 +402,8 @@ class ServerStartHandler(BaseHandler):
         @api {get} /api/server/start/(\d+) 开启主机
         @apiName ServerStartHandler
         @apiGroup Server
+
+        @apiUse apiHeader
 
         @apiParam {Number} id 主机id
 
@@ -422,7 +426,6 @@ class ServerStartHandler(BaseHandler):
 
 
 class ServerRebootHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['start_stop_server'])
     @coroutine
     def get(self, id):
@@ -430,6 +433,8 @@ class ServerRebootHandler(BaseHandler):
         @api {get} /api/server/reboot/(\d+) 重启主机
         @apiName ServerRebootHandler
         @apiGroup Server
+
+        @apiUse apiHeader
 
         @apiParam {Number} id 主机id
 
@@ -589,7 +594,6 @@ class ServerContainersInfoHandler(BaseHandler):
 
 
 class ServerContainerStartHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['start_stop_container'])
     @coroutine
     def post(self):
@@ -597,6 +601,8 @@ class ServerContainerStartHandler(BaseHandler):
         @api {post} /api/server/container/start 启动容器
         @apiName ServerContainerStartHandler
         @apiGroup Server
+
+        @apiUse apiHeader
 
         @apiParam {Number} server_id 主机id
         @apiParam {String} container_id 容器id
@@ -622,7 +628,6 @@ class ServerContainerStartHandler(BaseHandler):
 
 
 class ServerContainerStopHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['start_stop_container'])
     @coroutine
     def post(self):
@@ -630,6 +635,8 @@ class ServerContainerStopHandler(BaseHandler):
         @api {post} /api/server/container/stop 停止容器
         @apiName ServerContainerStopHandler
         @apiGroup Server
+
+        @apiUse apiHeader
 
         @apiParam {Number} server_id 主机id
         @apiParam {String} container_id 容器id
@@ -656,7 +663,6 @@ class ServerContainerStopHandler(BaseHandler):
 
 
 class ServerContainerDelHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['delete_container'])
     @coroutine
     def post(self):
@@ -664,6 +670,8 @@ class ServerContainerDelHandler(BaseHandler):
         @api {post} /api/server/container/del 删除容器
         @apiName ServerContainerDelHandler
         @apiGroup Server
+
+        @apiUse apiHeader
 
         @apiParam {Number} server_id 主机id
         @apiParam {String} container_id 容器id

@@ -49,7 +49,6 @@ class ProjectHandler(BaseHandler):
 
 
 class ProjectNewHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['add_project'])
     @coroutine
     def post(self):
@@ -57,6 +56,8 @@ class ProjectNewHandler(BaseHandler):
         @api {post} /api/project/new 创建新项目
         @apiName ProjectNewHandler
         @apiGroup Project
+
+        @apiUse apiHeader
 
         @apiParam {String} name 名称
         @apiParam {String} image_name 镜像名字 (必需小写字母，分隔符可选)
@@ -105,7 +106,6 @@ class ProjectNewHandler(BaseHandler):
 
 
 class ProjectDelHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['delete_project'])
     @coroutine
     def post(self):
@@ -113,6 +113,8 @@ class ProjectDelHandler(BaseHandler):
         @api {post} /api/project/del 项目删除
         @apiName ProjectDelHandler
         @apiGroup Project
+
+        @apiUse apiHeader
 
         @apiParam {number[]} id 项目id
 
@@ -167,7 +169,6 @@ class ProjectDetailHandler(BaseHandler):
 
 
 class ProjectUpdateHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['modify_project_info'])
     @coroutine
     def post(self):
@@ -175,6 +176,8 @@ class ProjectUpdateHandler(BaseHandler):
         @api {post} /api/project/update 更新项目
         @apiName ProjectUpdateHandler
         @apiGroup Project
+
+        @apiUse apiHeader
 
         @apiParam {String} id 项目id
         @apiParam {String} name 名称
@@ -434,7 +437,6 @@ class ProjectImageLogHandler(BaseHandler):
             data = {"log": json.loads(out['log']), "update_time": out['update_time']}
             self.success(data)
 
-    @is_login
     @require(PERMISSIONS_TO_CODE['delete_project_version'])
     @coroutine
     def delete(self, prj_name, version):
@@ -442,6 +444,8 @@ class ProjectImageLogHandler(BaseHandler):
        @api {delete} /api/project/([\w\W]+)/image/([\w\W]+)/log 删除相关项目的某一版本的构建日志
        @apiName ProjectImageLogHandler
        @apiGroup Project
+
+       @apiUse apiHeader
 
        @apiParam {String} prj_name 项目名字
        @apiParam {String} version 版本

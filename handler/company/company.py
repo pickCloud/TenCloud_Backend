@@ -115,7 +115,6 @@ class CompanyNewHandler(BaseHandler):
 
 
 class CompanyUpdateHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['modify_company_info'])
     @coroutine
     def post(self):
@@ -123,6 +122,8 @@ class CompanyUpdateHandler(BaseHandler):
         @api {post} /api/company/update 更新公司
         @apiName CompanyUpdateHandler
         @apiGroup Company
+
+        @apiUse apiHeader
 
         @apiParam {Number} cid 公司id
         @apiParam {String} name 公司名称
@@ -204,7 +205,6 @@ class CompanyEntrySettingHandler(BaseHandler):
 
             self.success(data)
 
-    @is_login
     @require(PERMISSIONS_TO_CODE['set_join_conditions'])
     @coroutine
     def post(self, cid):
@@ -212,6 +212,8 @@ class CompanyEntrySettingHandler(BaseHandler):
         @api {post} /api/company/(\d+)/entry/setting 设置员工加入条件
         @apiName CompanyEntrySettingPostHandler
         @apiGroup Company
+
+        @apiUse apiHeader
 
         @apiParam {String} setting 配置mobile,name,id_card
 
@@ -392,7 +394,6 @@ class CompanyApplicationVerifyMixin(BaseHandler):
 
 
 class CompanyApplicationAcceptHandler(CompanyApplicationVerifyMixin):
-    @is_login
     @require(PERMISSIONS_TO_CODE['audit_employee'])
     @coroutine
     def post(self):
@@ -400,6 +401,8 @@ class CompanyApplicationAcceptHandler(CompanyApplicationVerifyMixin):
         @api {post} /api/company/application/accept 接受员工申请
         @apiName CompanyApplicationAcceptHandler
         @apiGroup Company
+
+        @apiUse apiHeader
 
         @apiParam {Number} id 员工表id
 
@@ -412,7 +415,6 @@ class CompanyApplicationAcceptHandler(CompanyApplicationVerifyMixin):
 
 
 class CompanyApplicationRejectHandler(CompanyApplicationVerifyMixin):
-    @is_login
     @require(PERMISSIONS_TO_CODE['audit_employee'])
     @coroutine
     def post(self):
@@ -420,6 +422,8 @@ class CompanyApplicationRejectHandler(CompanyApplicationVerifyMixin):
         @api {post} /api/company/application/reject 拒绝员工申请
         @apiName CompanyApplicationRejectHandler
         @apiGroup Company
+
+        @apiUse apiHeader
 
         @apiParam {Number} id 员工表id
 
@@ -490,7 +494,6 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
             self.success()
 
 class CompanyAdminTransferHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['set_admin'])
     @coroutine
     def post(self):
@@ -498,6 +501,8 @@ class CompanyAdminTransferHandler(BaseHandler):
         @api {post} /api/company/admin/transfer 转移管理员
         @apiName CompanyAdminTransferHandler
         @apiGroup Company
+
+        @apiUse apiHeader
 
         @apiParam {Number[]} uids 新管理人员id
         @apiParam {Number} cid 公司id
@@ -515,7 +520,6 @@ class CompanyAdminTransferHandler(BaseHandler):
 
 
 class CompanyApplicationDismissionHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['dismiss_employee'])
     @coroutine
     def post(self):
@@ -523,6 +527,8 @@ class CompanyApplicationDismissionHandler(BaseHandler):
         @api {post} /api/company/application/dismission 管理员解除员工
         @apiName CompanyApplicationDismissionHandler
         @apiGroup Company
+
+        @apiUse apiHeader
 
         @apiParam {Number} id 列表id
 

@@ -116,7 +116,6 @@ class FileInfoHandler(BaseHandler):
 
 
 class FileUploadHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['upload_file'])
     @coroutine
     def post(self):
@@ -124,6 +123,8 @@ class FileUploadHandler(BaseHandler):
         @api {post} /api/file/upload 文件上传
         @apiName FileUpload
         @apiGroup File
+
+        @apiUse apiHeader
 
         @apiParam {String} filename 文件名
         @apiParam {String} hash 文件hash
@@ -207,6 +208,8 @@ class FileDownloadHandler(BaseHandler):
         @apiName FileDownload
         @apiGroup File
 
+        @apiUse apiHeader
+
         @apiParam {Number} file_id 文件id
 
         @apiSuccessExample {json} Success-Response:
@@ -221,7 +224,6 @@ class FileDownloadHandler(BaseHandler):
 
 
 class FileDirCreateHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['add_directory'])
     @coroutine
     def post(self):
@@ -229,6 +231,8 @@ class FileDirCreateHandler(BaseHandler):
         @api {post} /api/file/dir/create 创建目录
         @apiName FileDirCreate
         @apiGroup File
+
+        @apiUse apiHeader
 
         @apiParam {Number} pid 上一级目录id
         @apiParam {String} dir_name 目录名字
@@ -271,7 +275,6 @@ class FileDirCreateHandler(BaseHandler):
 
 
 class FileDeleteHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['delete_file'])
     @coroutine
     def post(self):
@@ -279,6 +282,8 @@ class FileDeleteHandler(BaseHandler):
         @api {post} /api/file/delete 文件删除
         @apiName FileDelete
         @apiGroup File
+
+        @apiUse apiHeader
 
         @apiParam {Number} file_ids
 
