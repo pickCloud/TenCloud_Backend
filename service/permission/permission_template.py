@@ -3,10 +3,11 @@ from tornado.gen import coroutine
 from service.permission.permission_base import PermissionBaseService
 from constant import  PT_FORMAT
 
+
 class PermissionTemplateService(PermissionBaseService):
     table = 'permission_template'
     fields = """
-            id, name, cid, permissions, access_servers, access_projects, access_filehub
+            id, name, cid, permissions, access_servers, access_projects, access_filehub, type
             """
 
     @coroutine
@@ -21,10 +22,10 @@ class PermissionTemplateService(PermissionBaseService):
         if not id_data:
             raise ValueError('id不存在')
 
-        permission_data = ''
-        server_data = ''
-        project_data = ''
-        filehub_data = ''
+        permission_data = []
+        server_data = []
+        project_data = []
+        filehub_data = []
 
         if id_data.get('access_projects', ''):
             project_ids = '({ids})'.format(ids=id_data['access_projects'])
@@ -104,8 +105,9 @@ class PermissionTemplateService(PermissionBaseService):
         permissions = yield self._get_resources(fields='id, name, `group`', table='permission')
         permissions = yield self.merge_permissions(permissions)
 
-        servers = yield self.fetch_instance_info()
+        servers = yield self.fetch_instance_info(extra='where s.cid={cid}'.format(cid=cid))
         servers = yield self.merge_servers(servers)
+
         data = [
             {
                 'name': '功能',
@@ -117,18 +119,18 @@ class PermissionTemplateService(PermissionBaseService):
                     {
                         'name': '文件',
                         'data': [
-                            {'name': '文件', 'data': files}
+                            {'name': '文件', 'data': files if files else []}
                         ]
                     },
                     {
                         'name': '项目',
                         'data': [
-                            {'name': '项目', 'data': projects}
+                            {'name': '项目', 'data': projects if projects else []}
                         ]
                     },
                     {
                         'name': '云服务器',
-                        'data': servers
+                        'data': servers if servers else []
                     }
                 ]
             }

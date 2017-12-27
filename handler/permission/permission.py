@@ -3,9 +3,10 @@ import traceback
 from tornado.gen import coroutine, Task
 
 from handler.base import BaseHandler
-from utils.decorator import is_login
+from utils.decorator import is_login, require
 from utils.context import catch
-from constant import COMPANY_PERMISSION, USER_PERMISSION, PERMISSIONS_FLAG
+from constant import COMPANY_PERMISSION, USER_PERMISSION, PERMISSIONS_FLAG, PERMISSIONS_TO_CODE, \
+    PERMISSIONS_TEMPLATE_TYPE, ERR_TIP
 
 
 class PermissionResourcesHandler(BaseHandler):
@@ -13,7 +14,8 @@ class PermissionResourcesHandler(BaseHandler):
     @coroutine
     def get(self, cid):
         """
-        @api {get} /api/permission/resource/(\d+) 权限模版资源
+        @api {get} /api/permission/resource/(\d+) 获取所有模版资源
+
         @apiName PermissionResourcesHandler
         @apiGroup Permission
 
@@ -106,6 +108,7 @@ class PermissionTemplateHandler(BaseHandler):
 
 class PermissionTemplateAddHandler(BaseHandler):
     @is_login
+    @require(PERMISSIONS_TO_CODE['add_permission_template'])
     @coroutine
     def post(self):
         """
@@ -128,8 +131,6 @@ class PermissionTemplateAddHandler(BaseHandler):
             args = ['cid','name']
             self.guarantee(*args)
 
-            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
-
             params = {
                 'name': self.params['name'],
                 'cid': self.params['cid'],
@@ -144,9 +145,9 @@ class PermissionTemplateAddHandler(BaseHandler):
             self.success()
 
 
-
 class PermissionTemplateDelHandler(BaseHandler):
     @is_login
+    @require(PERMISSIONS_TO_CODE['delete_permission_template'])
     @coroutine
     def post(self, pt_id):
         """
@@ -164,12 +165,16 @@ class PermissionTemplateDelHandler(BaseHandler):
             args = ['cid']
             self.guarantee(*args)
             pt_id = int(pt_id)
-            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
+
+            pt_info = yield self.permission_template_service.select({'id': pt_id})
+            if pt_info['type'] == PERMISSIONS_TEMPLATE_TYPE['default']:
+                err_key = 'permission_template_cannot_operate'
+                self.error(status=ERR_TIP[err_key]['sts'], message=ERR_TIP[err_key]['msg'])
+                return
 
             yield self.permission_template_service.delete({'id': pt_id})
   
             self.success()
-
 
 
 class PermissionTemplateRenameHandler(BaseHandler):
@@ -192,8 +197,6 @@ class PermissionTemplateRenameHandler(BaseHandler):
             args = ['name', 'cid']
             self.guarantee(*args)
 
-            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
-
             name, pt_id = self.params['name'], int(pt_id)
             yield self.permission_template_service.update(sets={'name': name}, conds={'id': pt_id})
 
@@ -202,6 +205,7 @@ class PermissionTemplateRenameHandler(BaseHandler):
 
 class PermissionTemplateUpdateHandler(BaseHandler):
     @is_login
+    @require(PERMISSIONS_TO_CODE['modify_permission_template'])
     @coroutine
     def put(self, pt_id):
         """
@@ -225,17 +229,31 @@ class PermissionTemplateUpdateHandler(BaseHandler):
 
             self.guarantee(*args)
 
-            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
-
             pt_id = int(pt_id)
 
-            sets = {
-                'name': self.params['name'],
-                'permissions': self.params['permissions'],
-                'access_servers': self.params['access_servers'],
-                'access_projects': self.params['access_projects'],
-                'access_filehub': self.params['access_filehub']
-            }
+            pt_info = yield self.permission_template_service.select({'id': pt_id}, one=True)
+            if pt_info['type'] == PERMISSIONS_TEMPLATE_TYPE['default']:
+                err_key = 'permission_template_cannot_operate'
+                self.error(status=ERR_TIP[err_key]['sts'], message=ERR_TIP[err_key]['msg'])
+                return
+
+            sets = {}
+
+            if self.params['name']:
+                sets.update({'name':self.params['name']})
+
+            if self.params.get('permissions', ''):
+                sets.update({'permission': self.params['permission']})
+
+            if self.params.get('access_servers', ''):
+                sets.update({'access_servers': self.params['access_servers']})
+
+            if self.params.get('access_projects', ''):
+                sets.update({'access_projects': self.params['access_projects']})
+
+            if self.params.get('access_filehub', ''):
+                sets.update({'access_filehub': self.params['access_filehub']})
+
             yield self.permission_template_service.update(sets=sets, conds={'id': pt_id})
 
             self.success()
@@ -305,6 +323,7 @@ class PermissionUserUpdateHandler(BaseHandler):
         return arg
 
     @is_login
+    @require(PERMISSIONS_TO_CODE['set_employee_permission'])
     @coroutine
     def post(self):
         """
@@ -324,8 +343,6 @@ class PermissionUserUpdateHandler(BaseHandler):
         with catch(self):
             args = ['uid', 'cid']
             self.guarantee(*args)
-
-            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
 
             access_servers = self.params.get('access_servers', '')
             if access_servers:

@@ -2,10 +2,10 @@ __author__ = 'Jon'
 
 from tornado.gen import coroutine
 from handler.base import BaseHandler
-from utils.decorator import is_login
+from utils.decorator import is_login, require
 from utils.general import validate_mobile
 from utils.context import catch
-from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING, MSG_SUB_MODE
+from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING, MSG_SUB_MODE, PERMISSIONS_TO_CODE
 
 
 class CompanyHandler(BaseHandler):
@@ -33,7 +33,6 @@ class CompanyHandler(BaseHandler):
             if is_pass < 0 or is_pass > 4:
                 self.error("arg error, check again")
                 return
-
 
             params = {
                 'uid': self.current_user['id'],
@@ -117,6 +116,7 @@ class CompanyNewHandler(BaseHandler):
 
 class CompanyUpdateHandler(BaseHandler):
     @is_login
+    @require(PERMISSIONS_TO_CODE['modify_company_info'])
     @coroutine
     def post(self):
         """
@@ -205,6 +205,7 @@ class CompanyEntrySettingHandler(BaseHandler):
             self.success(data)
 
     @is_login
+    @require(PERMISSIONS_TO_CODE['set_join_conditions'])
     @coroutine
     def post(self, cid):
         """
@@ -392,6 +393,7 @@ class CompanyApplicationVerifyMixin(BaseHandler):
 
 class CompanyApplicationAcceptHandler(CompanyApplicationVerifyMixin):
     @is_login
+    @require(PERMISSIONS_TO_CODE['audit_employee'])
     @coroutine
     def post(self):
         """
@@ -411,6 +413,7 @@ class CompanyApplicationAcceptHandler(CompanyApplicationVerifyMixin):
 
 class CompanyApplicationRejectHandler(CompanyApplicationVerifyMixin):
     @is_login
+    @require(PERMISSIONS_TO_CODE['audit_employee'])
     @coroutine
     def post(self):
         """
@@ -488,6 +491,7 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
 
 class CompanyAdminTransferHandler(BaseHandler):
     @is_login
+    @require(PERMISSIONS_TO_CODE['set_admin'])
     @coroutine
     def post(self):
         """
@@ -512,6 +516,7 @@ class CompanyAdminTransferHandler(BaseHandler):
 
 class CompanyApplicationDismissionHandler(BaseHandler):
     @is_login
+    @require(PERMISSIONS_TO_CODE['dismiss_employee'])
     @coroutine
     def post(self):
         """

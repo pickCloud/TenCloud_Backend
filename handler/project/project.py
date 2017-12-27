@@ -6,12 +6,13 @@ import json
 from tornado.gen import coroutine
 from tornado.ioloop import IOLoop
 from handler.base import BaseHandler, WebSocketBaseHandler
-from utils.general import get_in_formats
-from utils.decorator import is_login
+from utils.decorator import is_login, require
 from utils.context import catch
 from setting import settings
 from handler.user import user
-from constant import PROJECT_STATUS, SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, PROJECT_OPERATE_STATUS, OPERATE_STATUS
+from constant import PROJECT_STATUS, SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, PROJECT_OPERATE_STATUS, OPERATE_STATUS,\
+      PERMISSIONS_TO_CODE
+
 
 class ProjectHandler(BaseHandler):
     @is_login
@@ -49,6 +50,7 @@ class ProjectHandler(BaseHandler):
 
 class ProjectNewHandler(BaseHandler):
     @is_login
+    @require(PERMISSIONS_TO_CODE['add_project'])
     @coroutine
     def post(self):
         """
@@ -104,6 +106,7 @@ class ProjectNewHandler(BaseHandler):
 
 class ProjectDelHandler(BaseHandler):
     @is_login
+    @require(PERMISSIONS_TO_CODE['delete_project'])
     @coroutine
     def post(self):
         """
@@ -165,6 +168,7 @@ class ProjectDetailHandler(BaseHandler):
 
 class ProjectUpdateHandler(BaseHandler):
     @is_login
+    @require(PERMISSIONS_TO_CODE['modify_project_info'])
     @coroutine
     def post(self):
         """
@@ -431,6 +435,7 @@ class ProjectImageLogHandler(BaseHandler):
             self.success(data)
 
     @is_login
+    @require(PERMISSIONS_TO_CODE['delete_project_version'])
     @coroutine
     def delete(self, prj_name, version):
         """
