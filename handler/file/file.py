@@ -116,7 +116,6 @@ class FileInfoHandler(BaseHandler):
 
 
 class FileUploadHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['upload_file'])
     @coroutine
     def post(self):
@@ -221,7 +220,6 @@ class FileDownloadHandler(BaseHandler):
 
 
 class FileDirCreateHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['add_directory'])
     @coroutine
     def post(self):
@@ -271,7 +269,6 @@ class FileDirCreateHandler(BaseHandler):
 
 
 class FileDeleteHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['delete_file'])
     @coroutine
     def post(self):

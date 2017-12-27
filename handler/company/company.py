@@ -115,7 +115,6 @@ class CompanyNewHandler(BaseHandler):
 
 
 class CompanyUpdateHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['modify_company_info'])
     @coroutine
     def post(self):
@@ -204,7 +203,6 @@ class CompanyEntrySettingHandler(BaseHandler):
 
             self.success(data)
 
-    @is_login
     @require(PERMISSIONS_TO_CODE['set_join_conditions'])
     @coroutine
     def post(self, cid):
@@ -392,7 +390,6 @@ class CompanyApplicationVerifyMixin(BaseHandler):
 
 
 class CompanyApplicationAcceptHandler(CompanyApplicationVerifyMixin):
-    @is_login
     @require(PERMISSIONS_TO_CODE['audit_employee'])
     @coroutine
     def post(self):
@@ -412,7 +409,6 @@ class CompanyApplicationAcceptHandler(CompanyApplicationVerifyMixin):
 
 
 class CompanyApplicationRejectHandler(CompanyApplicationVerifyMixin):
-    @is_login
     @require(PERMISSIONS_TO_CODE['audit_employee'])
     @coroutine
     def post(self):
@@ -490,7 +486,6 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
             self.success()
 
 class CompanyAdminTransferHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['set_admin'])
     @coroutine
     def post(self):
@@ -515,7 +510,6 @@ class CompanyAdminTransferHandler(BaseHandler):
 
 
 class CompanyApplicationDismissionHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['dismiss_employee'])
     @coroutine
     def post(self):

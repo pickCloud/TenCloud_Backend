@@ -49,7 +49,6 @@ class ProjectHandler(BaseHandler):
 
 
 class ProjectNewHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['add_project'])
     @coroutine
     def post(self):
@@ -105,7 +104,6 @@ class ProjectNewHandler(BaseHandler):
 
 
 class ProjectDelHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['delete_project'])
     @coroutine
     def post(self):
@@ -167,7 +165,6 @@ class ProjectDetailHandler(BaseHandler):
 
 
 class ProjectUpdateHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['modify_project_info'])
     @coroutine
     def post(self):
@@ -434,7 +431,6 @@ class ProjectImageLogHandler(BaseHandler):
             data = {"log": json.loads(out['log']), "update_time": out['update_time']}
             self.success(data)
 
-    @is_login
     @require(PERMISSIONS_TO_CODE['delete_project_version'])
     @coroutine
     def delete(self, prj_name, version):

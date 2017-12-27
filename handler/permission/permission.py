@@ -107,7 +107,6 @@ class PermissionTemplateHandler(BaseHandler):
 
 
 class PermissionTemplateAddHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['add_permission_template'])
     @coroutine
     def post(self):
@@ -146,7 +145,6 @@ class PermissionTemplateAddHandler(BaseHandler):
 
 
 class PermissionTemplateDelHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['delete_permission_template'])
     @coroutine
     def post(self, pt_id):
@@ -204,7 +202,6 @@ class PermissionTemplateRenameHandler(BaseHandler):
 
 
 class PermissionTemplateUpdateHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['modify_permission_template'])
     @coroutine
     def put(self, pt_id):

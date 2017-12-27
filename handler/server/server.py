@@ -163,7 +163,6 @@ class ServerMigrationHandler(BaseHandler):
 
 
 class ServerDelHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['delete_server'])
     @coroutine
     def post(self):
@@ -318,7 +317,6 @@ class ServerPerformanceHandler(BaseHandler):
 
 
 class ServerUpdateHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['modify_server_info'])
     @coroutine
     def post(self):
@@ -361,7 +359,6 @@ class ServerUpdateHandler(BaseHandler):
 
 
 class ServerStopHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['start_stop_server'])
     @coroutine
     def get(self, id):
@@ -392,7 +389,6 @@ class ServerStopHandler(BaseHandler):
 
 
 class ServerStartHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['start_stop_server'])
     @coroutine
     def get(self, id):
@@ -422,7 +418,6 @@ class ServerStartHandler(BaseHandler):
 
 
 class ServerRebootHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['start_stop_server'])
     @coroutine
     def get(self, id):
@@ -589,7 +584,6 @@ class ServerContainersInfoHandler(BaseHandler):
 
 
 class ServerContainerStartHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['start_stop_container'])
     @coroutine
     def post(self):
@@ -622,7 +616,6 @@ class ServerContainerStartHandler(BaseHandler):
 
 
 class ServerContainerStopHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['start_stop_container'])
     @coroutine
     def post(self):
@@ -656,7 +649,6 @@ class ServerContainerStopHandler(BaseHandler):
 
 
 class ServerContainerDelHandler(BaseHandler):
-    @is_login
     @require(PERMISSIONS_TO_CODE['delete_container'])
     @coroutine
     def post(self):
