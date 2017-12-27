@@ -256,12 +256,17 @@ class BaseService():
     # SSH
     ############################################################################################
     @run_on_executor
-    def remote_ssh(self, params, cmd):
+    def remote_ssh(self, params):
         """ 远程控制主机
+        :param params: dict, 必须{'public_ip', 'username', 'passwd', 'cmd'}, 可选{'rt'(实时输出), 'out_func'}
         """
         try:
             ssh = SSH(hostname=params['public_ip'], username=params['username'], passwd=params['passwd'])
-            out, err = ssh.exec(cmd)
+
+            if params.get('rt'):
+                out, err = ssh.exec_rt(params['cmd'], params.get('out_func'))
+            else:
+                out, err = ssh.exec(params['cmd'])
             ssh.close()
 
             return out, err

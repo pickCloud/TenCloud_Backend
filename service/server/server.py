@@ -102,7 +102,8 @@ class ServerService(BaseService):
     def _delete_server(self, server_id):
         params = yield self.fetch_ssh_login_info({'server_id': server_id})
 
-        yield self.remote_ssh(params, cmd=UNINSTALL_CMD)
+        params['cmd'] = UNINSTALL_CMD
+        yield self.remote_ssh(params)
 
         for table in ['server', 'server_account']:
             yield self._delete_server_info(table, params['public_ip'])
@@ -407,8 +408,9 @@ class ServerService(BaseService):
 
         info = yield self.fetch_ssh_login_info(params)
         params.update(info)
+        params['cmd'] = LIST_CONTAINERS_CMD
 
-        out, err = yield self.remote_ssh(params, cmd=LIST_CONTAINERS_CMD)
+        out, err = yield self.remote_ssh(params)
 
         if err:
             raise ValueError
@@ -432,8 +434,9 @@ class ServerService(BaseService):
     @coroutine
     def operate_container(self, params, cmd):
         login_info = yield self.fetch_ssh_login_info({'server_id': params['server_id']})
+        login_info.update({'cmd': cmd})
 
-        _, err = yield self.remote_ssh(login_info, cmd=cmd)
+        _, err = yield self.remote_ssh(login_info)
 
         if err:
             raise ValueError
@@ -585,9 +588,9 @@ class ServerService(BaseService):
 
     @coroutine
     def get_container_info(self, params):
-        cmd = CONTAINER_INFO_CMD % (params['container_id'])
+        params['cmd'] = CONTAINER_INFO_CMD % (params['container_id'])
 
-        raw_out, err = yield self.remote_ssh(params, cmd=cmd)
+        raw_out, err = yield self.remote_ssh(params)
         json_out = json.loads(raw_out[0])
         data = {
             'name': json_out['Name'],
