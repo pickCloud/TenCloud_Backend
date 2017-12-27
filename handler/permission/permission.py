@@ -230,19 +230,29 @@ class PermissionTemplateUpdateHandler(BaseHandler):
 
             pt_id = int(pt_id)
 
-            pt_info = yield self.permission_template_service.select({'id': pt_id})
+            pt_info = yield self.permission_template_service.select({'id': pt_id}, one=True)
             if pt_info['type'] == PERMISSIONS_TEMPLATE_TYPE['default']:
                 err_key = 'permission_template_cannot_operate'
                 self.error(status=ERR_TIP[err_key]['sts'], message=ERR_TIP[err_key]['msg'])
                 return
 
-            sets = {
-                'name': self.params['name'],
-                'permissions': self.params['permissions'],
-                'access_servers': self.params['access_servers'],
-                'access_projects': self.params['access_projects'],
-                'access_filehub': self.params['access_filehub']
-            }
+            sets = {}
+
+            if self.params['name']:
+                sets.update({'name':self.params['name']})
+
+            if self.params.get('permissions', ''):
+                sets.update({'permission': self.params['permission']})
+
+            if self.params.get('access_servers', ''):
+                sets.update({'access_servers': self.params['access_servers']})
+
+            if self.params.get('access_projects', ''):
+                sets.update({'access_projects': self.params['access_projects']})
+
+            if self.params.get('access_filehub', ''):
+                sets.update({'access_filehub': self.params['access_filehub']})
+
             yield self.permission_template_service.update(sets=sets, conds={'id': pt_id})
 
             self.success()
