@@ -25,7 +25,7 @@ class MessageService(BaseService):
 
         data = yield self.select(params, extra=extra)
 
-        unread = [d['id'] for d in data if d['status']==0]
+        unread = [d['id'] for d in data if d['status'] == MSG_STATUS['unread']]
         if unread:
             yield self.set_read(unread)
 

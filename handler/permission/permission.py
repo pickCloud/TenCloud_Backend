@@ -15,6 +15,7 @@ class PermissionResourcesHandler(BaseHandler):
     def get(self, cid):
         """
         @api {get} /api/permission/resource/(\d+) 获取所有模版资源
+
         @apiName PermissionResourcesHandler
         @apiGroup Permission
 

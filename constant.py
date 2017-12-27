@@ -54,8 +54,8 @@ ERR_TIP = {
     'auth_code_timeout':   {'sts': 10414, 'msg': '短信验证码已过期，请重新获取'},
 
     # 公司
-    'company_exists': {'sts': 10000, 'msg': '已存在公司'},
-    'is_employee':    {'sts': 10001, 'msg': '已是公司员工'},
+    'company_exists': {'sts': 10000, 'msg': '企业已存在，可以让管理员邀请加入。'},
+    'is_employee':    {'sts': 10001, 'msg': '已是企业员工，无需重复添加企业。'},
     'company_name_repeat': {'sts': 10002, 'msg': '公司名字重复，请重新输入'},
 
     # server
@@ -458,15 +458,20 @@ APPLICATION_STATUS = {
 }
 MSG = {
     'application': {
-        'admin': '【{name}】【{mobile}】审核加入【{company_name}】，请及时审核 ',
-        'accept': '【{admin_name}】审核通过了了你加入【{company_name}】的申请，你可以进入企业了',
-        'reject': '【{admin_name}】拒绝了你加入【{company_name}】的申请，你可以核对信息后重新提交申请'
+        'admin': '【{name}】【{mobile}】申请加入【{company_name}】，请及时审核 ',
+        'accept': '【{admin_name}】审核通过了你加入【{company_name}】的申请，你可以进入企业了',
+        'reject': '【{admin_name}】拒绝了你加入【{company_name}】的申请，你可以核对信息后重新提交申请',
     },
-    'change': '你的企业【{company_name}】被管理员 【{admin_name}】修改了资料'
+    'change': '你的企业【{company_name}】被管理员 【{admin_name}】修改了资料',
+    'leave': {
+        'dismission': '【{name}】【{mobile}】离开了【{company_name}】',
+        'demission': '【{name}】【{mobile}】离开了【{company_name}】',
+    }
 }
 MSG_MODE = {
     'application': 1,
-    'change': 2
+    'change': 2,
+    'leave': 3
 }
 MSG_STATUS = {
     'unread': 0,

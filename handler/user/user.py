@@ -461,7 +461,7 @@ class UserUploadToken(BaseHandler):
     def delete(self):
         """
         @api {delete} /api/user/token 用户删除token
-        @apiName UserDeleteToekn
+        @apiName UserDeleteToken
         @apiGroup User
 
         @apiUse Success

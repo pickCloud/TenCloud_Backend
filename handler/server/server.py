@@ -69,8 +69,8 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
         self.period = PeriodicCallback(self.check, 3000)  # 设置定时函数, 3秒
         self.period.start()
 
-        self.params.update({'passwd': passwd})
-        _, err = yield self.server_service.remote_ssh(self.params, cmd=MONITOR_CMD)
+        self.params.update({'passwd': passwd, 'cmd': MONITOR_CMD, 'rt': True, 'out_func': self.write_message})
+        _, err = yield self.server_service.remote_ssh(self.params)
 
         err = [e for e in err if not re.search(r'symlink|resolve host', e)] # 忽略某些错误
 
@@ -547,10 +547,12 @@ class ServerContainersHandler(BaseHandler):
                 ]
             }
         """
-        with catch(self):
+        try:
             data = yield self.server_service.get_containers({"server_id": str(id)})
 
             self.success(data)
+        except:
+            self.success()
 
 
 class ServerContainersInfoHandler(BaseHandler):
