@@ -319,7 +319,6 @@ class PermissionUserUpdateHandler(BaseHandler):
         arg['data'] = ','.join(data)
         return arg
 
-    @is_login
     @require(PERMISSIONS_TO_CODE['set_employee_permission'])
     @coroutine
     def post(self):
