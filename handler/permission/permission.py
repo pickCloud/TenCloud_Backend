@@ -132,16 +132,16 @@ class PermissionTemplateAddHandler(BaseHandler):
             args = ['cid','name']
             self.guarantee(*args)
 
-            params = {
-                'name': self.params['name'],
+            sets = {
                 'cid': self.params['cid'],
-                'permissions': self.params['permissions'],
-                'access_servers': self.params['access_servers'],
-                'access_projects': self.params['access_projects'],
-                'access_filehub': self.params['access_filehub']
+                'name': self.params['name'],
+                'permissions': self.params['permissions'] if self.params['permissions'] else '',
+                'access_projects': self.params['access_projects'] if self.params['access_projects'] else '',
+                'access_servers': self.params['access_servers'] if self.params['access_servers'] else '',
+                'access_filehub': self.params['access_filehub'] if self.params['access_filehub'] else ''
             }
 
-            yield self.permission_template_service.add(params)
+            yield self.permission_template_service.add(sets)
             
             self.success()
 
@@ -241,7 +241,7 @@ class PermissionTemplateUpdateHandler(BaseHandler):
 
             sets = {}
 
-            if self.params['name']:
+            if self.params.get('name', pt_info['name']):
                 sets.update({'name':self.params['name']})
 
             if self.params.get('permissions', ''):
