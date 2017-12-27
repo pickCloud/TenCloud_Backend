@@ -76,7 +76,7 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
 
         # 部署失败
         if err:
-            self.write_message(str(err))
+            self.write_message('failure')
             self.period.stop()
             self.close()
 

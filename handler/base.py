@@ -160,6 +160,10 @@ class BaseHandler(tornado.web.RequestHandler):
             self.params = self.request.arguments.copy()
             self._decode_params()
 
+        if self.request.headers.get('Cid'):
+            self.params['cid'] = int(self.request.headers['Cid'])
+
+
     def on_finish(self):
         self.log.debug('{status} {method} {uri} {payload}'.format(status=self._status_code,
                                                                   method=self.request.method,
