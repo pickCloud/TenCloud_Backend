@@ -112,8 +112,8 @@ class ProjectService(BaseService):
         """
         查找项目镜像
         """
-        cmd = IMAGE_INFO_CMD % (params['prj_name'])
-        out, err = yield self.remote_ssh(params, cmd)
+        params['cmd'] = IMAGE_INFO_CMD % (params['prj_name'])
+        out, err = yield self.remote_ssh(params)
         data = [i.split(',') for i in out]
         return data, err
 
@@ -133,8 +133,8 @@ class ProjectService(BaseService):
     @coroutine
     def list_containers(self, params):
         sufix = '|grep {container_name} '.format(container_name=params['container_name'])
-        cmd = LIST_CONTAINERS_CMD+sufix
-        out, err = yield self.remote_ssh(params, cmd)
+        params['cmd'] = LIST_CONTAINERS_CMD+sufix
+        out, err = yield self.remote_ssh(params)
 
         if err:
             raise ValueError
