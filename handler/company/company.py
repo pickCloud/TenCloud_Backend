@@ -158,7 +158,9 @@ class CompanyUpdateHandler(BaseHandler):
                                               conds={'id': self.params['cid']},
                                               )
             # 通知
-            yield self.company_service.notify_change({
+            employee = yield self.company_employee_service.get_employee_list(self.params['cid'], 0, APPLICATION_STATUS['accept'])
+            yield self.message_service.notify_change({
+                'owners': employee,
                 'cid': self.params['cid'],
                 'company_name': old['name'],
                 'admin_name': self.current_user['name'],
@@ -380,12 +382,12 @@ class CompanyApplicationVerifyMixin(BaseHandler):
 
         yield self.company_employee_service.verify(self.params['id'], mode)
 
-        yield self.company_service.notify_verify({
-            'uid': info['uid'],
+        # 通知用户
+        yield self.message_service.notify_verify({
+            'owner': info['uid'],
             'admin_name': self.current_user['name'],
             'company_name': info['company_name'],
             'mode': mode,
-            'sub_mode': MSG_SUB_MODE[mode],
             'tip': '{}:{}'.format(info.get('cid', ''), info.get('code', ''))
         })
 

@@ -101,6 +101,25 @@ class CompanyEmployeeService(BaseService):
         return data
 
     @coroutine
+    def get_employee_list(self, cid, is_admin=None, status=None):
+        '''
+        获取员工id列表，可通过指定is_admin, status参数过滤
+        :param cid: 公司id
+        :param is_admin: 0代表普通用户，1代表管理员
+        :param status: 用户状态
+        :return: list
+        '''
+        conds = {'cid': cid}
+        if is_admin is not None:
+            conds['is_admin'] = is_admin
+        if status is not None:
+            conds['status'] = status
+
+        data = yield self.select(conds=conds, fields='uid')
+        employee_list = [i['uid'] for i in data]
+        return employee_list
+
+    @coroutine
     def transfer_adimin(self, params):
         ''' 转换管理员
         :param params: {'admin_id', 'cid', 'uids'}
