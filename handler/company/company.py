@@ -157,14 +157,12 @@ class CompanyUpdateHandler(BaseHandler):
             yield self.company_service.update(sets={'name': self.params['name'], 'contact': self.params['contact'], 'mobile': self.params['mobile']},
                                               conds={'id': self.params['cid']},
                                               )
-
             # 通知
             yield self.company_service.notify_change({
                 'cid': self.params['cid'],
                 'company_name': old['name'],
                 'admin_name': self.current_user['name'],
             })
-
             self.success()
 
 
@@ -360,7 +358,6 @@ class CompanyApplicationHandler(BaseHandler):
 
             # 给公司管理员发送消息
             admin = yield self.company_employee_service.select(fields='uid', conds={'cid': info['cid'], 'is_admin': 1}, one=True)
-
             admin_data = {
                 'owner': admin['uid'],
                 'content': MSG['application']['admin'].format(name=self.params.get('name', ''), mobile=self.params['mobile'], company_name=info['company_name']),
@@ -464,16 +461,30 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
         @apiUse Success
         """
         with catch(self):
-            data = yield self.company_employee_service.select({'id': self.params['id'], 'is_admin': 1, 'uid': self.current_user['id']})
+            data = yield self.company_employee_service.select({'id': self.params['id'], 'is_admin': 1, 'uid': self.current_user['id']}, one=True)
 
             if data:
                 self.error('管理员不能解除公司，需要先进行管理员转移')
                 return
 
+            # 缓存公司信息
+            app_info = yield self.company_employee_service.get_app_info(self.params['id'])
+
+            # 解除员工和公司的关系
             yield self.company_employee_service.delete(conds={'id': self.params['id'], 'uid': self.current_user['id']})
 
-            self.success(data)
+            # 将此员工解除公司的消息通知给管理员
+            content = MSG['leave']['demission'].format(name=self.current_user['name'],
+                                                       mobile=self.current_user['mobile'],
+                                                       company_name=app_info['company_name'])
+            admin_info = yield self.company_employee_service.select(fields='uid', conds={'cid': app_info['cid'], 'is_admin': 1})
+            for info in admin_info:
+                yield self.message_service.add({
+                    'owner': info['uid'],
+                    'content': content,
+                    'mode': MSG_MODE['leave']})
 
+            self.success()
 
 class CompanyAdminTransferHandler(BaseHandler):
     @is_login
