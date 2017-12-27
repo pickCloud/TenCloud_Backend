@@ -123,6 +123,8 @@ class CompanyUpdateHandler(BaseHandler):
         @apiName CompanyUpdateHandler
         @apiGroup Company
 
+        @apiUse apiHeader
+
         @apiParam {Number} cid 公司id
         @apiParam {String} name 公司名称
         @apiParam {String} contact 联系人
@@ -210,6 +212,8 @@ class CompanyEntrySettingHandler(BaseHandler):
         @api {post} /api/company/(\d+)/entry/setting 设置员工加入条件
         @apiName CompanyEntrySettingPostHandler
         @apiGroup Company
+
+        @apiUse apiHeader
 
         @apiParam {String} setting 配置mobile,name,id_card
 
@@ -398,6 +402,8 @@ class CompanyApplicationAcceptHandler(CompanyApplicationVerifyMixin):
         @apiName CompanyApplicationAcceptHandler
         @apiGroup Company
 
+        @apiUse apiHeader
+
         @apiParam {Number} id 员工表id
 
         @apiUse Success
@@ -416,6 +422,8 @@ class CompanyApplicationRejectHandler(CompanyApplicationVerifyMixin):
         @api {post} /api/company/application/reject 拒绝员工申请
         @apiName CompanyApplicationRejectHandler
         @apiGroup Company
+
+        @apiUse apiHeader
 
         @apiParam {Number} id 员工表id
 
@@ -494,6 +502,8 @@ class CompanyAdminTransferHandler(BaseHandler):
         @apiName CompanyAdminTransferHandler
         @apiGroup Company
 
+        @apiUse apiHeader
+
         @apiParam {Number[]} uids 新管理人员id
         @apiParam {Number} cid 公司id
 
@@ -517,6 +527,8 @@ class CompanyApplicationDismissionHandler(BaseHandler):
         @api {post} /api/company/application/dismission 管理员解除员工
         @apiName CompanyApplicationDismissionHandler
         @apiGroup Company
+
+        @apiUse apiHeader
 
         @apiParam {Number} id 列表id
 

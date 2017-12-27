@@ -57,6 +57,8 @@ class ProjectNewHandler(BaseHandler):
         @apiName ProjectNewHandler
         @apiGroup Project
 
+        @apiUse apiHeader
+
         @apiParam {String} name 名称
         @apiParam {String} image_name 镜像名字 (必需小写字母，分隔符可选)
         @apiParam {String} description 描述
@@ -111,6 +113,8 @@ class ProjectDelHandler(BaseHandler):
         @api {post} /api/project/del 项目删除
         @apiName ProjectDelHandler
         @apiGroup Project
+
+        @apiUse apiHeader
 
         @apiParam {number[]} id 项目id
 
@@ -172,6 +176,8 @@ class ProjectUpdateHandler(BaseHandler):
         @api {post} /api/project/update 更新项目
         @apiName ProjectUpdateHandler
         @apiGroup Project
+
+        @apiUse apiHeader
 
         @apiParam {String} id 项目id
         @apiParam {String} name 名称
@@ -438,6 +444,8 @@ class ProjectImageLogHandler(BaseHandler):
        @api {delete} /api/project/([\w\W]+)/image/([\w\W]+)/log 删除相关项目的某一版本的构建日志
        @apiName ProjectImageLogHandler
        @apiGroup Project
+
+       @apiUse apiHeader
 
        @apiParam {String} prj_name 项目名字
        @apiParam {String} version 版本

@@ -116,6 +116,8 @@ class PermissionTemplateAddHandler(BaseHandler):
 
         @apiGroup Permission
 
+        @apiUse apiHeader
+
         @apiParam {String} name 名字
         @apiParam {Number} cid 公司id
         @apiParam {[]Number} permissions 权限列表
@@ -153,6 +155,7 @@ class PermissionTemplateDelHandler(BaseHandler):
         @apiName PermissionTemplateDelHandler
 
         @apiGroup Permission
+        @apiUse apiHeader
 
         @apiParam {Number} pt_id 权限模版id
         @apiParam {Number} cid 公司id
@@ -209,6 +212,8 @@ class PermissionTemplateUpdateHandler(BaseHandler):
         @api {put} /api/permission/template/(\d+)/update 修改权限模版
         @apiName PermissionTemplateUpdateHandler
         @apiGroup Permission
+
+        @apiUse apiHeader
 
         @apiParam {Number} pt_id 权限模版id
         @apiParam {Number} cid 公司id
@@ -326,6 +331,8 @@ class PermissionUserUpdateHandler(BaseHandler):
         @api {post} /api/permission/user/update 更新用户权限详情
         @apiName PermissionUserUpdateHandler
         @apiGroup Permission
+
+        @apiUse apiHeader
 
         @apiParam {Number} uid 用户id
         @apiParam {Number} cid 公司id

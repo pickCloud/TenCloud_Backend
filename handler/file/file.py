@@ -124,6 +124,8 @@ class FileUploadHandler(BaseHandler):
         @apiName FileUpload
         @apiGroup File
 
+        @apiUse apiHeader
+
         @apiParam {String} filename 文件名
         @apiParam {String} hash 文件hash
         @apiParam {Number} pid 上一级目录id
@@ -206,6 +208,8 @@ class FileDownloadHandler(BaseHandler):
         @apiName FileDownload
         @apiGroup File
 
+        @apiUse apiHeader
+
         @apiParam {Number} file_id 文件id
 
         @apiSuccessExample {json} Success-Response:
@@ -227,6 +231,8 @@ class FileDirCreateHandler(BaseHandler):
         @api {post} /api/file/dir/create 创建目录
         @apiName FileDirCreate
         @apiGroup File
+
+        @apiUse apiHeader
 
         @apiParam {Number} pid 上一级目录id
         @apiParam {String} dir_name 目录名字
@@ -276,6 +282,8 @@ class FileDeleteHandler(BaseHandler):
         @api {post} /api/file/delete 文件删除
         @apiName FileDelete
         @apiGroup File
+
+        @apiUse apiHeader
 
         @apiParam {Number} file_ids
 

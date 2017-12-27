@@ -30,6 +30,15 @@ __author__ = 'Jon'
     }
 """
 
+
+""""
+@apiDefine apiHeader
+@apiHeaderExample {json} Header-Example:
+     {
+       "cid": 1
+     }
+"""
+
 import jwt
 import json
 import datetime
