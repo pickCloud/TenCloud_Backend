@@ -91,9 +91,9 @@ class MessageCountHandler(BaseHandler):
 class MessageSearchHandler(BaseHandler):
     @is_login
     @coroutine
-    def post(self):
+    def get(self):
         """
-        @api {post} /api/messages/search 查找消息
+        @api {get} /api/messages/search 查找消息
         @apiName MessageSearchHandler
         @apiGroup Message
 
