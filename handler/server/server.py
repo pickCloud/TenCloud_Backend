@@ -1,9 +1,7 @@
 __author__ = 'Jon'
 
-import traceback
 import json
 import re
-
 
 from tornado.websocket import WebSocketHandler
 from tornado.gen import coroutine, Task
@@ -15,7 +13,7 @@ from utils.security import Aes
 from utils.decorator import is_login, require
 from utils.context import catch
 from constant import MONITOR_CMD, OPERATE_STATUS, OPERATION_OBJECT_STYPE, SERVER_OPERATE_STATUS, \
-      CONTAINER_OPERATE_STATUS, PERMISSIONS_TO_CODE
+      CONTAINER_OPERATE_STATUS, RIGHT
 
 
 class ServerNewHandler(WebSocketHandler, BaseHandler):
@@ -163,7 +161,7 @@ class ServerMigrationHandler(BaseHandler):
 
 
 class ServerDelHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['delete_server'])
+    @require(RIGHT['delete_server'])
     @coroutine
     def post(self):
         """
@@ -319,7 +317,7 @@ class ServerPerformanceHandler(BaseHandler):
 
 
 class ServerUpdateHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['modify_server_info'])
+    @require(RIGHT['modify_server_info'])
     @coroutine
     def post(self):
         """
@@ -363,7 +361,7 @@ class ServerUpdateHandler(BaseHandler):
 
 
 class ServerStopHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['start_stop_server'])
+    @require(RIGHT['start_stop_server'])
     @coroutine
     def get(self, id):
         """
@@ -395,7 +393,7 @@ class ServerStopHandler(BaseHandler):
 
 
 class ServerStartHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['start_stop_server'])
+    @require(RIGHT['start_stop_server'])
     @coroutine
     def get(self, id):
         """
@@ -426,7 +424,7 @@ class ServerStartHandler(BaseHandler):
 
 
 class ServerRebootHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['start_stop_server'])
+    @require(RIGHT['start_stop_server'])
     @coroutine
     def get(self, id):
         """
@@ -594,7 +592,7 @@ class ServerContainersInfoHandler(BaseHandler):
 
 
 class ServerContainerStartHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['start_stop_container'])
+    @require(RIGHT['start_stop_container'])
     @coroutine
     def post(self):
         """
@@ -628,7 +626,7 @@ class ServerContainerStartHandler(BaseHandler):
 
 
 class ServerContainerStopHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['start_stop_container'])
+    @require(RIGHT['start_stop_container'])
     @coroutine
     def post(self):
         """
@@ -663,7 +661,7 @@ class ServerContainerStopHandler(BaseHandler):
 
 
 class ServerContainerDelHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['delete_container'])
+    @require(RIGHT['delete_container'])
     @coroutine
     def post(self):
         """

@@ -11,7 +11,7 @@ from utils.context import catch
 from setting import settings
 from handler.user import user
 from constant import PROJECT_STATUS, SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, PROJECT_OPERATE_STATUS, OPERATE_STATUS,\
-      PERMISSIONS_TO_CODE
+      RIGHT
 
 
 class ProjectHandler(BaseHandler):
@@ -49,7 +49,7 @@ class ProjectHandler(BaseHandler):
 
 
 class ProjectNewHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['add_project'])
+    @require(RIGHT['add_project'])
     @coroutine
     def post(self):
         """
@@ -106,7 +106,7 @@ class ProjectNewHandler(BaseHandler):
 
 
 class ProjectDelHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['delete_project'])
+    @require(RIGHT['delete_project'])
     @coroutine
     def post(self):
         """
@@ -169,7 +169,7 @@ class ProjectDetailHandler(BaseHandler):
 
 
 class ProjectUpdateHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['modify_project_info'])
+    @require(RIGHT['modify_project_info'])
     @coroutine
     def post(self):
         """
@@ -437,7 +437,7 @@ class ProjectImageLogHandler(BaseHandler):
             data = {"log": json.loads(out['log']), "update_time": out['update_time']}
             self.success(data)
 
-    @require(PERMISSIONS_TO_CODE['delete_project_version'])
+    @require(RIGHT['delete_project_version'])
     @coroutine
     def delete(self, prj_name, version):
         """
