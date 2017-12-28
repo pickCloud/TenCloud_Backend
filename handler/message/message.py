@@ -49,7 +49,6 @@ class MessageHandler(BaseHandler):
             self.success(data)
 
 
-# 获取当前用户的消息数量
 class MessageCountHandler(BaseHandler):
     @is_login
     @coroutine
@@ -93,11 +92,14 @@ class MessageSearchHandler(BaseHandler):
     @is_login
     @coroutine
     def get(self):
-        '''
+        """
         @api {get} /api/messages/search 查找消息
         @apiName MessageSearchHandler
         @apiGroup Message
 
+        @apiParam {Number} status 消息状态
+        @apiParam {Number} mode 消息类型
+        @apiParam {String} keywords 关键字
         @apiDescription 通过关键字以及消息类型，消息状态进行查找消息
 
         @apiSuccessExample {json} Success-Response:
@@ -115,7 +117,7 @@ class MessageSearchHandler(BaseHandler):
                     "status": "0未读，1已读",}
                 ]
             }
-        '''
+        """
         with catch(self):
             # 封装参数，用户id直接获取，mode,status和keywords通过api参数传入
             params = {'owner': self.current_user['id']}
