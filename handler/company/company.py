@@ -5,7 +5,7 @@ from handler.base import BaseHandler
 from utils.decorator import is_login, require
 from utils.general import validate_mobile
 from utils.context import catch
-from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING, MSG_SUB_MODE, PERMISSIONS_TO_CODE
+from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING, MSG_SUB_MODE, RIGHT
 
 
 class CompanyHandler(BaseHandler):
@@ -115,7 +115,7 @@ class CompanyNewHandler(BaseHandler):
 
 
 class CompanyUpdateHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['modify_company_info'])
+    @require(RIGHT['modify_company_info'])
     @coroutine
     def post(self):
         """
@@ -207,7 +207,7 @@ class CompanyEntrySettingHandler(BaseHandler):
 
             self.success(data)
 
-    @require(PERMISSIONS_TO_CODE['set_join_conditions'])
+    @require(RIGHT['set_join_conditions'])
     @coroutine
     def post(self, cid):
         """
@@ -396,7 +396,7 @@ class CompanyApplicationVerifyMixin(BaseHandler):
 
 
 class CompanyApplicationAcceptHandler(CompanyApplicationVerifyMixin):
-    @require(PERMISSIONS_TO_CODE['audit_employee'])
+    @require(RIGHT['audit_employee'])
     @coroutine
     def post(self):
         """
@@ -417,7 +417,7 @@ class CompanyApplicationAcceptHandler(CompanyApplicationVerifyMixin):
 
 
 class CompanyApplicationRejectHandler(CompanyApplicationVerifyMixin):
-    @require(PERMISSIONS_TO_CODE['audit_employee'])
+    @require(RIGHT['audit_employee'])
     @coroutine
     def post(self):
         """
@@ -496,7 +496,7 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
             self.success()
 
 class CompanyAdminTransferHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['set_admin'])
+    @require(RIGHT['set_admin'])
     @coroutine
     def post(self):
         """
@@ -522,7 +522,7 @@ class CompanyAdminTransferHandler(BaseHandler):
 
 
 class CompanyApplicationDismissionHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['dismiss_employee'])
+    @require(RIGHT['dismiss_employee'])
     @coroutine
     def post(self):
         """

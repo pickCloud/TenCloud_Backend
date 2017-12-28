@@ -1,11 +1,8 @@
-import traceback
-
 from tornado.gen import coroutine
-from tornado.web import authenticated
 from handler.base import BaseHandler
 from utils.decorator import is_login, require
 from utils.context import catch
-from constant import MAX_PAGE_NUMBER, PERMISSIONS_TO_CODE
+from constant import MAX_PAGE_NUMBER, RIGHT
 
 
 class FileListHandler(BaseHandler):
@@ -116,7 +113,7 @@ class FileInfoHandler(BaseHandler):
 
 
 class FileUploadHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['upload_file'])
+    @require(RIGHT['upload_file'])
     @coroutine
     def post(self):
         """
@@ -199,8 +196,7 @@ class FileUpdateHandler(BaseHandler):
 
 
 class FileDownloadHandler(BaseHandler):
-    @authenticated
-    @require(PERMISSIONS_TO_CODE['download_file'])
+    @require(RIGHT['download_file'])
     @coroutine
     def get(self, file_id):
         """
@@ -224,7 +220,7 @@ class FileDownloadHandler(BaseHandler):
 
 
 class FileDirCreateHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['add_directory'])
+    @require(RIGHT['add_directory'])
     @coroutine
     def post(self):
         """
@@ -275,7 +271,7 @@ class FileDirCreateHandler(BaseHandler):
 
 
 class FileDeleteHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['delete_file'])
+    @require(RIGHT['delete_file'])
     @coroutine
     def post(self):
         """

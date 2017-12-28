@@ -1,11 +1,9 @@
-import traceback
-
 from tornado.gen import coroutine, Task
 
 from handler.base import BaseHandler
 from utils.decorator import is_login, require
 from utils.context import catch
-from constant import COMPANY_PERMISSION, USER_PERMISSION, PERMISSIONS_FLAG, PERMISSIONS_TO_CODE, \
+from constant import COMPANY_PERMISSION, USER_PERMISSION, PERMISSIONS_FLAG, RIGHT, \
     PERMISSIONS_TEMPLATE_TYPE, ERR_TIP
 
 
@@ -107,7 +105,7 @@ class PermissionTemplateHandler(BaseHandler):
 
 
 class PermissionTemplateAddHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['add_permission_template'])
+    @require(RIGHT['add_permission_template'])
     @coroutine
     def post(self):
         """
@@ -146,7 +144,7 @@ class PermissionTemplateAddHandler(BaseHandler):
 
 
 class PermissionTemplateDelHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['delete_permission_template'])
+    @require(RIGHT['delete_permission_template'])
     @coroutine
     def post(self, pt_id):
         """
@@ -204,7 +202,7 @@ class PermissionTemplateRenameHandler(BaseHandler):
 
 
 class PermissionTemplateUpdateHandler(BaseHandler):
-    @require(PERMISSIONS_TO_CODE['modify_permission_template'])
+    @require(RIGHT['modify_permission_template'])
     @coroutine
     def put(self, pt_id):
         """
@@ -323,7 +321,7 @@ class PermissionUserUpdateHandler(BaseHandler):
         arg['data'] = ','.join(data)
         return arg
 
-    @require(PERMISSIONS_TO_CODE['set_employee_permission'])
+    @require(RIGHT['set_employee_permission'])
     @coroutine
     def post(self):
         """
