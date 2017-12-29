@@ -151,8 +151,8 @@ class ServerDelHandler(BaseHandler):
         @apiUse Success
         """
         with catch(self):
-            # yield self.server_service.delete_server(self.params)
-            print('sss')
+            yield self.server_service.delete_server(self.params)
+            
             self.success()
 
 
