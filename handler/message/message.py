@@ -49,7 +49,6 @@ class MessageHandler(BaseHandler):
             self.success(data)
 
 
-# 获取当前用户的消息数量
 class MessageCountHandler(BaseHandler):
     @is_login
     @coroutine
@@ -87,3 +86,49 @@ class MessageCountHandler(BaseHandler):
                 'num': len(message_data)
             }
             self.success(data)
+
+
+class MessageSearchHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/messages/search 查找消息
+        @apiName MessageSearchHandler
+        @apiGroup Message
+
+        @apiParam {Number} status 消息状态
+        @apiParam {Number} mode 消息类型
+        @apiParam {String} keywords 关键字
+        @apiDescription 通过关键字以及消息类型，消息状态进行查找消息
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": [
+                    {"id": 1,
+                    "owner": 1,
+                    "content": "十全十美",
+                    "mode": "1加入企业，2企业改变信息，3离开企业",
+                    "sub_mode": "0马上审核, 1重新提交, 2进入企业, 3马上查看",
+                    "tip": "cid:code",
+                    "status": "0未读，1已读",}
+                ]
+            }
+        """
+        with catch(self):
+            # 封装参数，用户id直接获取，mode,status和keywords通过api参数传入
+            params = {'owner': self.current_user['id']}
+            if self.params.get('status') is not None:
+                params['status'] = self.params.get('status')
+            if self.params.get('mode'):
+                params['mode'] = self.params.get('mode')
+
+            # 模糊匹配关键字，使用%%转义
+            extra = ' AND content LIKE "%%{keywords}%%"'.format(keywords=self.params.get('keywords') or '')
+            extra += ' ORDER BY update_time DESC '
+            message_data = yield self.message_service.select(conds=params, extra=extra)
+
+            self.success(message_data)
