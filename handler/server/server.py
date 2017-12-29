@@ -3,26 +3,19 @@ __author__ = 'Jon'
 import json
 import re
 
-from tornado.websocket import WebSocketHandler
 from tornado.gen import coroutine, Task
 from tornado.ioloop import PeriodicCallback, IOLoop
-from handler.base import BaseHandler
+from handler.base import BaseHandler, WebSocketBaseHandler
 from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG, ERR_TIP
 from utils.general import validate_ip
 from utils.security import Aes
 from utils.decorator import is_login, require
 from utils.context import catch
 from constant import MONITOR_CMD, OPERATE_STATUS, OPERATION_OBJECT_STYPE, SERVER_OPERATE_STATUS, \
-      CONTAINER_OPERATE_STATUS, RIGHT
+      CONTAINER_OPERATE_STATUS, RIGHT, SERVICE
 
 
-class ServerNewHandler(WebSocketHandler, BaseHandler):
-    def check_origin(self, origin):
-        return True
-
-    def open(self):
-        self.write_message('open')
-
+class ServerNewHandler(WebSocketBaseHandler):
     def on_message(self, message):
         self.params = json.loads(message)
 
@@ -36,6 +29,8 @@ class ServerNewHandler(WebSocketHandler, BaseHandler):
                 self.params[i] = self.params[i].strip()
 
             validate_ip(self.params['public_ip'])
+
+            self.params.update(self.get_lord())
         except Exception as e:
             self.write_message(str(e))
             self.close()
@@ -140,28 +135,8 @@ class ServerReport(BaseHandler):
             self.success()
 
 
-class ServerMigrationHandler(BaseHandler):
-    @is_login
-    @coroutine
-    def post(self):
-        """
-        @api {post} /api/server/migration 主机迁移
-        @apiName ServerMigrationHandler
-        @apiGroup Server
-
-        @apiParam {Number} cluster_id 集群id
-        @apiParam {Number[]} id 主机ID
-
-        @apiUse Success
-        """
-        with catch(self):
-            yield self.server_service.migrate_server(self.params)
-
-            self.success()
-
-
 class ServerDelHandler(BaseHandler):
-    @require(RIGHT['delete_server'])
+    @require(RIGHT['delete_server'], service=SERVICE['s'])
     @coroutine
     def post(self):
         """
@@ -176,8 +151,8 @@ class ServerDelHandler(BaseHandler):
         @apiUse Success
         """
         with catch(self):
-            yield self.server_service.delete_server(self.params)
-
+            # yield self.server_service.delete_server(self.params)
+            print('sss')
             self.success()
 
 
@@ -230,7 +205,7 @@ class ServerDetailHandler(BaseHandler):
             }
         """
         with catch(self):
-            data = yield self.server_service.get_detail(id)
+            data = yield self.server_service.get_detail(int(id))
 
             result = dict()
 

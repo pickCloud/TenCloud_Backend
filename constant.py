@@ -541,3 +541,8 @@ RIGHT = {
     'company_issue': 7,  # 用户提起企业异议处理
     'audit_company_id': 35,  # 企业认证审核
 }
+
+# 处理数据权限的service
+SERVICE = {
+    's': 'user_access_server_service'
+}

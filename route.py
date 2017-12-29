@@ -15,7 +15,7 @@ from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDe
     ProjectImageLogHandler, ProjectContainersListHanler, ProjectImageUpload, \
     ProjectImageCloudDownload
 from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler, GithubOauthCallbackHandler
-from handler.server.server import ServerNewHandler, ServerReport, ServerMigrationHandler, ServerDelHandler, \
+from handler.server.server import ServerNewHandler, ServerReport, ServerDelHandler, \
     ServerDetailHandler, ServerPerformanceHandler, ServerUpdateHandler, \
     ServerStopHandler, ServerStartHandler, ServerRebootHandler, \
     ServerStatusHandler, ServerContainerPerformanceHandler, ServerContainersHandler, \
@@ -48,7 +48,6 @@ routes = [
     (r'/api/server/del', ServerDelHandler),
     (r'/api/server/(\d+)', ServerDetailHandler),
     (r'/api/server/update', ServerUpdateHandler),
-    (r'/api/server/migration', ServerMigrationHandler),
     (r'/api/server/performance', ServerPerformanceHandler),
 
     (r'/api/server/stop/(\d+)', ServerStopHandler),

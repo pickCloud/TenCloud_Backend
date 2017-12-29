@@ -3,6 +3,9 @@ from tornado.gen import coroutine
 from service.permission.permission_base import PermissionBaseService
 from constant import PT_FORMAT
 
+#######################################################################################################################
+# 功能权限
+#######################################################################################################################
 class PermissionService(PermissionBaseService):
     table = 'permission'
     fields = 'id, name, group'
@@ -113,17 +116,52 @@ class PermissionService(PermissionBaseService):
 class UserPermissionService(PermissionBaseService):
     table = 'user_permission'
     fields = 'id, uid, pid, cid'
+    resource = 'pid'
 
-    @coroutine
-    def check_permission(self, params):
-        ''' 检查pids是否为员工所拥有权限的子集
+    def ws_check_permission(self, params):
+        ''' WebSocket查看权限，因为WebSocket的open并不支持异步
         :param params: {'uid', 'cid', 'pids'}
-        :return: 如果权限不够，raise
+        :return:
         '''
-        data = yield self.select(fields='pid', conds={'uid': params['uid'], 'cid': params['cid']})
-        limits = set([d['pid'] for d in data])
+        cursor = self.sync_db.cursor()
+        try:
+            # 管理员不需要检查
+            sql = '''
+                SELECT * FROM company_employee WHERE uid=%s AND cid=%s AND is_admin=%s
+            '''
+            cursor.execute(sql, [params['uid'], params['cid'], 1])
+            result = cursor.fetchone()
+            if result: return
 
-        pids = set(params['pids']) if params.get('pids') else set()
+            # 检查权限
+            sql = '''
+                SELECT pid FROM user_permission WHERE uid=%s AND cid=%s
+            '''
+            cursor.execute(sql, [params['uid'], params['cid']])
+            result = cursor.fetchall()
+            self.issub(params.get('pids'), result)
+        finally:
+            cursor.close()
 
-        if not pids.issubset(limits):
-            raise ValueError('您没有操作的权限')
+
+
+#######################################################################################################################
+# 数据权限
+#######################################################################################################################
+class UserAccessBaseService(PermissionBaseService):
+    @coroutine
+    def filter(self, data, uid, cid, key='id'):
+        ''' 过滤用户不可见数据
+        :param params: {'data', 'uid', 'cid', 'key'(哪个键对应数据库字段)}
+        '''
+        db_data = yield self.select(fields=self.resource, conds={'uid': uid, 'cid': cid})
+
+        limits = [i[self.resource] for i in db_data]
+
+        return [i for i in data if i[key] in limits]
+
+
+class UserAccessServerService(UserAccessBaseService):
+    table = 'user_access_server'
+    fields = 'id, uid, sid, cid'
+    resource = 'sid'

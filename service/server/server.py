@@ -56,10 +56,10 @@ class ServerService(BaseService):
     def add_server(self, params):
         instance_id = yield self.fetch_instance_id(params['public_ip'])
 
-        sql = " INSERT INTO server(name, public_ip, cluster_id, instance_id) " \
+        sql = " INSERT INTO server(name, public_ip, cluster_id, instance_id, lord, class) " \
               " VALUES(%s, %s, %s, %s)"
 
-        yield self.db.execute(sql, [params['name'], params['public_ip'], params['cluster_id'], instance_id])
+        yield self.db.execute(sql, [params['name'], params['public_ip'], params['cluster_id'], instance_id, params['lord'], params['class']])
 
     @coroutine
     def migrate_server(self, params):
@@ -123,25 +123,34 @@ class ServerService(BaseService):
 
     @coroutine
     def get_brief_list(self, **cond):
-        arg = [cond['cluster_id']]
-        extra = ''
-        if cond.get('provider') and cond.get('region'):
-            extra = 'WHERE {provider} AND {region}'.format(
-                                                            provider=get_in_formats(field='i.provider', contents=cond['provider']),
-                                                            region=get_in_formats(field='i.region_name', contents=cond['region'])
-            )
-            arg.extend(cond['provider'])
-            arg.extend(cond['region'])
-            # arg.extend([cond['provider'], cond['region']])
-        elif cond.get('provider') and (not cond.get('region')):
-            extra = 'WHERE {provider}'.format(provider=get_in_formats(field='i.provider', contents=cond['provider']))
-            arg.extend(cond['provider'])
-        elif cond.get('region') and (not cond.get('provider')):
-            extra = 'WHERE {region}'.format(region=get_in_formats(field='i.region_name', contents=cond['region']))
-            arg.extend(cond['region'])
-        self.log.info(arg)
         ''' 集群详情中获取主机列表
         '''
+        arg = [cond['cluster_id']]
+        extra = ''
+
+        if len(cond) > 1:
+            extra = 'WHERE '
+            e = []
+
+            if cond.get('provider'):
+                e.append(get_in_formats(field='i.provider', contents=cond['provider']))
+                arg.append(cond['provider'])
+
+            if cond.get('region'):
+                e.append(get_in_formats(field='i.region_name', contents=cond['region']))
+                arg.append(cond['region'])
+
+            if cond.get('lord'):
+                e.append('sss.lord=%s')
+                arg.append(cond['lord'])
+
+            if cond.get('form'):
+                e.append('sss.form=%s')
+                arg.append(cond['form'])
+
+            extra += ' AND '.join(e)
+
+
         sql = """
             SELECT sss.id, sss.name, sss.public_ip, COALESCE(sss.cpu_content, '{}') AS cpu_content,
                    COALESCE(sss.net_content, '{}') AS net_content, COALESCE(sss.memory_content, '{}') AS memory_content, 
@@ -173,6 +182,7 @@ class ServerService(BaseService):
             {where}
             ORDER BY i.provider
             """.format(where=extra)
+
         cur = yield self.db.execute(sql, arg)
         data = cur.fetchall()
         for k in data:
@@ -405,7 +415,7 @@ class ServerService(BaseService):
 
     @coroutine
     def get_containers(self, params):
-
+        return []
         info = yield self.fetch_ssh_login_info(params)
         params.update(info)
         params['cmd'] = LIST_CONTAINERS_CMD
