@@ -49,7 +49,7 @@ from service.permission.permission_template import PermissionTemplateService
 from tornado.gen import coroutine, Task
 from tornado.websocket import WebSocketHandler
 
-from constant import SESSION_TIMEOUT, SESSION_KEY, TOKEN_EXPIRES_DAYS
+from constant import SESSION_TIMEOUT, SESSION_KEY, TOKEN_EXPIRES_DAYS, RIGHT, SERVICE
 from service.cluster.cluster import ClusterService
 from service.company.company import CompanyService
 from service.company.company_application import CompanyApplicationService
@@ -57,7 +57,7 @@ from service.company.company_employee import CompanyEmployeeService
 from service.company.company_entry_setting import CompanyEntrySettingService
 from service.file.file import FileService
 from service.message.message import MessageService
-from service.permission.permission import PermissionService, UserPermissionService
+from service.permission.permission import PermissionService, UserPermissionService, UserAccessServerService
 from service.project.project import ProjectService
 from service.project.project_versions import ProjectVersionService
 from service.repository.repository import RepositoryService
@@ -87,6 +87,7 @@ class BaseHandler(tornado.web.RequestHandler):
     permission_template_service = PermissionTemplateService()
     permission_service = PermissionService()
     user_permission_service = UserPermissionService()
+    user_access_server_service = UserAccessServerService()
 
 
     @property
@@ -130,17 +131,10 @@ class BaseHandler(tornado.web.RequestHandler):
             self.log.error('Invalid token: {}'.format(auth_token))
             return ''
 
-
-
-    @coroutine
     def _with_token(self):
         token = self.request.headers.get('Authorization')
 
-        if token:
-            user_id = self.decode_auth_token(token)
-
-            if user_id:
-                self.current_user = yield self.get_session(user_id)
+        return self.decode_auth_token(token) if token else ''
 
     def _decode_params(self):
         ''' 对self.params的values进行decode, 而且如果value长度为1, 返回最后一个元素
@@ -153,13 +147,16 @@ class BaseHandler(tornado.web.RequestHandler):
 
     @coroutine
     def prepare(self):
-        ''' 获取用户信息 && 获取请求的参数, json类型
+        ''' 获取用户信息 && 获取请求的参数
 
             Usage:
                 >>> self.current_user['id']
                 >>> self.params['x']
         '''
-        yield self._with_token()
+        user_id = self._with_token()
+
+        if user_id:
+            self.current_user = yield self.get_session(user_id)
 
         self.params = {}
 
@@ -172,12 +169,16 @@ class BaseHandler(tornado.web.RequestHandler):
         if self.request.headers.get('Cid'):
             self.params['cid'] = int(self.request.headers['Cid'])
 
-
     def on_finish(self):
         self.log.debug('{status} {method} {uri} {payload}'.format(status=self._status_code,
                                                                   method=self.request.method,
                                                                   uri=self.request.uri,
                                                                   payload=str(self.params or '')))
+
+    def get_lord(self):
+        ''' lord, form是数据库字段, lord(cid/uid), form(1个人, 2公司)
+        '''
+        return {'lord': self.params['cid'], 'form': 2} if self.params.get('cid') else {'lord': self.current_user['id'], 'form': 1}
 
     def guarantee(self, *args):
         ''' 接口参数是否完整
@@ -225,13 +226,36 @@ class BaseHandler(tornado.web.RequestHandler):
         '''
         yield Task(self.redis.delete, SESSION_KEY.format(user_id=user_id))
 
+    @coroutine
+    def filter(self, data, service=SERVICE['s'], key='id'):
+        ''' 数据权限过滤
+            Usage:
+                from constant import SERVICE
+                >>> self.filter(data, SERVICE['key'])
+        '''
+        # 个人不需要过滤
+        if not self.params.get('cid'): return data
+
+        result = yield getattr(self, service).filter(data, self.current_user['id'], self.params.get('cid'), key=key)
+
+        return result
+
 
 class WebSocketBaseHandler(WebSocketHandler, BaseHandler):
     def check_origin(self, origin):
         return True
 
     def open(self):
-        self.write_message('open')
+        self.user_id = self._with_token()
+        params = {'cid': self.params.get('cid'), 'uid': self.user_id, 'pids': RIGHT['add_server']}
+
+        try:
+            self.user_permission_service.ws_check_permission(params)
+        except Exception as e:
+            self.write_message(str(e))
+            self.close()
+        else:
+            self.write_message('open')
 
     def on_message(self, message):
         pass

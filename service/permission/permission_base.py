@@ -7,6 +7,9 @@ from constant import  PERMISSIONS
 
 
 class PermissionBaseService(BaseService):
+    table = ''
+    fields = ''
+    resource = ''
 
     @coroutine
     def merge_servers(self, data):
@@ -93,3 +96,24 @@ class PermissionBaseService(BaseService):
         cur = yield self.db.execute(sql)
         info = cur.fetchall()
         return info
+
+    @coroutine
+    def check_right(self, params):
+        ''' 检查ids是否为员工功能权限/数据权限的子集
+        :param params: {'uid', 'cid', 'ids'}
+        :return: 如果权限不够，raise
+        '''
+        result = yield self.select(fields=self.resource, conds={'uid': params['uid'], 'cid': params['cid']})
+        self.issub(params.get('ids'), result)
+
+    def issub(self, ids, db_data):
+        ''' ids是否是数据库数据的子集
+        :param ids:    list, e.g. [1, 2]
+        :param db_data: list, e.g. [{'sid/pid/...'},..]
+        '''
+        limits = set([d[self.resource] for d in db_data])
+
+        ids = set(ids) if isinstance(ids, (list, tuple)) else set([ids])
+
+        if not ids.issubset(limits):
+            raise ValueError('您没有操作的权限')

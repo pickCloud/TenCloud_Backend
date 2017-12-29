@@ -1,12 +1,10 @@
 __author__ = 'Jon'
 
-import traceback
 import json
 
 from tornado.gen import coroutine, Task
 from handler.base import BaseHandler
 from constant import CLUSTER_SEARCH_TIMEOUT
-from utils.general import get_in_formats
 from utils.decorator import is_login
 from utils.context import catch
 
@@ -81,7 +79,9 @@ class ClusterDetailHandler(BaseHandler):
             id = int(id)
 
             basic_info = yield self.cluster_service.select({'id': id}, ct=False)
-            server_list = yield self.server_service.get_brief_list(cluster_id=id)
+            server_list = yield self.server_service.get_brief_list(cluster_id=id, **self.get_lord())
+
+            server_list = yield self.filter(server_list)
 
             self.success({
                 'basic_info': basic_info,
@@ -155,7 +155,8 @@ class ClusterSearchHandler(BaseHandler):
                     data = yield self.server_service.get_brief_list(
                         cluster_id=cluster_id,
                         provider=provider_name,
-                        region=region_name
+                        region=region_name,
+                        **self.get_lord()
                     )
                     data = json.dumps(data)
                     yield Task(self.redis.setex, key, CLUSTER_SEARCH_TIMEOUT, data)
@@ -165,8 +166,12 @@ class ClusterSearchHandler(BaseHandler):
             data = yield self.server_service.get_brief_list(
                                                             cluster_id=cluster_id,
                                                             provider=provider_name,
-                                                            region=region_name
+                                                            region=region_name,
+                                                            **self.get_lord()
                                                             )
             if server_name:
                 data = yield self.cluster_service.select_by_name(data=data, server_name=server_name)
+
+            data = yield self.filter(data)
+
             self.success(data)
