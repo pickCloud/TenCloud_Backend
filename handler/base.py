@@ -57,7 +57,7 @@ from service.company.company_employee import CompanyEmployeeService
 from service.company.company_entry_setting import CompanyEntrySettingService
 from service.file.file import FileService
 from service.message.message import MessageService
-from service.permission.permission import PermissionService, UserPermissionService, UserAccessServerService
+from service.permission.permission import PermissionService, UserPermissionService, UserAccessServerService, UserAccessProjectService, UserAccessFilehubService
 from service.project.project import ProjectService
 from service.project.project_versions import ProjectVersionService
 from service.repository.repository import RepositoryService
@@ -88,6 +88,8 @@ class BaseHandler(tornado.web.RequestHandler):
     permission_service = PermissionService()
     user_permission_service = UserPermissionService()
     user_access_server_service = UserAccessServerService()
+    user_access_project_service = UserAccessProjectService()
+    user_access_filehub_service = UserAccessFilehubService()
 
 
     @property
