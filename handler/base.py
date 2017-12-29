@@ -248,7 +248,8 @@ class WebSocketBaseHandler(WebSocketHandler, BaseHandler):
         return True
 
     def open(self):
-        self.user_id = self._with_token()
+        self.user_id = self.decode_auth_token(self.params['token']) if self.params.get('token') else 0
+
         params = {'cid': self.params.get('cid'), 'uid': self.user_id, 'pids': RIGHT['add_server']}
 
         try:
