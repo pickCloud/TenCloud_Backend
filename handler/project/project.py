@@ -43,7 +43,7 @@ class ProjectHandler(BaseHandler):
             }
         """
         with catch(self):
-            result = yield self.project_service.select(ct=False)
+            result = yield self.project_service.fetch({'uid': self.current_user['id'], 'cid': self.params.get('cid')})
 
             self.success(result)
 
@@ -163,7 +163,7 @@ class ProjectDetailHandler(BaseHandler):
             }
         """
         with catch(self):
-            result = yield self.project_service.select({'id': id})
+            result = yield self.project_service.fetch({'uid': self.current_user['id'], 'cid': self.params.get('cid'), 'pid': id})
 
             self.success(result)
 

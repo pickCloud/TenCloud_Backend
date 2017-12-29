@@ -169,5 +169,32 @@ class ProjectService(BaseService):
             self.log.error(cmd)
             raise ValueError('failed to cloud download image')
 
+    @coroutine
+    def fetch(self, params, fields=None):
+        '''
+        通过关联project表和user_access_project表，查询用户能访问的项目数据
+        :param params: 判断条件，是在表B上的
+        :param fields: 需要查询的表A的字段
+        :return:
+        '''
+        sql = """
+            SELECT {fields} FROM project AS a 
+            """
+
+        conds, param = self.make_pair(params)
+        if params['cid']:
+            fields = re.sub('(\w+)', lambda x: 'a.'+x.group(0), fields or self.fields)
+            sql += " JOIN user_access_project AS b ON a.id=b.pid "
+            sql += ' WHERE b.' + ' AND b.'.join(conds)
+        else:
+            # TODO: 待数据库中新增个人用户和项目的关联字段后进行查询
+            # sql += ' WHERE ' + ' AND '.join(conds)
+            param = {}
+            pass
+
+        cur = yield self.db.execute(sql.format(fields=fields or self.fields), param)
+        data = cur.fetchall()
+        return data
+
 
 
