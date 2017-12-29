@@ -11,7 +11,7 @@ from utils.context import catch
 from setting import settings
 from handler.user import user
 from constant import PROJECT_STATUS, SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, PROJECT_OPERATE_STATUS, OPERATE_STATUS,\
-      RIGHT
+      RIGHT, SERVICE
 
 
 class ProjectHandler(BaseHandler):
@@ -106,7 +106,7 @@ class ProjectNewHandler(BaseHandler):
 
 
 class ProjectDelHandler(BaseHandler):
-    @require(RIGHT['delete_project'])
+    @require(RIGHT['delete_project'], service=SERVICE['p'])
     @coroutine
     def post(self):
         """
@@ -169,7 +169,7 @@ class ProjectDetailHandler(BaseHandler):
 
 
 class ProjectUpdateHandler(BaseHandler):
-    @require(RIGHT['modify_project_info'])
+    @require(RIGHT['modify_project_info'], service=SERVICE['p'])
     @coroutine
     def post(self):
         """
