@@ -111,8 +111,10 @@ class CompanyNewHandler(BaseHandler):
             del self.params['cid']
             info = yield self.company_service.add(self.params)
             yield self.company_employee_service.add(dict(cid=info['id'], uid=self.current_user['id'], status=APPLICATION_STATUS['founder'], is_admin=1))
-
-            self.success()
+            data = {
+                'cid': info['id']
+            }
+            self.success(data)
 
 
 class CompanyUpdateHandler(BaseHandler):
