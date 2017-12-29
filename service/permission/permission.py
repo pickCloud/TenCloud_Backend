@@ -165,3 +165,15 @@ class UserAccessServerService(UserAccessBaseService):
     table = 'user_access_server'
     fields = 'id, uid, sid, cid'
     resource = 'sid'
+
+
+class UserAccessProjectService(UserAccessBaseService):
+    table = 'user_access_project'
+    fields = 'id, uid, pid, cid'
+    resource = 'pid'
+
+
+class UserAccessFilehubService(UserAccessBaseService):
+    table = 'user_access_filehub'
+    fields = 'id, uid, fid, cid'
+    resource = 'fid'

@@ -544,5 +544,7 @@ RIGHT = {
 
 # 处理数据权限的service
 SERVICE = {
-    's': 'user_access_server_service'
+    's': 'user_access_server_service',
+    'p': 'user_access_project_service',
+    'f': 'user_access_filehub_service'
 }
