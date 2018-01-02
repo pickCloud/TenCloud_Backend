@@ -158,6 +158,7 @@ class ServerDelHandler(BaseHandler):
 
 class ServerDetailHandler(BaseHandler):
     @is_login
+    @require(service=SERVICE['s'])
     @coroutine
     def get(self, id):
         """
@@ -246,6 +247,7 @@ class ServerDetailHandler(BaseHandler):
 
 class ServerPerformanceHandler(BaseHandler):
     @is_login
+    @require(service=SERVICE['s'])
     @coroutine
     def post(self):
         """
@@ -292,7 +294,7 @@ class ServerPerformanceHandler(BaseHandler):
 
 
 class ServerUpdateHandler(BaseHandler):
-    @require(RIGHT['modify_server_info'])
+    @require(RIGHT['modify_server_info'], service=SERVICE['s'])
     @coroutine
     def post(self):
         """
@@ -336,7 +338,7 @@ class ServerUpdateHandler(BaseHandler):
 
 
 class ServerStopHandler(BaseHandler):
-    @require(RIGHT['start_stop_server'])
+    @require(RIGHT['start_stop_server'], service=SERVICE['s'])
     @coroutine
     def get(self, id):
         """
@@ -368,7 +370,7 @@ class ServerStopHandler(BaseHandler):
 
 
 class ServerStartHandler(BaseHandler):
-    @require(RIGHT['start_stop_server'])
+    @require(RIGHT['start_stop_server'], service=SERVICE['s'])
     @coroutine
     def get(self, id):
         """
@@ -399,7 +401,7 @@ class ServerStartHandler(BaseHandler):
 
 
 class ServerRebootHandler(BaseHandler):
-    @require(RIGHT['start_stop_server'])
+    @require(RIGHT['start_stop_server'], service=SERVICE['s'])
     @coroutine
     def get(self, id):
         """
@@ -456,6 +458,7 @@ class ServerStatusHandler(BaseHandler):
 
 class ServerContainerPerformanceHandler(BaseHandler):
     @is_login
+    @require(service=SERVICE['s'])
     @coroutine
     def post(self):
         """
@@ -463,7 +466,7 @@ class ServerContainerPerformanceHandler(BaseHandler):
         @apiName ServerContainerPerformanceHandler
         @apiGroup Server
 
-        @apiParam {Number} server_id 主机id
+        @apiParam {Number} id 主机id
         @apiParam {String} container_name 容器名字
         @apiParam {Number} start_time 起始时间
         @apiParam {Number} end_time 终止时间
@@ -500,6 +503,7 @@ class ServerContainerPerformanceHandler(BaseHandler):
 
 class ServerContainersHandler(BaseHandler):
     @is_login
+    @require(service=SERVICE['s'])
     @coroutine
     def get(self, id):
         """
@@ -535,14 +539,15 @@ class ServerContainersHandler(BaseHandler):
 
 class ServerContainersInfoHandler(BaseHandler):
     @is_login
+    @require(service=SERVICE['s'])
     @coroutine
-    def get(self, server_id, container_id):
+    def get(self, id, container_id):
         """
         @api {get} /api/server/([\w\W]+)/container/([\w\W]+) 获取主机容器信息
         @apiName ServerContainersInfoHandler
         @apiGroup Server
 
-        @apiParam {Number} server_id 服务器id
+        @apiParam {Number} id 服务器id
         @apiParam {Number} container_id 容器id
 
         @apiSuccessExample {json} Success-Response:
@@ -556,8 +561,8 @@ class ServerContainersInfoHandler(BaseHandler):
             }
         """
         with catch(self):
-            params = yield self.server_service.fetch_ssh_login_info({'server_id': server_id})
-            server_name = yield self.server_service.select(fields='name', conds={'id': server_id}, ct=False, ut=False, one=True)
+            params = yield self.server_service.fetch_ssh_login_info({'server_id': id})
+            server_name = yield self.server_service.select(fields='name', conds={'id': id}, ct=False, ut=False, one=True)
             params.update({'container_id': container_id, 'server_name': server_name['name']})
             data, err = yield self.server_service.get_container_info(params)
             if err:
@@ -567,7 +572,7 @@ class ServerContainersInfoHandler(BaseHandler):
 
 
 class ServerContainerStartHandler(BaseHandler):
-    @require(RIGHT['start_stop_container'])
+    @require(RIGHT['start_stop_container'], service=SERVICE['s'])
     @coroutine
     def post(self):
         """
@@ -577,7 +582,7 @@ class ServerContainerStartHandler(BaseHandler):
 
         @apiUse apiHeader
 
-        @apiParam {Number} server_id 主机id
+        @apiParam {Number} id 主机id
         @apiParam {String} container_id 容器id
 
         @apiUse Success
@@ -601,7 +606,7 @@ class ServerContainerStartHandler(BaseHandler):
 
 
 class ServerContainerStopHandler(BaseHandler):
-    @require(RIGHT['start_stop_container'])
+    @require(RIGHT['start_stop_container'], service=SERVICE['s'])
     @coroutine
     def post(self):
         """
@@ -611,7 +616,7 @@ class ServerContainerStopHandler(BaseHandler):
 
         @apiUse apiHeader
 
-        @apiParam {Number} server_id 主机id
+        @apiParam {Number} id 主机id
         @apiParam {String} container_id 容器id
 
         @apiUse Success
@@ -636,7 +641,7 @@ class ServerContainerStopHandler(BaseHandler):
 
 
 class ServerContainerDelHandler(BaseHandler):
-    @require(RIGHT['delete_container'])
+    @require(RIGHT['delete_container'], service=SERVICE['s'])
     @coroutine
     def post(self):
         """
@@ -646,7 +651,7 @@ class ServerContainerDelHandler(BaseHandler):
 
         @apiUse apiHeader
 
-        @apiParam {Number} server_id 主机id
+        @apiParam {Number} id 主机id
         @apiParam {String} container_id 容器id
 
         @apiUse Success
