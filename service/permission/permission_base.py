@@ -11,7 +11,6 @@ class PermissionBaseService(BaseService):
     fields = ''
     resource = ''
 
-    @coroutine
     def merge_servers(self, data):
 
         """
