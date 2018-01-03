@@ -170,7 +170,7 @@ class ClusterSearchHandler(BaseHandler):
                                                             **self.get_lord()
                                                             )
             if server_name:
-                data = yield self.cluster_service.select_by_name(data=data, server_name=server_name)
+                data = self.cluster_service.select_by_name(data=data, server_name=server_name)
 
             data = yield self.filter(data)
 

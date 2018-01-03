@@ -83,15 +83,23 @@ def require(*pids, service=None):
             try:
                 cid = find(self, args)
 
-                if cid:
+                ids = find(self, args, target='id') if service else [] # 数据权限
+
+                if cid: # 公司
                     try:
                         yield self.company_employee_service.check_admin(cid, self.current_user['id'])  # 管理员不需要检查
                     except ValueError:
-                        yield self.user_permission_service.check_right({'cid': cid, 'uid': self.current_user['id'], 'ids': pids})
+                        yield self.user_permission_service.check_right({'cid': cid, 'uid': self.current_user['id'], 'ids': pids}) # 功能权限
 
-                        if service:
-                            ids = find(self, args, target='id')
-                            yield getattr(self, service).check_right({'cid': cid, 'uid': self.current_user['id'], 'ids': ids})
+                        if ids:
+                            yield getattr(self, service['company']).check_right({'cid': cid, 'uid': self.current_user['id'], 'ids': ids})
+                else: # 个人
+                    if ids:
+                        data = yield getattr(self, service['personal']).select(self.get_lord().update({'ids': ids}))
+
+                        ids_len = 1 if isinstance(ids, int) else len(ids)
+                        if len(data) != ids_len:
+                            raise ValueError('请求的资源，并非全部合法!')
 
             except Exception as e:
                 self.error(str(e))

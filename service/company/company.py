@@ -41,7 +41,7 @@ class CompanyService(BaseService):
     def fetch_with_code(self, code):
         '''
         :param code: 申请链接的code
-        :return: {'company_name', 'contact', 'setting'}
+        :return: {'cid', 'company_name', 'contact', 'setting'}
         '''
         sql = '''
             SELECT c.id AS cid, c.name AS company_name, c.contact, ce.setting

@@ -450,11 +450,14 @@ YE_PORTMAP = '-p 80:80 -p 8080:8080 -p 8888:8888 -p 9999:9999'
 #################################################################################################
 DEFAULT_ENTRY_SETTING = 'mobile,name'
 INVITE_URL = SERVER_URL + '/#/invite?code='
+
+# company_employee表的status
 APPLICATION_STATUS = {
     'reject': -1,
     'process': 0,
     'accept': 1,
-    'founder': 2
+    'founder': 2,
+    'waiting': 3,
 }
 MSG = {
     'application': {
@@ -544,7 +547,16 @@ RIGHT = {
 
 # 处理数据权限的service
 SERVICE = {
-    's': 'user_access_server_service',
-    'p': 'user_access_project_service',
-    'f': 'user_access_filehub_service'
+    's': {
+        'company': 'user_access_server_service',
+        'personal': 'server_service'
+    },
+    'p': {
+        'company': 'user_access_project_service',
+        'personal': 'project_service'
+    },
+    'f': {
+        'company': 'user_access_filehub_service',
+        'personal': 'filehub_service'
+    }
 }
