@@ -78,7 +78,7 @@ class FileService(BaseService):
                 CONCAT('{uri}', f.qiniu_id) as url, CONCAT('{uri}', f.hash) as thumb,
                 DATE_FORMAT(f.create_time, %s) as create_time, DATE_FORMAT(f.update_time, %s) as update_time 
                 FROM {filehub} as f, {user} as u
-                WHERE f.pid = %s AND f.owner = u.id AND f.form = %s
+                WHERE f.pid = %s AND f.owner = u.id
                 ORDER BY f.create_time DESC
                 LIMIT %s, %s
               """.format(filehub=self.table, user='user', uri=DISK_DOWNLOAD_URL)
@@ -87,7 +87,6 @@ class FileService(BaseService):
                 FULL_DATE_FORMAT,
                 FULL_DATE_FORMAT,
                 params['file_id'],
-                params['form'],
                 start_page,
                 params['page_number']
         ]
