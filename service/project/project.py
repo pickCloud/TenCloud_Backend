@@ -173,8 +173,8 @@ class ProjectService(BaseService):
     def fetch(self, params, fields=None):
         '''
         通过关联project表和user_access_project表，查询用户能访问的项目数据
-        :param params: 判断条件，是在表B上的
-        :param fields: 需要查询的表A的字段
+        :param params: 判断条件，是在表user_access_project上的
+        :param fields: 需要查询的表project的字段
         :return:
         '''
         sql = """
@@ -182,7 +182,8 @@ class ProjectService(BaseService):
             """
 
         conds, param = self.make_pair(params)
-        if params['cid']:
+        if params.get('cid'):
+            # 因为联表操作，先为每个fields中的字段添加上'a.'
             fields = re.sub('(\w+)', lambda x: 'a.'+x.group(0), fields or self.fields)
             sql += " JOIN user_access_project AS b ON a.id=b.pid "
             sql += ' WHERE b.' + ' AND b.'.join(conds)
