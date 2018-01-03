@@ -55,6 +55,8 @@ class FileService(BaseService):
             'hash': params['hash'],
             'type': 0,
             'pid': params['pid'],
+            'lord': params['lord'],
+            'form': params['form']
         }
         resp = {'file_status': 0, 'token': '', 'file_id': ''}
         data = yield self.check_file_exist(params['hash'])
@@ -76,7 +78,7 @@ class FileService(BaseService):
                 CONCAT('{uri}', f.qiniu_id) as url, CONCAT('{uri}', f.hash) as thumb,
                 DATE_FORMAT(f.create_time, %s) as create_time, DATE_FORMAT(f.update_time, %s) as update_time 
                 FROM {filehub} as f, {user} as u
-                WHERE f.pid = %s AND f.owner = u.id
+                WHERE f.pid = %s AND f.owner = u.id AND f.form = %s
                 ORDER BY f.create_time DESC
                 LIMIT %s, %s
               """.format(filehub=self.table, user='user', uri=DISK_DOWNLOAD_URL)
@@ -85,6 +87,7 @@ class FileService(BaseService):
                 FULL_DATE_FORMAT,
                 FULL_DATE_FORMAT,
                 params['file_id'],
+                params['form'],
                 start_page,
                 params['page_number']
         ]
@@ -93,8 +96,8 @@ class FileService(BaseService):
         return data
 
     @coroutine
-    def total_pages(self, pid):
-        sql = "SELECT count(*) as number FROM {table} WHERE pid = %s".format(table=self.table)
-        cur = yield self.db.execute(sql, [pid])
+    def total_pages(self, params):
+        sql = "SELECT count(*) as number FROM {table} WHERE pid = %s AND form = %s".format(table=self.table)
+        cur = yield self.db.execute(sql, [params['pid'], params['form']])
         data = cur.fetchone()
         return data['number']

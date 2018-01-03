@@ -532,6 +532,7 @@ RIGHT = {
     'set_admin': 24,  # 更换员工管理员
     'audit_employee': 23,  # 审核员工
     'view_employee_id_info': 22,  # 查看员工身份证信息
+    'invite_new_employee': 36, # 邀请新员工
 
     'modify_permission_template': 28,  # 修改权限模版
     'delete_permission_template': 29,  # 删除权限模版

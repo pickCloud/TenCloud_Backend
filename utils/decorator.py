@@ -82,12 +82,12 @@ def require(*pids, service=None):
 
             try:
                 cid = find(self, args)
-
                 if cid:
                     try:
                         yield self.company_employee_service.check_admin(cid, self.current_user['id'])  # 管理员不需要检查
                     except ValueError:
-                        yield self.user_permission_service.check_right({'cid': cid, 'uid': self.current_user['id'], 'ids': pids})
+                        if pids:
+                            yield self.user_permission_service.check_right({'cid': cid, 'uid': self.current_user['id'], 'ids': pids})
 
                         if service:
                             ids = find(self, args, target='id')

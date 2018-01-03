@@ -141,9 +141,6 @@ class CompanyUpdateHandler(BaseHandler):
 
             validate_mobile(self.params['mobile'])
 
-            # 管理员判定
-            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
-
             # 公司名字是否存在
             data = yield self.company_service.select(fields='id, name', ut=False, ct=False)
             names = [i['name'] for i in data if i['id'] != self.params['cid']]
@@ -173,7 +170,7 @@ class CompanyUpdateHandler(BaseHandler):
 
 
 class CompanyEntrySettingHandler(BaseHandler):
-    @is_login
+    @require(RIGHT['invite_new_employee'])
     @coroutine
     def get(self, cid):
         """
@@ -203,9 +200,6 @@ class CompanyEntrySettingHandler(BaseHandler):
         """
         with catch(self):
             cid = int(cid)
-
-            yield self.company_employee_service.check_admin(cid, self.current_user['id'])
-
             data = yield self.company_entry_setting_service.get_setting(cid)
 
             self.success(data)
@@ -242,9 +236,6 @@ class CompanyEntrySettingHandler(BaseHandler):
         """
         with catch(self):
             cid = int(cid)
-
-            yield self.company_employee_service.check_admin(cid, self.current_user['id'])
-
             self.params['cid'] = cid
             url = yield self.company_entry_setting_service.save_setting(self.params)
 
@@ -252,7 +243,7 @@ class CompanyEntrySettingHandler(BaseHandler):
 
 
 class CompanyEntryUrlHandler(BaseHandler):
-    @is_login
+    @require(RIGHT['invite_new_employee'])
     @coroutine
     def get(self, cid):
         """
@@ -282,8 +273,6 @@ class CompanyEntryUrlHandler(BaseHandler):
         """
         with catch(self):
             cid = int(cid)
-
-            yield self.company_employee_service.check_admin(cid, self.current_user['id'])
 
             data = yield self.company_entry_setting_service.select(fields='code', conds={'cid': cid}, one=True)
 
@@ -515,8 +504,6 @@ class CompanyAdminTransferHandler(BaseHandler):
         @apiUse Success
         """
         with catch(self):
-            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
-
             self.params['admin_id'] = self.current_user['id']
 
             yield self.company_employee_service.transfer_adimin(self.params)
@@ -541,8 +528,6 @@ class CompanyApplicationDismissionHandler(BaseHandler):
         """
         with catch(self):
             data = yield self.company_employee_service.select(fields='cid', conds={'id': self.params['id']}, one=True)
-
-            yield self.company_employee_service.check_admin(data['cid'], self.current_user['id'])
 
             yield self.company_employee_service.delete({'id': self.params['id']})
 
