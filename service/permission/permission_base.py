@@ -59,7 +59,6 @@ class PermissionBaseService(BaseService):
             res.append(tmp_provider)
         return res
 
-    @coroutine
     def merge_permissions(self, data):
         if len(data) == 0:
             return

@@ -59,6 +59,8 @@ class UserBase(BaseHandler):
             yield self.user_service.add(params)
             data = yield self.user_service.select(params, one=True)
 
+        data.pop('password', None)
+
         # 设置session
         yield self.set_session(data['id'], data)
 

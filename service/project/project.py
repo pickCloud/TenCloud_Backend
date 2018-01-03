@@ -18,7 +18,7 @@ class ProjectService(BaseService):
     fields = """
                 id, name, description, repos_name, 
                 repos_url, http_url, image_name, mode, status, 
-                deploy_ips, container_name, image_source, cid
+                deploy_ips, container_name, image_source, lord, form
             """
 
     def sync_db_execute(self, sql, params):
@@ -168,6 +168,34 @@ class ProjectService(BaseService):
         if out:
             self.log.error(cmd)
             raise ValueError('failed to cloud download image')
+
+    @coroutine
+    def fetch(self, params, fields=None):
+        '''
+        通过关联project表和user_access_project表，查询用户能访问的项目数据
+        :param params: 判断条件，是在表user_access_project上的
+        :param fields: 需要查询的表project的字段
+        :return:
+        '''
+        sql = """
+            SELECT {fields} FROM project AS a 
+            """
+
+        conds, param = self.make_pair(params)
+        if params.get('cid'):
+            # 因为联表操作，先为每个fields中的字段添加上'a.'
+            fields = re.sub('(\w+)', lambda x: 'a.'+x.group(0), fields or self.fields)
+            sql += " JOIN user_access_project AS b ON a.id=b.pid "
+
+            sql += ' WHERE b.' + ' AND b.'.join(conds)
+        else:
+            # 使用form和lord查询属于个人用户的项目
+            conds, param = self.make_pair(params)
+            sql += ' WHERE ' + ' AND '.join(conds)
+
+        cur = yield self.db.execute(sql.format(fields=fields or self.fields), param)
+        data = cur.fetchall()
+        return data
 
 
 
