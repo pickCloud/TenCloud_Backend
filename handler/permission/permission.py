@@ -164,7 +164,7 @@ class PermissionTemplateDelHandler(BaseHandler):
             self.guarantee(*args)
             pt_id = int(pt_id)
 
-            pt_info = yield self.permission_template_service.select({'id': pt_id})
+            pt_info = yield self.permission_template_service.select({'id': pt_id}, one=True)
             if pt_info['type'] == PERMISSIONS_TEMPLATE_TYPE['default']:
                 err_key = 'permission_template_cannot_operate'
                 self.error(status=ERR_TIP[err_key]['sts'], message=ERR_TIP[err_key]['msg'])
