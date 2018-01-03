@@ -18,7 +18,6 @@ idna==2.5
 jmespath==0.9.3
 packaging==16.8
 paramiko==2.2.0
-passwordmeter==0.1.8
 pyasn1==0.2.3
 pycparser==2.17
 pycrypto==2.6.1
