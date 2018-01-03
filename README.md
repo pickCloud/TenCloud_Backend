@@ -374,6 +374,7 @@ CREATE TABLE `company` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
+ALTER TABLE company ADD COLUMN image_url varchar(128) NOT NULL DEFAULT '' COMMENT '企业logo'
 
 * 公司员工表
 ```

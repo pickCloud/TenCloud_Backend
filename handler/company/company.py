@@ -132,12 +132,13 @@ class CompanyUpdateHandler(BaseHandler):
         @apiParam {String} name 公司名称
         @apiParam {String} contact 联系人
         @apiParam {String} mobile 联系方式
+        @apiParam {String} image_url 企业logo
 
         @apiUse Success
         """
         with catch(self):
             # 参数认证
-            self.guarantee('cid', 'name', 'contact', 'mobile')
+            self.guarantee('cid', 'name', 'contact', 'mobile', 'image_url')
 
             validate_mobile(self.params['mobile'])
 
@@ -158,8 +159,14 @@ class CompanyUpdateHandler(BaseHandler):
                 if i['id'] == self.params['cid']:
                     old = i
 
-            yield self.company_service.update(sets={'name': self.params['name'], 'contact': self.params['contact'], 'mobile': self.params['mobile']},
-                                              conds={'id': self.params['cid']},
+            yield self.company_service.update(
+                                                sets={
+                                                    'name': self.params['name'],
+                                                    'contact': self.params['contact'],
+                                                    'mobile': self.params['mobile'],
+                                                    'image_url': self.params['image_url']
+                                                },
+                                                conds={'id': self.params['cid']},
                                               )
             # 通知
             employee = yield self.company_employee_service.get_employee_list(self.params['cid'], 0, APPLICATION_STATUS['accept'])
