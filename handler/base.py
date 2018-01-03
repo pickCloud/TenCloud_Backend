@@ -236,7 +236,7 @@ class BaseHandler(tornado.web.RequestHandler):
         # 个人不需要过滤
         if not self.params.get('cid'): return data
 
-        result = yield getattr(self, service).filter(data, self.current_user['id'], self.params.get('cid'), key=key)
+        result = yield getattr(self, service['company']).filter(data, self.current_user['id'], self.params.get('cid'), key=key)
 
         return result
 
