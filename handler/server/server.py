@@ -157,7 +157,6 @@ class ServerDelHandler(BaseHandler):
 
 
 class ServerDetailHandler(BaseHandler):
-    @is_login
     @require(service=SERVICE['s'])
     @coroutine
     def get(self, id):
@@ -246,7 +245,6 @@ class ServerDetailHandler(BaseHandler):
 
 
 class ServerPerformanceHandler(BaseHandler):
-    @is_login
     @require(service=SERVICE['s'])
     @coroutine
     def post(self):
@@ -457,7 +455,6 @@ class ServerStatusHandler(BaseHandler):
 
 
 class ServerContainerPerformanceHandler(BaseHandler):
-    @is_login
     @require(service=SERVICE['s'])
     @coroutine
     def post(self):
@@ -502,7 +499,6 @@ class ServerContainerPerformanceHandler(BaseHandler):
 
 
 class ServerContainersHandler(BaseHandler):
-    @is_login
     @require(service=SERVICE['s'])
     @coroutine
     def get(self, id):
@@ -538,7 +534,6 @@ class ServerContainersHandler(BaseHandler):
 
 
 class ServerContainersInfoHandler(BaseHandler):
-    @is_login
     @require(service=SERVICE['s'])
     @coroutine
     def get(self, id, container_id):
