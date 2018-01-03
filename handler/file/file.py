@@ -78,7 +78,7 @@ class FileTotalHandler(BaseHandler):
         with catch(self):
             params = self.get_lord()
             params.update({'pid': file_id})
-            data = yield self.file_service.total_pages(file_id)
+            data = yield self.file_service.total_pages(params)
             self.success(data)
 
 
