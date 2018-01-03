@@ -8,7 +8,7 @@ from setting import settings
 
 class FileService(BaseService):
     table = 'filehub'
-    fields = 'id, filename, size, qiniu_id, owner, mime, hash, type, pid, cid'
+    fields = 'id, filename, size, qiniu_id, owner, mime, hash, type, pid, lord, form'
 
     def __init__(self, ak, sk):
         super().__init__()

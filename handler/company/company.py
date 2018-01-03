@@ -308,6 +308,7 @@ class CompanyApplicationHandler(BaseHandler):
                 "status": 0,
                 "msg": "success",
                 "data": {
+                    "cid": 1,
                     "company_name": "十全",
                     "contact": "13900000000",
                     "setting": "mobile,name"
@@ -538,4 +539,26 @@ class CompanyApplicationDismissionHandler(BaseHandler):
 
             yield self.company_employee_service.delete({'id': self.params['id']})
 
+            self.success()
+
+
+class CompanyApplicationWaitingHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/company/application/waiting 待加入公司
+        @apiName CompanyApplicationWaitingHandler
+        @apiGroup Company
+
+        @apiParam {String} code
+        """
+        with catch(self):
+            data = yield self.company_entry_setting_service.select(fields='cid', conds={'code': self.params['code']}, one=True)
+
+            if not data:
+                self.error('未识别的code')
+                return
+
+            yield self.company_employee_service.add({'cid': data['cid'], 'uid': self.current_user['id'], 'status': APPLICATION_STATUS['waiting']})
             self.success()

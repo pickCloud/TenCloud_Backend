@@ -1,25 +1,29 @@
 __author__ = 'Jon'
 
+import re
 from Crypto.Cipher import AES
 from binascii import b2a_hex, a2b_hex
 from setting import settings
-import passwordmeter
 
 
 def password_strength(password):
-    ratings = (
-        '弱爆了',
-        '极其弱',
-        '非常弱',
-        '弱',
-        '中等',
-        '一般',
-        '非常强',
-    )
-    strength, _ = passwordmeter.test(password)
-    result = min(len(ratings) - 1, int(strength * len(ratings)))
-    return result
+    ''' 数字，小写，大写，特殊字符
+        长度 < 8  很弱
+        长度 >= 8 包含一种弱，包含两种一般，包含三种强，包含4种很强
+    '''
+    strength = ('很弱', '弱', '一般', '强', '很强')
 
+    if len(password) < 8:
+        return strength[0]
+    else:
+        digit_match = re.search(r'[0-9]', password)
+        lower_match = re.search(r'[a-z]', password)
+        upper_match = re.search(r'[A-Z]', password)
+        symbol_match = re.search(r'[\"\'~!@#$%^&\\*\(\)_=\+\|,./\?:;\[\]\{\}<>]', password)
+
+        matches = [digit_match, lower_match, upper_match, symbol_match]
+
+        return strength[len(matches) - matches.count(None)]
 
 class Aes():
     key = settings['aes_key']

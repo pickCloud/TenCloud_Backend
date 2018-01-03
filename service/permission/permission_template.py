@@ -103,10 +103,10 @@ class PermissionTemplateService(PermissionBaseService):
         projects = yield self._get_resources(fields='id, name', table='project', extra='where cid={cid}'.format(cid=cid))
 
         permissions = yield self._get_resources(fields='id, name, `group`', table='permission')
-        permissions = yield self.merge_permissions(permissions)
+        permissions = self.merge_permissions(permissions)
 
         servers = yield self.fetch_instance_info(extra='where s.cid={cid}'.format(cid=cid))
-        servers = yield self.merge_servers(servers)
+        servers = self.merge_servers(servers)
 
         data = [
             {
