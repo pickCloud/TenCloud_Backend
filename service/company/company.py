@@ -6,7 +6,7 @@ from constant import APPLICATION_STATUS, MSG, MSG_MODE, FULL_DATE_FORMAT, MSG_SU
 
 class CompanyService(BaseService):
     table  = 'company'
-    fields = 'id, name, contact, mobile, description'
+    fields = 'id, name, contact, mobile, description, image_url'
 
     @coroutine
     def get_companies(self, params):
@@ -24,7 +24,7 @@ class CompanyService(BaseService):
 
         sql = """
 
-            SELECT c.id AS cid, c.name AS company_name, ce.is_admin AS is_admin,
+            SELECT c.id AS cid, c.name AS company_name, ce.is_admin AS is_admin, c.image_url,
                    DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time, ce.status
             FROM company_employee ce
             JOIN company c ON ce.cid = c.id

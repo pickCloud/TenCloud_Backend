@@ -55,6 +55,8 @@ class FileService(BaseService):
             'hash': params['hash'],
             'type': 0,
             'pid': params['pid'],
+            'lord': params['lord'],
+            'form': params['form']
         }
         resp = {'file_status': 0, 'token': '', 'file_id': ''}
         data = yield self.check_file_exist(params['hash'])
@@ -93,8 +95,8 @@ class FileService(BaseService):
         return data
 
     @coroutine
-    def total_pages(self, pid):
-        sql = "SELECT count(*) as number FROM {table} WHERE pid = %s".format(table=self.table)
-        cur = yield self.db.execute(sql, [pid])
+    def total_pages(self, params):
+        sql = "SELECT count(*) as number FROM {table} WHERE pid = %s AND form = %s".format(table=self.table)
+        cur = yield self.db.execute(sql, [params['pid'], params['form']])
         data = cur.fetchone()
         return data['number']

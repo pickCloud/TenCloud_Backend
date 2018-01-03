@@ -288,6 +288,10 @@ CREATE TABLE `filehub` (
 
 ALTER TABLE filehub ADD COLUMN upload_status tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '文件上传状态, 0未上传，1上传成功'
 ALTER TABLE filehub DROP COLUMN upload_status
+
+ALTER TABLE `filehub` drop column cid
+ALTER TABLE `filehub` add column lord int(11) not null
+ALTER TABLE `filehub` ADD COLUMN `form` tinyint(4) not null default 1 COMMENT '所有者类型 1个人/2公司'
 ```
 
 * 机器记录时平均维护表
@@ -374,6 +378,7 @@ CREATE TABLE `company` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
+ALTER TABLE company ADD COLUMN image_url varchar(128) NOT NULL DEFAULT '' COMMENT '企业logo'
 
 * 公司员工表
 ```

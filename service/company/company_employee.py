@@ -90,7 +90,7 @@ class CompanyEmployeeService(BaseService):
         :param cid: 公司id
         '''
         sql = '''
-            SELECT ce.id, u.id AS uid, u.name, u.mobile, DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time, ce.status, ce.is_admin
+            SELECT ce.id, u.id AS uid, u.name, u.mobile, u.image_url,DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time, ce.status, ce.is_admin
             FROM company_employee ce
             JOIN user u ON ce.uid = u.id
             WHERE ce.cid = %s
