@@ -443,7 +443,7 @@ class ServerService(BaseService):
 
     @coroutine
     def operate_container(self, params, cmd):
-        login_info = yield self.fetch_ssh_login_info({'server_id': params['server_id']})
+        login_info = yield self.fetch_ssh_login_info({'server_id': params['id']})
         login_info.update({'cmd': cmd})
 
         _, err = yield self.remote_ssh(login_info)
@@ -453,7 +453,8 @@ class ServerService(BaseService):
 
     @coroutine
     def get_docker_performance(self, params):
-        params['public_ip'] = yield self.fetch_public_ip(params['server_id'])
+        # 通过主机id(server_id)获取公共IP
+        params['public_ip'] = yield self.fetch_public_ip(params['id'])
 
         data = {}
         if params['type'] == 0:
