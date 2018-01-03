@@ -43,7 +43,17 @@ class ProjectHandler(BaseHandler):
             }
         """
         with catch(self):
-            result = yield self.project_service.fetch({'uid': self.current_user['id'], 'cid': self.params.get('cid')})
+            params = {}
+
+            # 根据cid判定属于企业用户或者个人用户(存在cid为企业用户，不存在cid为个人用户）
+            if self.params.get('cid'):
+                params['cid'] = self.params.get('cid')
+                params['uid'] = self.current_user['id']
+            else:
+                params['form'] = 2
+                params['lord'] = self.current_user['id']
+
+            result = yield self.project_service.fetch(params)
 
             self.success(result)
 
@@ -68,6 +78,8 @@ class ProjectNewHandler(BaseHandler):
         @apiParam {Number} mode 类型
         @apiParam {Number} image_source 镜像来源
         @apiParam {String} version 用于导入镜像或下载镜像的版本
+        @apiParam {Number} form 归属类型
+        @apiParam {Number} lord 所有者ID
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -163,7 +175,19 @@ class ProjectDetailHandler(BaseHandler):
             }
         """
         with catch(self):
-            result = yield self.project_service.fetch({'uid': self.current_user['id'], 'cid': self.params.get('cid'), 'pid': id})
+            params = {}
+
+            # 根据cid判定属于企业用户或者个人用户(存在cid为企业用户，不存在cid为个人用户）
+            if self.params.get('cid'):
+                params['cid'] = self.params.get('cid')
+                params['uid'] = self.current_user['id']
+                params['pid'] = id
+            else:
+                params['form'] = 2
+                params['lord'] = self.current_user['id']
+                params['id'] = id
+
+            result = yield self.project_service.fetch(params)
 
             self.success(result)
 

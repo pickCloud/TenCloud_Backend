@@ -18,7 +18,7 @@ class ProjectService(BaseService):
     fields = """
                 id, name, description, repos_name, 
                 repos_url, http_url, image_name, mode, status, 
-                deploy_ips, container_name, image_source, cid
+                deploy_ips, container_name, image_source, form, lord
             """
 
     def sync_db_execute(self, sql, params):
@@ -186,12 +186,12 @@ class ProjectService(BaseService):
             # 因为联表操作，先为每个fields中的字段添加上'a.'
             fields = re.sub('(\w+)', lambda x: 'a.'+x.group(0), fields or self.fields)
             sql += " JOIN user_access_project AS b ON a.id=b.pid "
+
             sql += ' WHERE b.' + ' AND b.'.join(conds)
         else:
-            # TODO: 待数据库中新增个人用户和项目的关联字段后进行查询
-            # sql += ' WHERE ' + ' AND '.join(conds)
-            param = {}
-            pass
+            # 使用form和lord查询属于个人用户的项目
+            conds, param = self.make_pair(params)
+            sql += ' WHERE ' + ' AND '.join(conds)
 
         cur = yield self.db.execute(sql.format(fields=fields or self.fields), param)
         data = cur.fetchall()
