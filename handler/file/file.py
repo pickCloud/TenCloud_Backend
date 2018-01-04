@@ -2,7 +2,7 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login, require
 from utils.context import catch
-from constant import MAX_PAGE_NUMBER, RIGHT
+from constant import MAX_PAGE_NUMBER, RIGHT, SERVICE
 
 
 class FileListHandler(BaseHandler):
@@ -14,6 +14,7 @@ class FileListHandler(BaseHandler):
         @apiName FileListHandler
         @apiGroup File
 
+        @apiUse apiHeader
         @apiParam {Number} file_id
         @apiParam {Number} now_page 当前页面
         @apiParam {Number} page_number 每页返回条数，小于100条
@@ -48,6 +49,9 @@ class FileListHandler(BaseHandler):
                 self.error(message='over limit page number')
                 return
             data = yield self.file_service.seg_page(self.params)
+
+            data = yield self.filter(data, service=SERVICE['f'])
+
             self.success(data)
 
 
@@ -60,6 +64,7 @@ class FileTotalHandler(BaseHandler):
         @apiName FileTotal
         @apiGroup File
 
+        @apiUse apiHeader
         @apiParam {Number} file_id
 
         @apiSuccessExample {json} Success-Response:
@@ -71,20 +76,23 @@ class FileTotalHandler(BaseHandler):
             }
         """
         with catch(self):
-            data = yield self.file_service.total_pages(file_id)
+            params = self.get_lord()
+            params.update({'pid': file_id})
+            data = yield self.file_service.total_pages(params)
             self.success(data)
 
 
 class FileInfoHandler(BaseHandler):
-    @is_login
+    @require(service=SERVICE['f'])
     @coroutine
-    def get(self, file_id):
+    def get(self, id):
         """
         @api {get} /api/file/([\w\W]+) 文件详细信息
         @apiName FileInfo
         @apiGroup File
 
-        @apiParam {Number} file_id 文件id
+        @apiUse apiHeader
+        @apiParam {Number} id 文件id
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -108,7 +116,7 @@ class FileInfoHandler(BaseHandler):
             }
         """
         with catch(self):
-            data = yield self.file_service.select({'id': int(file_id)}, one=True)
+            data = yield self.file_service.select({'id': int(id)}, one=True)
             self.success(data)
 
 
@@ -156,6 +164,8 @@ class FileUploadHandler(BaseHandler):
         with catch(self):
             resp = []
             for arg in self.params['file_infos']:
+                patch = self.get_lord()
+                arg.update(patch)
                 arg.update({'owner': self.current_user['id']})
                 data = yield self.file_service.batch_upload(arg)
                 resp.append(data)
@@ -163,7 +173,7 @@ class FileUploadHandler(BaseHandler):
 
 
 class FileUpdateHandler(BaseHandler):
-    @is_login
+    @require(service=SERVICE['f'])
     @coroutine
     def post(self):
         """
@@ -172,7 +182,7 @@ class FileUpdateHandler(BaseHandler):
         @apiGroup File
 
         @apiParam {Number} status 当为0时，下述字段不为空；为1时，代表上传失败，删除记录，除file_id外，其余为空
-        @apiParam {Number} file_id
+        @apiParam {Number} id 原为file_id
         @apiParam {Number} size
         @apiParam {String} mime
         @apiParam {String} qiniu_id
@@ -180,8 +190,9 @@ class FileUpdateHandler(BaseHandler):
         @apiUse Success
         """
         with catch(self):
+            id = self.params['id']
             if self.params['status'] == 1:
-                yield self.file_service.delete({'id': self.params['file_id']})
+                yield self.file_service.delete({'id': id})
                 self.success()
                 return
 
@@ -190,7 +201,7 @@ class FileUpdateHandler(BaseHandler):
                                                 'qiniu_id': self.params.get('qiniu_id'),
                                                 'mime': self.params.get('mime')
                                             },
-                                            conds={'id': self.params['file_id'], 'owner': self.current_user['id']},
+                                            conds={'id': id, 'owner': self.current_user['id']},
                                         )
             self.success()
 
@@ -255,6 +266,7 @@ class FileDirCreateHandler(BaseHandler):
             }
         """
         with catch(self):
+            lord = self.get_lord()
             arg = {
                 'filename': self.params['dir_name'],
                 'pid': self.params['pid'],
@@ -264,6 +276,8 @@ class FileDirCreateHandler(BaseHandler):
                 'owner': self.current_user['id'],
                 'mime': '',
                 'hash': '',
+                'lord': lord['lord'],
+                'form': lord['form']
             }
             data = yield self.file_service.add(arg)
             resp = yield self.file_service.select(conds={'id': data['id']})
@@ -271,7 +285,7 @@ class FileDirCreateHandler(BaseHandler):
 
 
 class FileDeleteHandler(BaseHandler):
-    @require(RIGHT['delete_file'])
+    @require(RIGHT['delete_file'], service=SERVICE['f'])
     @coroutine
     def post(self):
         """
@@ -281,7 +295,7 @@ class FileDeleteHandler(BaseHandler):
 
         @apiUse apiHeader
 
-        @apiParam {Number} file_ids
+        @apiParam {Number} id file_ids改为id
 
         @apiSuccessExample {json} Success-Example:
             HTTP/1.1 200 OK
@@ -294,14 +308,14 @@ class FileDeleteHandler(BaseHandler):
             }
         """
         with catch(self):
-            files = yield self.file_service.select(fields='id, owner',
-                                                   conds={'id': self.params['file_ids']},
+            files = yield self.file_service.select(fields='id, owner, form',
+                                                   conds={'id': self.params['id']},
                                                    ct=False, ut=False
                                                    )
             correct_ids = []
             incorrect_ids = []
             for file in files:
-                if file['owner'] == self.current_user['id']:
+                if (file['form'] == 1 and file['owner'] == self.current_user['id']) or file['form'] == 2:
                     correct_ids.append(file['id'])
                     continue
                 incorrect_ids.append(file['id'])

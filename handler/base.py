@@ -52,7 +52,6 @@ from tornado.websocket import WebSocketHandler
 from constant import SESSION_TIMEOUT, SESSION_KEY, TOKEN_EXPIRES_DAYS, RIGHT, SERVICE
 from service.cluster.cluster import ClusterService
 from service.company.company import CompanyService
-from service.company.company_application import CompanyApplicationService
 from service.company.company_employee import CompanyEmployeeService
 from service.company.company_entry_setting import CompanyEntrySettingService
 from service.file.file import FileService
@@ -82,7 +81,6 @@ class BaseHandler(tornado.web.RequestHandler):
     company_service = CompanyService()
     company_employee_service = CompanyEmployeeService()
     company_entry_setting_service = CompanyEntrySettingService()
-    company_application_service = CompanyApplicationService()
     message_service = MessageService()
     permission_template_service = PermissionTemplateService()
     permission_service = PermissionService()
@@ -245,7 +243,7 @@ class BaseHandler(tornado.web.RequestHandler):
         # 个人不需要过滤
         if not self.params.get('cid'): return data
 
-        result = yield getattr(self, service).filter(data, self.current_user['id'], self.params.get('cid'), key=key)
+        result = yield getattr(self, service['company']).filter(data, self.current_user['id'], self.params.get('cid'), key=key)
 
         return result
 

@@ -32,7 +32,8 @@ from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHand
 from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, CompanyEntrySettingHandler, \
                                     CompanyApplicationHandler, CompanyApplicationAcceptHandler, CompanyApplicationRejectHandler, \
                                     CompanyEmployeeHandler, CompanyHandler, CompanyDetailHandler, CompanyEntryUrlHandler, \
-                                    CompanyAdminTransferHandler, CompanyEmployeeDismissionHandler, CompanyApplicationDismissionHandler
+                                    CompanyAdminTransferHandler, CompanyEmployeeDismissionHandler, CompanyApplicationDismissionHandler, \
+                                    CompanyApplicationWaitingHandler
 from handler.message.message import MessageHandler, MessageCountHandler, MessageSearchHandler
 
 
@@ -130,6 +131,7 @@ routes = [
     (r'/api/company/application/accept', CompanyApplicationAcceptHandler),
     (r'/api/company/application/reject', CompanyApplicationRejectHandler),
     (r'/api/company/application/dismission', CompanyApplicationDismissionHandler),
+    (r'/api/company/application/waiting', CompanyApplicationWaitingHandler),
     (r'/api/company/(\d+)/employees', CompanyEmployeeHandler),
     (r'/api/company/employee/dismission', CompanyEmployeeDismissionHandler),
     (r'/api/company/admin/transfer', CompanyAdminTransferHandler),

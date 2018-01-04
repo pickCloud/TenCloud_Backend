@@ -10,7 +10,6 @@ class ClusterService(BaseService):
     table  = 'cluster'
     fields = 'id, name, description, status'
 
-    @coroutine
     def select_by_name(self, data, server_name):
         names = []
         sorted_data = dict()

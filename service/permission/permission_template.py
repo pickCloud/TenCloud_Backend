@@ -53,8 +53,8 @@ class PermissionTemplateService(PermissionBaseService):
             }
             return data
 
-        permissions_data = yield self.merge_permissions(permission_data)
-        server_data = yield self.merge_servers(server_data)
+        permissions_data = self.merge_permissions(permission_data)
+        server_data = self.merge_servers(server_data)
 
         data = {
             'name': id_data['name'],
@@ -99,14 +99,16 @@ class PermissionTemplateService(PermissionBaseService):
     @coroutine
     def get_resources(self, cid):
         # 暂时获取所有资源
-        files = yield self._get_resources(fields='id, filename', table='filehub', extra='where cid={cid} and type=1'.format(cid=cid))
-        projects = yield self._get_resources(fields='id, name', table='project', extra='where cid={cid}'.format(cid=cid))
+        files = yield self._get_resources(fields='id, filename', table='filehub', extra='where lord={cid} and type=1'.format(cid=cid))
+        projects = yield self._get_resources(fields='id, name', table='project', extra='where lord={cid}'.format(cid=cid))
 
         permissions = yield self._get_resources(fields='id, name, `group`', table='permission')
-        permissions = yield self.merge_permissions(permissions)
+        permissions = self.merge_permissions(permissions)
 
-        servers = yield self.fetch_instance_info(extra='where s.cid={cid}'.format(cid=cid))
-        servers = yield self.merge_servers(servers)
+
+        servers = yield self.fetch_instance_info(extra='where s.lord={cid}'.format(cid=cid))
+        servers = self.merge_servers(servers)
+
 
         data = [
             {
@@ -143,6 +145,7 @@ class PermissionTemplateService(PermissionBaseService):
         sql = """
             SELECT {fields} FROM {table} {extra}
               """.format(fields=fields, table=table,extra=extra)
+        self.log.info(sql)
         cur = yield self.db.execute(sql)
         data = cur.fetchall()
         return data
