@@ -292,10 +292,10 @@ class PermissionUserDetailHandler(BaseHandler):
             has_set = yield Task(self.redis.hget, COMPANY_PERMISSION, company_user)
             if not has_set:
                 data = {
-                    'access_servers': '',
-                    'access_projects': '',
-                    'access_filehub': '',
-                    'permissions': '',
+                    'access_servers': [],
+                    'access_projects': [],
+                    'access_filehub': [],
+                    'permissions': [],
                 }
                 self.success(data)
                 return
