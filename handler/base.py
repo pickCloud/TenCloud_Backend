@@ -250,9 +250,10 @@ class WebSocketBaseHandler(WebSocketHandler, BaseHandler):
         return True
 
     def open(self):
-        self.user_id = self.decode_auth_token(self.params['token']) if self.params.get('token') else 0
+        user_id = self.decode_auth_token(self.params['Authorization']) if self.params.get('Authorization') else 0
+        self._current_user = {'id': user_id}
 
-        params = {'cid': self.params.get('cid'), 'uid': self.user_id, 'pids': RIGHT['add_server']}
+        params = {'cid': int(self.params.get('cid')), 'uid': self.current_user['id'], 'pids': RIGHT['add_server']}
 
         try:
             self.user_permission_service.ws_check_permission(params)
