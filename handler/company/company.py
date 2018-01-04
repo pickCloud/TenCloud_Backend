@@ -372,7 +372,7 @@ class CompanyApplicationHandler(BaseHandler):
             admin = yield self.company_employee_service.select(fields='uid', conds={'cid': info['cid'], 'is_admin': 1})
 
             # 给具有审核员工权限的人发送消息
-            audit = yield self.user_permission_service.select({'cid': info['cid'], 'permission': RIGHT['audit_employee']})
+            audit = yield self.user_permission_service.select({'cid': info['cid'], 'pid': RIGHT['audit_employee']})
             for i in admin + audit:
                 admin_data['owner'] = i['uid']
                 yield self.message_service.add(admin_data)
