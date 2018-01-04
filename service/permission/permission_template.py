@@ -145,7 +145,6 @@ class PermissionTemplateService(PermissionBaseService):
         sql = """
             SELECT {fields} FROM {table} {extra}
               """.format(fields=fields, table=table,extra=extra)
-        self.log.info(sql)
         cur = yield self.db.execute(sql)
         data = cur.fetchall()
         return data
