@@ -180,6 +180,13 @@ class BaseHandler(tornado.web.RequestHandler):
         '''
         return {'lord': self.params['cid'], 'form': 2} if self.params.get('cid') else {'lord': self.current_user['id'], 'form': 1}
 
+    def get_current_name(self):
+        '''
+        获取当前用户名称，如果没有设置的话返回手机号码
+        :return: 用户名称或者手机号码
+        '''
+        return self.current_user['name'] if self.current_user['name'] != '' else self.current_user['mobile']
+
     def guarantee(self, *args):
         ''' 接口参数是否完整
         '''

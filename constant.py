@@ -469,12 +469,14 @@ MSG = {
     'leave': {
         'dismission': '【{name}】【{mobile}】离开了【{company_name}】',
         'demission': '【{name}】【{mobile}】离开了【{company_name}】',
-    }
+    },
+    'server': 'IP为【{ip}】的【{provider}】服务器已成功添加'
 }
 MSG_MODE = {
     'application': 1,
     'change': 2,
-    'leave': 3
+    'leave': 3,
+    'server': 4
 }
 MSG_STATUS = {
     'unread': 0,
@@ -484,7 +486,8 @@ MSG_SUB_MODE = {
     'verify': 0,
     'reject': 1,
     'accept': 2,
-    'change': 3
+    'change': 3,
+    'server': 4
 }
 MSG_PAGE_NUM = 20
 

@@ -79,3 +79,18 @@ class MessageService(BaseService):
             'sub_mode': MSG_SUB_MODE[params['mode']],
             'tip': params['tip']
         })
+
+    @coroutine
+    def notify_server_added(self, params):
+        '''
+        通知用户主机已经成功创建
+        :param params: {'owner', 'ip', 'provider', 'tip'}
+        :return:
+        '''
+        yield self.add({
+            'owner': params['owner'],
+            'content': MSG['server'].format(ip=params['ip'], provider=params['provider']),
+            'mode': MSG_MODE['server'],
+            'sub_mode': MSG_SUB_MODE['server'],
+            'tip': params['tip']
+        })

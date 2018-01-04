@@ -31,6 +31,7 @@ class ServerNewHandler(WebSocketBaseHandler):
             validate_ip(self.params['public_ip'])
 
             self.params.update(self.get_lord())
+            self.params.update('owner', self.current_user['id'])
         except Exception as e:
             self.write_message(str(e))
             self.close()
@@ -133,6 +134,17 @@ class ServerReport(BaseHandler):
                                                                'public_ip': data['public_ip']})
                 yield Task(self.redis.hdel, DEPLOYING, self.params['public_ip'])
                 yield Task(self.redis.hset, DEPLOYED, self.params['public_ip'], DEPLOYED_FLAG)
+
+                # 通知服务器创建成功消息
+                server_id = yield self.server_service.fetch_server_id(self.params['public_ip'])
+                instance_info = yield self.server_service.fetch_instance_info(server_id)
+                message = {
+                    'owner': data.get('owner'),
+                    'ip': self.params.get('public_ip'),
+                    'provider': instance_info['provider'],
+                    'tip': '{}'.format(server_id)
+                }
+                yield self.message_service.notify_server_added(message)
 
             yield self.server_service.save_report(self.params)
 

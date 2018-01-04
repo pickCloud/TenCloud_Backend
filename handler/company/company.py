@@ -171,7 +171,7 @@ class CompanyUpdateHandler(BaseHandler):
                 'owners': employee,
                 'cid': self.params['cid'],
                 'company_name': old['name'],
-                'admin_name': self.current_user['name'],
+                'admin_name': self.get_current_name(),
             })
             self.success()
 
@@ -361,17 +361,21 @@ class CompanyApplicationHandler(BaseHandler):
             }
             yield self.company_employee_service.add_employee(app_data)
 
-            # 给公司管理员发送消息
-            admin = yield self.company_employee_service.select(fields='uid', conds={'cid': info['cid'], 'is_admin': 1}, one=True)
+            # 组装通知的消息内容
             admin_data = {
-                'owner': admin['uid'],
                 'content': MSG['application']['admin'].format(name=self.params.get('name', ''), mobile=self.params['mobile'], company_name=info['company_name']),
                 'mode': MSG_MODE['application'],
                 'sub_mode': MSG_SUB_MODE['verify'],
                 'tip': '{}:{}'.format(info.get('cid', ''), self.params['code'])
             }
+            # 给公司管理员发送消息
+            admin = yield self.company_employee_service.select(fields='uid', conds={'cid': info['cid'], 'is_admin': 1})
 
-            yield self.message_service.add(admin_data)
+            # 给具有审核员工权限的人发送消息
+            audit = yield self.user_permission_service.select({'cid': info['cid'], 'permission': RIGHT['audit_employee']})
+            for i in admin + audit:
+                admin_data['owner'] = i['uid']
+                yield self.message_service.add(admin_data)
 
             self.success()
 
@@ -388,7 +392,7 @@ class CompanyApplicationVerifyMixin(BaseHandler):
         # 通知用户
         yield self.message_service.notify_verify({
             'owner': info['uid'],
-            'admin_name': self.current_user['name'],
+            'admin_name': self.get_current_name(),
             'company_name': info['company_name'],
             'mode': mode,
             'tip': '{}:{}'.format(info.get('cid', ''), info.get('code', ''))
@@ -483,7 +487,7 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
             yield self.company_employee_service.delete(conds={'id': self.params['id'], 'uid': self.current_user['id']})
 
             # 将此员工解除公司的消息通知给管理员
-            content = MSG['leave']['demission'].format(name=self.current_user['name'],
+            content = MSG['leave']['demission'].format(name=self.get_current_name(),
                                                        mobile=self.current_user['mobile'],
                                                        company_name=app_info['company_name'])
             admin_info = yield self.company_employee_service.select(fields='uid', conds={'cid': app_info['cid'], 'is_admin': 1})
