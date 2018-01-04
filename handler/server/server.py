@@ -69,6 +69,8 @@ class ServerNewHandler(WebSocketBaseHandler):
 
         # 部署失败
         if err:
+            if err[0] == 'Authentication failed.':
+                self.write_message('认证失败')
             self.write_message('failure')
             self.period.stop()
             self.close()
@@ -120,7 +122,9 @@ class ServerReport(BaseHandler):
                 data = json.loads(deploying_msg)
                 self.params.update({
                     'name': data['name'],
-                    'cluster_id': data['cluster_id']
+                    'cluster_id': data['cluster_id'],
+                    'lord': data['lord'],
+                    'form': data['form']
                 })
 
                 yield self.server_service.add_server(self.params)
