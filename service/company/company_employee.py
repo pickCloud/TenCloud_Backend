@@ -127,4 +127,4 @@ class CompanyEmployeeService(BaseService):
         yield self.update(sets={'is_admin': 0}, conds={'uid': params['admin_id'], 'cid': params['cid']})
 
         yield self.update(sets={'is_admin': 1},
-                          conds={'uid': params['uids'], 'cid': params['cid']})
+                          conds={'uid': params['uid'], 'cid': params['cid']})

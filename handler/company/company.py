@@ -506,7 +506,7 @@ class CompanyAdminTransferHandler(BaseHandler):
 
         @apiUse apiHeader
 
-        @apiParam {Number[]} uids 新管理人员id
+        @apiParam {Number} uid 新管理人员id
         @apiParam {Number} cid 公司id
 
         @apiUse Success
