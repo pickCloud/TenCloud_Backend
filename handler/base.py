@@ -236,9 +236,13 @@ class BaseHandler(tornado.web.RequestHandler):
         # 个人不需要过滤
         if not self.params.get('cid'): return data
 
-        result = yield getattr(self, service['company']).filter(data, self.current_user['id'], self.params.get('cid'), key=key)
+        # 管理员不需要过滤
+        try:
+            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
+        except ValueError:
+            data = yield getattr(self, service['company']).filter(data, self.current_user['id'], self.params.get('cid'), key=key)
 
-        return result
+        return data
 
 
 class WebSocketBaseHandler(WebSocketHandler, BaseHandler):
