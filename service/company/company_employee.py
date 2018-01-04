@@ -121,7 +121,7 @@ class CompanyEmployeeService(BaseService):
 
     @coroutine
     def transfer_adimin(self, params):
-        ''' 转换管理员
+        ''' 只有管理员才能转换管理员
         :param params: {'admin_id', 'cid', 'uids'}
         '''
         yield self.update(sets={'is_admin': 0}, conds={'uid': params['admin_id'], 'cid': params['cid']})

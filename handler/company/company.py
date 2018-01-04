@@ -2,7 +2,7 @@ __author__ = 'Jon'
 
 from tornado.gen import coroutine
 from handler.base import BaseHandler
-from utils.decorator import is_login, require
+from utils.decorator import is_login, require, auth
 from utils.general import validate_mobile
 from utils.context import catch
 from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING, MSG_SUB_MODE, RIGHT
@@ -496,7 +496,7 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
             self.success()
 
 class CompanyAdminTransferHandler(BaseHandler):
-    @require(RIGHT['set_admin'])
+    @auth('admin')
     @coroutine
     def post(self):
         """
