@@ -17,7 +17,7 @@ from constant import MONITOR_CMD, OPERATE_STATUS, OPERATION_OBJECT_STYPE, SERVER
 
 class ServerNewHandler(WebSocketBaseHandler):
     def on_message(self, message):
-        self.params = json.loads(message)
+        self.params.update(json.loads(message))
 
         # 参数认证
         try:
