@@ -125,6 +125,9 @@ class UserPermissionService(PermissionBaseService):
         '''
         cursor = self.sync_db.cursor()
         try:
+            # 个人不需要检查
+            if not params.get('cid'): return
+            
             # 管理员不需要检查
             sql = '''
                 SELECT * FROM company_employee WHERE uid=%s AND cid=%s AND is_admin=%s
