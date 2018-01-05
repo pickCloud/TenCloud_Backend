@@ -14,7 +14,7 @@ class FileListHandler(BaseHandler):
         @apiName FileListHandler
         @apiGroup File
 
-        @apiUse apiHeader
+        @apiUse cidHeader
         @apiParam {Number} file_id
         @apiParam {Number} now_page 当前页面
         @apiParam {Number} page_number 每页返回条数，小于100条
@@ -64,7 +64,7 @@ class FileTotalHandler(BaseHandler):
         @apiName FileTotal
         @apiGroup File
 
-        @apiUse apiHeader
+        @apiUse cidHeader
         @apiParam {Number} file_id
 
         @apiSuccessExample {json} Success-Response:
@@ -91,7 +91,7 @@ class FileInfoHandler(BaseHandler):
         @apiName FileInfo
         @apiGroup File
 
-        @apiUse apiHeader
+        @apiUse cidHeader
         @apiParam {Number} id 文件id
 
         @apiSuccessExample {json} Success-Response:
@@ -129,7 +129,7 @@ class FileUploadHandler(BaseHandler):
         @apiName FileUpload
         @apiGroup File
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {String} filename 文件名
         @apiParam {String} hash 文件hash
@@ -215,7 +215,7 @@ class FileDownloadHandler(BaseHandler):
         @apiName FileDownload
         @apiGroup File
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} file_id 文件id
 
@@ -239,7 +239,7 @@ class FileDirCreateHandler(BaseHandler):
         @apiName FileDirCreate
         @apiGroup File
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} pid 上一级目录id
         @apiParam {String} dir_name 目录名字
@@ -293,7 +293,7 @@ class FileDeleteHandler(BaseHandler):
         @apiName FileDelete
         @apiGroup File
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id file_ids改为id
 

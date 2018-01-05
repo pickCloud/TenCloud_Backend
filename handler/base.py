@@ -32,7 +32,7 @@ __author__ = 'Jon'
 
 
 """"
-@apiDefine apiHeader
+@apiDefine cidHeader
 @apiHeaderExample {json} Header-Example:
      {
        "cid": 1

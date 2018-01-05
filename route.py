@@ -33,7 +33,7 @@ from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, Com
                                     CompanyApplicationHandler, CompanyApplicationAcceptHandler, CompanyApplicationRejectHandler, \
                                     CompanyEmployeeHandler, CompanyHandler, CompanyDetailHandler, CompanyEntryUrlHandler, \
                                     CompanyAdminTransferHandler, CompanyEmployeeDismissionHandler, CompanyApplicationDismissionHandler, \
-                                    CompanyApplicationWaitingHandler
+                                    CompanyApplicationWaitingHandler, ComapnyEmployeeSearchHandler
 from handler.message.message import MessageHandler, MessageCountHandler, MessageSearchHandler
 
 
@@ -135,6 +135,7 @@ routes = [
     (r'/api/company/(\d+)/employees', CompanyEmployeeHandler),
     (r'/api/company/employee/dismission', CompanyEmployeeDismissionHandler),
     (r'/api/company/admin/transfer', CompanyAdminTransferHandler),
+    (r'/api/company/employee/search', ComapnyEmployeeSearchHandler),
 
     # 消息
     (r'/api/messages/?(\d*)', MessageHandler),

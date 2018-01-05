@@ -126,7 +126,7 @@ class CompanyUpdateHandler(BaseHandler):
         @apiName CompanyUpdateHandler
         @apiGroup Company
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} cid 公司id
         @apiParam {String} name 公司名称
@@ -219,7 +219,7 @@ class CompanyEntrySettingHandler(BaseHandler):
         @apiName CompanyEntrySettingPostHandler
         @apiGroup Company
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {String} setting 配置mobile,name,id_card
 
@@ -404,7 +404,7 @@ class CompanyApplicationAcceptHandler(CompanyApplicationVerifyMixin):
         @apiName CompanyApplicationAcceptHandler
         @apiGroup Company
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id 员工表id
 
@@ -425,7 +425,7 @@ class CompanyApplicationRejectHandler(CompanyApplicationVerifyMixin):
         @apiName CompanyApplicationRejectHandler
         @apiGroup Company
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id 员工表id
 
@@ -504,7 +504,7 @@ class CompanyAdminTransferHandler(BaseHandler):
         @apiName CompanyAdminTransferHandler
         @apiGroup Company
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} uid 新管理人员id
         @apiParam {Number} cid 公司id
@@ -528,7 +528,7 @@ class CompanyApplicationDismissionHandler(BaseHandler):
         @apiName CompanyApplicationDismissionHandler
         @apiGroup Company
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id 列表id
 
@@ -562,3 +562,59 @@ class CompanyApplicationWaitingHandler(BaseHandler):
 
             yield self.company_employee_service.add({'cid': data['cid'], 'uid': self.current_user['id'], 'status': APPLICATION_STATUS['waiting']})
             self.success()
+
+
+class ComapnyEmployeeSearchHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {get} /api/company/employee/search 员工搜索
+        @apiName CompanyEmployeeSearchHandler
+        @apiGroup Company
+
+        @apiUse cidHeader
+        @apiParam {String} employee_name 搜索名字or手机号码
+        @apiParam {Number} status 是否通过 0:全部，1:通过， 2:不通过， 3:代审
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": {
+                    "id": 1,
+                    "name": "十全",
+                    "image_url": "a.com",
+                    "mobile": "1399999999"
+                }
+            }
+        """
+        with catch(self):
+            search_data = yield self.company_employee_service.get_employee_list_detail(cid=self.params['cid'])
+            self.log.info(search_data)
+            params = {
+                'cid': self.params['cid'],
+                'status': self.params.get('status'),
+                'employee_name': self.params.get('employee_name'),
+                'data': search_data
+
+            }
+            if not params.get('status') and not params.get('employee_name'):
+                self.success(search_data)
+                return
+
+            if not params.get('status') and params.get('employee_name'):
+                search_data = self.company_employee_service.search_by_name(params)
+                self.success(search_data)
+                return
+
+            if params.get('status') and not params.get('employee_name'):
+                search_data = [i for i in search_data if i['status'] == params['status']]
+                self.log.info(search_data)
+                self.success(search_data)
+                return
+
+            params['data'] = [i for i in params['data'] if i['status'] == params['status']]
+            search_data = self.company_employee_service.search_by_name(params)
+            self.success(search_data)
