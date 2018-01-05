@@ -573,13 +573,13 @@ class ComapnyEmployeeSearchHandler(BaseHandler):
     @coroutine
     def post(self):
         """
-        @api {get} /api/company/employee/search 员工搜索
+        @api {post} /api/company/employee/search 员工搜索
         @apiName CompanyEmployeeSearchHandler
         @apiGroup Company
 
         @apiUse cidHeader
         @apiParam {String} employee_name 搜索名字or手机号码
-        @apiParam {Number} status 是否通过 0:全部，1:通过， 2:不通过， 3:代审
+        @apiParam {Number} status 是否通过 -1拒绝, 0审核中, 1通过, 2创始人
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -596,7 +596,6 @@ class ComapnyEmployeeSearchHandler(BaseHandler):
         """
         with catch(self):
             search_data = yield self.company_employee_service.get_employee_list_detail(cid=self.params['cid'])
-            self.log.info(search_data)
             params = {
                 'cid': self.params['cid'],
                 'status': self.params.get('status'),
@@ -614,8 +613,10 @@ class ComapnyEmployeeSearchHandler(BaseHandler):
                 return
 
             if params.get('status') and not params.get('employee_name'):
-                search_data = [i for i in search_data if i['status'] == params['status']]
-                self.log.info(search_data)
+                if params['status'] == APPLICATION_STATUS['accept']:
+                    search_data = [
+                        i for i in search_data if (i['status'] == params['status'] or i['status']==APPLICATION_STATUS['founder'])
+                    ]
                 self.success(search_data)
                 return
 
