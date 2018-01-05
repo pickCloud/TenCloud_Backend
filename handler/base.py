@@ -253,7 +253,7 @@ class WebSocketBaseHandler(WebSocketHandler, BaseHandler):
     def open(self):
         user_id = self.decode_auth_token(self.params['Authorization']) if self.params.get('Authorization') else 0
         self._current_user = {'id': user_id}
-        self.params['cid'] = int(self.params.get('cid'))
+        self.params['cid'] = int(self.params.get('Cid'))
 
         params = {'cid': self.params['cid'], 'uid': self.current_user['id'], 'pids': RIGHT['add_server']}
 
