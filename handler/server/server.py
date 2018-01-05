@@ -160,7 +160,7 @@ class ServerDelHandler(BaseHandler):
         @apiName ServerDelHandler
         @apiGroup Server
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number[]} id 主机ID
 
@@ -316,7 +316,7 @@ class ServerUpdateHandler(BaseHandler):
         @apiName ServerUpdateHandler
         @apiGroup Server
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id 主机id
         @apiParam {String} name 主机名字
@@ -360,7 +360,7 @@ class ServerStopHandler(BaseHandler):
         @apiName ServerStopHandler
         @apiGroup Server
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id 主机id
 
@@ -392,7 +392,7 @@ class ServerStartHandler(BaseHandler):
         @apiName ServerStartHandler
         @apiGroup Server
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id 主机id
 
@@ -423,7 +423,7 @@ class ServerRebootHandler(BaseHandler):
         @apiName ServerRebootHandler
         @apiGroup Server
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id 主机id
 
@@ -591,7 +591,7 @@ class ServerContainerStartHandler(BaseHandler):
         @apiName ServerContainerStartHandler
         @apiGroup Server
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id 主机id
         @apiParam {String} container_id 容器id
@@ -625,7 +625,7 @@ class ServerContainerStopHandler(BaseHandler):
         @apiName ServerContainerStopHandler
         @apiGroup Server
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id 主机id
         @apiParam {String} container_id 容器id
@@ -660,7 +660,7 @@ class ServerContainerDelHandler(BaseHandler):
         @apiName ServerContainerDelHandler
         @apiGroup Server
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id 主机id
         @apiParam {String} container_id 容器id

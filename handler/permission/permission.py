@@ -114,7 +114,7 @@ class PermissionTemplateAddHandler(BaseHandler):
 
         @apiGroup Permission
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {String} name 名字
         @apiParam {Number} cid 公司id
@@ -152,7 +152,7 @@ class PermissionTemplateDelHandler(BaseHandler):
         @apiName PermissionTemplateDelHandler
 
         @apiGroup Permission
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} pt_id 权限模版id
         @apiParam {Number} cid 公司id
@@ -210,7 +210,7 @@ class PermissionTemplateUpdateHandler(BaseHandler):
         @apiName PermissionTemplateUpdateHandler
         @apiGroup Permission
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} pt_id 权限模版id
         @apiParam {Number} cid 公司id
@@ -329,7 +329,7 @@ class PermissionUserUpdateHandler(BaseHandler):
         @apiName PermissionUserUpdateHandler
         @apiGroup Permission
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} uid 用户id
         @apiParam {Number} cid 公司id
