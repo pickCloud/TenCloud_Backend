@@ -31,7 +31,7 @@ class ServerNewHandler(WebSocketBaseHandler):
             validate_ip(self.params['public_ip'])
 
             self.params.update(self.get_lord())
-            self.params.update({'owner', self.current_user['id']})
+            self.params.update({'owner': self.current_user['id']})
         except Exception as e:
             self.write_message(str(e))
             self.close()
