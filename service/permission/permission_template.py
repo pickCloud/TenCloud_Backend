@@ -1,7 +1,7 @@
 from tornado.gen import coroutine
 
 from service.permission.permission_base import PermissionBaseService
-from constant import  PT_FORMAT
+from constant import PT_FORMAT, RESOURCE_TYPE
 
 
 class PermissionTemplateService(PermissionBaseService):
@@ -43,7 +43,7 @@ class PermissionTemplateService(PermissionBaseService):
             server_ids = '({ids})'.format(ids=id_data['access_servers'])
             server_data = yield self.fetch_instance_info(extra='WHERE s.id in {ids}'.format(ids=server_ids))
 
-        if params['format'] == PT_FORMAT:
+        if params['format'] == PT_FORMAT['simple']:
             data = {
                 'name': id_data['name'],
                 'permissions': permission_data,
@@ -99,16 +99,22 @@ class PermissionTemplateService(PermissionBaseService):
     @coroutine
     def get_resources(self, cid):
         # 暂时获取所有资源
-        files = yield self._get_resources(fields='id, filename', table='filehub', extra='where lord={cid} and type=1'.format(cid=cid))
-        projects = yield self._get_resources(fields='id, name', table='project', extra='where lord={cid}'.format(cid=cid))
+        files = yield self._get_resources(
+                                        fields='id, filename',
+                                        table='filehub',
+                                        extra='where lord={cid} and form = {form} and type=1'.format(cid=cid, form=RESOURCE_TYPE['firm'])
+                                        )
+        projects = yield self._get_resources(
+                                        fields='id, name',
+                                        table='project',
+                                        extra='where lord={cid} and form = {form}'.format(cid=cid, form=RESOURCE_TYPE['firm'])
+                                        )
 
         permissions = yield self._get_resources(fields='id, name, `group`', table='permission')
         permissions = self.merge_permissions(permissions)
 
-
-        servers = yield self.fetch_instance_info(extra='where s.lord={cid}'.format(cid=cid))
+        servers = yield self.fetch_instance_info(extra='where s.lord={cid} and s.form={form}'.format(cid=cid, form=RESOURCE_TYPE['firm']))
         servers = self.merge_servers(servers)
-
 
         data = [
             {
