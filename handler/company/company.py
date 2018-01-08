@@ -2,6 +2,7 @@ __author__ = 'Jon'
 
 from tornado.gen import coroutine
 from handler.base import BaseHandler
+from setting import settings
 from utils.decorator import is_login, require, auth
 from utils.general import validate_mobile
 from utils.context import catch
@@ -161,7 +162,7 @@ class CompanyUpdateHandler(BaseHandler):
                                                     'name': self.params['name'],
                                                     'contact': self.params['contact'],
                                                     'mobile': self.params['mobile'],
-                                                    'image_url': self.params['image_url']
+                                                    'image_url': settings['qiniu_header_bucket_url'] + self.params['image_url']
                                                 },
                                                 conds={'id': self.params['cid']},
                                               )
