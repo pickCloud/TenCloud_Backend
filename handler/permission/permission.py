@@ -295,7 +295,7 @@ class PermissionUserDetailHandler(BaseHandler):
                     'permissions': [],
                 }
 
-            if params['pt_format'] == PT_FORMAT['standard']:
+            if params['format'] == PT_FORMAT['standard']:
                 data = {
                     'name': '',
                     'data': [
