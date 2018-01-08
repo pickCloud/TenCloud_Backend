@@ -371,9 +371,9 @@ class CompanyApplicationHandler(BaseHandler):
             # 给公司管理员发送消息
             admin = yield self.company_employee_service.select(fields='uid', conds={'cid': info['cid'], 'is_admin': 1})
 
-            # 给具有审核员工权限的人发送消息
+            # 给具有审核员工权限的人发送消息,若没有存在审核权限的用户会返回一个空tuple，为防止报错，下面做一次转换
             audit = yield self.user_permission_service.select({'cid': info['cid'], 'pid': RIGHT['audit_employee']})
-            for i in admin + audit:
+            for i in admin + list(audit):
                 admin_data['owner'] = i['uid']
                 yield self.message_service.add(admin_data)
 
@@ -385,7 +385,10 @@ class CompanyApplicationVerifyMixin(BaseHandler):
     def verify(self, mode):
         info = yield self.company_employee_service.get_app_info(self.params['id'])
 
-        yield self.company_employee_service.check_admin(info['cid'], self.current_user['id'])
+        admin = yield self.company_employee_service.select(fields='uid', conds={'cid': info['cid'], 'is_admin': 1}, ct=False, ut=False)
+        audit = yield self.user_permission_service.select(fields='uid', conds={'cid': info['cid'], 'pid': RIGHT['audit_employee']}, ct=False, ut=False)
+        if {'uid': self.current_user['id']} not in (admin + list(audit)):
+            raise ValueError('该用户无权限审核')
 
         yield self.company_employee_service.verify(self.params['id'], mode)
 
