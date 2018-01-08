@@ -495,14 +495,21 @@ MSG_PAGE_NUM = 20
 # 权限模版 0云服务器, 1项目, 2文件服务, 3企业资料, 4员工管理, 5权限模版管理, 6平台管理
 #################################################################################################
 PERMISSIONS = ["云服务器", "项目", "文件服务", "企业资料", "员工管理", "权限模版管理", "平台管理"]
-PT_FORMAT = 1
+PT_FORMAT = {
+    'standard': 0,
+    'simple': 1
+}
 
 # 模版类型
 PERMISSIONS_TEMPLATE_TYPE = {
     'default': 0,  # 预设
     'add': 1  # 新增
 }
-
+# 资源类型
+RESOURCE_TYPE = {
+    'individual': 1,
+    'firm': 2
+}
 # 表permission的id
 RIGHT = {
     'modify_server_info': 33,  # 修改主机信息

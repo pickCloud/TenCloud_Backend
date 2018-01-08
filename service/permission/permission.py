@@ -45,7 +45,7 @@ class PermissionService(PermissionBaseService):
             ids = ','.join(ids)
             server_data = yield self.fetch_instance_info(extra='WHERE s.id in ({ids})'.format(ids=ids))
 
-        if params['format'] == PT_FORMAT:
+        if params['format'] == PT_FORMAT['simple']:
             data = {
                 'permissions': permission_data,
                 'access_servers': server_data,
