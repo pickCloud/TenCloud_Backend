@@ -618,6 +618,8 @@ class ComapnyEmployeeSearchHandler(BaseHandler):
                     search_data = [
                         i for i in search_data if (i['status'] == params['status'] or i['status']==APPLICATION_STATUS['founder'])
                     ]
+                else:
+                    search_data = [i for i in search_data if i['status'] == params['status']]
                 self.success(search_data)
                 return
 

@@ -97,7 +97,7 @@ class PermissionTemplateService(PermissionBaseService):
         return cur.fetchall()
 
     @coroutine
-    def get_resources(self, cid):
+    def get_resources(self, cid, is_format = False):
         # 暂时获取所有资源
         files = yield self._get_resources(
                                         fields='id, filename',
@@ -111,9 +111,18 @@ class PermissionTemplateService(PermissionBaseService):
                                         )
 
         permissions = yield self._get_resources(fields='id, name, `group`', table='permission')
-        permissions = self.merge_permissions(permissions)
-
         servers = yield self.fetch_instance_info(extra='where s.lord={cid} and s.form={form}'.format(cid=cid, form=RESOURCE_TYPE['firm']))
+
+        if is_format:
+            data = {
+                'files': files if files else [],
+                'projects': projects if projects else [],
+                'permission': permissions if permissions else [],
+                'servers': servers if servers else []
+            }
+            return data
+
+        permissions = self.merge_permissions(permissions)
         servers = self.merge_servers(servers)
 
         data = [
@@ -153,4 +162,24 @@ class PermissionTemplateService(PermissionBaseService):
               """.format(fields=fields, table=table,extra=extra)
         cur = yield self.db.execute(sql)
         data = cur.fetchall()
+        return data
+
+    @coroutine
+    def get_admin(self, cid):
+        data = yield self.get_resources(cid=cid, is_format=True)
+        permission = ','.join([str(i['id']) for i in data['permission']])
+        servers = ','.join([str(i['sid']) for i in data['servers']])
+        files = ','.join([str(i['id']) for i in data['files']])
+        projects = ','.join([str(i['id']) for i in data['projects']])
+        data = {
+            'name': 'admin',
+            'cid': cid,
+            'permission': permission,
+            'access_servers': servers,
+            'access_files': files,
+            'access_projects': projects,
+            'create_time': '',
+            'update_time': '',
+            'type': 0
+        }
         return data
