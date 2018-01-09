@@ -107,6 +107,15 @@ class ProjectNewHandler(BaseHandler):
 
             result = yield self.project_service.add(params=self.params)
 
+            # 当新项目不为公司项目时
+            if self.params['cid'] != 0:
+                params = {
+                    'pid': result['id'],
+                    'uid': self.current_user['uid'],
+                    'cid': self.params['cid']
+                }
+                yield self.user_access_project_service.add(params)
+
             yield self.server_operation_service.add(params={
                 'user_id': self.current_user['id'],
                 'object_id': result['id'],

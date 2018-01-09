@@ -181,6 +181,8 @@ class FileUpdateHandler(BaseHandler):
         @apiName FileUpdate
         @apiGroup File
 
+        @apiUse cidHeader
+
         @apiParam {Number} status 当为0时，下述字段不为空；为1时，代表上传失败，删除记录，除file_id外，其余为空
         @apiParam {Number} id 原为file_id
         @apiParam {Number} size
@@ -190,19 +192,27 @@ class FileUpdateHandler(BaseHandler):
         @apiUse Success
         """
         with catch(self):
-            id = self.params['id']
+            fid = self.params['id']
             if self.params['status'] == 1:
-                yield self.file_service.delete({'id': id})
+                yield self.file_service.delete({'id': fid})
                 self.success()
                 return
 
-            yield self.file_service.update(sets={
-                                                'size': self.params.get('size'),
-                                                'qiniu_id': self.params.get('qiniu_id'),
-                                                'mime': self.params.get('mime')
-                                            },
-                                            conds={'id': id, 'owner': self.current_user['id']},
-                                        )
+            # 当上传文件不是个人文件时
+            if self.params['cid'] != 1:
+                arg = {
+                    'uid': self.current_user['id'],
+                    'cid': self.params['cid'],
+                    'fid': fid
+                }
+                yield self.user_access_filehub_service.add(arg)
+
+            sets = {
+                'size': self.params.get('size'),
+                'qiniu_id': self.params.get('qiniu_id'),
+                'mime': self.params.get('mime')
+            }
+            yield self.file_service.update(sets=sets, conds={'id': fid, 'owner': self.current_user['id']})
             self.success()
 
 
