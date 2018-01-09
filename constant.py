@@ -470,13 +470,15 @@ MSG = {
         'dismission': '【{name}】【{mobile}】离开了【{company_name}】',
         'demission': '【{name}】【{mobile}】离开了【{company_name}】',
     },
-    'server': 'IP为【{ip}】的【{provider}】服务器已成功添加'
+    'server': 'IP为【{ip}】的【{provider}】服务器已成功添加',
+    'image': '项目【{project}】构建镜像成功'
 }
 MSG_MODE = {
     'application': 1,
     'change': 2,
     'leave': 3,
-    'server': 4
+    'server': 4,
+    'image': 5
 }
 MSG_STATUS = {
     'unread': 0,
@@ -487,7 +489,8 @@ MSG_SUB_MODE = {
     'reject': 1,
     'accept': 2,
     'change': 3,
-    'server': 4
+    'server': 4,
+    'project': 5
 }
 MSG_PAGE_NUM = 20
 
@@ -568,6 +571,6 @@ SERVICE = {
     },
     'f': {
         'company': 'user_access_filehub_service',
-        'personal': 'filehub_service'
+        'personal': 'file_service'
     }
 }
