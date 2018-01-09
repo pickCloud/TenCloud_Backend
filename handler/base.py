@@ -32,7 +32,7 @@ __author__ = 'Jon'
 
 
 """"
-@apiDefine apiHeader
+@apiDefine cidHeader
 @apiHeaderExample {json} Header-Example:
      {
        "cid": 1
@@ -145,6 +145,7 @@ class BaseHandler(tornado.web.RequestHandler):
             else:
                 self.params[k] = [e.decode('utf-8') for e in v]
 
+
     @coroutine
     def prepare(self):
         ''' 获取用户信息 && 获取请求的参数
@@ -243,9 +244,13 @@ class BaseHandler(tornado.web.RequestHandler):
         # 个人不需要过滤
         if not self.params.get('cid'): return data
 
-        result = yield getattr(self, service['company']).filter(data, self.current_user['id'], self.params.get('cid'), key=key)
+        # 管理员不需要过滤
+        try:
+            yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
+        except ValueError:
+            data = yield getattr(self, service['company']).filter(data, self.current_user['id'], self.params.get('cid'), key=key)
 
-        return result
+        return data
 
 
 class WebSocketBaseHandler(WebSocketHandler, BaseHandler):
@@ -253,9 +258,11 @@ class WebSocketBaseHandler(WebSocketHandler, BaseHandler):
         return True
 
     def open(self):
-        self.user_id = self.decode_auth_token(self.params['token']) if self.params.get('token') else 0
+        user_id = self.decode_auth_token(self.params['Authorization']) if self.params.get('Authorization') else 0
+        self._current_user = {'id': user_id}
+        self.params['cid'] = int(self.params.get('Cid'))
 
-        params = {'cid': self.params.get('cid'), 'uid': self.user_id, 'pids': RIGHT['add_server']}
+        params = {'cid': self.params['cid'], 'uid': self.current_user['id'], 'pids': RIGHT['add_server']}
 
         try:
             self.user_permission_service.ws_check_permission(params)

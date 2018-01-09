@@ -56,10 +56,10 @@ class ServerService(BaseService):
     def add_server(self, params):
         instance_id = yield self.fetch_instance_id(params['public_ip'])
 
-        sql = " INSERT INTO server(name, public_ip, cluster_id, instance_id, lord, class) " \
-              " VALUES(%s, %s, %s, %s)"
+        sql = " INSERT INTO server(name, public_ip, cluster_id, instance_id, lord, form) " \
+              " VALUES(%s, %s, %s, %s, %s, %s)"
 
-        yield self.db.execute(sql, [params['name'], params['public_ip'], params['cluster_id'], instance_id, params['lord'], params['class']])
+        yield self.db.execute(sql, [params['name'], params['public_ip'], params['cluster_id'], instance_id, params['lord'], params['form']])
 
     @coroutine
     def migrate_server(self, params):

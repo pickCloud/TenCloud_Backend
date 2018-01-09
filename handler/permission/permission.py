@@ -4,7 +4,7 @@ from handler.base import BaseHandler
 from utils.decorator import is_login, require
 from utils.context import catch
 from constant import COMPANY_PERMISSION, USER_PERMISSION, PERMISSIONS_FLAG, RIGHT, \
-    PERMISSIONS_TEMPLATE_TYPE, ERR_TIP
+    PERMISSIONS_TEMPLATE_TYPE, ERR_TIP, PT_FORMAT
 
 
 class PermissionResourcesHandler(BaseHandler):
@@ -114,7 +114,7 @@ class PermissionTemplateAddHandler(BaseHandler):
 
         @apiGroup Permission
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {String} name 名字
         @apiParam {Number} cid 公司id
@@ -152,7 +152,7 @@ class PermissionTemplateDelHandler(BaseHandler):
         @apiName PermissionTemplateDelHandler
 
         @apiGroup Permission
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} pt_id 权限模版id
         @apiParam {Number} cid 公司id
@@ -210,7 +210,7 @@ class PermissionTemplateUpdateHandler(BaseHandler):
         @apiName PermissionTemplateUpdateHandler
         @apiGroup Permission
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} pt_id 权限模版id
         @apiParam {Number} cid 公司id
@@ -288,15 +288,47 @@ class PermissionUserDetailHandler(BaseHandler):
                 'format': int(pt_format)
             }
 
+            data = {
+                    'access_servers': [],
+                    'access_projects': [],
+                    'access_filehub': [],
+                    'permissions': [],
+                }
+
+            if params['format'] == PT_FORMAT['standard']:
+                data = {
+                    'name': '',
+                    'data': [
+                        {
+                            'name': '功能',
+                            'data': []
+                        },
+                        {
+                            'name': '数据',
+                            'data': [
+                                {
+                                    'name': '文件',
+                                    'data': [
+                                        {'name': '文件', 'data': []}
+                                    ]
+                                },
+                                {
+                                    'name': '项目',
+                                    'data': [
+                                        {'name': '项目', 'data': []}
+                                    ]
+                                },
+                                {
+                                    'name': '云服务器',
+                                    'data': []
+                                }
+                            ]
+                        }
+                    ]
+                }
             company_user = USER_PERMISSION.format(cid=int(cid), uid=int(uid))
             has_set = yield Task(self.redis.hget, COMPANY_PERMISSION, company_user)
             if not has_set:
-                data = {
-                    'access_servers': '',
-                    'access_projects': '',
-                    'access_filehub': '',
-                    'permissions': '',
-                }
                 self.success(data)
                 return
 
@@ -329,7 +361,7 @@ class PermissionUserUpdateHandler(BaseHandler):
         @apiName PermissionUserUpdateHandler
         @apiGroup Permission
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} uid 用户id
         @apiParam {Number} cid 公司id

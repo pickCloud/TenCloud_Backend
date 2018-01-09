@@ -17,7 +17,7 @@ from constant import MONITOR_CMD, OPERATE_STATUS, OPERATION_OBJECT_STYPE, SERVER
 
 class ServerNewHandler(WebSocketBaseHandler):
     def on_message(self, message):
-        self.params = json.loads(message)
+        self.params.update(json.loads(message))
 
         # 参数认证
         try:
@@ -70,6 +70,8 @@ class ServerNewHandler(WebSocketBaseHandler):
 
         # 部署失败
         if err:
+            if err[0] == 'Authentication failed.':
+                self.write_message('认证失败')
             self.write_message('failure')
             self.period.stop()
             self.close()
@@ -121,7 +123,9 @@ class ServerReport(BaseHandler):
                 data = json.loads(deploying_msg)
                 self.params.update({
                     'name': data['name'],
-                    'cluster_id': data['cluster_id']
+                    'cluster_id': data['cluster_id'],
+                    'lord': data['lord'],
+                    'form': data['form']
                 })
 
                 yield self.server_service.add_server(self.params)
@@ -156,7 +160,7 @@ class ServerDelHandler(BaseHandler):
         @apiName ServerDelHandler
         @apiGroup Server
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number[]} id 主机ID
 
@@ -312,7 +316,7 @@ class ServerUpdateHandler(BaseHandler):
         @apiName ServerUpdateHandler
         @apiGroup Server
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id 主机id
         @apiParam {String} name 主机名字
@@ -356,7 +360,7 @@ class ServerStopHandler(BaseHandler):
         @apiName ServerStopHandler
         @apiGroup Server
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id 主机id
 
@@ -388,7 +392,7 @@ class ServerStartHandler(BaseHandler):
         @apiName ServerStartHandler
         @apiGroup Server
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id 主机id
 
@@ -419,7 +423,7 @@ class ServerRebootHandler(BaseHandler):
         @apiName ServerRebootHandler
         @apiGroup Server
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id 主机id
 
@@ -587,7 +591,7 @@ class ServerContainerStartHandler(BaseHandler):
         @apiName ServerContainerStartHandler
         @apiGroup Server
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id 主机id
         @apiParam {String} container_id 容器id
@@ -621,7 +625,7 @@ class ServerContainerStopHandler(BaseHandler):
         @apiName ServerContainerStopHandler
         @apiGroup Server
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id 主机id
         @apiParam {String} container_id 容器id
@@ -656,7 +660,7 @@ class ServerContainerDelHandler(BaseHandler):
         @apiName ServerContainerDelHandler
         @apiGroup Server
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {Number} id 主机id
         @apiParam {String} container_id 容器id

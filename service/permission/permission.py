@@ -40,12 +40,12 @@ class PermissionService(PermissionBaseService):
               """
         cur = yield self.db.execute(sql, arg)
         ids = [str(i['sid']) for i in cur.fetchall()]
-        server_data = ''
+        server_data = []
         if ids:
             ids = ','.join(ids)
             server_data = yield self.fetch_instance_info(extra='WHERE s.id in ({ids})'.format(ids=ids))
 
-        if params['format'] == PT_FORMAT:
+        if params['format'] == PT_FORMAT['simple']:
             data = {
                 'permissions': permission_data,
                 'access_servers': server_data,
@@ -125,6 +125,9 @@ class UserPermissionService(PermissionBaseService):
         '''
         cursor = self.sync_db.cursor()
         try:
+            # 个人不需要检查
+            if not params.get('cid'): return
+
             # 管理员不需要检查
             sql = '''
                 SELECT * FROM company_employee WHERE uid=%s AND cid=%s AND is_admin=%s

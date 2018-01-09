@@ -67,7 +67,7 @@ class ProjectNewHandler(BaseHandler):
         @apiName ProjectNewHandler
         @apiGroup Project
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {String} name 名称
         @apiParam {String} image_name 镜像名字 (必需小写字母，分隔符可选)
@@ -126,7 +126,7 @@ class ProjectDelHandler(BaseHandler):
         @apiName ProjectDelHandler
         @apiGroup Project
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {number[]} id 项目id
 
@@ -201,7 +201,7 @@ class ProjectUpdateHandler(BaseHandler):
         @apiName ProjectUpdateHandler
         @apiGroup Project
 
-        @apiUse apiHeader
+        @apiUse cidHeader
 
         @apiParam {String} id 项目id
         @apiParam {String} name 名称
@@ -469,7 +469,7 @@ class ProjectImageLogHandler(BaseHandler):
        @apiName ProjectImageLogHandler
        @apiGroup Project
 
-       @apiUse apiHeader
+       @apiUse cidHeader
 
        @apiParam {String} prj_name 项目名字
        @apiParam {String} version 版本

@@ -3,7 +3,7 @@ __author__ = 'Jon'
 from tornado.gen import coroutine
 from service.base import BaseService
 from constant import APPLICATION_STATUS, FULL_DATE_FORMAT
-from utils.general import get_in_formats, get_formats
+from utils.general import fuzzyfinder
 
 
 class CompanyEmployeeService(BaseService):
@@ -121,10 +121,34 @@ class CompanyEmployeeService(BaseService):
 
     @coroutine
     def transfer_adimin(self, params):
-        ''' 转换管理员
+        ''' 只有管理员才能转换管理员
         :param params: {'admin_id', 'cid', 'uids'}
         '''
         yield self.update(sets={'is_admin': 0}, conds={'uid': params['admin_id'], 'cid': params['cid']})
 
         yield self.update(sets={'is_admin': 1},
-                          conds={'uid': params['uids'], 'cid': params['cid']})
+                          conds={'uid': params['uid'], 'cid': params['cid']})
+
+    @coroutine
+    def get_employee_list_detail(self, cid):
+
+        sql = """
+                SELECT u.id, u.name, u.email, u.mobile, u.image_url,ce.status, ce.is_admin,DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time
+                FROM user AS u JOIN company_employee AS ce ON ce.uid = u.id WHERE ce.cid = %s
+              """
+        cur = yield self.db.execute(sql, [FULL_DATE_FORMAT, FULL_DATE_FORMAT, cid])
+        return cur.fetchall()
+
+    def search_by_name(self, params):
+        names = []
+        sorted_data = dict()
+
+        search_key = 'name' if params['employee_name'].isalpha() else 'mobile'
+        for i in params['data']:
+            key = i[search_key]
+            sorted_data[key] = i
+            names.append(key)
+
+        name_find = fuzzyfinder(params['employee_name'], names)
+        final_data = [sorted_data[key] for key in names if key in name_find]
+        return final_data

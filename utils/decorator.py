@@ -23,19 +23,18 @@ def is_login(method):
 
     return wrapper
 
-def find(handler, args, target='cid'):
+def find_ids(handler, args):
     ''' 存在于json,或是url参数,或是url第一个参数
     :param handler: handler的实例
     :param args: urlpath的变量
-    :param target: 目标参数
     :return: int/list/tuple
     '''
-    v = handler.params.get(target) or (args and args[0])
+    v = handler.params.get('id') or (args and args[0])
 
     if isinstance(v, (list, tuple)):
         return v
     else:
-        return int(v)
+        return [int(v)]
 
 def auth(role):
     ''' 员工认证，管理员认证, 没有cid代表个人
@@ -52,7 +51,7 @@ def auth(role):
         def wrapper(self, *args, **kwargs):
 
             try:
-                cid = find(self, args)
+                cid = self.params.get('cid')
 
                 if cid:
                     yield getattr(self.company_employee_service, 'check_{role}'.format(role=role))(cid, self.current_user['id'])
@@ -81,9 +80,9 @@ def require(*pids, service=None):
         def wrapper(self, *args, **kwargs):
 
             try:
-                cid = find(self, args)
+                cid = self.params.get('cid')
 
-                ids = find(self, args, target='id') if service else [] # 数据权限
+                ids = find_ids(self, args) if service else [] # 数据权限
 
                 if cid: # 公司
                     try:
@@ -95,10 +94,11 @@ def require(*pids, service=None):
                             yield getattr(self, service['company']).check_right({'cid': cid, 'uid': self.current_user['id'], 'ids': ids})
                 else: # 个人
                     if ids:
-                        data = yield getattr(self, service['personal']).select(self.get_lord().update({'ids': ids}))
+                        params = self.get_lord()
+                        params['id'] = ids
+                        data = yield getattr(self, service['personal']).select(params)
 
-                        ids_len = 1 if isinstance(ids, int) else len(ids)
-                        if len(data) != ids_len:
+                        if len(data) != len(ids):
                             raise ValueError('请求的资源，并非全部合法!')
 
             except Exception as e:
