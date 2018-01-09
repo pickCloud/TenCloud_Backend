@@ -146,6 +146,17 @@ class UserPermissionService(PermissionBaseService):
         finally:
             cursor.close()
 
+    def get_user_by_permission(self, cid, pid):
+        '''
+        获取公司中具有某种权限的员工
+        :param cid:
+        :param pid:
+        :return: [1,2,3] 员工列表
+        '''
+        user = self.select(fields='uid', conds={'cid': cid, 'pid': pid}, ct=False, ut=False)
+
+        user_list = [u['uid'] for u in user]
+        return user_list
 
 
 #######################################################################################################################
@@ -161,7 +172,11 @@ class UserAccessBaseService(PermissionBaseService):
 
         limits = [i[self.resource] for i in db_data]
 
-        return [i for i in data if i[key] in limits]
+        if key == 'dir':
+            # 如果是文件的过滤动作，需要比较目标数据是否为权限目录的子串
+            return [i for i in data for j in limits if str(j) in i[key]]
+        else:
+            return [i for i in data if i[key] in limits]
 
 
 class UserAccessServerService(UserAccessBaseService):
@@ -180,3 +195,50 @@ class UserAccessFilehubService(UserAccessBaseService):
     table = 'user_access_filehub'
     fields = 'id, uid, fid, cid'
     resource = 'fid'
+
+    @coroutine
+    def check_right(self, params):
+        '''
+        检查用户是否有操作指定文件的数据权限
+        :param params: {'uid', 'cid', 'ids'}
+        :return: 如果权限不够，raise
+        '''
+
+        ids = params.get('ids')
+        if ids:
+            file_id = ','.join(str(i) for i in list(ids))
+        else:
+            return
+
+        # 获取需要操作的文件完整路径
+        sql = """
+            SELECT dir FROM filehub WHERE id in ({file_id})
+            """.format(file_id=file_id)
+        cur = yield self.db.execute(sql)
+        data = cur.fetchall()
+
+        # 获取当前用户具有操作权限的目录完整路径
+        pdata = yield self.get_by_permission(fields='dir',
+                                             table='filehub',
+                                             where_fields='a.id=b.fid',
+                                             where_table=self.table,
+                                             params=[params['uid'], params['cid']])
+
+        # 遍历所有用户需要操作的文件，若其在用户权限目录范围内则为合法，否则直接不允许用户操作
+        self.issubdir(data, pdata)
+
+    def issubdir(self, data, pdata):
+        '''
+        检查用户需要访问的数据是否为权限数据的子集
+        :param data: [str, str, ... str]
+        :param pdata: [str, str, ... str]
+        :return:
+        '''
+        for i in data:
+            result = True
+            for j in pdata:
+                if j['dir'] in i['dir']:
+                    result = False
+                    break
+            if result:
+                raise ValueError('您没有操作的权限')
