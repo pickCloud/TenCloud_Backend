@@ -117,7 +117,7 @@ class PermissionTemplateService(PermissionBaseService):
             data = {
                 'files': files if files else [],
                 'projects': projects if projects else [],
-                'permission': permissions if permissions else [],
+                'permissions': permissions if permissions else [],
                 'servers': servers if servers else []
             }
             return data
@@ -167,14 +167,14 @@ class PermissionTemplateService(PermissionBaseService):
     @coroutine
     def get_admin(self, cid):
         data = yield self.get_resources(cid=cid, is_format=True)
-        permission = ','.join([str(i['id']) for i in data['permission']])
+        permissions = ','.join([str(i['id']) for i in data['permissions']])
         servers = ','.join([str(i['sid']) for i in data['servers']])
         files = ','.join([str(i['id']) for i in data['files']])
         projects = ','.join([str(i['id']) for i in data['projects']])
         data = {
             'name': 'admin',
             'cid': cid,
-            'permission': permission,
+            'permissions': permissions,
             'access_servers': servers,
             'access_files': files,
             'access_projects': projects,

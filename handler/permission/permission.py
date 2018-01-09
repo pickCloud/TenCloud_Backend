@@ -78,7 +78,7 @@ class PermissionTemplateListHandler(BaseHandler):
                 else:
                     res = [data, preset]
             else:
-                res = preset
+                res = [preset]
             self.success(res)
 
 
