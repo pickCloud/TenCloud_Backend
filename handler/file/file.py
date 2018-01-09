@@ -168,6 +168,16 @@ class FileUploadHandler(BaseHandler):
                 arg.update(patch)
                 arg.update({'owner': self.current_user['id']})
                 data = yield self.file_service.batch_upload(arg)
+
+                # 当上传文件不是个人文件时
+                if self.params['cid'] != 1:
+                    arg = {
+                        'uid': self.current_user['id'],
+                        'cid': self.params['cid'],
+                        'fid': data['file_id']
+                    }
+                    yield self.user_access_filehub_service.add(arg)
+
                 resp.append(data)
             self.success(resp)
 
@@ -195,17 +205,10 @@ class FileUpdateHandler(BaseHandler):
             fid = self.params['id']
             if self.params['status'] == 1:
                 yield self.file_service.delete({'id': fid})
+                if self.params.get('cid'):
+                    yield self.user_access_filehub_service.delete({'fid': fid, 'cid': self.params['cid'], 'uid': self.current_user['id']})
                 self.success()
                 return
-
-            # 当上传文件不是个人文件时
-            if self.params['cid'] != 1:
-                arg = {
-                    'uid': self.current_user['id'],
-                    'cid': self.params['cid'],
-                    'fid': fid
-                }
-                yield self.user_access_filehub_service.add(arg)
 
             sets = {
                 'size': self.params.get('size'),
