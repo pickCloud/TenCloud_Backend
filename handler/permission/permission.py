@@ -72,7 +72,11 @@ class PermissionTemplateListHandler(BaseHandler):
             data = yield self.permission_template_service.select({'cid': cid})
             preset = yield self.permission_template_service.get_admin(cid)
             if data:
-                res = [data, preset]
+                if isinstance(data, list):
+                    data.append(preset)
+                    res = data
+                else:
+                    res = [data, preset]
             else:
                 res = preset
             self.success(res)
