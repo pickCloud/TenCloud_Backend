@@ -75,6 +75,8 @@ class PermissionTemplateListHandler(BaseHandler):
                 res = data.append(preset)
             elif isinstance(data, tuple):
                 res = [data, preset]
+            else:
+                res = data
             self.success(res)
 
 
