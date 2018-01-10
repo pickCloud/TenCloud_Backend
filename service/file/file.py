@@ -80,7 +80,7 @@ class FileService(BaseService):
     @coroutine
     def seg_page(self, params):
         sql = """
-                SELECT f.id, f.filename, f.size, f.qiniu_id, u.name, f.mime, f.hash, f.type, f.pid, 
+                SELECT f.id, f.filename, f.size, f.qiniu_id, u.name, f.mime, f.hash, f.type, f.pid, f.dir,
                 CONCAT('{uri}', f.qiniu_id) as url, CONCAT('{uri}', f.hash) as thumb,
                 DATE_FORMAT(f.create_time, %s) as create_time, DATE_FORMAT(f.update_time, %s) as update_time 
                 FROM {filehub} as f, {user} as u
