@@ -150,7 +150,7 @@ class ClusterSearchHandler(BaseHandler):
 
             if not(server_name or provider_name or region_name):
                 key = 'cluster_{id}'.format(id=str(cluster_id))
-                data = yield Task(self.redis.get, key)
+                data = self.redis.get(key)
                 if not data:
                     data = yield self.server_service.get_brief_list(
                         cluster_id=cluster_id,
@@ -159,7 +159,7 @@ class ClusterSearchHandler(BaseHandler):
                         **self.get_lord()
                     )
                     data = json.dumps(data)
-                    yield Task(self.redis.setex, key, CLUSTER_SEARCH_TIMEOUT, data)
+                    self.redis.setex(key, CLUSTER_SEARCH_TIMEOUT, data)
                 self.success(json.loads(data))
                 return
 

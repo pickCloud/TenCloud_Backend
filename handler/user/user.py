@@ -37,7 +37,7 @@ class UserBase(BaseHandler):
     @coroutine
     def validate_captcha(self, challenge='', validate='', seccode=''):
         gt = GeetestLib(settings['gee_id'], settings['gee_key'])
-        status = yield Task(self.redis.get, gt.GT_STATUS_SESSION_KEY)
+        status = self.redis.get(gt.GT_STATUS_SESSION_KEY)
         if int(status) == 1:
             result = gt.success_validate(challenge, validate, seccode)
         else:
@@ -62,18 +62,17 @@ class UserBase(BaseHandler):
         data.pop('password', None)
 
         # 设置session
-        yield self.set_session(data['id'], data)
+        self.set_session(data['id'], data)
 
         #设置token
         token = self.encode_auth_token(data['id'])
 
         return {'token': token}
 
-    @coroutine
     def get_sms_count(self, mobile):
         # 检查手机一天的发送次数
         sms_sent_count_key = SMS_SENT_COUNT.format(mobile=mobile)
-        sms_sent_count = yield Task(self.redis.get, sms_sent_count_key)
+        sms_sent_count = self.redis.get(sms_sent_count_key)
         sms_sent_count = int(sms_sent_count) if sms_sent_count else 0
         return sms_sent_count
 
@@ -91,7 +90,7 @@ class NeedSMSMixin(BaseHandler):
         # 检查auth_lock
         self.auth_lock_key = AUTH_LOCK.format(mobile=mobile)
 
-        has_lock = yield Task(self.redis.get, self.auth_lock_key)
+        has_lock = self.redis.get(self.auth_lock_key)
         if has_lock:
             self.error(
                 status=ERR_TIP['auth_code_many_errors']['sts'],
@@ -104,27 +103,27 @@ class NeedSMSMixin(BaseHandler):
         self.err_count_key = AUTH_CODE_ERROR_COUNT.format(mobile=mobile)
 
         # 验证码超时
-        code_ttl = yield Task(self.redis.ttl, self.auth_code_key)
+        code_ttl = self.redis.ttl(self.auth_code_key)
         if 0 < code_ttl < SMS_EXISTS_TIME-SMS_TIMEOUT:
             self.error(status=ERR_TIP['auth_code_timeout']['sts'], message=ERR_TIP['auth_code_timeout']['msg'])
             return False
 
-        real_code = yield Task(self.redis.get, self.auth_code_key)
+        real_code = self.redis.get(self.auth_code_key)
 
         if auth_code != real_code:
-            err_count = yield Task(self.redis.get, self.err_count_key)
+            err_count = self.redis.get(self.err_count_key)
             err_count = int(err_count) if err_count else 0
             err_count += 1
 
             if err_count >= AUTH_CODE_ERROR_COUNT_LIMIT:
-                yield Task(self.redis.setex, self.auth_lock_key, AUTH_LOCK_TIMEOUT, '1')
-                yield Task(self.redis.delete, self.err_count_key)
+                self.redis.setex(self.auth_lock_key, AUTH_LOCK_TIMEOUT, '1')
+                self.redis.delete(self.err_count_key)
                 self.error(
                     status=ERR_TIP['auth_code_many_errors']['sts'],
                     message=ERR_TIP['auth_code_many_errors']['msg']
                 )
             else:
-                yield Task(self.redis.setex, self.err_count_key, SMS_SENT_COUNT_LIMIT_TIMEOUT, err_count)
+                self.redis.setex(self.err_count_key, SMS_SENT_COUNT_LIMIT_TIMEOUT, err_count)
                 self.error(
                         status=ERR_TIP['auth_code_has_error']['sts'],
                         message=ERR_TIP['auth_code_has_error']['msg'].format(count=err_count),
@@ -134,11 +133,10 @@ class NeedSMSMixin(BaseHandler):
 
         return True
 
-    @coroutine
     def clean(self):
         """ 清除auth_code && 登陆lock && 登陆错误次数
         """
-        yield Task(self.redis.delete, self.auth_code_key, self.auth_lock_key, self.err_count_key)
+        self.redis.delete(self.auth_code_key, self.auth_lock_key, self.err_count_key)
 
 
 class UserSMSHandler(UserBase):
@@ -168,13 +166,13 @@ class UserSMSHandler(UserBase):
             # 检查手机一分钟只能发送一次锁
             sms_frequence_lock = SMS_FREQUENCE_LOCK.format(mobile=mobile)
 
-            has_lock = yield Task(self.redis.get, sms_frequence_lock)
+            has_lock = self.redis.get(sms_frequence_lock)
             if has_lock:
                 self.error(status=ERR_TIP['sms_too_frequency']['sts'], message=ERR_TIP['sms_too_frequency']['msg'])
                 return
 
             sms_sent_count_key = SMS_SENT_COUNT.format(mobile=mobile)
-            sms_sent_count = yield self.get_sms_count(mobile)
+            sms_sent_count = self.get_sms_count(mobile)
 
             data = {
                 'sms_count': sms_sent_count,
@@ -201,7 +199,7 @@ class UserSMSHandler(UserBase):
             # 发送短信验证码
             auth_code = gen_random_code()
 
-            yield Task(self.redis.setex, sms_frequence_lock, SMS_FREQUENCE_LOCK_TIMEOUT, '1')
+            self.redis.setex(sms_frequence_lock, SMS_FREQUENCE_LOCK_TIMEOUT, '1')
             result = yield self.sms_service.send(mobile, auth_code)
 
             if result.get('err'):
@@ -210,12 +208,12 @@ class UserSMSHandler(UserBase):
 
             # 增加手机发送次数
             if sms_sent_count == 0:
-                yield Task(self.redis.setex, sms_sent_count_key, SMS_SENT_COUNT_LIMIT_TIMEOUT, '1')
+                self.redis.setex(sms_sent_count_key, SMS_SENT_COUNT_LIMIT_TIMEOUT, '1')
             else:
-                yield Task(self.redis.incr, sms_sent_count_key)
+                self.redis.incr(sms_sent_count_key)
 
             # 设置验证码有效期
-            yield Task(self.redis.setex, AUTH_CODE.format(mobile=mobile), SMS_EXISTS_TIME, auth_code)
+            self.redis.setex(AUTH_CODE.format(mobile=mobile), SMS_EXISTS_TIME, auth_code)
 
             self.log.info('mobile: {mobile}, auth_code: {auth_code}'.format(mobile=mobile, auth_code=auth_code))
 
@@ -224,7 +222,6 @@ class UserSMSHandler(UserBase):
 
 
 class UserReturnSMSCountHandler(UserBase):
-    @coroutine
     def get(self, mobile):
         """
         @api {get} /api/user/sms/(\d+)/count 验证码次数查询
@@ -245,7 +242,7 @@ class UserReturnSMSCountHandler(UserBase):
         """
         with catch(self):
             mobile = int(mobile)
-            sms_sent_count = yield self.get_sms_count(mobile)
+            sms_sent_count = self.get_sms_count(mobile)
 
             data = {
                 'sms_count': sms_sent_count,
@@ -286,11 +283,11 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
 
             result = yield self.make_session(self.params['mobile'])
 
-            cid = yield Task(self.redis.hget, LOGOUT_CID, self.params['mobile'])
+            cid = self.redis.hget(LOGOUT_CID, self.params['mobile'])
 
             result['cid'] = int(cid) if cid else 0
 
-            yield self.clean()
+            self.clean()
 
             user = yield self.user_service.select({'mobile': mobile}, one=True)
             result['user'] = user
@@ -304,7 +301,6 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
 
 class UserLogoutHandler(BaseHandler):
     @is_login
-    @coroutine
     def post(self):
         """
         @api {post} /api/user/logout 用户退出
@@ -316,9 +312,9 @@ class UserLogoutHandler(BaseHandler):
         @apiUse Success
         """
         with catch(self):
-            yield Task(self.redis.hset, LOGOUT_CID, self.current_user['mobile'], self.params.get('cid', 0))
+            self.redis.hset(LOGOUT_CID, self.current_user['mobile'], self.params.get('cid', 0))
 
-            yield self.del_session(self.current_user['id'])
+            self.del_session(self.current_user['id'])
 
             self.success()
 
@@ -327,11 +323,10 @@ class UserLogoutHandler(BaseHandler):
 # tmp api for test
 class UserSmsSetHandler(BaseHandler):
     @is_login
-    @coroutine
     def get(self, count):
         with catch(self):
             sms_sent_count_key = SMS_SENT_COUNT.format(mobile=self.current_user['mobile'])
-            yield Task(self.redis.setex, sms_sent_count_key, SMS_SENT_COUNT_LIMIT_TIMEOUT, str(count))
+            self.redis.setex(sms_sent_count_key, SMS_SENT_COUNT_LIMIT_TIMEOUT, str(count))
             self.success()
             self.log.stats('Logout, IP: {}, Mobile: {}'.format(self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.current_user['mobile']))
 
@@ -341,7 +336,7 @@ class UserDeleteHandler(BaseHandler):
     @coroutine
     def get(self):
         with catch(self):
-            yield self.del_session(self.current_user['id'])
+            self.del_session(self.current_user['id'])
             yield self.user_service.delete(conds=['id=%s'], params=[self.current_user['id']])
             self.success()
 
@@ -429,7 +424,7 @@ class UserUpdateHandler(BaseHandler):
                                            conds={'id': new['id']}
                                            )
 
-            yield self.set_session(new['id'], new)
+            self.set_session(new['id'], new)
 
             self.success()
 
@@ -459,7 +454,6 @@ class UserUploadToken(BaseHandler):
             self.success(data)
 
     @is_login
-    @coroutine
     def delete(self):
         """
         @api {delete} /api/user/token 用户删除token
@@ -469,7 +463,7 @@ class UserUploadToken(BaseHandler):
         @apiUse Success
         """
         with catch(self):
-            yield self.user_service.delete_token(self.current_user['id'])
+            self.user_service.delete_token(self.current_user['id'])
             self.success()
 
 
@@ -498,7 +492,6 @@ class FileUploadMixin(BaseHandler):
 
 
 class GetCaptchaHandler(BaseHandler):
-    @coroutine
     def get(self):
         """
         @api {get} /api/user/captcha 极验证验证码预处理
@@ -523,7 +516,7 @@ class GetCaptchaHandler(BaseHandler):
             status = gt.pre_process()
             if not status:
                 status = 2
-            yield Task(self.redis.set, gt.GT_STATUS_SESSION_KEY, status)
+            self.redis.set(gt.GT_STATUS_SESSION_KEY, status)
             response_str = json.loads(gt.get_response_str())
             self.success(response_str)
 
@@ -562,7 +555,7 @@ class PasswordLoginHandler(UserBase):
             if hashed and bcrypt.checkpw(password, hashed):
                 result = yield self.make_session(self.params['mobile'])
 
-                cid = yield Task(self.redis.hget, LOGOUT_CID, self.params['mobile'])
+                cid = self.redis.hget(LOGOUT_CID, self.params['mobile'])
 
                 result['cid'] = int(cid) if cid else 0
                 result['user'] = data
@@ -626,7 +619,7 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
             yield self.user_service.add(params=arg)
 
             result = yield self.make_session(self.params['mobile'])
-            yield self.clean()
+            self.clean()
             result['user'] = arg
             self.success(result)
 
@@ -681,7 +674,7 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
             )
             result = yield self.make_session(self.params['mobile'])
 
-            yield self.clean()
+            self.clean()
 
             self.success(result)
 

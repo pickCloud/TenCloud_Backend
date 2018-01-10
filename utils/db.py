@@ -1,6 +1,6 @@
 __author__ = 'Jon'
 
-import tornadoredis
+import redis
 import pymysql.cursors
 
 from tornado_mysql import pools, cursors
@@ -34,5 +34,4 @@ SYNC_DB = pool.connection()
 
 
 
-REDIS = tornadoredis.Client(host=settings['redis_host'], port=settings['redis_port'])
-REDIS.connect()
+REDIS = redis.StrictRedis(host=settings['redis_host'], port=settings['redis_port'])

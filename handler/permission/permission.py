@@ -336,7 +336,7 @@ class PermissionUserDetailHandler(BaseHandler):
                     ]
                 }
             company_user = USER_PERMISSION.format(cid=int(cid), uid=int(uid))
-            has_set = yield Task(self.redis.hget, COMPANY_PERMISSION, company_user)
+            has_set = self.redis.hget(COMPANY_PERMISSION, company_user)
             if not has_set:
                 self.success(data)
                 return
@@ -414,6 +414,6 @@ class PermissionUserUpdateHandler(BaseHandler):
                 yield self.permission_service.update_user(arg)
 
             company_user = USER_PERMISSION.format(cid=self.params['cid'], uid=self.params['uid'])
-            yield Task(self.redis.hset, COMPANY_PERMISSION, company_user, PERMISSIONS_FLAG)
+            self.redis.hset(COMPANY_PERMISSION, company_user, PERMISSIONS_FLAG)
 
             self.success()

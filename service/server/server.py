@@ -108,7 +108,7 @@ class ServerService(BaseService):
         for table in ['server', 'server_account']:
             yield self._delete_server_info(table, params['public_ip'])
 
-        yield Task(self.redis.hdel, DEPLOYED, params['public_ip'])
+        self.redis.hdel(DEPLOYED, params['public_ip'])
 
     @coroutine
     def delete_server(self, params):
@@ -356,8 +356,8 @@ class ServerService(BaseService):
             yield sleep(1)
             new_ip = cloud.get_public_ip(info)
 
-        yield Task(self.redis.hset, DEPLOYED, new_ip, 1)
-        yield Task(self.redis.hdel, DEPLOYED, old_ip)
+        self.redis.hset(DEPLOYED, new_ip, 1)
+        self.redis.hdel(DEPLOYED, old_ip)
         yield self.update(sets={'public_ip': new_ip}, conds={'public_ip': old_ip})
         yield self.db.execute('UPDATE instance SET public_ip = %s WHERE public_ip = %s', [new_ip, old_ip])
         yield self.db.execute('UPDATE server_account SET public_ip = %s WHERE public_ip = %s', [new_ip, old_ip])
