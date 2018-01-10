@@ -345,7 +345,6 @@ class UserDeleteHandler(BaseHandler):
 
 class UserDetailHandler(BaseHandler):
     @is_login
-    @coroutine
     def get(self):
         """
         @api {get} /api/user 获取用户详情
