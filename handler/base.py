@@ -154,12 +154,12 @@ class BaseHandler(tornado.web.RequestHandler):
                 >>> self.current_user['id']
                 >>> self.params['x']
         '''
+        self.params = {}
+
         user_id = self._with_token()
 
         if user_id:
-            self.current_user = yield self.get_session(user_id)
-
-        self.params = {}
+            self.current_user = self.get_session(user_id)
 
         if self.request.headers.get('Content-Type', '').startswith('application/json') and self.request.body != '':
             self.params = json.loads(self.request.body.decode('utf-8'))
@@ -212,27 +212,24 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_status(code)
         self.write({"status": status, "message": message, "data": data})
 
-    @coroutine
     def set_session(self, user_id, data):
         ''' 添加/更新 Session
         :param user_id: user表id
         :param data:    dict，key对应user表的字段
         '''
-        yield Task(self.redis.setex, SESSION_KEY.format(user_id=user_id), SESSION_TIMEOUT, json_dumps(data))
+        self.redis.setex(SESSION_KEY.format(user_id=user_id), SESSION_TIMEOUT, json_dumps(data))
 
-    @coroutine
     def get_session(self, user_id):
         ''' 获取 Session
         '''
-        data = yield Task(self.redis.get, SESSION_KEY.format(user_id=user_id))
+        data = self.redis.get(SESSION_KEY.format(user_id=user_id))
 
         return json_loads(data)
 
-    @coroutine
     def del_session(self, user_id):
         ''' 删除 Session
         '''
-        yield Task(self.redis.delete, SESSION_KEY.format(user_id=user_id))
+        self.redis.delete(SESSION_KEY.format(user_id=user_id))
 
     @coroutine
     def filter(self, data, service=SERVICE['s'], key='id'):

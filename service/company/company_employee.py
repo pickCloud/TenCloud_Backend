@@ -33,6 +33,16 @@ class CompanyEmployeeService(BaseService):
             raise ValueError('非公司员工')
 
     @coroutine
+    def limit_admin(self, id):
+        ''' 管理员不能对自己进行，允许/拒绝/解除
+        :param id: 员工表id
+        '''
+        data = yield self.select({'id': id, 'is_admin': 1}, one=True)
+
+        if data:
+            raise ValueError('管理员不能对自己进行，允许/拒绝/解除')
+
+    @coroutine
     def add_employee(self, params):
         ''' 添加员工，需先判断员工之前的状态
         :param params: {'cid', 'uid'}

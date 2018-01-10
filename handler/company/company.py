@@ -384,9 +384,9 @@ class CompanyApplicationHandler(BaseHandler):
 class CompanyApplicationVerifyMixin(BaseHandler):
     @coroutine
     def verify(self, mode):
-        info = yield self.company_employee_service.get_app_info(self.params['id'])
+        yield self.company_employee_service.limit_admin(self.params['id'])
 
-        yield self.company_employee_service.check_admin(info['cid'], self.current_user['id'])
+        info = yield self.company_employee_service.get_app_info(self.params['id'])
 
         yield self.company_employee_service.verify(self.params['id'], mode)
 
@@ -540,7 +540,7 @@ class CompanyApplicationDismissionHandler(BaseHandler):
         @apiUse Success
         """
         with catch(self):
-            data = yield self.company_employee_service.select(fields='cid', conds={'id': self.params['id']}, one=True)
+            yield self.company_employee_service.limit_admin(self.params['id'])
 
             yield self.company_employee_service.delete({'id': self.params['id']})
 

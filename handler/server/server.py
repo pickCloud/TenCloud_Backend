@@ -41,9 +41,8 @@ class ServerNewHandler(WebSocketBaseHandler):
 
     @coroutine
     def handle_msg(self):
-        is_deploying = yield Task(self.redis.hget, DEPLOYING, self.params['public_ip'])
-
-        is_deployed = yield Task(self.redis.hget, DEPLOYED, self.params['public_ip'])
+        is_deploying = self.redis.hget(DEPLOYING, self.params['public_ip'])
+        is_deployed  = self.redis.hget(DEPLOYED, self.params['public_ip'])
 
 
         if is_deploying:
@@ -58,7 +57,7 @@ class ServerNewHandler(WebSocketBaseHandler):
         passwd = self.params['passwd']
         self.params['passwd'] = Aes.encrypt(passwd)
 
-        yield Task(self.redis.hset, DEPLOYING, self.params['public_ip'], json.dumps(self.params))
+        self.redis.hset(DEPLOYING, self.params['public_ip'], json.dumps(self.params))
 
         self.period = PeriodicCallback(self.check, 3000)  # 设置定时函数, 3秒
         self.period.start()
@@ -76,12 +75,11 @@ class ServerNewHandler(WebSocketBaseHandler):
             self.period.stop()
             self.close()
 
-            yield Task(self.redis.hdel, DEPLOYING, self.params['public_ip'])
+            self.redis.hdel(DEPLOYING, self.params['public_ip'])
 
-    @coroutine
     def check(self):
         ''' 检查主机是否上报信息 '''
-        result = yield Task(self.redis.hget, DEPLOYED, self.params['public_ip'])
+        result = self.redis.hget(DEPLOYED, self.params['public_ip'])
 
         if result:
             self.write_message('success')
@@ -112,9 +110,8 @@ class ServerReport(BaseHandler):
         @apiUse Success
         """
         with catch(self):
-            deploying_msg = yield Task(self.redis.hget, DEPLOYING, self.params['public_ip'])
-
-            is_deployed = yield Task(self.redis.hget, DEPLOYED, self.params['public_ip'])
+            deploying_msg = self.redis.hget(DEPLOYING, self.params['public_ip'])
+            is_deployed = self.redis.hget(DEPLOYED, self.params['public_ip'])
 
             if not deploying_msg and not is_deployed:
                 raise ValueError('%s not in deploying/deployed' % self.params['public_ip'])
@@ -132,8 +129,8 @@ class ServerReport(BaseHandler):
                 yield self.server_service.save_server_account({'username': data['username'],
                                                                'passwd': data['passwd'],
                                                                'public_ip': data['public_ip']})
-                yield Task(self.redis.hdel, DEPLOYING, self.params['public_ip'])
-                yield Task(self.redis.hset, DEPLOYED, self.params['public_ip'], DEPLOYED_FLAG)
+                self.redis.hdel(DEPLOYING, self.params['public_ip'])
+                self.redis.hset(DEPLOYED, self.params['public_ip'], DEPLOYED_FLAG)
 
                 # 通知服务器创建成功消息
                 server_id = yield self.server_service.fetch_server_id(self.params['public_ip'])

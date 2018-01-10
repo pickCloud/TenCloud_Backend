@@ -36,6 +36,5 @@ class UserService(BaseService):
 
         return filename
 
-    @coroutine
     def delete_token(self, id):
-        yield Task(self.redis.hdel, GIT_TOKEN, id)
+        self.redis.hdel(GIT_TOKEN, id)
