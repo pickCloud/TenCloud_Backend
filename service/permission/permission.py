@@ -146,6 +146,7 @@ class UserPermissionService(PermissionBaseService):
         finally:
             cursor.close()
 
+    @coroutine
     def get_user_by_permission(self, cid, pid):
         '''
         获取公司中具有某种权限的员工
@@ -153,7 +154,7 @@ class UserPermissionService(PermissionBaseService):
         :param pid:
         :return: [1,2,3] 员工列表
         '''
-        user = self.select(fields='uid', conds={'cid': cid, 'pid': pid}, ct=False, ut=False)
+        user = yield self.select(fields='uid', conds={'cid': cid, 'pid': pid}, ct=False, ut=False)
 
         user_list = [u['uid'] for u in user]
         return user_list

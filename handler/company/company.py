@@ -522,6 +522,9 @@ class CompanyAdminTransferHandler(BaseHandler):
         @apiUse Success
         """
         with catch(self):
+            # 检查参数是否完整合法
+            self.guarantee('uid', 'cid')
+
             self.params['admin_id'] = self.current_user['id']
 
             yield self.company_employee_service.transfer_adimin(self.params)
