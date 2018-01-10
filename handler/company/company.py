@@ -372,9 +372,9 @@ class CompanyApplicationHandler(BaseHandler):
             # 给公司管理员发送消息
             admin = yield self.company_employee_service.select(fields='uid', conds={'cid': info['cid'], 'is_admin': 1})
 
-            # 给具有审核员工权限的人发送消息
+            # 给具有审核员工权限的人发送消息,若没有存在审核权限的用户会返回一个空tuple，为防止报错，下面做一次转换
             audit = yield self.user_permission_service.select({'cid': info['cid'], 'pid': RIGHT['audit_employee']})
-            for i in admin + audit:
+            for i in admin + list(audit):
                 admin_data['owner'] = i['uid']
                 yield self.message_service.add(admin_data)
 
@@ -387,6 +387,11 @@ class CompanyApplicationVerifyMixin(BaseHandler):
         yield self.company_employee_service.limit_admin(self.params['id'])
 
         info = yield self.company_employee_service.get_app_info(self.params['id'])
+
+        admin = yield self.company_employee_service.select(fields='uid', conds={'cid': info['cid'], 'is_admin': 1}, ct=False, ut=False)
+        audit = yield self.user_permission_service.select(fields='uid', conds={'cid': info['cid'], 'pid': RIGHT['audit_employee']}, ct=False, ut=False)
+        if {'uid': self.current_user['id']} not in (admin + list(audit)):
+            raise ValueError('该用户无权限审核')
 
         yield self.company_employee_service.verify(self.params['id'], mode)
 
@@ -517,6 +522,9 @@ class CompanyAdminTransferHandler(BaseHandler):
         @apiUse Success
         """
         with catch(self):
+            # 检查参数是否完整合法
+            self.guarantee('uid', 'cid')
+
             self.params['admin_id'] = self.current_user['id']
 
             yield self.company_employee_service.transfer_adimin(self.params)

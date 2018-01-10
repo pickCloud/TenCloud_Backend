@@ -50,7 +50,7 @@ class FileListHandler(BaseHandler):
                 return
             data = yield self.file_service.seg_page(self.params)
 
-            data = yield self.filter(data, service=SERVICE['f'])
+            data = yield self.filter(data, service=SERVICE['f'], key='dir')
 
             self.success(data)
 
@@ -294,6 +294,11 @@ class FileDirCreateHandler(BaseHandler):
             }
             data = yield self.file_service.add(arg)
             resp = yield self.file_service.select(conds={'id': data['id']})
+
+            # 获取父节点的绝对路径,用以生成当前目录的完整路径
+            pdata = yield self.file_service.select(conds={'id': self.params['pid']}, one=True)
+            pdir = (pdata.get('dir') if pdata else '/0') + '/' + str(data['id'])
+            yield self.file_service.update(sets={'dir': pdir}, conds={'id': data['id']})
             self.success(resp)
 
 
