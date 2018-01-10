@@ -24,10 +24,11 @@ class CompanyService(BaseService):
 
         sql = """
 
-            SELECT c.id AS cid, c.name AS company_name, ce.is_admin AS is_admin, c.image_url,
+            SELECT c.id AS cid, c.name AS company_name, ce.is_admin AS is_admin, c.image_url, ces.code,
                    DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time, ce.status
             FROM company_employee ce
             JOIN company c ON ce.cid = c.id
+            JOIN company_entry_setting ces ON ces.cid = ce.cid
             WHERE ce.uid = %s {status}
         """.format(status=status)
 
