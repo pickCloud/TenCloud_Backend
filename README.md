@@ -506,7 +506,7 @@ CREATE TABLE `user_access_filehub` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
-
+update company_employee set status=status+2
 
 
 ## 测试

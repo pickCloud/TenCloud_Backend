@@ -453,11 +453,11 @@ INVITE_URL = SERVER_URL + '/#/invite?code='
 
 # company_employee表的status
 APPLICATION_STATUS = {
-    'reject': -1,
-    'process': 0,
-    'accept': 1,
-    'founder': 2,
-    'waiting': 3,
+    'reject': 1,  # -1,
+    'process': 2,  # 0
+    'accept': 3,    # 1
+    'founder': 4,  # 2
+    'waiting': 5,  # 3
 }
 MSG = {
     'application': {
