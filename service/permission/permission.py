@@ -54,8 +54,8 @@ class PermissionService(PermissionBaseService):
             }
             return data
 
-        server_data = self.merge_servers(server_data)
-        permission_data = self.merge_permissions(permission_data)
+        server_data = self.merge_servers(self, server_data)
+        permission_data = self.merge_permissions(self, permission_data)
         data = [
             {
                 'name': '功能',

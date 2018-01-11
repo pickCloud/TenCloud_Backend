@@ -53,8 +53,8 @@ class PermissionTemplateService(PermissionBaseService):
             }
             return data
 
-        permissions_data = self.merge_permissions(permission_data)
-        server_data = self.merge_servers(server_data)
+        permissions_data = self.merge_permissions(self, permission_data)
+        server_data = self.merge_servers(self, server_data)
 
         data = {
             'name': id_data['name'],
