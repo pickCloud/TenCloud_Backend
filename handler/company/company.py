@@ -107,7 +107,6 @@ class CompanyNewHandler(BaseHandler):
                 self.error(status=ERR_TIP[err_key]['sts'], message=ERR_TIP[err_key]['msg'])
                 return
 
-
             # 创建公司
             self.params.pop('cid', None)
             info = yield self.company_service.add(self.params)

@@ -122,8 +122,8 @@ class PermissionTemplateService(PermissionBaseService):
             }
             return data
 
-        permissions = self.merge_permissions(permissions)
-        servers = self.merge_servers(servers)
+        permissions = self.merge_permissions(self,permissions)
+        servers = self.merge_servers(self, servers)
 
         data = [
             {
@@ -176,7 +176,7 @@ class PermissionTemplateService(PermissionBaseService):
             'cid': cid,
             'permissions': permissions,
             'access_servers': servers,
-            'access_files': files,
+            'access_filehub': files,
             'access_projects': projects,
             'create_time': '',
             'update_time': '',

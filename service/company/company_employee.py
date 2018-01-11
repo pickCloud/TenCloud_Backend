@@ -133,12 +133,13 @@ class CompanyEmployeeService(BaseService):
     def get_employee_list_detail(self, cid):
 
         sql = """
-                SELECT u.id, u.name, u.email, u.mobile, u.image_url,ce.status, ce.is_admin,DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time
+                SELECT ce.id, u.id AS uid, u.name, u.email, u.mobile, u.image_url,ce.status, ce.is_admin,DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time
                 FROM user AS u JOIN company_employee AS ce ON ce.uid = u.id WHERE ce.cid = %s
               """
         cur = yield self.db.execute(sql, [FULL_DATE_FORMAT, FULL_DATE_FORMAT, cid])
         return cur.fetchall()
 
+    @staticmethod
     def search_by_name(self, params):
         names = []
         sorted_data = dict()
