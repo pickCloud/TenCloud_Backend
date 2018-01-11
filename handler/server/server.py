@@ -144,14 +144,13 @@ class ServerReport(BaseHandler):
                 yield self.message_service.notify_server_added(message)
 
                 # 添加非个人机器时
-                if self.params['cid'] != 0:
+                if self.params['form'] == 2:
                     arg = {
-                        'cid': self.params['cid'],
-                        'uid': self.current_user['id'],
+                        'cid': self.params['lord'],
+                        'uid': data.get('owner'),
                         'sid': server_id
                     }
                     yield self.user_access_server_service.add(arg)
-
 
             yield self.server_service.save_report(self.params)
 

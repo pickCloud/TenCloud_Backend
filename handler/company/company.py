@@ -107,7 +107,6 @@ class CompanyNewHandler(BaseHandler):
                 self.error(status=ERR_TIP[err_key]['sts'], message=ERR_TIP[err_key]['msg'])
                 return
 
-
             # 创建公司
             self.params.pop('cid', None)
             info = yield self.company_service.add(self.params)
@@ -588,7 +587,7 @@ class ComapnyEmployeeSearchHandler(BaseHandler):
 
         @apiUse cidHeader
         @apiParam {String} employee_name 搜索名字or手机号码
-        @apiParam {Number} status 是否通过 -1拒绝, 0审核中, 1通过, 2创始人
+        @apiParam {Number} status 是否通过 1拒绝, 2审核中, 3通过, 4创始人
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -612,25 +611,24 @@ class ComapnyEmployeeSearchHandler(BaseHandler):
                 'data': search_data
 
             }
-            if not params.get('status') and not params.get('employee_name'):
+
+            if not params.get('status'):
+                if params.get('employee_name'):
+                    search_data = self.company_employee_service.search_by_name(params)
                 self.success(search_data)
                 return
-
-            if not params.get('status') and params.get('employee_name'):
-                search_data = self.company_employee_service.search_by_name(params)
-                self.success(search_data)
-                return
-
-            if params.get('status') and not params.get('employee_name'):
-                if params['status'] == APPLICATION_STATUS['accept']:
-                    search_data = [
-                        i for i in search_data if (i['status'] == params['status'] or i['status']==APPLICATION_STATUS['founder'])
-                    ]
+            else:
+                if not params.get('employee_name'):
+                    if params['status'] == APPLICATION_STATUS['accept']:
+                        search_data = [
+                            i for i in search_data if
+                            (i['status'] == params['status'] or i['status'] == APPLICATION_STATUS['founder'])
+                        ]
+                    else:
+                        search_data = [i for i in search_data if i['status'] == params['status']]
+                    self.success(search_data)
+                    return
                 else:
-                    search_data = [i for i in search_data if i['status'] == params['status']]
-                self.success(search_data)
-                return
-
-            params['data'] = [i for i in params['data'] if i['status'] == params['status']]
-            search_data = self.company_employee_service.search_by_name(params)
-            self.success(search_data)
+                    params['data'] = [i for i in params['data'] if i['status'] == params['status']]
+                    search_data = self.company_employee_service.search_by_name(params)
+                    self.success(search_data)

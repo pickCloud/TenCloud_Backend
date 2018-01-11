@@ -305,36 +305,33 @@ class PermissionUserDetailHandler(BaseHandler):
                 }
 
             if params['format'] == PT_FORMAT['standard']:
-                data = {
-                    'name': '',
-                    'data': [
-                        {
-                            'name': '功能',
-                            'data': []
-                        },
-                        {
-                            'name': '数据',
-                            'data': [
-                                {
-                                    'name': '文件',
-                                    'data': [
-                                        {'name': '文件', 'data': []}
-                                    ]
-                                },
-                                {
-                                    'name': '项目',
-                                    'data': [
-                                        {'name': '项目', 'data': []}
-                                    ]
-                                },
-                                {
-                                    'name': '云服务器',
-                                    'data': []
-                                }
-                            ]
-                        }
+                data = [
+                            {
+                                'name': '功能',
+                                'data': []
+                            },
+                            {
+                                'name': '数据',
+                                'data': [
+                                    {
+                                        'name': '文件',
+                                        'data': [
+                                            {'name': '文件', 'data': []}
+                                        ]
+                                    },
+                                    {
+                                        'name': '项目',
+                                        'data': [
+                                            {'name': '项目', 'data': []}
+                                        ]
+                                    },
+                                    {
+                                        'name': '云服务器',
+                                        'data': []
+                                    }
+                                ]
+                            }
                     ]
-                }
             company_user = USER_PERMISSION.format(cid=int(cid), uid=int(uid))
             has_set = self.redis.hget(COMPANY_PERMISSION, company_user)
             if not has_set:

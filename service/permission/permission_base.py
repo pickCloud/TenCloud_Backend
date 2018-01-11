@@ -11,6 +11,7 @@ class PermissionBaseService(BaseService):
     fields = ''
     resource = ''
 
+    @staticmethod
     def merge_servers(self, data):
 
         """
@@ -59,6 +60,7 @@ class PermissionBaseService(BaseService):
             res.append(tmp_provider)
         return res
 
+    @staticmethod
     def merge_permissions(self, data):
         if len(data) == 0:
             return
