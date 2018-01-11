@@ -589,7 +589,7 @@ class ServerContainersInfoHandler(BaseHandler):
 
 
 class ServerContainerStartHandler(BaseHandler):
-    @require(RIGHT['start_stop_container'], service=SERVICE['s'])
+    @require(service=SERVICE['s'])
     @coroutine
     def post(self):
         """
@@ -623,7 +623,7 @@ class ServerContainerStartHandler(BaseHandler):
 
 
 class ServerContainerStopHandler(BaseHandler):
-    @require(RIGHT['start_stop_container'], service=SERVICE['s'])
+    @require(service=SERVICE['s'])
     @coroutine
     def post(self):
         """
@@ -658,7 +658,7 @@ class ServerContainerStopHandler(BaseHandler):
 
 
 class ServerContainerDelHandler(BaseHandler):
-    @require(RIGHT['delete_container'], service=SERVICE['s'])
+    @require(service=SERVICE['s'])
     @coroutine
     def post(self):
         """

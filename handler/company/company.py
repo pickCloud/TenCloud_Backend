@@ -211,7 +211,7 @@ class CompanyEntrySettingHandler(BaseHandler):
 
             self.success(data)
 
-    @require(RIGHT['set_join_conditions'])
+    @is_login
     @coroutine
     def post(self, cid):
         """
