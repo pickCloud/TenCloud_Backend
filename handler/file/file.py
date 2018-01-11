@@ -48,11 +48,15 @@ class FileListHandler(BaseHandler):
             if self.params['page_number'] > MAX_PAGE_NUMBER:
                 self.error(message='over limit page number')
                 return
+            self.params.update(self.get_lord())
             data = yield self.file_service.seg_page(self.params)
 
             data = yield self.filter(data, service=SERVICE['f'], key='dir')
 
-            self.success(data)
+            # 进行分页处理
+            start = (self.params['now_page'] - 1) * self.params['page_number']
+            end = self.params['now_page'] * self.params['page_number']
+            self.success(data[start:end] if data else [])
 
 
 class FileTotalHandler(BaseHandler):

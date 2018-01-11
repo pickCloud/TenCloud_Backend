@@ -41,7 +41,7 @@ def _validate(regex, value, err_msg):
         raise ValueError(err_msg)
 
 def validate_ip(ip):
-    regex = '\d+\.\d+\.\d+\.\d+'
+    regex = '^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$'
 
     _validate(regex, ip, '不是合法的IP地址')
 

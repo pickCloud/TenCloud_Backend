@@ -84,17 +84,15 @@ class FileService(BaseService):
                 CONCAT('{uri}', f.qiniu_id) as url, CONCAT('{uri}', f.hash) as thumb,
                 DATE_FORMAT(f.create_time, %s) as create_time, DATE_FORMAT(f.update_time, %s) as update_time 
                 FROM {filehub} as f, {user} as u
-                WHERE f.pid = %s AND f.owner = u.id
+                WHERE f.pid = %s AND f.form = %s AND f.lord = %s AND f.owner = u.id
                 ORDER BY f.create_time DESC
-                LIMIT %s, %s
               """.format(filehub=self.table, user='user', uri=DISK_DOWNLOAD_URL)
-        start_page = (params['now_page'] - 1) * params['page_number']
         arg = [
                 FULL_DATE_FORMAT,
                 FULL_DATE_FORMAT,
                 params['file_id'],
-                start_page,
-                params['page_number']
+                params['form'],
+                params['lord']
         ]
         cur = yield self.db.execute(sql, arg)
         data = cur.fetchall()
@@ -102,7 +100,7 @@ class FileService(BaseService):
 
     @coroutine
     def total_pages(self, params):
-        sql = "SELECT count(*) as number FROM {table} WHERE pid = %s AND form = %s".format(table=self.table)
-        cur = yield self.db.execute(sql, [params['pid'], params['form']])
+        sql = "SELECT count(*) as number FROM {table} WHERE pid = %s AND form = %s AND lord=%s".format(table=self.table)
+        cur = yield self.db.execute(sql, [params['pid'], params['form'], params['lord']])
         data = cur.fetchone()
         return data['number']
