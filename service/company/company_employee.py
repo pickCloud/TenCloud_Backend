@@ -87,9 +87,9 @@ class CompanyEmployeeService(BaseService):
         :param id: 员工表id
         :param mode: APPLICATION_STATUS的key
         '''
-        is_repeat = yield self.select({'id': id, 'status': APPLICATION_STATUS[mode]})
+        is_process = yield self.select({'id': id, 'status': APPLICATION_STATUS['process']})
 
-        if is_repeat:
+        if not is_process:
             raise ValueError('请勿重复操作')
 
         yield self.update(sets={'status': APPLICATION_STATUS[mode]}, conds={'id': id})
