@@ -127,8 +127,9 @@ class MessageSearchHandler(BaseHandler):
                 params['mode'] = self.params.get('mode')
 
             # 模糊匹配关键字，使用%%转义
+            extra = ''
             if self.params.get('keywords'):
-                extra = ' AND content LIKE "%%{keywords}%%"'.format(keywords=self.params.get('keywords'))
+                extra += ' AND content LIKE "%%{keywords}%%"'.format(keywords=self.params.get('keywords'))
             extra += ' ORDER BY update_time DESC '
             message_data = yield self.message_service.select(conds=params, extra=extra)
 
