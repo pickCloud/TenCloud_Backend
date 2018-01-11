@@ -100,7 +100,7 @@ class FileService(BaseService):
 
     @coroutine
     def total_pages(self, params):
-        sql = "SELECT count(*) as number FROM {table} WHERE pid = %s AND form = %s".format(table=self.table)
-        cur = yield self.db.execute(sql, [params['pid'], params['form']])
+        sql = "SELECT count(*) as number FROM {table} WHERE pid = %s AND form = %s AND lord=%s".format(table=self.table)
+        cur = yield self.db.execute(sql, [params['pid'], params['form'], params['lord']])
         data = cur.fetchone()
         return data['number']
