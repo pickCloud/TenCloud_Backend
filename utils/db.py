@@ -34,4 +34,4 @@ SYNC_DB = pool.connection()
 
 
 
-REDIS = redis.StrictRedis(host=settings['redis_host'], port=settings['redis_port'])
+REDIS = redis.StrictRedis(host=settings['redis_host'], port=settings['redis_port'], decode_responses=True)
