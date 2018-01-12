@@ -383,9 +383,10 @@ PROJECT_STATUS['build-failure'] = -2
 PROJECT_STATUS['deploy-failure'] = -4
 
 #################################################################################################
-# 文件上传
+# 文件下载
 #################################################################################################
 DISK_DOWNLOAD_URL = 'https://' + SERVER_HOST + '/api/file/download/'
+PREDOWNLOAD_URL = 'https://c.10.com/#/download?file_id={file_id}'
 
 # 分页时，单页面最大100条
 MAX_PAGE_NUMBER = 100

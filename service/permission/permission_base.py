@@ -12,7 +12,7 @@ class PermissionBaseService(BaseService):
     resource = ''
 
     @staticmethod
-    def merge_servers(self, data):
+    def merge_servers(data):
 
         """
         :param [
@@ -61,7 +61,7 @@ class PermissionBaseService(BaseService):
         return res
 
     @staticmethod
-    def merge_permissions(self, data):
+    def merge_permissions(data):
         if len(data) == 0:
             return
 

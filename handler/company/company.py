@@ -138,7 +138,7 @@ class CompanyUpdateHandler(BaseHandler):
         """
         with catch(self):
             # 参数认证
-            self.guarantee('cid', 'name', 'contact', 'mobile', 'image_url')
+            self.guarantee('cid', 'name', 'contact', 'mobile')
 
             validate_mobile(self.params['mobile'])
 

@@ -2,7 +2,7 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login, require
 from utils.context import catch
-from constant import MAX_PAGE_NUMBER, RIGHT, SERVICE
+from constant import MAX_PAGE_NUMBER, RIGHT, SERVICE, PREDOWNLOAD_URL
 
 
 class FileListHandler(BaseHandler):
@@ -241,6 +241,28 @@ class FileDownloadHandler(BaseHandler):
         with catch(self):
             url = yield self.file_service.private_download_url(qiniu_id=file_id)
             self.redirect(url=url, permanent=False, status=302)
+
+
+class FileDownloadPreHandler(BaseHandler):
+    @require(RIGHT['download_file'])
+    @coroutine
+    def get(self, file_id):
+        """
+        @api {get} /api/file/predownload/([\w\W+]) 文件预下载
+        @apiName FileDownload
+        @apiGroup File
+
+        @apiUse cidHeader
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 302 OK
+            {
+                'url': 'https://c.10.com/#/download?file_id=xxxxxx'
+            }
+        """
+        with catch(self):
+            url = PREDOWNLOAD_URL.format(file_id=file_id)
+            self.success({'url':url})
 
 
 class FileDirCreateHandler(BaseHandler):
