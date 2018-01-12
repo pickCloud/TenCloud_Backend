@@ -465,10 +465,10 @@ MSG = {
         'accept': '【{admin_name}】审核通过了你加入【{company_name}】的申请，你可以进入企业了',
         'reject': '【{admin_name}】拒绝了你加入【{company_name}】的申请，你可以核对信息后重新提交申请',
     },
-    'change': '你的企业【{company_name}】被管理员 【{admin_name}】修改了资料',
+    'change': '你的企业被【{admin_name}】修改了名称，修改前【{old_name}】，修改后【{new_name}】',
     'leave': {
-        'dismission': '【{name}】【{mobile}】离开了【{company_name}】',
-        'demission': '【{name}】【{mobile}】离开了【{company_name}】',
+        'dismission': '【{name}】【{mobile}】离开了【{company_name}】',  # 解雇
+        'demission': '【{name}】【{mobile}】离开了【{company_name}】',  # 辞职
     },
     'server': 'IP为【{ip}】的【{provider}】服务器已成功添加',
     'image': '项目【{project}】构建镜像成功'
