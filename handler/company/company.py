@@ -166,11 +166,12 @@ class CompanyUpdateHandler(BaseHandler):
                                                 conds={'id': self.params['cid']},
                                               )
             # 通知
-            employee = yield self.company_employee_service.get_employee_list(self.params['cid'], 0, APPLICATION_STATUS['accept'])
+            employee = yield self.company_employee_service.get_employee_list(self.params['cid'], status=[APPLICATION_STATUS['accept'], APPLICATION_STATUS['founder']])
             yield self.message_service.notify_change({
                 'owners': employee,
                 'cid': self.params['cid'],
-                'company_name': old['name'],
+                'old_name': old['name'],
+                'new_name': self.params['name'],
                 'admin_name': self.get_current_name(),
             })
             self.success()
