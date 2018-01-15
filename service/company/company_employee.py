@@ -59,8 +59,14 @@ class CompanyEmployeeService(BaseService):
         elif status == APPLICATION_STATUS['reject']:
             yield self.update(sets={'status': APPLICATION_STATUS['process']}, conds={'cid': params['cid'], 'uid': params['uid']})
         else:
-            params['status'] = APPLICATION_STATUS['process']
-            yield self.add(params)
+            sets = {
+                'status': APPLICATION_STATUS['process']
+            }
+            conds = {
+                'uid': params['uid'],
+                'cid': params['cid']
+            }
+            yield self.update(sets=sets, conds=conds)
 
     @coroutine
     def get_app_info(self, id):
