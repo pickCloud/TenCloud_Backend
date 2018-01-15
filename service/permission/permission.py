@@ -106,11 +106,12 @@ class PermissionService(PermissionBaseService):
 
         yield self.db.execute(sql)
 
-        sql = """
-                INSERT INTO {table} {fields} VALUES {values}
-            """.format(table=params['table'], fields=params['fields'], values=params['data'])
+        if params.get('data') != '':
+            sql = """
+                    INSERT INTO {table} {fields} VALUES {values}
+                """.format(table=params['table'], fields=params['fields'], values=params['data'])
 
-        yield self.db.execute(sql)
+            yield self.db.execute(sql)
 
 
 class UserPermissionService(PermissionBaseService):
