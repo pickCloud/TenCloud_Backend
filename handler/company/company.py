@@ -588,7 +588,7 @@ class ComapnyEmployeeSearchHandler(BaseHandler):
 
         @apiUse cidHeader
         @apiParam {String} employee_name 搜索名字or手机号码
-        @apiParam {Number} status 是否通过 1拒绝, 2审核中, 3通过, 4创始人
+        @apiParam {Number} status 是否通过 1拒绝, 2审核中, 3通过, 4创始人, 传空获取全部
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
