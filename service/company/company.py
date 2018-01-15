@@ -28,7 +28,7 @@ class CompanyService(BaseService):
                    DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time, ce.status
             FROM company_employee ce
             JOIN company c ON ce.cid = c.id
-            JOIN company_entry_setting ces ON ces.cid = ce.cid
+            LEFT JOIN company_entry_setting ces ON ces.cid = ce.cid
             WHERE ce.uid = %s {status}
         """.format(status=status)
 
