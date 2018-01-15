@@ -387,7 +387,7 @@ CREATE TABLE `company_employee` (
   `cid` int(11) NOT NULL COMMENT 'company表ID',
   `uid` int(11) NOT NULL COMMENT 'user表ID',
   `is_admin` tinyint(1) NOT NULL DEFAULT '0' COMMENT '管理员',
-  `status` tinyint(4) NOT NULL DEFAULT '0' COMMENT '-1拒绝, 0审核中, 1通过, 2创始人',
+  `status` tinyint(4) NOT NULL DEFAULT '0' COMMENT '1拒绝, 2审核中, 3通过, 4创始人',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
