@@ -382,29 +382,29 @@ class PermissionUserUpdateHandler(BaseHandler):
             args = ['uid', 'cid']
             self.guarantee(*args)
 
-            access_servers = self.params.get('access_servers', '')
-            if access_servers:
+            access_servers = self.params.get('access_servers', None)
+            if access_servers is not None:
                 arg = self.deal_args(access_servers)
                 arg['table'] = 'user_access_server'
                 arg['fields'] = '(`uid`, `sid`, `cid`)'
                 yield self.permission_service.update_user(arg)
 
-            access_projects = self.params.get('access_projects', '')
-            if access_projects:
+            access_projects = self.params.get('access_projects', None)
+            if access_projects is not None:
                 arg = self.deal_args(access_projects)
                 arg['table'] = 'user_access_project'
                 arg['fields'] = '(`uid`, `pid`, `cid`)'
                 yield self.permission_service.update_user(arg)
 
-            access_filehub = self.params.get('access_filehub', '')
-            if access_filehub:
+            access_filehub = self.params.get('access_filehub', None)
+            if access_filehub is not None:
                 arg = self.deal_args(access_filehub)
                 arg['table'] = 'user_access_filehub'
                 arg['fields'] = '(`uid`, `fid`, `cid`)'
                 yield self.permission_service.update_user(arg)
 
-            permissions = self.params.get('permissions', '')
-            if permissions:
+            permissions = self.params.get('permissions', None)
+            if permissions is not None:
                 arg = self.deal_args(permissions)
                 arg['table'] = 'user_permission'
                 arg['fields'] = '(`uid`, `pid`, `cid`)'
