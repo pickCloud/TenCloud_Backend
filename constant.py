@@ -3,6 +3,7 @@ __author__ = 'Jon'
 '''
 程序的常量
 '''
+from setting import settings
 
 #################################################################################################
 # 时间相关
@@ -69,8 +70,8 @@ ERR_TIP = {
 # ssh相关
 #################################################################################################
 SSH_CONNECT_TIMEOUT = 30
-SERVER_HOST = 'c.10.com'
-SERVER_URL = 'https://' + SERVER_HOST
+SERVER_HOST = settings['server_host']
+SERVER_URL = settings['server_url']
 MONITOR_CMD = 'curl -sSL https://{host}/supermonitor/install.sh | sh '.format(host=SERVER_HOST)
 UNINSTALL_CMD = 'curl -sSL https://{host}/supermonitor/uninstall.sh | sh '.format(host=SERVER_HOST)
 CREATE_IMAGE_CMD = 'curl -sSL https://{host}/supermonitor/scripts/create-image.sh | sh -s '.format(host=SERVER_HOST)
