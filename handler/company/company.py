@@ -18,7 +18,7 @@ class CompanyHandler(BaseHandler):
         @apiName CompanyHandler
         @apiGroup Company
 
-        @apiParam {Number} is_pass -1拒绝, 0审核中, 1通过, 2创始人, 3获取通过的，以及作为创始人的公司列表, 4获取所有和该用户相关的公司列表
+        @apiParam {Number} is_pass 1拒绝, 2审核中, 3通过, 4创始人, 5待加入，6获取通过的，以及作为创始人的公司列表, 7获取所有和该用户相关的公司列表
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -31,7 +31,7 @@ class CompanyHandler(BaseHandler):
             }        """
         with catch(self):
             is_pass = int(is_pass)
-            if is_pass < 0 or is_pass > 4:
+            if is_pass < 1 or is_pass > 7:
                 self.error("arg error, check again")
                 return
 
@@ -138,7 +138,7 @@ class CompanyUpdateHandler(BaseHandler):
         """
         with catch(self):
             # 参数认证
-            self.guarantee('cid', 'name', 'contact', 'mobile', 'image_url')
+            self.guarantee('cid', 'name', 'contact', 'mobile')
 
             validate_mobile(self.params['mobile'])
 

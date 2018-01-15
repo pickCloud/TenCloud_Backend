@@ -150,7 +150,7 @@ class CompanyEmployeeService(BaseService):
         return cur.fetchall()
 
     @staticmethod
-    def search_by_name(self, params):
+    def search_by_name(params):
         names = []
         sorted_data = dict()
 
