@@ -36,7 +36,6 @@ class CompanyEntrySettingService(BaseService):
         else:
             params['code'] = code
             yield self.add(params=params)
-
         return self.produce_url(code)
 
     @coroutine
