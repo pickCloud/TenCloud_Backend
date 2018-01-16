@@ -352,6 +352,9 @@ class PermissionUserUpdateHandler(BaseHandler):
             'cid': self.params['cid'],
             'data': '',
         }
+        if not object_str:
+            return arg
+
         data = []
         for k in object_str.split(','):
             value = '(' + str(self.params['uid']) + ',' + k + ',' + str(self.params['cid']) + ')'
@@ -384,33 +387,25 @@ class PermissionUserUpdateHandler(BaseHandler):
             # 只有管理员才可以修改员工的权限
             yield self.company_employee_service.check_admin(self.params.get('cid'), self.current_user['id'])
 
-            access_servers = self.params.get('access_servers', None)
-            if access_servers is not None:
-                arg = self.deal_args(access_servers)
-                arg['table'] = 'user_access_server'
-                arg['fields'] = '(`uid`, `sid`, `cid`)'
-                yield self.permission_service.update_user(arg)
+            arg = self.deal_args(self.params['access_servers'])
+            arg['table'] = 'user_access_server'
+            arg['fields'] = '(`uid`, `sid`, `cid`)'
+            yield self.permission_service.update_user(arg)
 
-            access_projects = self.params.get('access_projects', None)
-            if access_projects is not None:
-                arg = self.deal_args(access_projects)
-                arg['table'] = 'user_access_project'
-                arg['fields'] = '(`uid`, `pid`, `cid`)'
-                yield self.permission_service.update_user(arg)
+            arg = self.deal_args(self.params['access_projects'])
+            arg['table'] = 'user_access_project'
+            arg['fields'] = '(`uid`, `pid`, `cid`)'
+            yield self.permission_service.update_user(arg)
 
-            access_filehub = self.params.get('access_filehub', None)
-            if access_filehub is not None:
-                arg = self.deal_args(access_filehub)
-                arg['table'] = 'user_access_filehub'
-                arg['fields'] = '(`uid`, `fid`, `cid`)'
-                yield self.permission_service.update_user(arg)
+            arg = self.deal_args(self.params['access_filehub'])
+            arg['table'] = 'user_access_filehub'
+            arg['fields'] = '(`uid`, `fid`, `cid`)'
+            yield self.permission_service.update_user(arg)
 
-            permissions = self.params.get('permissions', None)
-            if permissions is not None:
-                arg = self.deal_args(permissions)
-                arg['table'] = 'user_permission'
-                arg['fields'] = '(`uid`, `pid`, `cid`)'
-                yield self.permission_service.update_user(arg)
+            arg = self.deal_args(self.params['permissions'])
+            arg['table'] = 'user_permission'
+            arg['fields'] = '(`uid`, `pid`, `cid`)'
+            yield self.permission_service.update_user(arg)
 
             company_user = USER_PERMISSION.format(cid=self.params['cid'], uid=self.params['uid'])
             self.redis.hset(COMPANY_PERMISSION, company_user, PERMISSIONS_FLAG)

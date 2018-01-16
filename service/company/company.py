@@ -20,8 +20,6 @@ class CompanyService(BaseService):
             status = 'and ( ce.status = 3 or ce.status = 4 )'
         elif is_pass == 7:
             status = ''
-        elif is_pass == 8:
-            status = 'and ce.status != 5'
         else:
             arg.append(is_pass)
 

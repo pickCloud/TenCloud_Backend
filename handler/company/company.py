@@ -18,7 +18,7 @@ class CompanyHandler(BaseHandler):
         @apiName CompanyHandler
         @apiGroup Company
 
-        @apiParam {Number} is_pass 1拒绝, 2审核中, 3通过, 4创始人, 5待加入，6获取通过的，以及作为创始人的公司列表, 7获取所有和该用户相关的公司列表, 8获取所有状态，除了待加入的
+        @apiParam {Number} is_pass 1拒绝, 2审核中, 3通过, 4创始人, 5待加入，6获取通过的，以及作为创始人的公司列表, 7获取所有和该用户相关的公司列表
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
