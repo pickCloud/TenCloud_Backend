@@ -4,7 +4,7 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from setting import settings
 from utils.decorator import is_login, require, auth
-from utils.general import validate_mobile
+from utils.general import validate_mobile, validate_id_card
 from utils.context import catch
 from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING, MSG_SUB_MODE, RIGHT
 
@@ -357,9 +357,13 @@ class CompanyApplicationHandler(BaseHandler):
 
             # 刷新用户数据
             sets = {}
-            if self.params.get('name'): sets['name'] = self.params['name']
-            if self.params.get('id_card'): sets['id_card'] = self.params['id_card']
-            if sets: yield self.user_service.update(sets=sets, conds={'id': self.current_user['id']})
+            if self.params.get('name'):
+                sets['name'] = self.params['name']
+            if self.params.get('id_card'):
+                validate_id_card(self.params['id_card'])
+                sets['id_card'] = self.params['id_card']
+            if sets:
+                yield self.user_service.update(sets=sets, conds={'id': self.current_user['id']})
 
             # 加入员工
             app_data = {
