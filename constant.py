@@ -70,11 +70,10 @@ ERR_TIP = {
 # ssh相关
 #################################################################################################
 SSH_CONNECT_TIMEOUT = 30
-SERVER_HOST = settings['server_host']
 SERVER_URL = settings['server_url']
-MONITOR_CMD = 'curl -sSL https://{host}/supermonitor/install.sh | sh '.format(host=SERVER_HOST)
-UNINSTALL_CMD = 'curl -sSL https://{host}/supermonitor/uninstall.sh | sh '.format(host=SERVER_HOST)
-CREATE_IMAGE_CMD = 'curl -sSL https://{host}/supermonitor/scripts/create-image.sh | sh -s '.format(host=SERVER_HOST)
+MONITOR_CMD = 'curl -sSL {server_url}/supermonitor/install.sh | sh '.format(server_url=SERVER_URL)
+UNINSTALL_CMD = 'curl -sSL {server_url}/supermonitor/uninstall.sh | sh '.format(server_url=SERVER_URL)
+CREATE_IMAGE_CMD = 'curl -sSL {server_url}/supermonitor/scripts/create-image.sh | sh -s '.format(server_url=SERVER_URL)
 IMAGE_INFO_CMD = 'docker images %s --format "{{.Tag}},{{.CreatedAt}}" | sed -n 1,3p'
 REPOS_DOMAIN = 'hub.10.com'
 DEPLOY_CMD = 'echo {password} | docker login {repository} -u {username} --password-stdin && docker pull {image_name} && docker run {portmap} -d --name {container_name} {image_name} '
@@ -332,7 +331,7 @@ GIT_REPOS_URL = 'https://api.github.com/user/repos'
 GIT_BRANCH_URL = 'https://api.github.com/repos/{repos_name}/branches'
 GIT_FETCH_TOKEN_URL = 'https://github.com/login/oauth/access_token'
 GIT_FETCH_CODE_URL = 'https://github.com/login/oauth/authorize'
-GIT_CALLBACK = 'https://' + SERVER_HOST + '/api/github/oauth/callback'
+GIT_CALLBACK = SERVER_URL + '/api/github/oauth/callback'
 
 #################################################################################################
 # SMS相关
@@ -386,8 +385,8 @@ PROJECT_STATUS['deploy-failure'] = -4
 #################################################################################################
 # 文件下载
 #################################################################################################
-DISK_DOWNLOAD_URL = 'https://' + SERVER_HOST + '/api/file/download/'
-PREDOWNLOAD_URL = 'https://c.10.com/#/download?file_id={file_id}'
+DISK_DOWNLOAD_URL = SERVER_URL + '/api/file/download/'
+PREDOWNLOAD_URL = SERVER_URL + '/#/download?file_id={file_id}'
 
 # 分页时，单页面最大100条
 MAX_PAGE_NUMBER = 100
