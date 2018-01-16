@@ -15,19 +15,20 @@ class CompanyService(BaseService):
         arg = [FULL_DATE_FORMAT, FULL_DATE_FORMAT, params['uid']]
 
         is_pass = params['is_pass']
-        if is_pass == 3:
-            status = 'and ( ce.status = 1 or ce.status = 2 )'
-        elif is_pass == 4:
+        if is_pass == 6:
+            status = 'and ( ce.status = 3 or ce.status = 4 )'
+        elif is_pass == 7:
             status = ''
         else:
             arg.append(is_pass)
 
         sql = """
 
-            SELECT c.id AS cid, c.name AS company_name, ce.is_admin AS is_admin, c.image_url,
+            SELECT c.id AS cid, c.name AS company_name, ce.is_admin AS is_admin, c.image_url, ces.code,
                    DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time, ce.status
             FROM company_employee ce
             JOIN company c ON ce.cid = c.id
+            LEFT JOIN company_entry_setting ces ON ces.cid = ce.cid
             WHERE ce.uid = %s {status}
         """.format(status=status)
 

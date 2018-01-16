@@ -59,8 +59,14 @@ class CompanyEmployeeService(BaseService):
         elif status == APPLICATION_STATUS['reject']:
             yield self.update(sets={'status': APPLICATION_STATUS['process']}, conds={'cid': params['cid'], 'uid': params['uid']})
         else:
-            params['status'] = APPLICATION_STATUS['process']
-            yield self.add(params)
+            sets = {
+                'status': APPLICATION_STATUS['process']
+            }
+            conds = {
+                'uid': params['uid'],
+                'cid': params['cid']
+            }
+            yield self.update(sets=sets, conds=conds)
 
     @coroutine
     def get_app_info(self, id):
@@ -87,9 +93,9 @@ class CompanyEmployeeService(BaseService):
         :param id: 员工表id
         :param mode: APPLICATION_STATUS的key
         '''
-        is_repeat = yield self.select({'id': id, 'status': APPLICATION_STATUS[mode]})
+        is_process = yield self.select({'id': id, 'status': APPLICATION_STATUS['process']})
 
-        if is_repeat:
+        if not is_process:
             raise ValueError('请勿重复操作')
 
         yield self.update(sets={'status': APPLICATION_STATUS[mode]}, conds={'id': id})
@@ -143,13 +149,14 @@ class CompanyEmployeeService(BaseService):
     def get_employee_list_detail(self, cid):
 
         sql = """
-                SELECT u.id, u.name, u.email, u.mobile, u.image_url,ce.status, ce.is_admin,DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time
+                SELECT ce.id, u.id AS uid, u.name, u.email, u.mobile, u.image_url,ce.status, ce.is_admin,DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time
                 FROM user AS u JOIN company_employee AS ce ON ce.uid = u.id WHERE ce.cid = %s
               """
         cur = yield self.db.execute(sql, [FULL_DATE_FORMAT, FULL_DATE_FORMAT, cid])
         return cur.fetchall()
 
-    def search_by_name(self, params):
+    @staticmethod
+    def search_by_name(params):
         names = []
         sorted_data = dict()
 

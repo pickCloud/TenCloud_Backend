@@ -84,7 +84,7 @@ def require(*pids, service=None):
 
                 ids = find_ids(self, args) if service else [] # 数据权限
 
-                if cid: # 公司
+                if cid:  # 公司
                     try:
                         yield self.company_employee_service.check_admin(cid, self.current_user['id'])  # 管理员不需要检查
                     except ValueError:
@@ -92,7 +92,7 @@ def require(*pids, service=None):
 
                         if ids:
                             yield getattr(self, service['company']).check_right({'cid': cid, 'uid': self.current_user['id'], 'ids': ids})
-                else: # 个人
+                else:  # 个人
                     if ids:
                         params = self.get_lord()
                         params['id'] = ids

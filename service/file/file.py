@@ -8,7 +8,7 @@ from setting import settings
 
 class FileService(BaseService):
     table = 'filehub'
-    fields = 'id, filename, size, qiniu_id, owner, mime, hash, type, pid, lord, form'
+    fields = 'id, filename, size, qiniu_id, owner, mime, hash, type, pid, lord, form, dir'
 
     def __init__(self, ak, sk):
         super().__init__()
@@ -68,27 +68,31 @@ class FileService(BaseService):
         else:
             resp['token'] = yield self.upload_token(params['hash'])
         add_result = yield self.add(arg)
+
+        # 获取父节点的绝对路径,用来生成新增文件的完整路径
+        pdata = yield self.select(conds={'id': params['pid']}, one=True)
+        pdir = (pdata.get('dir') if pdata else '/0') + '/' + str(add_result['id'])
+        yield self.update(sets={'dir': pdir}, conds={'id': add_result['id']})
+
         resp['file_id'] = add_result['id']
         return resp
 
     @coroutine
     def seg_page(self, params):
         sql = """
-                SELECT f.id, f.filename, f.size, f.qiniu_id, u.name, f.mime, f.hash, f.type, f.pid, 
+                SELECT f.id, f.filename, f.size, f.qiniu_id, u.name, f.mime, f.hash, f.type, f.pid, f.dir,
                 CONCAT('{uri}', f.qiniu_id) as url, CONCAT('{uri}', f.hash) as thumb,
                 DATE_FORMAT(f.create_time, %s) as create_time, DATE_FORMAT(f.update_time, %s) as update_time 
                 FROM {filehub} as f, {user} as u
-                WHERE f.pid = %s AND f.owner = u.id
+                WHERE f.pid = %s AND f.form = %s AND f.lord = %s AND f.owner = u.id
                 ORDER BY f.create_time DESC
-                LIMIT %s, %s
               """.format(filehub=self.table, user='user', uri=DISK_DOWNLOAD_URL)
-        start_page = (params['now_page'] - 1) * params['page_number']
         arg = [
                 FULL_DATE_FORMAT,
                 FULL_DATE_FORMAT,
                 params['file_id'],
-                start_page,
-                params['page_number']
+                params['form'],
+                params['lord']
         ]
         cur = yield self.db.execute(sql, arg)
         data = cur.fetchall()
@@ -96,7 +100,7 @@ class FileService(BaseService):
 
     @coroutine
     def total_pages(self, params):
-        sql = "SELECT count(*) as number FROM {table} WHERE pid = %s AND form = %s".format(table=self.table)
-        cur = yield self.db.execute(sql, [params['pid'], params['form']])
+        sql = "SELECT count(*) as number FROM {table} WHERE pid = %s AND form = %s AND lord=%s".format(table=self.table)
+        cur = yield self.db.execute(sql, [params['pid'], params['form'], params['lord']])
         data = cur.fetchone()
         return data['number']

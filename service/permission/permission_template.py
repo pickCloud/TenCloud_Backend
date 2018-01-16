@@ -176,7 +176,7 @@ class PermissionTemplateService(PermissionBaseService):
             'cid': cid,
             'permissions': permissions,
             'access_servers': servers,
-            'access_files': files,
+            'access_filehub': files,
             'access_projects': projects,
             'create_time': '',
             'update_time': '',

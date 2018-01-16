@@ -18,7 +18,7 @@ class CompanyHandler(BaseHandler):
         @apiName CompanyHandler
         @apiGroup Company
 
-        @apiParam {Number} is_pass -1拒绝, 0审核中, 1通过, 2创始人, 3获取通过的，以及作为创始人的公司列表, 4获取所有和该用户相关的公司列表
+        @apiParam {Number} is_pass 1拒绝, 2审核中, 3通过, 4创始人, 5待加入，6获取通过的，以及作为创始人的公司列表, 7获取所有和该用户相关的公司列表
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -31,7 +31,7 @@ class CompanyHandler(BaseHandler):
             }        """
         with catch(self):
             is_pass = int(is_pass)
-            if is_pass < 0 or is_pass > 4:
+            if is_pass < 1 or is_pass > 7:
                 self.error("arg error, check again")
                 return
 
@@ -107,7 +107,6 @@ class CompanyNewHandler(BaseHandler):
                 self.error(status=ERR_TIP[err_key]['sts'], message=ERR_TIP[err_key]['msg'])
                 return
 
-
             # 创建公司
             self.params.pop('cid', None)
             info = yield self.company_service.add(self.params)
@@ -139,7 +138,7 @@ class CompanyUpdateHandler(BaseHandler):
         """
         with catch(self):
             # 参数认证
-            self.guarantee('cid', 'name', 'contact', 'mobile', 'image_url')
+            self.guarantee('cid', 'name', 'contact', 'mobile')
 
             validate_mobile(self.params['mobile'])
 
@@ -167,11 +166,12 @@ class CompanyUpdateHandler(BaseHandler):
                                                 conds={'id': self.params['cid']},
                                               )
             # 通知
-            employee = yield self.company_employee_service.get_employee_list(self.params['cid'], 0, APPLICATION_STATUS['accept'])
+            employee = yield self.company_employee_service.get_employee_list(self.params['cid'], status=[APPLICATION_STATUS['accept'], APPLICATION_STATUS['founder']])
             yield self.message_service.notify_change({
                 'owners': employee,
                 'cid': self.params['cid'],
-                'company_name': old['name'],
+                'old_name': old['name'],
+                'new_name': self.params['name'],
                 'admin_name': self.get_current_name(),
             })
             self.success()
@@ -212,7 +212,7 @@ class CompanyEntrySettingHandler(BaseHandler):
 
             self.success(data)
 
-    @require(RIGHT['set_join_conditions'])
+    @is_login
     @coroutine
     def post(self, cid):
         """
@@ -372,9 +372,9 @@ class CompanyApplicationHandler(BaseHandler):
             # 给公司管理员发送消息
             admin = yield self.company_employee_service.select(fields='uid', conds={'cid': info['cid'], 'is_admin': 1})
 
-            # 给具有审核员工权限的人发送消息
+            # 给具有审核员工权限的人发送消息,若没有存在审核权限的用户会返回一个空tuple，为防止报错，下面做一次转换
             audit = yield self.user_permission_service.select({'cid': info['cid'], 'pid': RIGHT['audit_employee']})
-            for i in admin + audit:
+            for i in admin + list(audit):
                 admin_data['owner'] = i['uid']
                 yield self.message_service.add(admin_data)
 
@@ -387,6 +387,11 @@ class CompanyApplicationVerifyMixin(BaseHandler):
         yield self.company_employee_service.limit_admin(self.params['id'])
 
         info = yield self.company_employee_service.get_app_info(self.params['id'])
+
+        admin = yield self.company_employee_service.select(fields='uid', conds={'cid': info['cid'], 'is_admin': 1}, ct=False, ut=False)
+        audit = yield self.user_permission_service.select(fields='uid', conds={'cid': info['cid'], 'pid': RIGHT['audit_employee']}, ct=False, ut=False)
+        if {'uid': self.current_user['id']} not in (admin + list(audit)):
+            raise ValueError('该用户无权限审核')
 
         yield self.company_employee_service.verify(self.params['id'], mode)
 
@@ -517,6 +522,9 @@ class CompanyAdminTransferHandler(BaseHandler):
         @apiUse Success
         """
         with catch(self):
+            # 检查参数是否完整合法
+            self.guarantee('uid', 'cid')
+
             self.params['admin_id'] = self.current_user['id']
 
             yield self.company_employee_service.transfer_adimin(self.params)
@@ -580,7 +588,7 @@ class ComapnyEmployeeSearchHandler(BaseHandler):
 
         @apiUse cidHeader
         @apiParam {String} employee_name 搜索名字or手机号码
-        @apiParam {Number} status 是否通过 -1拒绝, 0审核中, 1通过, 2创始人
+        @apiParam {Number} status 是否通过 1拒绝, 2审核中, 3通过, 4创始人, 传空获取全部
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -604,25 +612,24 @@ class ComapnyEmployeeSearchHandler(BaseHandler):
                 'data': search_data
 
             }
-            if not params.get('status') and not params.get('employee_name'):
+
+            if not params.get('status'):
+                if params.get('employee_name'):
+                    search_data = self.company_employee_service.search_by_name(params)
                 self.success(search_data)
                 return
-
-            if not params.get('status') and params.get('employee_name'):
-                search_data = self.company_employee_service.search_by_name(params)
-                self.success(search_data)
-                return
-
-            if params.get('status') and not params.get('employee_name'):
-                if params['status'] == APPLICATION_STATUS['accept']:
-                    search_data = [
-                        i for i in search_data if (i['status'] == params['status'] or i['status']==APPLICATION_STATUS['founder'])
-                    ]
+            else:
+                if not params.get('employee_name'):
+                    if params['status'] == APPLICATION_STATUS['accept']:
+                        search_data = [
+                            i for i in search_data if
+                            (i['status'] == params['status'] or i['status'] == APPLICATION_STATUS['founder'])
+                        ]
+                    else:
+                        search_data = [i for i in search_data if i['status'] == params['status']]
+                    self.success(search_data)
+                    return
                 else:
-                    search_data = [i for i in search_data if i['status'] == params['status']]
-                self.success(search_data)
-                return
-
-            params['data'] = [i for i in params['data'] if i['status'] == params['status']]
-            search_data = self.company_employee_service.search_by_name(params)
-            self.success(search_data)
+                    params['data'] = [i for i in params['data'] if i['status'] == params['status']]
+                    search_data = self.company_employee_service.search_by_name(params)
+                    self.success(search_data)

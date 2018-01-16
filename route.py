@@ -28,7 +28,8 @@ from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandle
                               UserSmsSetHandler, UserDeleteHandler
 
 from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
-                                FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler
+                              FileDeleteHandler, FileDirCreateHandler, FileListHandler, FileTotalHandler, \
+                              FileDownloadPreHandler
 from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, CompanyEntrySettingHandler, \
                                     CompanyApplicationHandler, CompanyApplicationAcceptHandler, CompanyApplicationRejectHandler, \
                                     CompanyEmployeeHandler, CompanyHandler, CompanyDetailHandler, CompanyEntryUrlHandler, \
@@ -147,6 +148,7 @@ routes = [
     (r'/api/file/update', FileUpdateHandler),
     (r'/api/file/list', FileListHandler),
     (r'/api/file/([\w\W]+)/pages', FileTotalHandler),
+    (r'/api/file/predownload/([\w\W]+)', FileDownloadPreHandler),
     (r'/api/file/download/([\w\W]+)', FileDownloadHandler),
     (r'/api/file/delete', FileDeleteHandler),
     (r'/api/file/dir/create', FileDirCreateHandler),

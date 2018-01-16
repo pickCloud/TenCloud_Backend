@@ -383,9 +383,10 @@ PROJECT_STATUS['build-failure'] = -2
 PROJECT_STATUS['deploy-failure'] = -4
 
 #################################################################################################
-# 文件上传
+# 文件下载
 #################################################################################################
 DISK_DOWNLOAD_URL = SERVER_URL + '/api/file/download/'
+PREDOWNLOAD_URL = SERVER_URL + '/#/download?file_id={file_id}'
 
 # 分页时，单页面最大100条
 MAX_PAGE_NUMBER = 100
@@ -453,11 +454,11 @@ INVITE_URL = SERVER_URL + '/#/invite?code='
 
 # company_employee表的status
 APPLICATION_STATUS = {
-    'reject': -1,
-    'process': 0,
-    'accept': 1,
-    'founder': 2,
-    'waiting': 3,
+    'reject': 1,  # -1,
+    'process': 2,  # 0
+    'accept': 3,    # 1
+    'founder': 4,  # 2
+    'waiting': 5,  # 3
 }
 MSG = {
     'application': {
@@ -465,18 +466,20 @@ MSG = {
         'accept': '【{admin_name}】审核通过了你加入【{company_name}】的申请，你可以进入企业了',
         'reject': '【{admin_name}】拒绝了你加入【{company_name}】的申请，你可以核对信息后重新提交申请',
     },
-    'change': '你的企业【{company_name}】被管理员 【{admin_name}】修改了资料',
+    'change': '你的企业被【{admin_name}】修改了名称，修改前【{old_name}】，修改后【{new_name}】',
     'leave': {
-        'dismission': '【{name}】【{mobile}】离开了【{company_name}】',
-        'demission': '【{name}】【{mobile}】离开了【{company_name}】',
+        'dismission': '【{name}】【{mobile}】离开了【{company_name}】',  # 解雇
+        'demission': '【{name}】【{mobile}】离开了【{company_name}】',  # 辞职
     },
-    'server': 'IP为【{ip}】的【{provider}】服务器已成功添加'
+    'server': 'IP为【{ip}】的【{provider}】服务器已成功添加',
+    'image': '项目【{project}】构建镜像成功'
 }
 MSG_MODE = {
     'application': 1,
     'change': 2,
     'leave': 3,
-    'server': 4
+    'server': 4,
+    'image': 5
 }
 MSG_STATUS = {
     'unread': 0,
@@ -487,7 +490,8 @@ MSG_SUB_MODE = {
     'reject': 1,
     'accept': 2,
     'change': 3,
-    'server': 4
+    'server': 4,
+    'project': 5
 }
 MSG_PAGE_NUM = 20
 
@@ -505,55 +509,53 @@ PERMISSIONS_TEMPLATE_TYPE = {
     'default': 0,  # 预设
     'add': 1  # 新增
 }
+
+# 表permission的id
+RIGHT = {
+    'modify_server_info': 25,  # 修改主机信息
+    'start_stop_server': 24,  # 开机关机
+    'delete_server': 23,  # 删除主机
+    'add_server': 22,  # 添加主机
+
+    'add_project': 1,  # 添加项目
+    'create_service': 32,  # 创建服务
+    'delete_project': 5,  # 删除项目
+    'build_project': 6,  # 构建镜像
+    'deploy_project': 7,  # 部署应用
+    'modify_project_info': 8,  # 信息修改
+
+    'add_image': 27,  # 新增镜像
+    'deploy_image': 28,  # 部署镜像
+    'delete_image': 29,  # 删除镜像
+    'delete_project_version': 30,  # 删除版本
+    'update_project_version': 31,  # 更新版本
+
+    'add_directory': 2,  # 新建文件夹
+    'delete_file': 14,  # 删除文件
+    'preview_file': 12,  # 预览文件
+    'upload_file': 9,  # 上传文件
+    'delete_directory': 10,  # 删除文件夹
+    'download_file': 11,  # 下载文件
+    'copy_file_url': 13,  # 复制url
+
+    'company_identify': 15,  # 认证企业
+    'modify_company_info': 3,  # 修改企业信息
+
+    'audit_employee': 17,  # 审核员工
+    'set_employee_permission': 18,  # 设置员工权限
+    'dismiss_employee': 19,  # 解除和员工关系
+    'view_employee_id_info': 16,  # 查看员工身份证信息
+    'invite_new_employee': 26,  # 邀请新员工
+
+    'modify_permission_template': 20,  # 修改权限模版
+    'delete_permission_template': 21,  # 删除权限模版
+    'add_permission_template': 4,  # 新增权限模版
+}
+
 # 资源类型
 RESOURCE_TYPE = {
     'individual': 1,
     'firm': 2
-}
-# 表permission的id
-RIGHT = {
-    'modify_server_info': 33,  # 修改主机信息
-    'start_stop_server': 32,  # 开机关机
-    'delete_server': 31,  # 删除主机
-    'add_server': 30,  # 添加主机
-
-    'add_project': 1,  # 添加项目
-    'delete_project': 8,  # 删除项目
-    'build_project': 9,  # 版本构建
-    'deploy_project': 10,  # 项目部署
-    'modify_project_info': 11,  # 信息修改
-    'delete_project_version': 12,  # 删除版本
-    'start_stop_container': 13,  # 容器重启停止
-    'delete_container': 14,  # 容器删除
-
-    'add_directory': 2,  # 新建文件夹
-    'delete_file': 20,  # 删除文件
-    'copy_file_url': 19,  # 复制url
-    'preview_file': 18,  # 预览文件
-    'delete_directory': 16,  # 删除文件夹
-    'upload_file': 15,  # 上传文件
-    'download_file': 17,  # 下载文件
-
-    'view_company_identify_info': 34,  # 查看企业认证信息
-    'company_identify': 21,  # 认证企业
-    'modify_company_info': 3,  # 修改企业信息
-
-    'dismiss_employee': 26,  # 解除和员工关系
-    'view_employee_info': 4,  # 查看员工信息
-    'set_join_conditions': 27,  # 设置员工加入条件
-    'set_employee_permission': 25,  # 设置员工权限
-    'set_admin': 24,  # 更换员工管理员
-    'audit_employee': 23,  # 审核员工
-    'view_employee_id_info': 22,  # 查看员工身份证信息
-    'invite_new_employee': 36, # 邀请新员工
-
-    'modify_permission_template': 28,  # 修改权限模版
-    'delete_permission_template': 29,  # 删除权限模版
-    'add_permission_template': 5,  # 新增权限模版
-
-    'audit_user_id': 6,  # 个人实名制审核
-    'company_issue': 7,  # 用户提起企业异议处理
-    'audit_company_id': 35,  # 企业认证审核
 }
 
 # 处理数据权限的service
@@ -568,6 +570,6 @@ SERVICE = {
     },
     'f': {
         'company': 'user_access_filehub_service',
-        'personal': 'filehub_service'
+        'personal': 'file_service'
     }
 }

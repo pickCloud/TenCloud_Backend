@@ -11,7 +11,8 @@ class PermissionBaseService(BaseService):
     fields = ''
     resource = ''
 
-    def merge_servers(self, data):
+    @staticmethod
+    def merge_servers(data):
 
         """
         :param [
@@ -59,7 +60,8 @@ class PermissionBaseService(BaseService):
             res.append(tmp_provider)
         return res
 
-    def merge_permissions(self, data):
+    @staticmethod
+    def merge_permissions(data):
         if len(data) == 0:
             return
 
@@ -115,3 +117,14 @@ class PermissionBaseService(BaseService):
 
         if not ids.issubset(limits):
             raise ValueError('您没有操作的权限')
+
+    @coroutine
+    def get_by_permission(self, fields, table, where_fields, where_table, params):
+        sql = """
+                SELECT {fields} FROM {table} AS a JOIN {where_table} AS b 
+                ON {where_fields} WHERE b.uid=%s AND b.cid=%s
+              """.format(fields=fields, table=table, where_fields=where_fields, where_table=where_table)
+
+        cur = yield self.db.execute(sql, params)
+        data = cur.fetchall()
+        return data

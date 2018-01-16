@@ -2,7 +2,7 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login, require
 from utils.context import catch
-from constant import MAX_PAGE_NUMBER, RIGHT, SERVICE
+from constant import MAX_PAGE_NUMBER, RIGHT, SERVICE, PREDOWNLOAD_URL
 
 
 class FileListHandler(BaseHandler):
@@ -48,11 +48,15 @@ class FileListHandler(BaseHandler):
             if self.params['page_number'] > MAX_PAGE_NUMBER:
                 self.error(message='over limit page number')
                 return
+            self.params.update(self.get_lord())
             data = yield self.file_service.seg_page(self.params)
 
-            data = yield self.filter(data, service=SERVICE['f'])
+            data = yield self.filter(data, service=SERVICE['f'], key='dir')
 
-            self.success(data)
+            # 进行分页处理
+            start = (self.params['now_page'] - 1) * self.params['page_number']
+            end = self.params['now_page'] * self.params['page_number']
+            self.success(data[start:end] if data else [])
 
 
 class FileTotalHandler(BaseHandler):
@@ -243,6 +247,28 @@ class FileDownloadHandler(BaseHandler):
             self.redirect(url=url, permanent=False, status=302)
 
 
+class FileDownloadPreHandler(BaseHandler):
+    @require(RIGHT['download_file'])
+    @coroutine
+    def get(self, file_id):
+        """
+        @api {get} /api/file/predownload/([\w\W+]) 文件预下载
+        @apiName FileDownload
+        @apiGroup File
+
+        @apiUse cidHeader
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 302 OK
+            {
+                'url': 'https://c.10.com/#/download?file_id=xxxxxx'
+            }
+        """
+        with catch(self):
+            url = PREDOWNLOAD_URL.format(file_id=file_id)
+            self.success({'url':url})
+
+
 class FileDirCreateHandler(BaseHandler):
     @require(RIGHT['add_directory'])
     @coroutine
@@ -294,6 +320,11 @@ class FileDirCreateHandler(BaseHandler):
             }
             data = yield self.file_service.add(arg)
             resp = yield self.file_service.select(conds={'id': data['id']})
+
+            # 获取父节点的绝对路径,用以生成当前目录的完整路径
+            pdata = yield self.file_service.select(conds={'id': self.params['pid']}, one=True)
+            pdir = (pdata.get('dir') if pdata else '/0') + '/' + str(data['id'])
+            yield self.file_service.update(sets={'dir': pdir}, conds={'id': data['id']})
             self.success(resp)
 
 
