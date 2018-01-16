@@ -60,6 +60,12 @@ def validate_user_password(password):
 
     _validate(regex, password,'密码长度要求6到20位，由大小写字母和数字组成')
 
+
+def validate_id_card(number):
+    regex = r'^[1-9]\d{5}[1-9]\d{3}((0\d)|(1[0-2]))(([0|1|2]\d)|3[0-1])\d{3}([0-9]|X)$'
+
+    _validate(regex, number, '请输入18位合法身份证号')
+
 def gen_random_code(length=6):
     return ''.join(random.sample('123456789', length))
 
