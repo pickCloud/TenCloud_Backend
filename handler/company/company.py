@@ -355,6 +355,12 @@ class CompanyApplicationHandler(BaseHandler):
             for f in info['setting'].split(','):
                 self.guarantee(f)
 
+            # 刷新用户数据
+            sets = {}
+            if self.params.get('name'): sets['name'] = self.params['name']
+            if self.params.get('id_card'): sets['id_card'] = self.params['id_card']
+            if sets: yield self.user_service.update(sets=sets, conds={'id': self.current_user['id']})
+
             # 加入员工
             app_data = {
                 'cid': info['cid'],
