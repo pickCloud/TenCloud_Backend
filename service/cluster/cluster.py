@@ -42,5 +42,4 @@ class ClusterService(BaseService):
                 'regions': list(result[k])
             }
             res.append(tmp)
-        self.log.info(res)
         return res

@@ -18,7 +18,7 @@ class CompanyHandler(BaseHandler):
         @apiName CompanyHandler
         @apiGroup Company
 
-        @apiParam {Number} is_pass 1拒绝, 2审核中, 3通过, 4创始人, 5待加入，6获取通过的，以及作为创始人的公司列表, 7获取所有和该用户相关的公司列表
+        @apiParam {Number} is_pass 1拒绝, 2审核中, 3通过, 4创始人, 5待加入，6获取通过的，以及作为创始人的公司列表, 7获取所有和该用户相关的公司列表, 8获取所有状态，除了待加入的
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -26,12 +26,12 @@ class CompanyHandler(BaseHandler):
                 "status": 0,
                 "msg": "success",
                 "data": [
-                    {"cid": 1, "company_name": "十全", "create_time": "申请时间", "update_time": "审核时间", "status": "-1拒绝, 0审核中, 1通过"}
+                    {"cid": 1, "company_name": "十全", "create_time": "申请时间", "update_time": "审核时间", "status": "1拒绝, 2审核中, 3通过"}
                 ]
             }        """
         with catch(self):
             is_pass = int(is_pass)
-            if is_pass < 1 or is_pass > 7:
+            if is_pass < 1 or is_pass > 8:
                 self.error("arg error, check again")
                 return
 
