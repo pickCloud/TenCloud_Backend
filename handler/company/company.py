@@ -553,7 +553,7 @@ class CompanyApplicationDismissionHandler(BaseHandler):
         @apiUse Success
         """
         with catch(self):
-            # 只有管理员才可以修改员工的权限
+            # 只有管理员才有解雇员工的权限
             yield self.company_employee_service.check_admin(self.params.get('cid'), self.current_user['id'])
 
             yield self.company_employee_service.limit_admin(self.params['id'])
