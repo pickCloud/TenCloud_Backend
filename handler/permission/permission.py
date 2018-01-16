@@ -359,7 +359,6 @@ class PermissionUserUpdateHandler(BaseHandler):
         arg['data'] = ','.join(data)
         return arg
 
-    @require(RIGHT['set_employee_permission'])
     @coroutine
     def post(self):
         """
@@ -381,6 +380,9 @@ class PermissionUserUpdateHandler(BaseHandler):
         with catch(self):
             args = ['uid', 'cid']
             self.guarantee(*args)
+
+            # 只有管理员才可以修改员工的权限
+            yield self.company_employee_service.check_admin(self.params.get('cid'), self.current_user['id'])
 
             access_servers = self.params.get('access_servers', None)
             if access_servers is not None:
