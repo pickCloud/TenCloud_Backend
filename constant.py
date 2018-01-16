@@ -542,8 +542,8 @@ RIGHT = {
     'modify_company_info': 3,  # 修改企业信息
 
     'audit_employee': 17,  # 审核员工
-    'set_employee_permission': 18,  # 设置员工权限
-    'dismiss_employee': 19,  # 解除和员工关系
+    # 'set_employee_permission': 18,  # 设置员工权限
+    # 'dismiss_employee': 19,  # 解除和员工关系
     'view_employee_id_info': 16,  # 查看员工身份证信息
     'invite_new_employee': 26,  # 邀请新员工
 
