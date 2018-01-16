@@ -106,7 +106,7 @@ class PermissionService(PermissionBaseService):
 
         yield self.db.execute(sql)
 
-        if params.get('data') != '':
+        if  params.get('data'):
             sql = """
                     INSERT INTO {table} {fields} VALUES {values}
                 """.format(table=params['table'], fields=params['fields'], values=params['data'])
