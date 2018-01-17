@@ -6,7 +6,7 @@ from setting import settings
 from utils.decorator import is_login, require, auth
 from utils.general import validate_mobile
 from utils.context import catch
-from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING, MSG_SUB_MODE, RIGHT, DEFAULT_SETTING
+from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING, MSG_SUB_MODE, RIGHT
 
 
 class CompanyHandler(BaseHandler):
@@ -114,6 +114,10 @@ class CompanyNewHandler(BaseHandler):
             data = {
                 'cid': info['id']
             }
+
+            # 生成默认邀请条件
+            arg = {'cid': info['id'], 'setting': DEFAULT_ENTRY_SETTING, 'code': self.company_entry_setting_service.create_code(info['id'])}
+            yield self.company_entry_setting_service.add(arg)
 
             self.success(data)
 
@@ -284,12 +288,6 @@ class CompanyEntryUrlHandler(BaseHandler):
             cid = int(cid)
 
             data = yield self.company_entry_setting_service.select(fields='code', conds={'cid': cid}, one=True)
-
-            if not data:
-                # 默认配置手机号与姓名
-                data = {'cid': cid, 'setting': DEFAULT_ENTRY_SETTING, 'code': self.company_entry_setting_service.create_code(cid)}
-
-                yield self.company_entry_setting_service.add(data)
 
             self.success({'url': self.company_entry_setting_service.produce_url(data['code'])})
 
@@ -499,6 +497,16 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
             # 解除员工和公司的关系
             yield self.company_employee_service.delete(conds={'id': self.params['id'], 'uid': self.current_user['id']})
 
+            # 删除改用户权限
+            arg = {
+                'uid': self.current_user['id'],
+                'cid': app_info['cid']
+            }
+            yield self.user_permission_service.delete(conds=arg)
+            yield self.user_access_server_service.delete(conds=arg)
+            yield self.user_access_project_service.delete(conds=arg)
+            yield self.user_access_filehub_service.delete(conds=arg)
+
             # 将此员工解除公司的消息通知给管理员
             content = MSG['leave']['demission'].format(name=self.get_current_name(),
                                                        mobile=self.current_user['mobile'],
@@ -558,6 +566,16 @@ class CompanyApplicationDismissionHandler(BaseHandler):
             yield self.company_employee_service.check_admin(self.params.get('cid'), self.current_user['id'])
 
             yield self.company_employee_service.limit_admin(self.params['id'])
+
+            # 删除改用户权限
+            arg = {
+                'uid': self.current_user['id'],
+                'cid': self.params.get('cid')
+            }
+            yield self.user_permission_service.delete(conds=arg)
+            yield self.user_access_server_service.delete(conds=arg)
+            yield self.user_access_project_service.delete(conds=arg)
+            yield self.user_access_filehub_service.delete(conds=arg)
 
             yield self.company_employee_service.delete({'id': self.params['id']})
 
