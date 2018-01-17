@@ -115,13 +115,6 @@ class CompanyNewHandler(BaseHandler):
                 'cid': info['id']
             }
 
-            # 生成邀请码
-            params = {
-                'cid': info['id'],
-                'setting': DEFAULT_SETTING
-            }
-            yield self.company_entry_setting_service.save_setting(params)
-
             self.success(data)
 
 

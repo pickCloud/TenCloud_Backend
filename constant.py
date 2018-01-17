@@ -451,7 +451,6 @@ YE_PORTMAP = '-p 80:80 -p 8080:8080 -p 8888:8888 -p 9999:9999'
 #################################################################################################
 DEFAULT_ENTRY_SETTING = 'mobile,name'
 INVITE_URL = SERVER_URL + '/#/invite?code='
-DEFAULT_SETTING = 'name,mobile'
 
 # company_employee表的status
 APPLICATION_STATUS = {
