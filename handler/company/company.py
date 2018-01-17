@@ -165,15 +165,16 @@ class CompanyUpdateHandler(BaseHandler):
                                                 },
                                                 conds={'id': self.params['cid']},
                                               )
-            # 通知
-            employee = yield self.company_employee_service.get_employee_list(self.params['cid'], status=[APPLICATION_STATUS['accept'], APPLICATION_STATUS['founder']])
-            yield self.message_service.notify_change({
-                'owners': employee,
-                'cid': self.params['cid'],
-                'old_name': old['name'],
-                'new_name': self.params['name'],
-                'admin_name': self.get_current_name(),
-            })
+            # 修改名称才通知
+            if self.params['name'] != old['name']:
+                employee = yield self.company_employee_service.get_employee_list(self.params['cid'], status=[APPLICATION_STATUS['accept'], APPLICATION_STATUS['founder']])
+                yield self.message_service.notify_change({
+                    'owners': employee,
+                    'cid': self.params['cid'],
+                    'old_name': old['name'],
+                    'new_name': self.params['name'],
+                    'admin_name': self.get_current_name(),
+                })
             self.success()
 
 
@@ -573,7 +574,17 @@ class CompanyApplicationWaitingHandler(BaseHandler):
                 self.error('未识别的code')
                 return
 
-            yield self.company_employee_service.add({'cid': data['cid'], 'uid': self.current_user['id'], 'status': APPLICATION_STATUS['waiting']})
+            conds = {'cid': data['cid'], 'uid': self.current_user['id']}
+            sets  = {'status': APPLICATION_STATUS['waiting']}
+
+            is_exist = yield self.company_employee_service.select(conds=conds, one=True)
+
+            if is_exist:
+                yield self.company_employee_service.update(sets=sets, conds=conds)
+            else:
+                sets.update(conds)
+                yield self.company_employee_service.add(sets)
+
             self.success()
 
 
