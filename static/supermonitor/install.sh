@@ -30,7 +30,7 @@ GenerateServiceFunc() {
     name=${3}
     cat>${name}<<EOF
 [Unit]
-Description=sync_linux_amd64  daemon
+Description=auto run TenCloud agent
 Wants=network-online.target
 After=network-online.target
 
@@ -38,6 +38,8 @@ After=network-online.target
 Type=simple
 User=root
 Group=root
+Restart=always
+RestartSec=1
 ExecStart=/usr/sbin/sync_linux_amd64 --debug=${debug} --interval=60 --addr=${addr}
 
 [Install]
