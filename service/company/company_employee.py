@@ -56,17 +56,15 @@ class CompanyEmployeeService(BaseService):
             raise ValueError('您已经提交过申请，正在审核中...')
         elif status in [APPLICATION_STATUS['accept'], APPLICATION_STATUS['founder']]:
             raise ValueError('您已是公司员工，无需再次申请')
-        elif status == APPLICATION_STATUS['reject']:
+        elif status in [APPLICATION_STATUS['reject'], APPLICATION_STATUS['waiting']]:
             yield self.update(sets={'status': APPLICATION_STATUS['process']}, conds={'cid': params['cid'], 'uid': params['uid']})
         else:
-            sets = {
-                'status': APPLICATION_STATUS['process']
-            }
-            conds = {
+            params = {
+                'status': APPLICATION_STATUS['process'],
                 'uid': params['uid'],
                 'cid': params['cid']
             }
-            yield self.update(sets=sets, conds=conds)
+            yield self.add(params)
 
     @coroutine
     def get_app_info(self, id):
