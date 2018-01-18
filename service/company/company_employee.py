@@ -27,7 +27,7 @@ class CompanyEmployeeService(BaseService):
         :param cid: 公司id
         :param uid: 用户id
         '''
-        data = yield self.select({'cid': cid, 'uid': uid}, one=True)
+        data = yield self.select({'cid': cid, 'uid': uid, 'status~': APPLICATION_STATUS['waiting']}, one=True)
 
         if not data:
             raise ValueError('非公司员工')
