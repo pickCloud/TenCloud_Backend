@@ -45,6 +45,7 @@ class CompanyHandler(BaseHandler):
 
 
 class CompanyDetailHandler(BaseHandler):
+    @auth('staff')
     @coroutine
     def get(self, id):
         """
@@ -213,7 +214,7 @@ class CompanyEntrySettingHandler(BaseHandler):
 
             self.success(data)
 
-    @is_login
+    @require(RIGHT['invite_new_employee'])
     @coroutine
     def post(self, cid):
         """
@@ -449,7 +450,7 @@ class CompanyApplicationRejectHandler(CompanyApplicationVerifyMixin):
 
 
 class CompanyEmployeeHandler(BaseHandler):
-    @is_login
+    @auth('staff')
     @coroutine
     def get(self, cid):
         """
@@ -589,7 +590,7 @@ class CompanyApplicationWaitingHandler(BaseHandler):
 
 
 class ComapnyEmployeeSearchHandler(BaseHandler):
-    @is_login
+    @auth('staff')
     @coroutine
     def post(self):
         """
