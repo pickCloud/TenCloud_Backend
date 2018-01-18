@@ -554,6 +554,7 @@ class CompanyAdminTransferHandler(BaseHandler):
 
 
 class CompanyApplicationDismissionHandler(BaseHandler):
+    @is_login
     @coroutine
     def post(self):
         """
