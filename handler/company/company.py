@@ -580,11 +580,11 @@ class CompanyApplicationWaitingHandler(BaseHandler):
 
             is_exist = yield self.company_employee_service.select(conds=conds, one=True)
 
-            if is_exist:
-                yield self.company_employee_service.update(sets=sets, conds=conds)
-            else:
+            if not is_exist:
                 sets.update(conds)
                 yield self.company_employee_service.add(sets)
+            elif is_exist['status'] == APPLICATION_STATUS['reject']:
+                yield self.company_employee_service.update(sets=sets, conds=conds)
 
             self.success()
 
