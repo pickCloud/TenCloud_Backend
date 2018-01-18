@@ -363,6 +363,7 @@ class CompanyApplicationHandler(BaseHandler):
                 sets['id_card'] = self.params['id_card']
             if sets:
                 yield self.user_service.update(sets=sets, conds={'id': self.current_user['id']})
+                yield self.make_session(self.params['mobile'])
 
             # 加入员工
             app_data = {
