@@ -20,7 +20,7 @@ DownloadFunc() {
     echoerr "failed to download ${name}"
     exit 1
   else
-    echo "success to download ${name}, pls wait..."
+    echo "success to download ${name}, 请稍等..."
 fi
 }
 
