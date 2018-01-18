@@ -45,6 +45,7 @@ class CompanyHandler(BaseHandler):
 
 
 class CompanyDetailHandler(BaseHandler):
+    @auth('staff')
     @coroutine
     def get(self, id):
         """
@@ -218,7 +219,7 @@ class CompanyEntrySettingHandler(BaseHandler):
 
             self.success(data)
 
-    @is_login
+    @require(RIGHT['invite_new_employee'])
     @coroutine
     def post(self, cid):
         """
@@ -458,7 +459,7 @@ class CompanyApplicationRejectHandler(CompanyApplicationVerifyMixin):
 
 
 class CompanyEmployeeHandler(BaseHandler):
-    @is_login
+    @auth('staff')
     @coroutine
     def get(self, cid):
         """
@@ -610,17 +611,17 @@ class CompanyApplicationWaitingHandler(BaseHandler):
 
             is_exist = yield self.company_employee_service.select(conds=conds, one=True)
 
-            if is_exist:
-                yield self.company_employee_service.update(sets=sets, conds=conds)
-            else:
+            if not is_exist:
                 sets.update(conds)
                 yield self.company_employee_service.add(sets)
+            elif is_exist['status'] == APPLICATION_STATUS['reject']:
+                yield self.company_employee_service.update(sets=sets, conds=conds)
 
             self.success()
 
 
 class ComapnyEmployeeSearchHandler(BaseHandler):
-    @is_login
+    @auth('staff')
     @coroutine
     def post(self):
         """
