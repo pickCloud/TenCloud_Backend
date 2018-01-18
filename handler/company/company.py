@@ -473,6 +473,10 @@ class CompanyEmployeeHandler(BaseHandler):
 
             employees = yield self.company_employee_service.get_employees(cid)
 
+            # 根据员工是否有查看身份证的权限过滤显示结果,管理员不需要过滤身份证信息
+            is_admin = yield self.company_employee_service.select({'cid': cid, 'uid': self.current_user['id'], 'is_admin': 1}, one=True)
+            if not is_admin:
+                employees = yield self.user_permission_service.filter_id_card_info(employees, cid, self.current_user['id'])
             self.success(employees)
 
 
@@ -636,7 +640,15 @@ class ComapnyEmployeeSearchHandler(BaseHandler):
             }
         """
         with catch(self):
-            search_data = yield self.company_employee_service.get_employee_list_detail(cid=self.params['cid'])
+            # 先获取公司下的所有员工信息，然后再进行加工筛选
+            cid = self.params.get('cid')
+            search_data = yield self.company_employee_service.get_employee_list_detail(cid=cid)
+
+            # 先根据员工是否有查看身份证的权限过滤显示结果（管理员不依赖于权限，不过滤身份证信息）
+            is_admin = yield self.company_employee_service.select({'cid': cid, 'uid': self.current_user['id'], 'is_admin': 1}, one=True)
+            if not is_admin:
+                search_data = yield self.user_permission_service.filter_id_card_info(search_data, cid, self.current_user['id'])
+
             params = {
                 'cid': self.params['cid'],
                 'status': self.params.get('status'),

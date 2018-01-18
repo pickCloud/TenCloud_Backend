@@ -1,7 +1,7 @@
 from tornado.gen import coroutine
 
 from service.permission.permission_base import PermissionBaseService
-from constant import PT_FORMAT
+from constant import PT_FORMAT, RIGHT
 
 #######################################################################################################################
 # 功能权限
@@ -160,6 +160,22 @@ class UserPermissionService(PermissionBaseService):
         user_list = [u['uid'] for u in user]
         return user_list
 
+    @coroutine
+    def filter_id_card_info(self, info, cid, uid):
+        '''
+        检查员工是否具有某种权限
+        :param info:
+        :param cid:
+        :param uid:
+        :return:
+        '''
+
+        p = yield self.select(conds={'cid': cid, 'uid': uid, 'pid': RIGHT['view_employee_id_info']}, one=True)
+        if not p:
+            for i in info:
+                i.pop('id_card', None)
+
+        return info
 
 #######################################################################################################################
 # 数据权限
