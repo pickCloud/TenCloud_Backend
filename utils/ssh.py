@@ -38,7 +38,7 @@ class SSH:
     def exec(self, cmd):
         LOG.info('SSH CMD: %s' % cmd)
 
-        stdin, stdout, stderr = self._client.exec_command(cmd)
+        stdin, stdout, stderr = self._client.exec_command(cmd, get_pty=True)
 
         out, err = stdout.readlines(), stderr.readlines()
 
@@ -56,7 +56,7 @@ class SSH:
         '''
         LOG.info('SSH CMD: %s' % cmd)
 
-        stdin, stdout, stderr = self._client.exec_command(cmd)
+        stdin, stdout, stderr = self._client.exec_command(cmd, get_pty=True)
         channel = stdout.channel
         pending = err_pending = None
 
