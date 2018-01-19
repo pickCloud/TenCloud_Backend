@@ -2,7 +2,7 @@ __author__ = 'Jon'
 
 from tornado.gen import coroutine
 from service.base import BaseService
-from constant import APPLICATION_STATUS, FULL_DATE_FORMAT
+from constant import APPLICATION_STATUS, FULL_DATE_FORMAT, NEG
 from utils.general import fuzzyfinder
 
 
@@ -27,7 +27,7 @@ class CompanyEmployeeService(BaseService):
         :param cid: 公司id
         :param uid: 用户id
         '''
-        data = yield self.select({'cid': cid, 'uid': uid, 'status~': APPLICATION_STATUS['waiting']}, one=True)
+        data = yield self.select({'cid': cid, 'uid': uid, 'status{}'.format(NEG): APPLICATION_STATUS['waiting']}, one=True)
 
         if not data:
             raise ValueError('非公司员工')
