@@ -25,8 +25,8 @@ class MessageHandler(BaseHandler):
                 "data": [
                     {"id": 1, "content": "十全十美",
                     "url": "http",
-                    "mode": "1加入企业，2企业改变信息",
-                    "sub_mode": "0马上审核, 1重新提交, 2进入企业, 3马上查看"
+                    "mode": "1加入企业，2企业改变信息，3离开企业，4添加主机，5构建镜像",
+                    "sub_mode": "0马上审核, 1重新提交, 2进入企业, 3查看主机，4查看项目"
                     "status": "0未读，1已读",
                     "tip": "cid:code"}
                 ]

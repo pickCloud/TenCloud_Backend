@@ -490,9 +490,8 @@ MSG_SUB_MODE = {
     'verify': 0,
     'reject': 1,
     'accept': 2,
-    'change': 3,
-    'server': 4,
-    'project': 5
+    'server': 3,
+    'project': 4
 }
 MSG_PAGE_NUM = 20
 
