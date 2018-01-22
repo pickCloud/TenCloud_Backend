@@ -4,6 +4,7 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login
 from utils.context import catch
+from constant import USER_PERMISSION, COMPANY_PERMISSION, PERMISSIONS_NOTIFY_FLAG
 
 
 class MessageHandler(BaseHandler):
@@ -54,7 +55,7 @@ class MessageCountHandler(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {get} /api/messages/count 获取员工消息数目
+        @api {get} /api/messages/count 获取员工消息数目（以及获取用户权限是否变更）
         @apiName MessageCountHandler
         @apiGroup Message
 
@@ -69,6 +70,7 @@ class MessageCountHandler(BaseHandler):
                 "data": [
                     {
                         "num" : 0
+                        "permission_changed" : 0
                     }
                 ]
             }
@@ -82,8 +84,18 @@ class MessageCountHandler(BaseHandler):
             # 调用service层数据库查询接口，取出指定参数对应的数据
             message_data = yield self.message_service.select(params)
 
+            # 复用获取消息数量的API，返回用户的权限是否变更了，通知前端进行刷新
+            company_user = USER_PERMISSION.format(cid=self.params.get('cid'), uid=self.current_user['id'])
+            user_permission = self.redis.hget(COMPANY_PERMISSION, company_user)
+            if user_permission and int(user_permission) & PERMISSIONS_NOTIFY_FLAG:
+                permission_changed = 1
+                self.redis.hset(COMPANY_PERMISSION, company_user, int(user_permission) & ~PERMISSIONS_NOTIFY_FLAG)
+            else:
+                permission_changed = 0
+
             data = {
-                'num': len(message_data)
+                'num': len(message_data),
+                'permission_changed': permission_changed
             }
             self.success(data)
 
