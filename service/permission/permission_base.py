@@ -77,14 +77,23 @@ class PermissionBaseService(BaseService):
                 result[column['group']] = [tmp]
             else:
                 result[column['group']].append(tmp)
+        temp_data = {
+            'name': '企业管理',
+            'data': []
+        }
         for k in result:
+            # 企业资料，员工管理，权限模版划分为企业管理临时方案
             tmp_dict = {
                 'name': PERMISSIONS[k],
                 'data': [
                     {'name': PERMISSIONS[k], 'data': result[k]}
                 ]
             }
+            if k in [3, 4, 5]:
+                temp_data['data'].append(tmp_dict)
+                continue
             res.append(tmp_dict)
+        res.append(temp_data)
         return res
 
     @coroutine
