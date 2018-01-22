@@ -362,6 +362,7 @@ class PermissionUserUpdateHandler(BaseHandler):
         arg['data'] = ','.join(data)
         return arg
 
+    @is_login
     @coroutine
     def post(self):
         """
