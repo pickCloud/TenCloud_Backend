@@ -77,6 +77,14 @@ class ServerNewHandler(WebSocketBaseHandler):
 
             self.redis.hdel(DEPLOYING, self.params['public_ip'])
 
+            # 通知主机添加失败，后续需要将主机添加失败原因进行抽象分类告知用户
+            message = {
+                'owner': self.params.get('owner'),
+                'ip': self.params['public_ip'],
+                'tip': '{}'.format(self.params.get('lord') if self.params.get('form') == 2 else 0)
+            }
+            self.message_service.notify_server_add_failed(message)
+
     def check(self):
         ''' 检查主机是否上报信息 '''
         result = self.redis.hget(DEPLOYED, self.params['public_ip'])

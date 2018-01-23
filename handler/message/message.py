@@ -4,7 +4,7 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login
 from utils.context import catch
-from constant import USER_PERMISSION, COMPANY_PERMISSION, PERMISSIONS_NOTIFY_FLAG
+from constant import USER_PERMISSION, COMPANY_PERMISSION, PERMISSIONS_NOTIFY_FLAG, MSG_STATUS
 
 
 class MessageHandler(BaseHandler):
@@ -27,7 +27,7 @@ class MessageHandler(BaseHandler):
                     {"id": 1, "content": "十全十美",
                     "url": "http",
                     "mode": "1加入企业，2企业改变信息，3离开企业，4添加主机，5构建镜像",
-                    "sub_mode": "0马上审核, 1重新提交, 2进入企业, 3查看主机，4添加主机"
+                    "sub_mode": "0马上审核, 1重新提交, 2进入企业, 3查看企业，4查看主机，5添加主机"
                     "status": "0未读，1已读",
                     "tip": "cid:code"}
                 ]
@@ -48,6 +48,10 @@ class MessageHandler(BaseHandler):
             data = yield self.message_service.fetch(params)
 
             self.success(data)
+
+            unread = [d['id'] for d in data if d['status'] == MSG_STATUS['unread']]
+            if unread:
+                yield self.message_service.set_read(unread)
 
 
 class MessageCountHandler(BaseHandler):
@@ -124,7 +128,7 @@ class MessageSearchHandler(BaseHandler):
                     "owner": 1,
                     "content": "十全十美",
                     "mode": "1加入企业，2企业改变信息，3离开企业，4添加主机，5构建镜像",
-                    "sub_mode": "0马上审核, 1重新提交, 2进入企业, 3查看主机，4添加主机",
+                    "sub_mode": "0马上审核, 1重新提交, 2进入企业, 3查看企业，4查看主机，5添加主机",
                     "tip": "cid:code",
                     "status": "0未读，1已读",}
                 ]

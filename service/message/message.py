@@ -18,16 +18,12 @@ class MessageService(BaseService):
         '''
         page = params.pop('page', None)
 
-        extra = ' ORDER BY update_time DESC '
+        extra = ' ORDER BY create_time DESC '
 
         if page:
             extra += 'LIMIT {},{}'.format((page - 1) * MSG_PAGE_NUM, MSG_PAGE_NUM)
 
         data = yield self.select(params, extra=extra)
-
-        unread = [d['id'] for d in data if d['status'] == MSG_STATUS['unread']]
-        if unread:
-            yield self.set_read(unread)
 
         return data
 
@@ -61,6 +57,7 @@ class MessageService(BaseService):
                 'owner': owner,
                 'content': MSG['change'].format(old_name=params['old_name'], new_name=params['new_name'], admin_name=params['admin_name']),
                 'mode': MSG_MODE['change'],
+                'sub_mode': MSG_SUB_MODE['change'],
                 'tip': '{}:'.format(params['cid'])
             })
 
@@ -88,8 +85,23 @@ class MessageService(BaseService):
         '''
         yield self.add({
             'owner': params['owner'],
-            'content': MSG['server'].format(ip=params['ip'], provider=params['provider']),
+            'content': MSG['server']['success'].format(ip=params['ip'], provider=params['provider']),
             'mode': MSG_MODE['server'],
-            'sub_mode': MSG_SUB_MODE['server'],
+            'sub_mode': MSG_SUB_MODE['server_success'],
+            'tip': params['tip']
+        })
+
+    @coroutine
+    def notify_server_add_failed(self, params):
+        '''
+        通知用户主机添加失败
+        :param params:
+        :return:
+        '''
+        yield self.add({
+            'owner': params['owner'],
+            'content': MSG['server']['fail'].format(ip=params['ip']),
+            'mode': MSG_MODE['server'],
+            'sub_mode': MSG_SUB_MODE['server_fail'],
             'tip': params['tip']
         })

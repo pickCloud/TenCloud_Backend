@@ -37,6 +37,7 @@ COMPANY_PERMISSION = 'company_permissons'
 USER_PERMISSION = 'cid_{cid}:uid_{uid}'
 PERMISSIONS_FLAG = 1
 PERMISSIONS_NOTIFY_FLAG = 1 << 1
+SERVER_REPORT = 'server_{type}_report'
 
 #################################################################################################
 # 错误代码及信息
@@ -475,7 +476,10 @@ MSG = {
         'dismission': '【{name}】【{mobile}】离开了【{company_name}】',  # 解雇
         'demission': '【{name}】【{mobile}】离开了【{company_name}】',  # 辞职
     },
-    'server': 'IP为【{ip}】的【{provider}】服务器已成功添加',
+    'server': {
+        'success': 'IP为【{ip}】的【{provider}】服务器已成功添加',
+        'fail': 'IP为【{ip}】的服务器添加失败',
+    },
     'image': '项目【{project}】构建镜像成功'
 }
 MSG_MODE = {
@@ -493,8 +497,9 @@ MSG_SUB_MODE = {
     'verify': 0,
     'reject': 1,
     'accept': 2,
-    'server': 3,
-    'project': 4
+    'change': 3,
+    'server_success': 4,
+    'server_fail': 5
 }
 MSG_PAGE_NUM = 20
 
