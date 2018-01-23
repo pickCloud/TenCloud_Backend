@@ -59,6 +59,8 @@ ERR_TIP = {
     'company_exists': {'sts': 10000, 'msg': '企业已存在，可以让管理员邀请加入。'},
     'is_employee':    {'sts': 10001, 'msg': '已是企业员工，无需重复添加企业。'},
     'company_name_repeat': {'sts': 10002, 'msg': '公司名字重复，请重新输入'},
+    'not_this_company_employee': {'sts': 10003, 'msg': '非公司员工'},
+    'not_this_company_admin': {'sts': 10004, 'msg': '需要管理员权限'},
 
     # server
     'server_name_repeat': {'sts': 10501, 'msg': '名称不能重复'},

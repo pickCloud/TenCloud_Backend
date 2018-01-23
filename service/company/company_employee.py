@@ -2,8 +2,9 @@ __author__ = 'Jon'
 
 from tornado.gen import coroutine
 from service.base import BaseService
-from constant import APPLICATION_STATUS, FULL_DATE_FORMAT
+from constant import APPLICATION_STATUS, FULL_DATE_FORMAT, ERR_TIP
 from utils.general import fuzzyfinder
+from utils.error import AppError
 
 
 class CompanyEmployeeService(BaseService):
@@ -19,7 +20,7 @@ class CompanyEmployeeService(BaseService):
         data = yield self.select({'cid': cid, 'uid': uid, 'is_admin': 1}, one=True)
 
         if not data:
-            raise ValueError('需要管理员权限')
+            raise AppError(ERR_TIP['not_this_company_admin']['msg'], ERR_TIP['not_this_company_admin']['sts'])
 
     @coroutine
     def check_staff(self, cid, uid):
@@ -30,7 +31,7 @@ class CompanyEmployeeService(BaseService):
         data = yield self.select({'cid': cid, 'uid': uid, 'status': [APPLICATION_STATUS['accept'], APPLICATION_STATUS['founder']]}, one=True)
 
         if not data:
-            raise ValueError('非公司员工')
+            raise AppError(ERR_TIP['not_this_company_employee']['msg'], ERR_TIP['not_this_company_employee']['sts'])
 
     @coroutine
     def limit_admin(self, id):
