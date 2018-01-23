@@ -4,7 +4,7 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login
 from utils.context import catch
-from constant import USER_PERMISSION, COMPANY_PERMISSION, PERMISSIONS_NOTIFY_FLAG
+from constant import USER_PERMISSION, COMPANY_PERMISSION, PERMISSIONS_NOTIFY_FLAG, MSG_STATUS
 
 
 class MessageHandler(BaseHandler):
@@ -48,6 +48,10 @@ class MessageHandler(BaseHandler):
             data = yield self.message_service.fetch(params)
 
             self.success(data)
+
+            unread = [d['id'] for d in data if d['status'] == MSG_STATUS['unread']]
+            if unread:
+                yield self.message_service.set_read(unread)
 
 
 class MessageCountHandler(BaseHandler):
