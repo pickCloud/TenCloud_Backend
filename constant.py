@@ -362,6 +362,8 @@ QINIU_POLICY = {
 }
 QINIU_THUMB = 'imageView2/1/w/50/h/50/format/webp/q/75|imageslim'
 NEG = '~'
+SUCCESS_STATUS = 0
+FAILURE_STATUS = 1
 
 
 #################################################################################################
