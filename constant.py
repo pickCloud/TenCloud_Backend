@@ -474,7 +474,10 @@ MSG = {
         'dismission': '【{name}】【{mobile}】离开了【{company_name}】',  # 解雇
         'demission': '【{name}】【{mobile}】离开了【{company_name}】',  # 辞职
     },
-    'server': 'IP为【{ip}】的【{provider}】服务器已成功添加',
+    'server': {
+        'success': 'IP为【{ip}】的【{provider}】服务器已成功添加',
+        'fail': 'IP为【{ip}】的服务器添加失败',
+    },
     'image': '项目【{project}】构建镜像成功'
 }
 MSG_MODE = {
@@ -493,8 +496,8 @@ MSG_SUB_MODE = {
     'reject': 1,
     'accept': 2,
     'change': 3,
-    'server': 4,
-    'server_add': 5
+    'server_success': 4,
+    'server_fail': 5
 }
 MSG_PAGE_NUM = 20
 
