@@ -139,7 +139,7 @@ class ServerReport(BaseHandler):
                     'owner': data.get('owner'),
                     'ip': self.params.get('public_ip'),
                     'provider': instance_info['provider'],
-                    'tip': '{}'.format(server_id)
+                    'tip': '{}'.format(data['lord'] if data['form'] == 2 else 0)
                 }
                 yield self.message_service.notify_server_added(message)
 
