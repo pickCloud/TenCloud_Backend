@@ -49,7 +49,7 @@ from service.permission.permission_template import PermissionTemplateService
 from tornado.gen import coroutine, Task
 from tornado.websocket import WebSocketHandler
 
-from constant import SESSION_TIMEOUT, SESSION_KEY, TOKEN_EXPIRES_DAYS, RIGHT, SERVICE
+from constant import SESSION_TIMEOUT, SESSION_KEY, TOKEN_EXPIRES_DAYS, RIGHT, SERVICE, SUCCESS_STATUS, FAILURE_STATUS
 from service.cluster.cluster import ClusterService
 from service.company.company import CompanyService
 from service.company.company_employee import CompanyEmployeeService
@@ -204,9 +204,9 @@ class BaseHandler(tornado.web.RequestHandler):
     def success(self, data=None, message='成功'):
         ''' 响应成功, 返回数据
         '''
-        self.write({"status": 0, "message": message, "data": data})
+        self.write({"status": SUCCESS_STATUS, "message": message, "data": data})
 
-    def error(self, message='', data=None, code=400, status=1):
+    def error(self, message='', data=None, code=400, status=FAILURE_STATUS):
         ''' 响应失败, 返回错误原因
         '''
         self.set_status(code)
