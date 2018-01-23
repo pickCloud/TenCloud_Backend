@@ -57,6 +57,7 @@ class MessageService(BaseService):
                 'owner': owner,
                 'content': MSG['change'].format(old_name=params['old_name'], new_name=params['new_name'], admin_name=params['admin_name']),
                 'mode': MSG_MODE['change'],
+                'sub_mode': MSG_SUB_MODE['change'],
                 'tip': '{}:'.format(params['cid'])
             })
 

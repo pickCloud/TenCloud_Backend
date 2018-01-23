@@ -37,6 +37,7 @@ COMPANY_PERMISSION = 'company_permissons'
 USER_PERMISSION = 'cid_{cid}:uid_{uid}'
 PERMISSIONS_FLAG = 1
 PERMISSIONS_NOTIFY_FLAG = 1 << 1
+SERVER_REPORT = 'server_{type}_report'
 
 #################################################################################################
 # 错误代码及信息
@@ -491,8 +492,9 @@ MSG_SUB_MODE = {
     'verify': 0,
     'reject': 1,
     'accept': 2,
-    'server': 3,
-    'project': 4
+    'change': 3,
+    'server': 4,
+    'server_add': 5
 }
 MSG_PAGE_NUM = 20
 
