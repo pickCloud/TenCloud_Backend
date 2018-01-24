@@ -1,7 +1,7 @@
 __author__ = 'Jon'
 
 import json
-from tornado.gen import coroutine, Task, sleep
+from tornado.gen import coroutine, sleep
 
 from service.base import BaseService
 from utils.general import get_formats
@@ -9,9 +9,10 @@ from utils.aliyun import Aliyun
 from utils.qcloud import Qcloud
 from utils.zcloud import Zcloud
 from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAINER_CMD, STOP_CONTAINER_CMD, \
-                     DEL_CONTAINER_CMD, CONTAINER_INFO_CMD, ALIYUN_NAME, QCLOUD_NAME, FULL_DATE_FORMAT, ZCLOUD_NAME
+                     DEL_CONTAINER_CMD, CONTAINER_INFO_CMD, ALIYUN_NAME, QCLOUD_NAME, FULL_DATE_FORMAT, ZCLOUD_NAME, \
+                     SERVERS_REPORT_INFO
 from utils.security import Aes
-from utils.general import get_in_formats
+from utils.general import get_in_formats, json_loads, json_dumps
 
 class ServerService(BaseService):
     table = 'server'
@@ -31,6 +32,10 @@ class ServerService(BaseService):
 
         for (k, v) in params['docker'].items():
             self._save_docker_report(base_data + [k] + [json.dumps(v)])
+
+        # 保存最新至redis
+        public_ip, _ = params.pop('public_ip'), params.pop('docker', None)
+        self.redis.hset(SERVERS_REPORT_INFO, public_ip, json_dumps(params))
 
     @coroutine
     def _save_docker_report(self, params):
@@ -125,10 +130,10 @@ class ServerService(BaseService):
     def get_brief_list(self, **cond):
         ''' 集群详情中获取主机列表
         '''
-        arg = [cond['cluster_id']]
+        arg = []
         extra = ''
 
-        if len(cond) > 1:
+        if len(cond) > 1: # 暂时保留cluster_id，但实际没用到
             extra = 'WHERE '
             e = []
 
@@ -141,55 +146,33 @@ class ServerService(BaseService):
                 arg.append(cond['region'])
 
             if cond.get('lord'):
-                e.append('sss.lord=%s')
+                e.append('s.lord=%s')
                 arg.append(cond['lord'])
 
             if cond.get('form'):
-                e.append('sss.form=%s')
+                e.append('s.form=%s')
                 arg.append(cond['form'])
 
             extra += ' AND '.join(e)
 
-
         sql = """
-            SELECT sss.id, sss.name, sss.public_ip, COALESCE(sss.cpu_content, '{}') AS cpu_content,
-                   COALESCE(sss.net_content, '{}') AS net_content, COALESCE(sss.memory_content, '{}') AS memory_content, 
-                   COALESCE(sss.disk_content, '{}') AS disk_content, sss.report_time,
-                   i.provider, i.instance_name, i.region_name AS address, i.status AS machine_status
-            FROM(
-                SELECT ss.*, c.content AS cpu_content, n.content AS net_content, m.content AS memory_content
-                FROM
-                (
-                    SELECT s.*, ddd.content AS disk_content, ddd.created_time AS report_time
-                    FROM server s
-                    JOIN(
-                        SELECT dd.public_ip, dd.content, dd.created_time
-                        FROM disk dd
-                        JOIN(
-                            SELECT public_ip, max(created_time) AS created_time
-                            FROM disk
-                            GROUP BY public_ip
-                        ) AS d ON dd.public_ip = d.public_ip AND dd.created_time = d.created_time
-                    ) AS ddd using(public_ip)
-                    WHERE s.cluster_id = %s
-                ) AS ss
-                LEFT JOIN cpu AS c ON ss.public_ip = c.public_ip AND ss.report_time = c.created_time
-                LEFT JOIN net AS n ON ss.public_ip = n.public_ip AND ss.report_time = n.created_time
-                LEFT JOIN memory AS m ON ss.public_ip = m.public_ip AND ss.report_time = m.created_time
-            ) sss
-            LEFT JOIN instance AS i ON sss.instance_id = i.instance_id
+            SELECT s.id, s.name, s.public_ip, i.provider, i.instance_name, i.region_name AS address, i.status AS machine_status
+            FROM server s
+            JOIN instance i USING(instance_id)
             """+"""
             {where}
             ORDER BY i.provider
-            """.format(where=extra)
+        """.format(where=extra)
 
         cur = yield self.db.execute(sql, arg)
         data = cur.fetchall()
-        for k in data:
-            k['net_content'] = json.loads(k['net_content'])
-            k['cpu_content'] = json.loads(k['cpu_content'])
-            k['memory_content'] = json.loads(k['memory_content'])
-            k['disk_content'] = json.loads(k['disk_content'])
+
+        # 添加最新上报信息
+        report_info = self.redis.hgetall(SERVERS_REPORT_INFO)
+        for d in data:
+            info = json_loads(report_info.get(d['public_ip']))
+            d.update(info)
+
         return data
 
     @coroutine
