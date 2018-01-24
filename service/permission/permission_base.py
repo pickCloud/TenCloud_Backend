@@ -99,7 +99,7 @@ class PermissionBaseService(BaseService):
     @coroutine
     def fetch_instance_info(self, extra=''):
         sql = """
-                SELECT i.provider, i.region_name, s.id as sid, s.name FROM instance i 
+                SELECT i.status, i.public_ip, i.provider, i.region_name, s.id as sid, s.name FROM instance i 
                 JOIN server s USING(instance_id) {extra}
               """.format(extra=extra)
         cur = yield self.db.execute(sql)

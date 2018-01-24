@@ -61,6 +61,11 @@ ERR_TIP = {
     'company_name_repeat': {'sts': 10002, 'msg': '公司名字重复，请重新输入'},
     'not_this_company_employee': {'sts': 10003, 'msg': '非公司员工'},
     'not_this_company_admin': {'sts': 10004, 'msg': '需要管理员权限'},
+    'admin_operate_themselves': {'sts': 10005, 'msg': '管理员不能对自己进行，允许/拒绝/解除'},
+    'repeated_action': {'sts': 10006, 'msg': '请勿重复操作'},
+    'have_submit_application': {'sts': 10007, 'msg': '您已经提交过申请，正在审核中...'},
+    'employee_already': {'sts': 10008, 'msg': '您已是公司员工，无需再次申请'},
+    'no_permission': {'sts': 10009, 'msg': '您没有操作的权限'},
 
     # server
     'server_name_repeat': {'sts': 10501, 'msg': '名称不能重复'},

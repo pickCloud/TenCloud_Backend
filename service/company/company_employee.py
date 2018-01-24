@@ -41,7 +41,7 @@ class CompanyEmployeeService(BaseService):
         data = yield self.select({'id': id, 'is_admin': 1}, one=True)
 
         if data:
-            raise ValueError('管理员不能对自己进行，允许/拒绝/解除')
+            raise AppError(ERR_TIP['admin_operate_themselves']['msg'], ERR_TIP['admin_operate_themselves']['sts'])
 
     @coroutine
     def add_employee(self, params):
@@ -54,9 +54,9 @@ class CompanyEmployeeService(BaseService):
         status = data['status'] if data else ''
 
         if status == APPLICATION_STATUS['process']:
-            raise ValueError('您已经提交过申请，正在审核中...')
+            raise AppError(ERR_TIP['have_submit_application']['msg'], ERR_TIP['have_submit_application']['sts'])
         elif status in [APPLICATION_STATUS['accept'], APPLICATION_STATUS['founder']]:
-            raise ValueError('您已是公司员工，无需再次申请')
+            raise AppError(ERR_TIP['employee_already']['msg'], ERR_TIP['employee_already']['sts'])
         elif status in [APPLICATION_STATUS['reject'], APPLICATION_STATUS['waiting']]:
             yield self.update(sets={'status': APPLICATION_STATUS['process']}, conds={'cid': params['cid'], 'uid': params['uid']})
         else:
@@ -95,7 +95,7 @@ class CompanyEmployeeService(BaseService):
         is_process = yield self.select({'id': id, 'status': APPLICATION_STATUS['process']})
 
         if not is_process:
-            raise ValueError('请勿重复操作')
+            raise AppError(ERR_TIP['repeated_action']['msg'], ERR_TIP['repeated_action']['sts'])
 
         yield self.update(sets={'status': APPLICATION_STATUS[mode]}, conds={'id': id})
 
