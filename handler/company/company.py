@@ -295,6 +295,7 @@ class CompanyEntryUrlHandler(BaseHandler):
 
 
 class CompanyApplicationHandler(BaseHandler):
+    @is_login
     @coroutine
     def get(self):
         """
@@ -579,9 +580,14 @@ class CompanyApplicationDismissionHandler(BaseHandler):
 
             yield self.company_employee_service.limit_admin(self.params['id'])
 
+            user_info = yield self.company_employee_service.select(
+                                                            fields='uid',
+                                                            conds={'id': self.params['id']},
+                                                            one=True
+                                                            )
             # 删除改用户权限
             arg = {
-                'uid': self.current_user['id'],
+                'uid': user_info['uid'],
                 'cid': self.params.get('cid')
             }
             yield self.user_permission_service.delete(conds=arg)

@@ -66,10 +66,11 @@ class ClusterDetailHandler(BaseHandler):
                          "public_ip": str,
                          "machine_status": int,
                          "business_status": int,
-                         "disk_content": str,
-                         "memory_content": str,
-                         "cpu_content": str,
-                         "net_content": str,
+                         "disk": str,
+                         "memory": str,
+                         "cpu": str,
+                         "net": str,
+                         "time": int
                      }
                         ...
                  ]

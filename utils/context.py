@@ -6,6 +6,7 @@ __author__ = 'Jon'
 import traceback
 from contextlib import contextmanager
 
+
 @contextmanager
 def catch(handler):
     ''' catch未知异常
@@ -17,5 +18,8 @@ def catch(handler):
     try:
         yield
     except Exception as e:
-        handler.error(str(e))
+        if hasattr(e, 'status'):
+            handler.error(str(e), status=e.status)
+        else:
+            handler.error(str(e))
         handler.log.error(traceback.format_exc())

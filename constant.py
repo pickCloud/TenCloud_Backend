@@ -36,6 +36,7 @@ LOGOUT_CID = 'logout_cid'  # 记住退出时的状态，个人或是公司，方
 COMPANY_PERMISSION = 'company_permissons'
 USER_PERMISSION = 'cid_{cid}:uid_{uid}'
 PERMISSIONS_FLAG = 1
+SERVERS_REPORT_INFO = 'servers_report_info'
 PERMISSIONS_NOTIFY_FLAG = 1 << 1
 
 #################################################################################################
@@ -59,6 +60,13 @@ ERR_TIP = {
     'company_exists': {'sts': 10000, 'msg': '企业已存在，可以让管理员邀请加入。'},
     'is_employee':    {'sts': 10001, 'msg': '已是企业员工，无需重复添加企业。'},
     'company_name_repeat': {'sts': 10002, 'msg': '公司名字重复，请重新输入'},
+    'not_this_company_employee': {'sts': 10003, 'msg': '非公司员工'},
+    'not_this_company_admin': {'sts': 10004, 'msg': '需要管理员权限'},
+    'admin_operate_themselves': {'sts': 10005, 'msg': '管理员不能对自己进行，允许/拒绝/解除'},
+    'repeated_action': {'sts': 10006, 'msg': '请勿重复操作'},
+    'have_submit_application': {'sts': 10007, 'msg': '您已经提交过申请，正在审核中...'},
+    'employee_already': {'sts': 10008, 'msg': '您已是公司员工，无需再次申请'},
+    'no_permission': {'sts': 10009, 'msg': '您没有操作的权限'},
 
     # server
     'server_name_repeat': {'sts': 10501, 'msg': '名称不能重复'},
@@ -363,6 +371,8 @@ QINIU_POLICY = {
 }
 QINIU_THUMB = 'imageView2/1/w/50/h/50/format/webp/q/75|imageslim'
 NEG = '~'
+SUCCESS_STATUS = 0
+FAILURE_STATUS = 1
 
 FORM_PERSON = 1
 FORM_COMPANY = 2
@@ -505,7 +515,12 @@ MSG_PAGE_NUM = 20
 #################################################################################################
 # 权限模版 0云服务器, 1项目, 2文件服务, 3企业资料, 4员工管理, 5权限模版管理, 6平台管理
 #################################################################################################
-PERMISSIONS = ["云服务器", "项目", "文件服务", "企业资料", "员工管理", "权限模版管理", "平台管理"]
+PERMISSIONS = ["云服务器", "项目", "文件服务", "企业资料", "员工管理", "权限模版管理", "镜像仓库"]
+MANAGE_COMPANY = {
+    "3": "企业资料",
+    "4": "员工管理",
+    "5": "权限模版管理"
+}
 PT_FORMAT = {
     'standard': 0,
     'simple': 1
