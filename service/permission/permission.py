@@ -1,7 +1,8 @@
 from tornado.gen import coroutine
 
 from service.permission.permission_base import PermissionBaseService
-from constant import PT_FORMAT, RIGHT
+from constant import PT_FORMAT, RIGHT, ERR_TIP
+from utils.error import AppError
 
 #######################################################################################################################
 # 功能权限
@@ -173,6 +174,8 @@ class UserPermissionService(PermissionBaseService):
         p = yield self.select(conds={'cid': cid, 'uid': uid, 'pid': RIGHT['view_employee_id_info']}, one=True)
         if not p:
             for i in info:
+                if i['uid'] == uid:
+                    continue
                 i.pop('id_card', None)
 
         return info
@@ -259,4 +262,4 @@ class UserAccessFilehubService(UserAccessBaseService):
                     result = False
                     break
             if result:
-                raise ValueError('您没有操作的权限')
+                raise AppError(ERR_TIP['no_permission']['msg'], ERR_TIP['no_permission']['sts'])
