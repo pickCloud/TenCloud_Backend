@@ -36,6 +36,7 @@ LOGOUT_CID = 'logout_cid'  # 记住退出时的状态，个人或是公司，方
 COMPANY_PERMISSION = 'company_permissons'
 USER_PERMISSION = 'cid_{cid}:uid_{uid}'
 PERMISSIONS_FLAG = 1
+SERVERS_REPORT_INFO = 'servers_report_info'
 PERMISSIONS_NOTIFY_FLAG = 1 << 1
 SERVER_REPORT = 'server_{type}_report'
 
