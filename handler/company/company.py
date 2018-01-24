@@ -622,6 +622,9 @@ class CompanyApplicationWaitingHandler(BaseHandler):
                 yield self.company_employee_service.add(sets)
             elif is_exist['status'] == APPLICATION_STATUS['reject']:
                 yield self.company_employee_service.update(sets=sets, conds=conds)
+            elif is_exist['status'] != APPLICATION_STATUS['waiting']:
+                self.error('请勿重复提交加入公司申请')
+                return
 
             self.success()
 

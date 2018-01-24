@@ -3,7 +3,7 @@ from tornado.gen import coroutine, Task
 from handler.base import BaseHandler
 from utils.decorator import is_login, require
 from utils.context import catch
-from constant import COMPANY_PERMISSION, USER_PERMISSION, PERMISSIONS_FLAG, RIGHT, \
+from constant import COMPANY_PERMISSION, USER_PERMISSION, PERMISSIONS_FLAG, PERMISSIONS_NOTIFY_FLAG, RIGHT, \
     PERMISSIONS_TEMPLATE_TYPE, ERR_TIP, PT_FORMAT
 
 
@@ -408,6 +408,6 @@ class PermissionUserUpdateHandler(BaseHandler):
             yield self.permission_service.update_user(arg)
 
             company_user = USER_PERMISSION.format(cid=self.params['cid'], uid=self.params['uid'])
-            self.redis.hset(COMPANY_PERMISSION, company_user, PERMISSIONS_FLAG)
+            self.redis.hset(COMPANY_PERMISSION, company_user, PERMISSIONS_FLAG | PERMISSIONS_NOTIFY_FLAG)
 
             self.success()
