@@ -37,7 +37,6 @@ COMPANY_PERMISSION = 'company_permissons'
 USER_PERMISSION = 'cid_{cid}:uid_{uid}'
 PERMISSIONS_FLAG = 1
 PERMISSIONS_NOTIFY_FLAG = 1 << 1
-SERVER_REPORT = 'server_{type}_report'
 
 #################################################################################################
 # 错误代码及信息
@@ -365,6 +364,8 @@ QINIU_POLICY = {
 QINIU_THUMB = 'imageView2/1/w/50/h/50/format/webp/q/75|imageslim'
 NEG = '~'
 
+FORM_PERSON = 1
+FORM_COMPANY = 2
 
 #################################################################################################
 # Tornado

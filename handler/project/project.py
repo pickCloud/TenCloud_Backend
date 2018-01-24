@@ -11,7 +11,7 @@ from utils.context import catch
 from setting import settings
 from handler.user import user
 from constant import PROJECT_STATUS, SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, PROJECT_OPERATE_STATUS, OPERATE_STATUS,\
-      RIGHT, SERVICE
+      RIGHT, SERVICE, FORM_COMPANY, FORM_PERSON
 
 
 class ProjectHandler(BaseHandler):
@@ -50,7 +50,7 @@ class ProjectHandler(BaseHandler):
                 params['cid'] = self.params.get('cid')
                 params['uid'] = self.current_user['id']
             else:
-                params['form'] = 2
+                params['form'] = FORM_PERSON
                 params['lord'] = self.current_user['id']
 
             result = yield self.project_service.fetch(params)
@@ -192,7 +192,7 @@ class ProjectDetailHandler(BaseHandler):
                 params['uid'] = self.current_user['id']
                 params['pid'] = id
             else:
-                params['form'] = 2
+                params['form'] = FORM_PERSON
                 params['lord'] = self.current_user['id']
                 params['id'] = id
 
