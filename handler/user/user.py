@@ -46,28 +46,6 @@ class UserBase(BaseHandler):
             return False
         return True
 
-    @coroutine
-    def make_session(self, mobile):
-        '''
-        :param mobile: 用户手机号
-        :return: {'token'}
-        '''
-        params = {'mobile': mobile}
-
-        data = yield self.user_service.select(params, one=True)
-        if not data:
-            yield self.user_service.add(params)
-            data = yield self.user_service.select(params, one=True)
-
-        data.pop('password', None)
-
-        # 设置session
-        self.set_session(data['id'], data)
-
-        #设置token
-        token = self.encode_auth_token(data['id'])
-
-        return {'token': token}
 
     def get_sms_count(self, mobile):
         # 检查手机一天的发送次数

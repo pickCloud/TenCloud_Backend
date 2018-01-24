@@ -72,7 +72,7 @@ ERR_TIP = {
 SSH_CONNECT_TIMEOUT = 30
 SERVER_URL = settings['server_url']
 base_url = 'http://192.168.56.1:8010'
-MONITOR_CMD = 'curl -sSL {server_url}/supermonitor/install.sh | sh -s {server_url} true'.format(server_url=SERVER_URL)
+MONITOR_CMD = 'curl -sSL {server_url}/supermonitor/install.sh | sh -s {server_url} {debug}'.format(server_url=SERVER_URL, debug=settings['debug'])
 UNINSTALL_CMD = 'curl -sSL {server_url}/supermonitor/uninstall.sh | sh '.format(server_url=SERVER_URL)
 CREATE_IMAGE_CMD = 'curl -sSL {server_url}/supermonitor/scripts/create-image.sh | sh -s '.format(server_url=SERVER_URL)
 IMAGE_INFO_CMD = 'docker images %s --format "{{.Tag}},{{.CreatedAt}}" | sed -n 1,3p'
