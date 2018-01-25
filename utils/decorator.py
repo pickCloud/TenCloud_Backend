@@ -5,6 +5,7 @@ __author__ = 'Jon'
 '''
 import functools
 from tornado.gen import coroutine
+from utils.error import AppError
 
 def is_login(method):
     ''' 登录认证
@@ -55,8 +56,11 @@ def auth(role):
 
                 if cid:
                     yield getattr(self.company_employee_service, 'check_{role}'.format(role=role))(cid, self.current_user['id'])
-            except Exception as e:
-                self.error(str(e))
+            except AppError as e:
+                if hasattr(e, 'status'):
+                    self.error(str(e), status=e.status)
+                else:
+                    self.error(str(e))
                 return
 
             yield method(self, *args, **kwargs)
@@ -87,7 +91,7 @@ def require(*pids, service=None):
                 if cid:  # 公司
                     try:
                         yield self.company_employee_service.check_admin(cid, self.current_user['id'])  # 管理员不需要检查
-                    except ValueError:
+                    except AppError:
                         yield self.user_permission_service.check_right({'cid': cid, 'uid': self.current_user['id'], 'ids': pids}) # 功能权限
 
                         if ids:
