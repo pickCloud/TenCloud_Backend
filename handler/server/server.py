@@ -12,7 +12,7 @@ from utils.security import Aes
 from utils.decorator import is_login, require
 from utils.context import catch
 from constant import MONITOR_CMD, OPERATE_STATUS, OPERATION_OBJECT_STYPE, SERVER_OPERATE_STATUS, \
-      CONTAINER_OPERATE_STATUS, RIGHT, SERVICE
+      CONTAINER_OPERATE_STATUS, RIGHT, SERVICE, FORM_COMPANY
 
 
 class ServerNewHandler(WebSocketBaseHandler):
@@ -81,7 +81,7 @@ class ServerNewHandler(WebSocketBaseHandler):
             message = {
                 'owner': self.params.get('owner'),
                 'ip': self.params['public_ip'],
-                'tip': '{}'.format(self.params.get('lord') if self.params.get('form') == 2 else 0)
+                'tip': '{}'.format(self.params.get('lord') if self.params.get('form') == FORM_COMPANY else 0)
             }
             self.message_service.notify_server_add_failed(message)
 
@@ -147,12 +147,12 @@ class ServerReport(BaseHandler):
                     'owner': data.get('owner'),
                     'ip': self.params.get('public_ip'),
                     'provider': instance_info['provider'],
-                    'tip': '{}'.format(data['lord'] if data['form'] == 2 else 0)
+                    'tip': '{}'.format(data['lord'] if data['form'] == FORM_COMPANY else 0)
                 }
                 yield self.message_service.notify_server_added(message)
 
                 # 添加非个人机器时
-                if self.params['form'] == 2:
+                if self.params['form'] == FORM_COMPANY:
                     arg = {
                         'cid': self.params['lord'],
                         'uid': data.get('owner'),

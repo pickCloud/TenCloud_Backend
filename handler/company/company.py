@@ -476,10 +476,12 @@ class CompanyEmployeeHandler(BaseHandler):
 
             employees = yield self.company_employee_service.get_employees(cid)
 
-            # 根据员工是否有查看身份证的权限过滤显示结果,管理员不需要过滤身份证信息
-            is_admin = yield self.company_employee_service.select({'cid': cid, 'uid': self.current_user['id'], 'is_admin': 1}, one=True)
-            if not is_admin:
-                employees = yield self.user_permission_service.filter_id_card_info(employees, cid, self.current_user['id'])
+            # 先根据公司设置判断是否要显示身份证信息，然后根据是否有查看身份证的权限过滤显示结果,管理员不需要过滤身份证信息
+            display_flag, employees = yield self.company_entry_setting_service.filter_by_setting(employees, cid)
+            if display_flag:
+                is_admin = yield self.company_employee_service.select({'cid': cid, 'uid': self.current_user['id'], 'is_admin': 1}, one=True)
+                if not is_admin:
+                    employees = yield self.user_permission_service.filter_id_card_info(employees, cid, self.current_user['id'])
             self.success(employees)
 
 
@@ -666,10 +668,12 @@ class ComapnyEmployeeSearchHandler(BaseHandler):
             cid = self.params.get('cid')
             search_data = yield self.company_employee_service.get_employee_list_detail(cid=cid)
 
-            # 先根据员工是否有查看身份证的权限过滤显示结果（管理员不依赖于权限，不过滤身份证信息）
-            is_admin = yield self.company_employee_service.select({'cid': cid, 'uid': self.current_user['id'], 'is_admin': 1}, one=True)
-            if not is_admin:
-                search_data = yield self.user_permission_service.filter_id_card_info(search_data, cid, self.current_user['id'])
+            # 先根据公司设置判断是否要显示身份证信息，然后根据是否有查看身份证的权限过滤显示结果（管理员不依赖于权限，不过滤身份证信息）
+            display_flag, search_data = yield self.company_entry_setting_service.filter_by_setting(search_data, cid)
+            if display_flag:
+                is_admin = yield self.company_employee_service.select({'cid': cid, 'uid': self.current_user['id'], 'is_admin': 1}, one=True)
+                if not is_admin:
+                    search_data = yield self.user_permission_service.filter_id_card_info(search_data, cid, self.current_user['id'])
 
             params = {
                 'cid': self.params['cid'],

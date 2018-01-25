@@ -2,7 +2,7 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login, require
 from utils.context import catch
-from constant import MAX_PAGE_NUMBER, RIGHT, SERVICE, PREDOWNLOAD_URL
+from constant import MAX_PAGE_NUMBER, RIGHT, SERVICE, PREDOWNLOAD_URL, FORM_PERSON, FORM_COMPANY
 
 
 class FileListHandler(BaseHandler):
@@ -359,7 +359,7 @@ class FileDeleteHandler(BaseHandler):
             correct_ids = []
             incorrect_ids = []
             for file in files:
-                if (file['form'] == 1 and file['owner'] == self.current_user['id']) or file['form'] == 2:
+                if (file['form'] == FORM_PERSON and file['owner'] == self.current_user['id']) or file['form'] == FORM_COMPANY:
                     correct_ids.append(file['id'])
                     continue
                 incorrect_ids.append(file['id'])

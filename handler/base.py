@@ -49,7 +49,8 @@ from service.permission.permission_template import PermissionTemplateService
 from tornado.gen import coroutine, Task
 from tornado.websocket import WebSocketHandler
 
-from constant import SESSION_TIMEOUT, SESSION_KEY, TOKEN_EXPIRES_DAYS, RIGHT, SERVICE, SUCCESS_STATUS, FAILURE_STATUS
+from constant import SESSION_TIMEOUT, SESSION_KEY, TOKEN_EXPIRES_DAYS, RIGHT, SERVICE, SUCCESS_STATUS, FAILURE_STATUS, \
+                     FORM_COMPANY, FORM_PERSON
 from service.cluster.cluster import ClusterService
 from service.company.company import CompanyService
 from service.company.company_employee import CompanyEmployeeService
@@ -179,7 +180,7 @@ class BaseHandler(tornado.web.RequestHandler):
     def get_lord(self):
         ''' lord, form是数据库字段, lord(cid/uid), form(1个人, 2公司)
         '''
-        return {'lord': self.params['cid'], 'form': 2} if self.params.get('cid') else {'lord': self.current_user['id'], 'form': 1}
+        return {'lord': self.params['cid'], 'form': FORM_COMPANY} if self.params.get('cid') else {'lord': self.current_user['id'], 'form': FORM_PERSON}
 
     def get_current_name(self):
         '''

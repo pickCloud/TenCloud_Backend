@@ -47,3 +47,20 @@ class CompanyEntrySettingService(BaseService):
         data = yield self.select(fields='setting', conds={'cid': cid}, one=True)
 
         return data
+
+    @coroutine
+    def filter_by_setting(self, data, cid):
+        '''
+        根据公司设置过滤员工列表信息
+        :param data: 员工列表信息
+        :param cid: 公司id
+        :return: 过滤后的员工列表信息
+        '''
+        display_flag = True
+        company_setting = yield self.get_setting(cid)
+        if 'id_card' not in company_setting['setting']:
+            display_flag = False
+            for i in data:
+                i.pop('id_card', None)
+
+        return display_flag, data

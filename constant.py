@@ -38,7 +38,6 @@ USER_PERMISSION = 'cid_{cid}:uid_{uid}'
 PERMISSIONS_FLAG = 1
 SERVERS_REPORT_INFO = 'servers_report_info'
 PERMISSIONS_NOTIFY_FLAG = 1 << 1
-SERVER_REPORT = 'server_{type}_report'
 
 #################################################################################################
 # 错误代码及信息
@@ -375,6 +374,8 @@ NEG = '~'
 SUCCESS_STATUS = 0
 FAILURE_STATUS = 1
 
+FORM_PERSON = 1
+FORM_COMPANY = 2
 
 #################################################################################################
 # Tornado
