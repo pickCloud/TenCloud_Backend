@@ -93,7 +93,7 @@ class ClusterDetailHandler(BaseHandler):
 class ClusterExceptionServerHandler(BaseHandler):
     @is_login
     @coroutine
-    def get(self):
+    def get(self, id):
         """
          @api {get} /api/cluster/exception/(\d+) 集群异常机器信息
          @apiName ClusterExceptionServerHandler
