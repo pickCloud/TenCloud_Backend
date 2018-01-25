@@ -67,7 +67,7 @@ from service.user.sms import SMSService
 from service.user.user import UserService
 from setting import settings
 from utils.general import json_dumps, json_loads
-
+from utils.error import AppError
 
 class BaseHandler(tornado.web.RequestHandler):
     cluster_service = ClusterService()
@@ -268,7 +268,7 @@ class BaseHandler(tornado.web.RequestHandler):
         # 管理员不需要过滤
         try:
             yield self.company_employee_service.check_admin(self.params['cid'], self.current_user['id'])
-        except ValueError:
+        except AppError:
             data = yield getattr(self, service['company']).filter(data, self.current_user['id'], self.params.get('cid'), key=key)
 
         return data
