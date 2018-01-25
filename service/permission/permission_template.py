@@ -142,7 +142,7 @@ class PermissionTemplateService(PermissionBaseService):
                     {
                         'name': '项目管理',
                         'data': [
-                            {'name': '项目', 'data': projects if projects else []}
+                            {'name': '项目管理', 'data': projects if projects else []}
                         ]
                     },
                     {
