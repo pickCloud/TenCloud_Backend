@@ -140,7 +140,7 @@ class ClusterExceptionServerHandler(BaseHandler):
             if not result:
                 result = sorted(server_list, key=lambda x: x['cpu']['percent'], reverse=True)[0:3]
 
-            self.success({'data': result})
+            self.success(result)
 
 
 class ClusterAllProviders(BaseHandler):
