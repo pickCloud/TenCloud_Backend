@@ -42,7 +42,7 @@ class PermissionBaseService(BaseService):
             if region not in result[provider]:
                 result[provider][region] = []
 
-            result[provider][region].append({'id': d['sid'], 'name': d['name']})
+            result[provider][region].append(d)
         tmp = dict(result.items())
         for k in tmp:
             a_regions = list()
@@ -77,12 +77,12 @@ class PermissionBaseService(BaseService):
                 result[column['group']] = [tmp]
             else:
                 result[column['group']].append(tmp)
+        # 企业资料，员工管理，权限模版划分为企业管理临时方案
         temp_data = {
             'name': '企业管理',
             'data': []
         }
         for k in result:
-            # 企业资料，员工管理，权限模版划分为企业管理临时方案
             tmp_dict = {
                 'name': PERMISSIONS[k],
                 'data': [
