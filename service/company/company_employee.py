@@ -2,8 +2,9 @@ __author__ = 'Jon'
 
 from tornado.gen import coroutine
 from service.base import BaseService
-from constant import APPLICATION_STATUS, FULL_DATE_FORMAT
+from constant import APPLICATION_STATUS, FULL_DATE_FORMAT, ERR_TIP
 from utils.general import fuzzyfinder
+from utils.error import AppError
 
 
 class CompanyEmployeeService(BaseService):
@@ -19,7 +20,7 @@ class CompanyEmployeeService(BaseService):
         data = yield self.select({'cid': cid, 'uid': uid, 'is_admin': 1}, one=True)
 
         if not data:
-            raise ValueError('需要管理员权限')
+            raise AppError(ERR_TIP['not_this_company_admin']['msg'], ERR_TIP['not_this_company_admin']['sts'])
 
     @coroutine
     def check_staff(self, cid, uid):
@@ -30,7 +31,7 @@ class CompanyEmployeeService(BaseService):
         data = yield self.select({'cid': cid, 'uid': uid, 'status': [APPLICATION_STATUS['accept'], APPLICATION_STATUS['founder']]}, one=True)
 
         if not data:
-            raise ValueError('非公司员工')
+            raise AppError(ERR_TIP['not_this_company_employee']['msg'], ERR_TIP['not_this_company_employee']['sts'])
 
     @coroutine
     def limit_admin(self, id):
@@ -40,7 +41,7 @@ class CompanyEmployeeService(BaseService):
         data = yield self.select({'id': id, 'is_admin': 1}, one=True)
 
         if data:
-            raise ValueError('管理员不能对自己进行，允许/拒绝/解除')
+            raise AppError(ERR_TIP['admin_operate_themselves']['msg'], ERR_TIP['admin_operate_themselves']['sts'])
 
     @coroutine
     def add_employee(self, params):
@@ -53,9 +54,9 @@ class CompanyEmployeeService(BaseService):
         status = data['status'] if data else ''
 
         if status == APPLICATION_STATUS['process']:
-            raise ValueError('您已经提交过申请，正在审核中...')
+            raise AppError(ERR_TIP['have_submit_application']['msg'], ERR_TIP['have_submit_application']['sts'])
         elif status in [APPLICATION_STATUS['accept'], APPLICATION_STATUS['founder']]:
-            raise ValueError('您已是公司员工，无需再次申请')
+            raise AppError(ERR_TIP['employee_already']['msg'], ERR_TIP['employee_already']['sts'])
         elif status in [APPLICATION_STATUS['reject'], APPLICATION_STATUS['waiting']]:
             yield self.update(sets={'status': APPLICATION_STATUS['process']}, conds={'cid': params['cid'], 'uid': params['uid']})
         else:
@@ -94,7 +95,7 @@ class CompanyEmployeeService(BaseService):
         is_process = yield self.select({'id': id, 'status': APPLICATION_STATUS['process']})
 
         if not is_process:
-            raise ValueError('请勿重复操作')
+            raise AppError(ERR_TIP['repeated_action']['msg'], ERR_TIP['repeated_action']['sts'])
 
         yield self.update(sets={'status': APPLICATION_STATUS[mode]}, conds={'id': id})
 

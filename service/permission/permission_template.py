@@ -134,13 +134,13 @@ class PermissionTemplateService(PermissionBaseService):
                 'name': '数据',
                 'data': [
                     {
-                        'name': '文件',
+                        'name': '文件仓库',
                         'data': [
-                            {'name': '文件', 'data': files if files else []}
+                            {'name': '文件仓库', 'data': files if files else []}
                         ]
                     },
                     {
-                        'name': '项目',
+                        'name': '项目管理',
                         'data': [
                             {'name': '项目', 'data': projects if projects else []}
                         ]
