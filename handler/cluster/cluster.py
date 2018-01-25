@@ -90,13 +90,13 @@ class ClusterDetailHandler(BaseHandler):
             })
 
 
-class ClusterExceptionServerHandler(BaseHandler):
+class ClusterWarnServerHandler(BaseHandler):
     @is_login
     @coroutine
     def get(self, id):
         """
-         @api {get} /api/cluster/exception/(\d+) 集群异常机器信息
-         @apiName ClusterExceptionServerHandler
+         @api {get} /api/cluster/warn/(\d+) 需要提醒的机器信息
+         @apiName ClusterWarnServerHandler
          @apiGroup Cluster
 
          @apiParam {Number} id 集群id
