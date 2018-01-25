@@ -295,7 +295,6 @@ class CompanyEntryUrlHandler(BaseHandler):
 
 
 class CompanyApplicationHandler(BaseHandler):
-    @is_login
     @coroutine
     def get(self):
         """
