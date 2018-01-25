@@ -314,15 +314,15 @@ class PermissionUserDetailHandler(BaseHandler):
                                 'name': '数据',
                                 'data': [
                                     {
-                                        'name': '文件',
+                                        'name': '文件仓库',
                                         'data': [
-                                            {'name': '文件', 'data': []}
+                                            {'name': '文件仓库', 'data': []}
                                         ]
                                     },
                                     {
-                                        'name': '项目',
+                                        'name': '项目管理',
                                         'data': [
-                                            {'name': '项目', 'data': []}
+                                            {'name': '项目管理', 'data': []}
                                         ]
                                     },
                                     {
