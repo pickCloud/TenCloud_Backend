@@ -150,7 +150,7 @@ class ClusterSearchHandler(BaseHandler):
             server_name = self.params.get('server_name', '')
 
             if not(server_name or provider_name or region_name):
-                key = 'cluster_{id}'.format(id=str(cluster_id))
+                key = 'cluster_{cluster_id}_{cid}'.format(cluster_id=str(cluster_id), cid=str(self.params.get('cid')))
                 data = self.redis.get(key)
                 if not data:
                     data = yield self.server_service.get_brief_list(
