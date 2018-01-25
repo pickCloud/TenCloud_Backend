@@ -4,7 +4,8 @@ __author__ = 'Jon'
 项目路由文件
 '''
 
-from handler.cluster.cluster import ClusterHandler, ClusterDetailHandler, ClusterAllProviders, ClusterSearchHandler
+from handler.cluster.cluster import ClusterHandler, ClusterDetailHandler, ClusterAllProviders, ClusterSearchHandler, \
+     ClusterExceptionServerHandler
 from handler.permission.permission import PermissionTemplateListHandler, PermissionTemplateHandler, \
     PermissionTemplateRenameHandler, PermissionUserDetailHandler, PermissionUserUpdateHandler, \
     PermissionTemplateAddHandler, PermissionResourcesHandler, PermissionTemplateDelHandler, \
@@ -44,6 +45,7 @@ routes = [
     (r'/api/cluster/(\d+)', ClusterDetailHandler),
     (r'/api/cluster/(\d+)/providers', ClusterAllProviders),
     (r'/api/cluster/search', ClusterSearchHandler),
+    (r'/api/cluster/exception/(\d+)', ClusterExceptionServerHandler),
 
     # 主机相关
     (r'/api/server/new', ServerNewHandler),
