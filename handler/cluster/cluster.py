@@ -161,7 +161,7 @@ class ClusterSearchHandler(BaseHandler):
                     )
                     data = json.dumps(data)
                     self.redis.setex(key, CLUSTER_SEARCH_TIMEOUT, data)
-                data = self.filter(json.loads(data))
+                data = yield self.filter(json.loads(data))
                 self.success(data)
                 return
 
