@@ -701,3 +701,30 @@ class ComapnyEmployeeSearchHandler(BaseHandler):
                     params['data'] = [i for i in params['data'] if i['status'] == params['status']]
                     search_data = self.company_employee_service.search_by_name(params)
                     self.success(search_data)
+
+
+class CompanyEmployeeStatusHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {post} /api/company/employee/status 查询员工状态
+        @apiName CompanyEmployeeStatusHandler
+        @apiGroup Company
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": {
+                    "status": 1
+                }
+            }
+        """
+        data = yield self.company_employee_service.select(
+                    fields='status', conds={'uid': self.current_user['id'], 'cid': self.params.get('cid')},
+                    ct=False, ut=False, one=True
+        )
+
+        self.success(data)
