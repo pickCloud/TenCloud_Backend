@@ -59,7 +59,7 @@ class MessageCountHandler(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {get} /api/messages/count 获取员工消息数目（以及获取用户权限是否变更）
+        @api {get} /api/messages/count 员工消息数目（及用户权限变更情况）
         @apiName MessageCountHandler
         @apiGroup Message
 
@@ -74,7 +74,7 @@ class MessageCountHandler(BaseHandler):
                 "data": [
                     {
                         "num" : 0
-                        "permission_changed" : 0
+                        "permission_changed" : 0 （ 0 用户权限未变化， 1 用户权限发生变化）
                     }
                 ]
             }
