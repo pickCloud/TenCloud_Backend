@@ -244,9 +244,9 @@ class ServerService(BaseService):
         sql = """
             SELECT c.created_time AS created_time, c.content AS  cpu, d.content AS disk, m.content AS memory, n.content AS net
             FROM cpu AS c
-            JOIN disk AS  d ON c.public_ip=d.public_ip
-            JOIN memory AS m ON c.public_ip=m.public_ip
-            JOIN net AS  n ON c.public_ip=n.public_ip
+            JOIN disk AS  d ON c.public_ip=d.public_ip AND c.created_time=d.created_time
+            JOIN memory AS m ON c.public_ip=m.public_ip AND c.created_time=m.created_time
+            JOIN net AS  n ON c.public_ip=n.public_ip AND c.created_time=n.created_time
             WHERE c.public_ip=%s  AND c.created_time>=%s AND c.created_time<%s
             LIMIT %s, %s
         """
