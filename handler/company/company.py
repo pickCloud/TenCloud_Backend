@@ -326,6 +326,7 @@ class CompanyApplicationHandler(BaseHandler):
 
             self.success(info)
 
+    @is_login
     @coroutine
     def post(self):
         """
