@@ -45,6 +45,8 @@ class MessageHandler(BaseHandler):
             if status:
                 params['status'] = int(status)
 
+            params['keywords'] = self.params.get('keywords', None)
+
             data = yield self.message_service.fetch(params)
 
             self.success(data)

@@ -710,7 +710,7 @@ class CompanyEmployeeStatusHandler(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {post} /api/company/employee/status 查询员工状态
+        @api {get} /api/company/employee/status 查询员工状态
         @apiName CompanyEmployeeStatusHandler
         @apiGroup Company
 
