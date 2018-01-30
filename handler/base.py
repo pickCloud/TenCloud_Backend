@@ -172,10 +172,11 @@ class BaseHandler(tornado.web.RequestHandler):
             self.params['cid'] = int(self.request.headers['Cid'])
 
     def on_finish(self):
+        self.params['session_id'] = self.current_user['id']
         self.log.debug('{status} {method} {uri} {payload}'.format(status=self._status_code,
                                                                   method=self.request.method,
                                                                   uri=self.request.uri,
-                                                                  payload=str(self.params or '')))
+                                                                  payload=self.params))
 
     def get_lord(self):
         ''' lord, form是数据库字段, lord(cid/uid), form(1个人, 2公司)
