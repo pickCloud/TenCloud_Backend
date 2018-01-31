@@ -7,7 +7,7 @@ from utils.decorator import is_login, require, auth
 from utils.general import validate_mobile, validate_id_card
 from utils.context import catch
 from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING, MSG_SUB_MODE, RIGHT, \
-                     USER_PERMISSION, ADMIN_CHANGED, EMPLOYEE_TO_ADMIN, ADMIN_TO_EMPLOYEE
+                     USER_PERMISSION, COMPANY_PERMISSION, ADMIN_CHANGED, EMPLOYEE_TO_ADMIN, ADMIN_TO_EMPLOYEE
 
 
 class CompanyHandler(BaseHandler):
