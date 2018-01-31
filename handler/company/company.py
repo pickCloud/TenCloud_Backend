@@ -7,7 +7,7 @@ from utils.decorator import is_login, require, auth
 from utils.general import validate_mobile, validate_id_card
 from utils.context import catch
 from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING, MSG_SUB_MODE, RIGHT, \
-                     USER_PERMISSION, COMPANY_PERMISSION
+                     USER_PERMISSION, COMPANY_PERMISSION, ADMIN_CHANGED, EMPLOYEE_TO_ADMIN, ADMIN_TO_EMPLOYEE
 
 
 class CompanyHandler(BaseHandler):
@@ -562,6 +562,12 @@ class CompanyAdminTransferHandler(BaseHandler):
 
             yield self.company_employee_service.transfer_adimin(self.params)
 
+            # 管理员变更之后需要刷新用户权限变更标记
+            company_user_src = USER_PERMISSION.format(cid=self.params.get('cid'), uid=self.current_user['id'])
+            self.redis.hset(ADMIN_CHANGED, company_user_src, ADMIN_TO_EMPLOYEE)
+            company_user_dst = USER_PERMISSION.format(cid=self.params.get('cid'), uid=self.params.get('uid'))
+            self.redis.hset(ADMIN_CHANGED, company_user_dst, EMPLOYEE_TO_ADMIN)
+
             self.success()
 
 
@@ -732,12 +738,13 @@ class CompanyEmployeeStatusHandler(BaseHandler):
                 "status": 0,
                 "msg": "success",
                 "data": {
-                    "status": 1
+                    "status": 1,
+                    "is_admin": 0
                 }
             }
         """
         data = yield self.company_employee_service.select(
-                    fields='status', conds={'uid': self.current_user['id'], 'cid': self.params.get('cid')},
+                    fields='status, is_admin', conds={'uid': self.current_user['id'], 'cid': self.params.get('cid')},
                     ct=False, ut=False, one=True
         )
 
