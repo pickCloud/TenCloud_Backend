@@ -12,10 +12,13 @@ class MessageHandler(BaseHandler):
     @coroutine
     def get(self, status):
         """
-        @api {get} /api/messages/?(\d*)?page=\d&mode=\d 获取员工消息列表, mode值看下面的response
+        @api {get} /api/messages/?(\d*)?page=\d&mode=\d&keywords=\w* 获取员工消息列表
         @apiName MessageGetHandler
         @apiGroup Message
 
+        @apiParam {Number} page 当前页数
+        @apiParam {Number} mode 消息类型，mode值看下面的response
+        @apiParam {String} keywords 关键字
         @apiDescription /0未读,  /1已读, /全部。没有page,返回所有
 
         @apiSuccessExample {json} Success-Response:
@@ -111,7 +114,7 @@ class MessageSearchHandler(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {get} /api/messages/search 查找消息
+        @api {get} /api/messages/search 查找消息（已弃用）
         @apiName MessageSearchHandler
         @apiGroup Message
 

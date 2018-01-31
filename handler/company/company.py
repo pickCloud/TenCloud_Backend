@@ -719,12 +719,13 @@ class CompanyEmployeeStatusHandler(BaseHandler):
                 "status": 0,
                 "msg": "success",
                 "data": {
-                    "status": 1
+                    "status": 1,
+                    "is_admin": 0
                 }
             }
         """
         data = yield self.company_employee_service.select(
-                    fields='status', conds={'uid': self.current_user['id'], 'cid': self.params.get('cid')},
+                    fields='status, is_admin', conds={'uid': self.current_user['id'], 'cid': self.params.get('cid')},
                     ct=False, ut=False, one=True
         )
 
