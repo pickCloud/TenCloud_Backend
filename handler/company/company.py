@@ -505,6 +505,9 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
 
             # 缓存公司信息
             app_info = yield self.company_employee_service.get_app_info(self.params['id'])
+            if not app_info:
+                self.error('您已不是该公司职员')
+                return
 
             # 解除员工和公司的关系
             yield self.company_employee_service.delete(conds={'id': self.params['id'], 'uid': self.current_user['id']})
