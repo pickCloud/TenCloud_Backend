@@ -4,7 +4,8 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login
 from utils.context import catch
-from constant import USER_PERMISSION, COMPANY_PERMISSION, PERMISSIONS_NOTIFY_FLAG, MSG_STATUS
+from constant import USER_PERMISSION, COMPANY_PERMISSION, PERMISSIONS_NOTIFY_FLAG, MSG_STATUS, ADMIN_CHANGED, \
+                     ADMIN_NOT_CHANGED
 
 
 class MessageHandler(BaseHandler):
@@ -64,7 +65,7 @@ class MessageCountHandler(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {get} /api/messages/count 员工消息数目（及用户权限变更情况）
+        @api {get} /api/messages/count 员工消息数目（及用户权限、管理员变更情况）
         @apiName MessageCountHandler
         @apiGroup Message
 
@@ -80,6 +81,7 @@ class MessageCountHandler(BaseHandler):
                     {
                         "num" : 0
                         "permission_changed" : 0 （ 0 用户权限未变化， 1 用户权限发生变化）
+                        "admin_changed" : 0（0 员工角色未发生变化， 1 普通员工变成管理员， 2 管理员变成普通员工）
                     }
                 ]
             }
@@ -94,17 +96,22 @@ class MessageCountHandler(BaseHandler):
             message_data = yield self.message_service.select(params)
 
             # 复用获取消息数量的API，返回用户的权限是否变更了，通知前端进行刷新
+            permission_changed = 0
             company_user = USER_PERMISSION.format(cid=self.params.get('cid'), uid=self.current_user['id'])
             user_permission = self.redis.hget(COMPANY_PERMISSION, company_user)
             if user_permission and int(user_permission) & PERMISSIONS_NOTIFY_FLAG:
                 permission_changed = 1
                 self.redis.hset(COMPANY_PERMISSION, company_user, int(user_permission) & ~PERMISSIONS_NOTIFY_FLAG)
-            else:
-                permission_changed = 0
+
+            # 若管理员发生变化，通知前端进行刷新
+            admin_changed = self.redis.hget(ADMIN_CHANGED, company_user)
+            if admin_changed:
+                self.redis.hdel(ADMIN_CHANGED, company_user)
 
             data = {
                 'num': len(message_data),
-                'permission_changed': permission_changed
+                'permission_changed': permission_changed,
+                'admin_changed': int(admin_changed) if admin_changed else 0
             }
             self.success(data)
 

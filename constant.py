@@ -36,8 +36,12 @@ LOGOUT_CID = 'logout_cid'  # 记住退出时的状态，个人或是公司，方
 COMPANY_PERMISSION = 'company_permissons'
 USER_PERMISSION = 'cid_{cid}:uid_{uid}'
 PERMISSIONS_FLAG = 1
-SERVERS_REPORT_INFO = 'servers_report_info'
 PERMISSIONS_NOTIFY_FLAG = 1 << 1
+ADMIN_CHANGED = 'admin_changed'
+ADMIN_NOT_CHANGED = 0
+EMPLOYEE_TO_ADMIN = 1
+ADMIN_TO_EMPLOYEE = 2
+SERVERS_REPORT_INFO = 'servers_report_info'
 
 #################################################################################################
 # 错误代码及信息

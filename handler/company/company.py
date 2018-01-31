@@ -6,7 +6,8 @@ from setting import settings
 from utils.decorator import is_login, require, auth
 from utils.general import validate_mobile, validate_id_card
 from utils.context import catch
-from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING, MSG_SUB_MODE, RIGHT
+from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING, MSG_SUB_MODE, RIGHT, \
+                     USER_PERMISSION, ADMIN_CHANGED, EMPLOYEE_TO_ADMIN, ADMIN_TO_EMPLOYEE
 
 
 class CompanyHandler(BaseHandler):
@@ -556,6 +557,12 @@ class CompanyAdminTransferHandler(BaseHandler):
             self.params['admin_id'] = self.current_user['id']
 
             yield self.company_employee_service.transfer_adimin(self.params)
+
+            # 管理员变更之后需要刷新用户权限变更标记
+            company_user_src = USER_PERMISSION.format(cid=self.params.get('cid'), uid=self.current_user['id'])
+            self.redis.hset(ADMIN_CHANGED, company_user_src, ADMIN_TO_EMPLOYEE)
+            company_user_dst = USER_PERMISSION.format(cid=self.params.get('cid'), uid=self.params.get('uid'))
+            self.redis.hset(ADMIN_CHANGED, company_user_dst, EMPLOYEE_TO_ADMIN)
 
             self.success()
 
