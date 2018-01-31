@@ -499,6 +499,8 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
         @apiUse Success
         """
         with catch(self):
+            yield self.company_employee_service.check_staff(cid=self.params.get('cid'), uid=self.current_user['id'])
+
             data = yield self.company_employee_service.select({'id': self.params['id'], 'is_admin': 1, 'uid': self.current_user['id']}, one=True)
 
             if data:
@@ -520,6 +522,8 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
             yield self.user_access_server_service.delete(conds=arg)
             yield self.user_access_project_service.delete(conds=arg)
             yield self.user_access_filehub_service.delete(conds=arg)
+            company_user = USER_PERMISSION.format(cid=int(self.params.get('cid')), uid=int(self.current_user['id']))
+            self.redis.hdel(COMPANY_PERMISSION, company_user)
 
             # 将此员工解除公司的消息通知给管理员
             content = MSG['leave']['demission'].format(name=self.get_current_name(),
@@ -586,6 +590,7 @@ class CompanyApplicationDismissionHandler(BaseHandler):
             # 只有管理员才有解雇员工的权限
             yield self.company_employee_service.check_admin(self.params.get('cid'), self.current_user['id'])
 
+
             yield self.company_employee_service.limit_admin(self.params['id'])
 
             user_info = yield self.company_employee_service.select(
@@ -593,6 +598,10 @@ class CompanyApplicationDismissionHandler(BaseHandler):
                                                             conds={'id': self.params['id']},
                                                             one=True
                                                             )
+            if not user_info:
+                self.error('非公司员工')
+                return
+
             # 删除改用户权限
             arg = {
                 'uid': user_info['uid'],
@@ -602,6 +611,9 @@ class CompanyApplicationDismissionHandler(BaseHandler):
             yield self.user_access_server_service.delete(conds=arg)
             yield self.user_access_project_service.delete(conds=arg)
             yield self.user_access_filehub_service.delete(conds=arg)
+
+            company_user = USER_PERMISSION.format(cid=int(self.params.get('cid')), uid=int(self.current_user['id']))
+            self.redis.hdel(COMPANY_PERMISSION, company_user)
 
             yield self.company_employee_service.delete({'id': self.params['id']})
 

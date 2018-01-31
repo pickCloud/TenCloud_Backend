@@ -438,6 +438,8 @@ class ServerService(BaseService):
     def get_docker_performance(self, params):
         # 通过主机id(server_id)获取公共IP
         params['public_ip'] = yield self.fetch_public_ip(params['id'])
+        if not params['public_ip']:
+            raise ValueError('主机不存在')
 
         data = {}
         if params['type'] == 0:
