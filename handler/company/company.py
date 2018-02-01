@@ -732,6 +732,8 @@ class CompanyEmployeeStatusHandler(BaseHandler):
         @apiName CompanyEmployeeStatusHandler
         @apiGroup Company
 
+        @apiParam {Number} id 公司ID
+
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
             {
@@ -745,7 +747,7 @@ class CompanyEmployeeStatusHandler(BaseHandler):
         """
         with catch(self):
             data = yield self.company_employee_service.select(
-                        fields='status, is_admin', conds={'uid': self.current_user['id'], 'cid': self.params.get('cid')},
+                        fields='status, is_admin', conds={'uid': self.current_user['id'], 'cid': self.params.get('id')},
                         ct=False, ut=False, one=True
             )
 
