@@ -70,6 +70,7 @@ class PermissionTemplateListHandler(BaseHandler):
         with catch(self):
             cid = int(cid)
             data = yield self.permission_template_service.select({'cid': cid})
+            data = yield self.permission_template_service.check_pt_exist(data)
             preset = yield self.permission_template_service.get_admin(cid)
             if data:
                 if isinstance(data, list):
