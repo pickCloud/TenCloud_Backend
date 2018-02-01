@@ -6,6 +6,9 @@ __author__ = 'Jon'
 import functools
 from tornado.gen import coroutine
 from utils.error import AppError
+from utils.general import json_loads
+from constant import USER_LATEST_TOKEN, ERR_TIP
+
 
 def is_login(method):
     ''' 登录认证
@@ -16,8 +19,17 @@ def is_login(method):
     '''
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
+        # 没有token
         if not self.current_user:
             self.error('require login', code=403)
+            return
+
+        # 没有最新token
+        is_latest, info = self.is_latest_token()
+        if not is_latest:
+            self.error(status=ERR_TIP['not_lastest_token']['sts'],
+                       message=ERR_TIP['not_lastest_token']['msg'].format(time=info['time']),
+                       code=403)
             return
 
         return method(self, *args, **kwargs)

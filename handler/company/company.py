@@ -587,6 +587,7 @@ class CompanyApplicationDismissionHandler(BaseHandler):
                                                             conds={'id': self.params['id']},
                                                             one=True
                                                             )
+
             # 删除改用户权限
             arg = {
                 'uid': user_info['uid'],
