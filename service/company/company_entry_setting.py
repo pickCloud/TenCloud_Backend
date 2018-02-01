@@ -34,8 +34,12 @@ class CompanyEntrySettingService(BaseService):
         if data and data['code'] != code:
             yield self.update(sets={'code': code, 'setting': setting}, conds={'cid': cid})
         else:
-            params['code'] = code
-            yield self.add(params=params)
+            arg = {
+                'cid': cid,
+                'setting': setting,
+                'code': code
+            }
+            yield self.add(params=arg)
         return self.produce_url(code)
 
     @coroutine
