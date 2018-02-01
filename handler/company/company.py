@@ -743,9 +743,10 @@ class CompanyEmployeeStatusHandler(BaseHandler):
                 }
             }
         """
-        data = yield self.company_employee_service.select(
-                    fields='status, is_admin', conds={'uid': self.current_user['id'], 'cid': self.params.get('cid')},
-                    ct=False, ut=False, one=True
-        )
+        with catch(self):
+            data = yield self.company_employee_service.select(
+                        fields='status, is_admin', conds={'uid': self.current_user['id'], 'cid': self.params.get('cid')},
+                        ct=False, ut=False, one=True
+            )
 
-        self.success(data)
+            self.success(data)
