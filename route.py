@@ -25,7 +25,7 @@ from handler.server.server import ServerNewHandler, ServerReport, ServerDelHandl
 from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, \
                               UserUpdateHandler, UserUploadToken, GetCaptchaHandler, \
                               PasswordLoginHandler, UserRegisterHandler, UserResetPasswordHandler, \
-                              UserResetMobileHandler, UserPasswordSetHandler, UserReturnSMSCountHandler, \
+                              UserPasswordSetHandler, UserReturnSMSCountHandler, \
                               UserSmsSetHandler, UserDeleteHandler
 
 from handler.file.file import FileUploadHandler, FileUpdateHandler, FileInfoHandler, FileDownloadHandler, \
@@ -111,7 +111,6 @@ routes = [
     (r'/api/user/register', UserRegisterHandler),
     (r'/api/user/password/reset', UserResetPasswordHandler),
     (r'/api/user/password/set', UserPasswordSetHandler),
-    # (r'/api/user/mobile/reset', UserResetMobileHandler),
 
     (r'/api/permission/resource/(\d+)', PermissionResourcesHandler),
     (r'/api/permission/template/list/(\d+)', PermissionTemplateListHandler),
