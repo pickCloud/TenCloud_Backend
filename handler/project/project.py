@@ -232,16 +232,6 @@ class ProjectUpdateHandler(BaseHandler):
                 'operation_status': OPERATE_STATUS['fail'],
             })
 
-            params = [
-                    self.params['name'],
-                    self.params['description'],
-                    self.params['repos_name'],
-                    self.params['repos_url'],
-                    self.params['http_url'],
-                    self.params['mode'],
-                    self.params['image_name'],
-                    self.params['id']
-                    ]
             sets = {
                 'name': self.params['name'],
                 'description': self.params['description'],

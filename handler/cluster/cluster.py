@@ -90,6 +90,59 @@ class ClusterDetailHandler(BaseHandler):
             })
 
 
+class ClusterWarnServerHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self, id):
+        """
+         @api {get} /api/cluster/warn/(\d+) 需要提醒的机器信息
+         @apiName ClusterWarnServerHandler
+         @apiGroup Cluster
+
+         @apiParam {Number} id 集群id
+
+         @apiSuccessExample {json} Success-Response:
+             HTTP/1.1 200 OK
+             {
+                 "status": 0,
+                 "message": "success",
+                 "data": [
+                     {
+                         "id": int,
+                         "name": str,
+                         "address": str,
+                         "public_ip": str,
+                         "machine_status": int,
+                         "business_status": int,
+                         "disk": str,
+                         "memory": str,
+                         "cpu": str,
+                         "net": str,
+                         "time": int
+                     }
+                        ...
+                 ]
+             }
+         """
+        with catch(self):
+            server_list = yield self.server_service.get_brief_list(cluster_id=id, **self.get_lord())
+            server_list = yield self.filter(server_list)
+
+            # 检查并返回存在异常情况的机器数据
+            result = []
+            for server in server_list:
+                for i in ['cpu', 'memory', 'disk']:
+                    if server[i].get('percent') > 80:
+                        result.append(server)
+                        break
+
+            # 如果没有异常机器，则直接返回CPU占用率前三高的机器
+            if not result:
+                result = sorted(server_list, key=lambda x: x['cpu']['percent'], reverse=True)[0:3]
+
+            self.success(result)
+
+
 class ClusterAllProviders(BaseHandler):
     @is_login
     @coroutine
@@ -150,7 +203,7 @@ class ClusterSearchHandler(BaseHandler):
             server_name = self.params.get('server_name', '')
 
             if not(server_name or provider_name or region_name):
-                key = 'cluster_{id}'.format(id=str(cluster_id))
+                key = 'cluster_{cluster_id}_{cid}'.format(cluster_id=str(cluster_id), cid=str(self.params.get('cid')))
                 data = self.redis.get(key)
                 if not data:
                     data = yield self.server_service.get_brief_list(
@@ -161,7 +214,8 @@ class ClusterSearchHandler(BaseHandler):
                     )
                     data = json.dumps(data)
                     self.redis.setex(key, CLUSTER_SEARCH_TIMEOUT, data)
-                self.success(json.loads(data))
+                data = yield self.filter(json.loads(data))
+                self.success(data)
                 return
 
             data = yield self.server_service.get_brief_list(

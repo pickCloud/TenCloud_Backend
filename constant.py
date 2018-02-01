@@ -36,16 +36,20 @@ LOGOUT_CID = 'logout_cid'  # 记住退出时的状态，个人或是公司，方
 COMPANY_PERMISSION = 'company_permissons'
 USER_PERMISSION = 'cid_{cid}:uid_{uid}'
 PERMISSIONS_FLAG = 1
-SERVERS_REPORT_INFO = 'servers_report_info'
 PERMISSIONS_NOTIFY_FLAG = 1 << 1
 USER_LATEST_TOKEN = 'user_latest_token'   # hash，用户最后登录信息，比如最新的token/登录时间
+ADMIN_CHANGED = 'admin_changed'
+ADMIN_NOT_CHANGED = 0
+EMPLOYEE_TO_ADMIN = 1
+ADMIN_TO_EMPLOYEE = 2
+SERVERS_REPORT_INFO = 'servers_report_info'
 
 #################################################################################################
 # 错误代码及信息
 #################################################################################################
 ERR_TIP = {
     # 注册与登陆
-    'no_registered':     {'sts': 10403, 'msg': '账号不存在。'},
+    'no_registered':     {'sts': 10403, 'msg': '你的账户还未注册，请先注册账户。'},
     'no_registered_jump':     {'sts': 10404, 'msg': '你的账户还未注册，请先注册账户。'},
     'sms_over_three':    {'sts': 10405, 'msg': '该手机号码发送短信超过3次'},
     'sms_over_limit':      {'sts': 10407, 'msg': '每个手机号24小时内仅允许有10次获取短信验证码的机会，请24小时后再尝试'},

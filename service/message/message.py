@@ -16,10 +16,15 @@ class MessageService(BaseService):
         :param params: {'owner', 'status', 'page'} # status, page可选
         :return:
         '''
+        extra = ''
+
+        keywords = params.pop('keywords', None)
+        if keywords:
+            extra += ' AND content LIKE "%%{keywords}%%" '.format(keywords=keywords)
+
+        extra += ' ORDER BY create_time DESC '
+
         page = params.pop('page', None)
-
-        extra = ' ORDER BY create_time DESC '
-
         if page:
             extra += 'LIMIT {},{}'.format((page - 1) * MSG_PAGE_NUM, MSG_PAGE_NUM)
 

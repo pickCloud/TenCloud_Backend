@@ -85,9 +85,7 @@ class PermissionBaseService(BaseService):
         for k in result:
             tmp_dict = {
                 'name': PERMISSIONS[k],
-                'data': [
-                    {'name': PERMISSIONS[k], 'data': result[k]}
-                ]
+                'data': result[k]
             }
             if k in [3, 4, 5]:
                 temp_data['data'].append(tmp_dict)

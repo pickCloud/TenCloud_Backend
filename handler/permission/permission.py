@@ -291,10 +291,13 @@ class PermissionUserDetailHandler(BaseHandler):
             }
         """
         with catch(self):
+            cid, uid, pt_format = int(cid), int(uid), int(pt_format)
+            yield self.company_employee_service.check_staff(cid=cid, uid=uid)
+
             params = {
-                'uid': int(uid),
-                'cid': int(cid),
-                'format': int(pt_format)
+                'uid': uid,
+                'cid': cid,
+                'format': pt_format
             }
 
             data = {
@@ -314,15 +317,15 @@ class PermissionUserDetailHandler(BaseHandler):
                                 'name': '数据',
                                 'data': [
                                     {
-                                        'name': '文件',
+                                        'name': '文件仓库',
                                         'data': [
-                                            {'name': '文件', 'data': []}
+                                            {'name': '文件仓库', 'data': []}
                                         ]
                                     },
                                     {
-                                        'name': '项目',
+                                        'name': '项目管理',
                                         'data': [
-                                            {'name': '项目', 'data': []}
+                                            {'name': '项目管理', 'data': []}
                                         ]
                                     },
                                     {
@@ -332,7 +335,7 @@ class PermissionUserDetailHandler(BaseHandler):
                                 ]
                             }
                     ]
-            company_user = USER_PERMISSION.format(cid=int(cid), uid=int(uid))
+            company_user = USER_PERMISSION.format(cid=cid, uid=uid)
             has_set = self.redis.hget(COMPANY_PERMISSION, company_user)
             if not has_set:
                 self.success(data)
@@ -387,6 +390,8 @@ class PermissionUserUpdateHandler(BaseHandler):
 
             # 只有管理员才可以修改员工的权限
             yield self.company_employee_service.check_admin(self.params.get('cid'), self.current_user['id'])
+
+            yield self.company_employee_service.check_staff(cid=self.params.get('cid'), uid=self.params.get('uid'))
 
             arg = self.deal_args(self.params['access_servers'])
             arg['table'] = 'user_access_server'
