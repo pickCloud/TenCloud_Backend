@@ -576,13 +576,14 @@ class UserLoginHandler(NeedSMSMixin, UserBase):
             self.clean()
 
             user = yield self.user_service.select({'mobile': mobile}, one=True)
-            user.pop('password', None)
+
             result['user'] = user
             if not user['password']:
+                user.pop('password', None)
                 self.error(status=ERR_TIP['no_registered_jump']['sts'],
                            message=ERR_TIP['no_registered_jump']['msg'], data=result)
                 return
-
+            user.pop('password', None)
             self.success(result)
             self.log.stats('AuthcodeLogin, IP: {}, Mobile: {}'.format(
                 self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.params['mobile']))
