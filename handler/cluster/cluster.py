@@ -240,7 +240,7 @@ class ClusterSummaryHandler(BaseHandler):
     @is_login
     @coroutine
     def get(self):
-        '''
+        """
         @api {get} /api/cluster/summary 服务器总览
         @apiName ClusterSummaryHandler
         @apiGroup Cluster
@@ -258,7 +258,7 @@ class ClusterSummaryHandler(BaseHandler):
                  "payment_num": 0
              }
          }
-        '''
+        """
         with catch(self):
 
             server = yield self.server_service.select(conds=self.get_lord())
