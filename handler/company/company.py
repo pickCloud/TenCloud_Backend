@@ -6,7 +6,8 @@ from setting import settings
 from utils.decorator import is_login, require, auth
 from utils.general import validate_mobile, validate_id_card
 from utils.context import catch
-from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING, MSG_SUB_MODE, RIGHT
+from constant import ERR_TIP, MSG, APPLICATION_STATUS, MSG_MODE, DEFAULT_ENTRY_SETTING, MSG_SUB_MODE, RIGHT, \
+                     USER_PERMISSION, COMPANY_PERMISSION, ADMIN_CHANGED, EMPLOYEE_TO_ADMIN, ADMIN_TO_EMPLOYEE
 
 
 class CompanyHandler(BaseHandler):
@@ -295,7 +296,6 @@ class CompanyEntryUrlHandler(BaseHandler):
 
 
 class CompanyApplicationHandler(BaseHandler):
-    @is_login
     @coroutine
     def get(self):
         """
@@ -499,6 +499,8 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
         @apiUse Success
         """
         with catch(self):
+            yield self.company_employee_service.check_staff(cid=self.params.get('cid'), uid=self.current_user['id'])
+
             data = yield self.company_employee_service.select({'id': self.params['id'], 'is_admin': 1, 'uid': self.current_user['id']}, one=True)
 
             if data:
@@ -520,6 +522,8 @@ class CompanyEmployeeDismissionHandler(BaseHandler):
             yield self.user_access_server_service.delete(conds=arg)
             yield self.user_access_project_service.delete(conds=arg)
             yield self.user_access_filehub_service.delete(conds=arg)
+            company_user = USER_PERMISSION.format(cid=int(self.params.get('cid')), uid=int(self.current_user['id']))
+            self.redis.hdel(COMPANY_PERMISSION, company_user)
 
             # 将此员工解除公司的消息通知给管理员
             content = MSG['leave']['demission'].format(name=self.get_current_name(),
@@ -558,6 +562,12 @@ class CompanyAdminTransferHandler(BaseHandler):
 
             yield self.company_employee_service.transfer_adimin(self.params)
 
+            # 管理员变更之后需要刷新用户权限变更标记
+            company_user_src = USER_PERMISSION.format(cid=self.params.get('cid'), uid=self.current_user['id'])
+            self.redis.hset(ADMIN_CHANGED, company_user_src, ADMIN_TO_EMPLOYEE)
+            company_user_dst = USER_PERMISSION.format(cid=self.params.get('cid'), uid=self.params.get('uid'))
+            self.redis.hset(ADMIN_CHANGED, company_user_dst, EMPLOYEE_TO_ADMIN)
+
             self.success()
 
 
@@ -580,6 +590,7 @@ class CompanyApplicationDismissionHandler(BaseHandler):
             # 只有管理员才有解雇员工的权限
             yield self.company_employee_service.check_admin(self.params.get('cid'), self.current_user['id'])
 
+
             yield self.company_employee_service.limit_admin(self.params['id'])
 
             user_info = yield self.company_employee_service.select(
@@ -587,6 +598,9 @@ class CompanyApplicationDismissionHandler(BaseHandler):
                                                             conds={'id': self.params['id']},
                                                             one=True
                                                             )
+            if not user_info:
+                self.error('非公司员工')
+                return
 
             # 删除改用户权限
             arg = {
@@ -597,6 +611,9 @@ class CompanyApplicationDismissionHandler(BaseHandler):
             yield self.user_access_server_service.delete(conds=arg)
             yield self.user_access_project_service.delete(conds=arg)
             yield self.user_access_filehub_service.delete(conds=arg)
+
+            company_user = USER_PERMISSION.format(cid=int(self.params.get('cid')), uid=int(self.current_user['id']))
+            self.redis.hdel(COMPANY_PERMISSION, company_user)
 
             yield self.company_employee_service.delete({'id': self.params['id']})
 
@@ -704,3 +721,31 @@ class ComapnyEmployeeSearchHandler(BaseHandler):
                     params['data'] = [i for i in params['data'] if i['status'] == params['status']]
                     search_data = self.company_employee_service.search_by_name(params)
                     self.success(search_data)
+
+
+class CompanyEmployeeStatusHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/company/employee/status 查询员工状态
+        @apiName CompanyEmployeeStatusHandler
+        @apiGroup Company
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": {
+                    "status": 1,
+                    "is_admin": 0
+                }
+            }
+        """
+        data = yield self.company_employee_service.select(
+                    fields='status, is_admin', conds={'uid': self.current_user['id'], 'cid': self.params.get('cid')},
+                    ct=False, ut=False, one=True
+        )
+
+        self.success(data)

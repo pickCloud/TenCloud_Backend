@@ -4,7 +4,8 @@ from tornado.gen import coroutine
 from handler.base import BaseHandler
 from utils.decorator import is_login
 from utils.context import catch
-from constant import USER_PERMISSION, COMPANY_PERMISSION, PERMISSIONS_NOTIFY_FLAG, MSG_STATUS
+from constant import USER_PERMISSION, COMPANY_PERMISSION, PERMISSIONS_NOTIFY_FLAG, MSG_STATUS, ADMIN_CHANGED, \
+                     ADMIN_NOT_CHANGED
 
 
 class MessageHandler(BaseHandler):
@@ -12,10 +13,13 @@ class MessageHandler(BaseHandler):
     @coroutine
     def get(self, status):
         """
-        @api {get} /api/messages/?(\d*)?page=\d&mode=\d 获取员工消息列表, mode值看下面的response
+        @api {get} /api/messages/?(\d*)?page=\d&mode=\d&keywords=\w* 获取员工消息列表
         @apiName MessageGetHandler
         @apiGroup Message
 
+        @apiParam {Number} page 当前页数
+        @apiParam {Number} mode 消息类型，mode值看下面的response
+        @apiParam {String} keywords 关键字
         @apiDescription /0未读,  /1已读, /全部。没有page,返回所有
 
         @apiSuccessExample {json} Success-Response:
@@ -45,6 +49,8 @@ class MessageHandler(BaseHandler):
             if status:
                 params['status'] = int(status)
 
+            params['keywords'] = self.params.get('keywords', None)
+
             data = yield self.message_service.fetch(params)
 
             self.success(data)
@@ -59,7 +65,7 @@ class MessageCountHandler(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {get} /api/messages/count 获取员工消息数目（以及获取用户权限是否变更）
+        @api {get} /api/messages/count 员工消息数目（及用户权限、管理员变更情况）
         @apiName MessageCountHandler
         @apiGroup Message
 
@@ -74,7 +80,8 @@ class MessageCountHandler(BaseHandler):
                 "data": [
                     {
                         "num" : 0
-                        "permission_changed" : 0
+                        "permission_changed" : 0 （ 0 用户权限未变化， 1 用户权限发生变化）
+                        "admin_changed" : 0（0 员工角色未发生变化， 1 普通员工变成管理员， 2 管理员变成普通员工）
                     }
                 ]
             }
@@ -89,17 +96,22 @@ class MessageCountHandler(BaseHandler):
             message_data = yield self.message_service.select(params)
 
             # 复用获取消息数量的API，返回用户的权限是否变更了，通知前端进行刷新
+            permission_changed = 0
             company_user = USER_PERMISSION.format(cid=self.params.get('cid'), uid=self.current_user['id'])
             user_permission = self.redis.hget(COMPANY_PERMISSION, company_user)
             if user_permission and int(user_permission) & PERMISSIONS_NOTIFY_FLAG:
                 permission_changed = 1
                 self.redis.hset(COMPANY_PERMISSION, company_user, int(user_permission) & ~PERMISSIONS_NOTIFY_FLAG)
-            else:
-                permission_changed = 0
+
+            # 若管理员发生变化，通知前端进行刷新
+            admin_changed = self.redis.hget(ADMIN_CHANGED, company_user)
+            if admin_changed:
+                self.redis.hdel(ADMIN_CHANGED, company_user)
 
             data = {
                 'num': len(message_data),
-                'permission_changed': permission_changed
+                'permission_changed': permission_changed,
+                'admin_changed': int(admin_changed) if admin_changed else 0
             }
             self.success(data)
 
@@ -109,7 +121,7 @@ class MessageSearchHandler(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {get} /api/messages/search 查找消息
+        @api {get} /api/messages/search 查找消息（已弃用）
         @apiName MessageSearchHandler
         @apiGroup Message
 

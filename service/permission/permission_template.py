@@ -142,7 +142,7 @@ class PermissionTemplateService(PermissionBaseService):
                     {
                         'name': '项目管理',
                         'data': [
-                            {'name': '项目', 'data': projects if projects else []}
+                            {'name': '项目管理', 'data': projects if projects else []}
                         ]
                     },
                     {
@@ -172,7 +172,7 @@ class PermissionTemplateService(PermissionBaseService):
         files = ','.join([str(i['id']) for i in data['files']])
         projects = ','.join([str(i['id']) for i in data['projects']])
         data = {
-            'name': 'admin',
+            'name': '所有权限',
             'cid': cid,
             'permissions': permissions,
             'access_servers': servers,

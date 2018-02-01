@@ -4,7 +4,8 @@ __author__ = 'Jon'
 项目路由文件
 '''
 
-from handler.cluster.cluster import ClusterHandler, ClusterDetailHandler, ClusterAllProviders, ClusterSearchHandler
+from handler.cluster.cluster import ClusterHandler, ClusterDetailHandler, ClusterAllProviders, ClusterSearchHandler, \
+    ClusterWarnServerHandler
 from handler.permission.permission import PermissionTemplateListHandler, PermissionTemplateHandler, \
     PermissionTemplateRenameHandler, PermissionUserDetailHandler, PermissionUserUpdateHandler, \
     PermissionTemplateAddHandler, PermissionResourcesHandler, PermissionTemplateDelHandler, \
@@ -34,7 +35,8 @@ from handler.company.company import CompanyNewHandler, CompanyUpdateHandler, Com
                                     CompanyApplicationHandler, CompanyApplicationAcceptHandler, CompanyApplicationRejectHandler, \
                                     CompanyEmployeeHandler, CompanyHandler, CompanyDetailHandler, CompanyEntryUrlHandler, \
                                     CompanyAdminTransferHandler, CompanyEmployeeDismissionHandler, CompanyApplicationDismissionHandler, \
-                                    CompanyApplicationWaitingHandler, ComapnyEmployeeSearchHandler
+                                    CompanyApplicationWaitingHandler, ComapnyEmployeeSearchHandler, \
+                                    CompanyEmployeeStatusHandler
 from handler.message.message import MessageHandler, MessageCountHandler, MessageSearchHandler
 
 
@@ -44,6 +46,7 @@ routes = [
     (r'/api/cluster/(\d+)', ClusterDetailHandler),
     (r'/api/cluster/(\d+)/providers', ClusterAllProviders),
     (r'/api/cluster/search', ClusterSearchHandler),
+    (r'/api/cluster/warn/(\d+)', ClusterWarnServerHandler),
 
     # 主机相关
     (r'/api/server/new', ServerNewHandler),
@@ -136,6 +139,7 @@ routes = [
     (r'/api/company/employee/dismission', CompanyEmployeeDismissionHandler),
     (r'/api/company/admin/transfer', CompanyAdminTransferHandler),
     (r'/api/company/employee/search', ComapnyEmployeeSearchHandler),
+    (r'/api/company/employee/status', CompanyEmployeeStatusHandler),
 
     # 消息
     (r'/api/messages/?(\d*)', MessageHandler),
