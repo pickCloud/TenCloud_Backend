@@ -4,7 +4,7 @@ import json
 
 from tornado.gen import coroutine, Task
 from handler.base import BaseHandler
-from constant import CLUSTER_SEARCH_TIMEOUT
+from constant import CLUSTER_SEARCH_TIMEOUT, MSG_PAGE_NUM
 from utils.decorator import is_login
 from utils.context import catch
 
@@ -184,6 +184,8 @@ class ClusterSearchHandler(BaseHandler):
         @apiParam {String} server_name
         @apiParam {[]String} region_name
         @apiParam {[]String} provider_name
+        @apiParam {Number} page
+        @apiParam {Number} page_num
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -201,6 +203,8 @@ class ClusterSearchHandler(BaseHandler):
             region_name = self.params.get('region_name', [])
             provider_name = self.params.get('provider_name', [])
             server_name = self.params.get('server_name', '')
+            page = int(self.params.get('page', 1))
+            page_num = int(self.params.get('page_num', MSG_PAGE_NUM))
 
             if not(server_name or provider_name or region_name):
                 key = 'cluster_{cluster_id}_{cid}'.format(cluster_id=str(cluster_id), cid=str(self.params.get('cid')))
@@ -215,7 +219,7 @@ class ClusterSearchHandler(BaseHandler):
                     data = json.dumps(data)
                     self.redis.setex(key, CLUSTER_SEARCH_TIMEOUT, data)
                 data = yield self.filter(json.loads(data))
-                self.success(data)
+                self.success(data[page_num*(page-1):page_num*page])
                 return
 
             data = yield self.server_service.get_brief_list(
@@ -229,4 +233,40 @@ class ClusterSearchHandler(BaseHandler):
 
             data = yield self.filter(data)
 
+            self.success(data[page_num*(page-1):page_num*page])
+
+
+class ClusterSummaryHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        '''
+        @api {get} /api/cluster/summary 服务器总览
+        @apiName ClusterSummaryHandler
+        @apiGroup Cluster
+
+        @apiUse cidHeader
+
+        @apiSuccessExample {json} Success-Response:
+         HTTP/1.1 200 OK
+         {
+             "status": 0,
+             "message": "success",
+             "data": {
+                 "server_num": 3,
+                 "warn_num": 0,
+                 "payment_num": 0
+             }
+         }
+        '''
+        with catch(self):
+
+            server = yield self.server_service.select(conds=self.get_lord())
+            server = yield self.filter(server)
+
+            data = {
+                'server_num': len(server),
+                'warn_num': 0,
+                'payment_num': 0
+            }
             self.success(data)
