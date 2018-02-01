@@ -111,6 +111,7 @@ class CompanyNewHandler(BaseHandler):
 
             # 创建公司
             self.params.pop('cid', None)
+            self.params.pop('token', None)
             info = yield self.company_service.add(self.params)
             yield self.company_employee_service.add(dict(cid=info['id'], uid=self.current_user['id'], status=APPLICATION_STATUS['founder'], is_admin=1))
             data = {
