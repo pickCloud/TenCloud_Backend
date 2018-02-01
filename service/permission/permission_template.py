@@ -183,3 +183,24 @@ class PermissionTemplateService(PermissionBaseService):
             'type': 0
         }
         return data
+
+    @coroutine
+    def check_pt_exist(self, pts):
+        data = []
+        for pt in pts:
+            tmp_data = yield self._check_pt_exist(pt)
+            data.append(tmp_data)
+        return data
+
+    @coroutine
+    def _check_pt_exist(self, data):
+        self.log.info(data)
+        servers = yield self.check_exist(table='server', ids=data['access_servers'])
+        projects = yield self.check_exist(table='project', ids=data['access_projects'])
+        files = yield self.check_exist(table='filehub', ids=data['access_filehub'])
+        permission = yield self.check_exist(table='permission', ids=data['permissions'])
+        data['access_servers'] = servers
+        data['access_projects'] = projects
+        data['access_filehub'] = files
+        data['permissions'] = permission
+        return data

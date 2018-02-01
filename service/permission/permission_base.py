@@ -4,6 +4,7 @@ from tornado.gen import coroutine
 
 from service.base import BaseService
 from constant import  PERMISSIONS
+from utils.general import get_in_formats
 
 
 class PermissionBaseService(BaseService):
@@ -134,4 +135,17 @@ class PermissionBaseService(BaseService):
 
         cur = yield self.db.execute(sql, params)
         data = cur.fetchall()
+        return data
+
+    @coroutine
+    def check_exist(self, table, ids):
+        if not ids:
+            return ''
+        ids = [i for i in ids.split(',')]
+        conds = get_in_formats('id', ids)
+        sql = """
+        SELECT id FROM {table} WHERE {conds}
+        """.format(table=table, conds=conds)
+        cur = yield self.db.execute(sql, ids)
+        data = ','.join([str(i['id']) for i in cur.fetchall()])
         return data
