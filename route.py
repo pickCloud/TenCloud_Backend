@@ -5,7 +5,7 @@ __author__ = 'Jon'
 '''
 
 from handler.cluster.cluster import ClusterHandler, ClusterDetailHandler, ClusterAllProviders, ClusterSearchHandler, \
-    ClusterWarnServerHandler
+    ClusterWarnServerHandler, ClusterSummaryHandler
 from handler.permission.permission import PermissionTemplateListHandler, PermissionTemplateHandler, \
     PermissionTemplateRenameHandler, PermissionUserDetailHandler, PermissionUserUpdateHandler, \
     PermissionTemplateAddHandler, PermissionResourcesHandler, PermissionTemplateDelHandler, \
@@ -47,6 +47,7 @@ routes = [
     (r'/api/cluster/(\d+)/providers', ClusterAllProviders),
     (r'/api/cluster/search', ClusterSearchHandler),
     (r'/api/cluster/warn/(\d+)', ClusterWarnServerHandler),
+    (r'/api/cluster/summary', ClusterSummaryHandler),
 
     # 主机相关
     (r'/api/server/new', ServerNewHandler),
