@@ -100,7 +100,7 @@ class PermissionTemplateService(PermissionBaseService):
     def get_resources(self, cid, is_format = False):
         # 暂时获取所有资源
         files = yield self._get_resources(
-                                        fields='id, filename，type',
+                                        fields='id, filename, type',
                                         table='filehub',
                                         extra='where lord={cid} and form = {form}'.format(cid=cid, form=RESOURCE_TYPE['firm'])
                                         )
