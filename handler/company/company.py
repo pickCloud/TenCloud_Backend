@@ -386,10 +386,13 @@ class CompanyApplicationHandler(BaseHandler):
             admin = yield self.company_employee_service.select(fields='uid', conds={'cid': info['cid'], 'is_admin': 1})
 
             # 给具有审核员工权限的人发送消息,若没有存在审核权限的用户会返回一个空tuple，为防止报错，下面做一次转换
+            has_send = []
             audit = yield self.user_permission_service.select({'cid': info['cid'], 'pid': RIGHT['audit_employee']})
             for i in admin + list(audit):
-                admin_data['owner'] = i['uid']
-                yield self.message_service.add(admin_data)
+                if i['uid'] not in has_send:
+                    has_send.append(i['uid'])
+                    admin_data['owner'] = i['uid']
+                    yield self.message_service.add(admin_data)
 
             self.success()
 
