@@ -207,18 +207,13 @@ class ClusterSearchHandler(BaseHandler):
             page_num = int(self.params.get('page_num', MSG_PAGE_NUM))
 
             if not(server_name or provider_name or region_name):
-                key = 'cluster_{cluster_id}_{cid}'.format(cluster_id=str(cluster_id), cid=str(self.params.get('cid')))
-                data = self.redis.get(key)
-                if not data:
-                    data = yield self.server_service.get_brief_list(
-                        cluster_id=cluster_id,
-                        provider=provider_name,
-                        region=region_name,
-                        **self.get_lord()
-                    )
-                    data = json.dumps(data)
-                    self.redis.setex(key, CLUSTER_SEARCH_TIMEOUT, data)
-                data = yield self.filter(json.loads(data))
+                data = yield self.server_service.get_brief_list(
+                    cluster_id=cluster_id,
+                    provider=provider_name,
+                    region=region_name,
+                    **self.get_lord()
+                )
+                data = yield self.filter(data)
                 self.success(data[page_num*(page-1):page_num*page])
                 return
 
