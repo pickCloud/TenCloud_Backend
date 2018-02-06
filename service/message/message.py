@@ -96,6 +96,15 @@ class MessageService(BaseService):
             'tip': params['tip']
         })
 
+        if params.get('admin'):
+            yield self.add({
+                'owner': params['admin'],
+                'content': MSG['server']['success'].format(ip=params['ip'], provider=params['provider']),
+                'mode': MSG_MODE['server'],
+                'sub_mode': MSG_SUB_MODE['server_success'],
+                'tip': params['tip']
+            })
+
     @coroutine
     def notify_server_add_failed(self, params):
         '''
