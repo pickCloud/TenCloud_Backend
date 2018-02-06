@@ -151,9 +151,8 @@ class ServerReport(BaseHandler):
                     'provider': instance_info['provider'],
                     'tip': '{}'.format(data['lord'] if data['form'] == FORM_COMPANY else 0)
                 }
-                yield self.message_service.notify_server_added(message)
 
-                # 添加非个人机器时
+                # 添加非个人机器时给添加者授予新增主机的数据权限，并且也通知到管理员
                 if self.params['form'] == FORM_COMPANY:
                     arg = {
                         'cid': self.params['lord'],
@@ -161,6 +160,12 @@ class ServerReport(BaseHandler):
                         'sid': server_id
                     }
                     yield self.user_access_server_service.add(arg)
+
+                    admin = yield self.company_employee_service.select(conds={'cid': self.params['lord'], 'is_admin': 1}, one=True)
+                    if data.get('owner') != admin['uid']:
+                        message['admin'] = admin['uid']
+
+                yield self.message_service.notify_server_added(message)
 
             yield self.server_service.save_report(self.params)
 
