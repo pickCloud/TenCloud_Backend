@@ -18,7 +18,7 @@ from utils.datetool import seconds_to_human
 from utils.general import get_formats, get_in_formats
 from constant import ALIYUN_REGION_LIST, QCLOUD_REGION_LIST, QCLOUD_STATUS, QCLOUD_PAYMODE, ALIYUN_NAME, \
     QCLOUD_NAME, ALIYUN_REGION_NAME, QCLOUD_REGION_NAME, ALIYUN_STATUS, ZCLOUD_REGION_LIST, ZCLOUD_STATUS, \
-    ZCLOUD_TYPE, ZCLOUD_NAME, ZCLOUD_REGION_NAME
+    ZCLOUD_TYPE, ZCLOUD_NAME, ZCLOUD_REGION_NAME, TCLOUD_STATUS_MAKER
 from setting import settings
 from requests_futures.sessions import FuturesSession
 from concurrent.futures import ThreadPoolExecutor, wait
@@ -61,6 +61,8 @@ class Instance:
                 info = r.json()
 
                 for j in info['Instances']['Instance']:
+                    status = ALIYUN_STATUS.get(j.get('Status', ''), j.get('Status', ''))
+
                     self.data[j.get('InstanceId')] = {
                         'instance_id': j.get('InstanceId'),
                         'instance_name': j.get('InstanceName', ''),
@@ -68,7 +70,7 @@ class Instance:
                         'region_name': ALIYUN_REGION_NAME.get(j.get('RegionId', ''), j.get('RegionId', '')),
                         'hostname': j.get('HostName', ''),
                         'image_id': j.get('ImageId', ''),
-                        'status': ALIYUN_STATUS.get(j.get('Status', ''), j.get('Status', '')),
+                        'status': TCLOUD_STATUS_MAKER.get(status, status),
                         'inner_ip': (j.get('InnerIpAddress', {}).get('IpAddress') or [''])[0],
                         'public_ip': (j.get('PublicIpAddress', {}).get('IpAddress') or [''])[0],
                         'cpu': j.get('Cpu', 0),
@@ -97,6 +99,8 @@ class Instance:
                 info = r.json()
 
                 for j in info.get('instanceSet', []):
+                    status = QCLOUD_STATUS.get(j.get('status', ''), j.get('status', ''))
+
                     self.data[j.get('instanceId')] = {
                         'instance_id': j.get('instanceId'),
                         'instance_name': j.get('instanceName', ''),
@@ -104,7 +108,7 @@ class Instance:
                         'region_name': QCLOUD_REGION_NAME.get(region, region),
                         'hostname': j.get('HostName', ''),
                         'image_id': j.get('unImgId', ''),
-                        'status': QCLOUD_STATUS.get(j.get('status', ''), j.get('status', '')),
+                        'status': TCLOUD_STATUS_MAKER.get(status, status),
                         'inner_ip': j.get('lanIp', ''),
                         'public_ip': (j.get('wanIpSet') or [''])[0],
                         'cpu': j.get('cpu', 0),
@@ -133,6 +137,8 @@ class Instance:
             r = f.result()
 
             for j in r:
+                status = ZCLOUD_STATUS.get(j.get('State', {}).get('Name'), '')
+
                 self.data[j.get('InstanceId')] = {
                     'instance_id': j.get('InstanceId'),
                     'instance_name': '',
@@ -140,7 +146,7 @@ class Instance:
                     'region_name': ZCLOUD_REGION_NAME.get(j.get('Placement', {}).get('AvailabilityZone', '')[:-1], j.get('Placement', {}).get('AvailabilityZone', '')),
                     'hostname': '',
                     'image_id': j.get('ImageId', ''),
-                    'status': ZCLOUD_STATUS.get(j.get('State', {}).get('Name'), ''),
+                    'status': TCLOUD_STATUS_MAKER.get(status, status),
                     'inner_ip': j.get('PrivateIpAddress', ''),
                     'public_ip': j.get('PublicIpAddress', ''),
                     'cpu': ZCLOUD_TYPE.get(j.get('InstanceType'), [0])[0],

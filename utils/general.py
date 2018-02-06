@@ -5,7 +5,6 @@ __author__ = 'Jon'
 '''
 import re
 import random
-import string
 import json
 from hashlib import md5
 from constant import USER_AGENTS
