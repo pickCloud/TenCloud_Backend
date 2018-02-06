@@ -231,7 +231,7 @@ class CompanyEntrySettingHandler(BaseHandler):
 
         @apiUse cidHeader
 
-        @apiParam {String} setting 配置mobile,name,id_card
+        @apiParam {String} setting 配置mobile,name, 暂时移除id_card
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -339,7 +339,7 @@ class CompanyApplicationHandler(BaseHandler):
         @apiParam {String} code
         @apiParam {String} mobile
         @apiParam {String} name 可选
-        @apiParam {String} id_card 可选
+        @apiParam {String} id_card 暂时移除
 
         @apiUse Success
         """
@@ -362,9 +362,9 @@ class CompanyApplicationHandler(BaseHandler):
             sets = {}
             if self.params.get('name'):
                 sets['name'] = self.params['name']
-            if self.params.get('id_card'):
-                validate_id_card(self.params['id_card'])
-                sets['id_card'] = self.params['id_card']
+            # if self.params.get('id_card'):
+            #     validate_id_card(self.params['id_card'])
+            #     sets['id_card'] = self.params['id_card']
             if sets:
                 yield self.user_service.update(sets=sets, conds={'id': self.current_user['id']})
                 yield self.make_session(self.params['mobile'])

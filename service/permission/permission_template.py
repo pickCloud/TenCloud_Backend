@@ -37,7 +37,7 @@ class PermissionTemplateService(PermissionBaseService):
 
         if id_data.get('permissions', ''):
             permission_ids = '({ids})'.format(ids=id_data['permissions'])
-            permission_data = yield self._get_template_permission(fields='id, name, `group`', table='permission', params=permission_ids)
+            permission_data = yield self._get_template_permission(fields='id, name, `group`', table='permission', params=permission_ids, extra='is_show=1 AND')
 
         if id_data.get('access_servers', ''):
             server_ids = '({ids})'.format(ids=id_data['access_servers'])
@@ -110,7 +110,7 @@ class PermissionTemplateService(PermissionBaseService):
                                         extra='where lord={cid} and form = {form}'.format(cid=cid, form=RESOURCE_TYPE['firm'])
                                         )
 
-        permissions = yield self._get_resources(fields='id, name, `group`', table='permission')
+        permissions = yield self._get_resources(fields='id, name, `group`', table='permission', extra='where is_show=1')
         servers = yield self.fetch_instance_info(extra='where s.lord={cid} and s.form={form}'.format(cid=cid, form=RESOURCE_TYPE['firm']))
 
         if is_format:
