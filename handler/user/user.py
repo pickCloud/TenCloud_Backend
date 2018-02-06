@@ -199,6 +199,36 @@ class UserSMSHandler(UserBase):
             self.success(data)
 
 
+class GetCaptchaHandler(BaseHandler):
+    def get(self):
+        """
+        @api {get} /api/user/captcha 极验证验证码预处理
+        @apiName GetCaptChaHandler
+        @apiGroup User
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "message": "success",
+                "data": {
+                    "success": int,
+                    "gt": str,
+                    "challenge": str,
+                    "new_captcha": boolean
+                }
+            }
+        """
+        with catch(self):
+            gt = GeetestLib(settings['gee_id'], settings['gee_key'])
+            status = gt.pre_process()
+            if not status:
+                status = 2
+            self.redis.set(gt.GT_STATUS_SESSION_KEY, status)
+            response_str = json.loads(gt.get_response_str())
+            self.success(response_str)
+
+
 class UserReturnSMSCountHandler(UserBase):
     def get(self, mobile):
         """
@@ -229,77 +259,9 @@ class UserReturnSMSCountHandler(UserBase):
             self.success(data)
 
 
-class UserLoginHandler(NeedSMSMixin, UserBase):
-    @coroutine
-    def post(self):
-        """
-        @api {post} /api/user/login 验证码登陆
-        @apiName UserLoginHandler
-        @apiGroup User
-
-        @apiParam {String} mobile
-        @apiParam {String} auth_code
-
-
-        @apiUse Login
-        """
-        with catch(self):
-            # 参数认证
-            args = ['mobile', 'auth_code']
-
-            self.guarantee(*args)
-            self.strip(*args)
-
-            validate_mobile(self.params['mobile'])
-            validate_auth_code(self.params['auth_code'])
-
-            mobile, auth_code = self.params['mobile'], self.params['auth_code']
-
-            is_ok = yield self.check(mobile, auth_code)
-            if not is_ok:
-                return
-
-            result = yield self.make_session(self.params['mobile'])
-
-            cid = self.redis.hget(LOGOUT_CID, self.params['mobile'])
-
-            result['cid'] = int(cid) if cid else 0
-
-            self.clean()
-
-            user = yield self.user_service.select({'mobile': mobile}, one=True)
-            result['user'] = user
-            if not user['password']:
-                self.error(status=ERR_TIP['no_registered_jump']['sts'], message=ERR_TIP['no_registered_jump']['msg'], data=result)
-                return
-
-            self.success(result)
-            self.log.stats('AuthcodeLogin, IP: {}, Mobile: {}'.format(self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.params['mobile']))
-
-
-class UserLogoutHandler(BaseHandler):
-    @is_login
-    def post(self):
-        """
-        @api {post} /api/user/logout 用户退出
-        @apiName UserLogoutHandler
-        @apiGroup User
-
-        @apiParam {Number} cid
-
-        @apiUse Success
-        """
-        with catch(self):
-            self.redis.hset(LOGOUT_CID, self.current_user['mobile'], self.params.get('cid', 0))
-
-            self.del_session(self.current_user['id'])
-
-            self.success()
-
-            self.log.stats('Logout, IP: {}, Mobile: {}'.format(self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.current_user['mobile']))
-
-# tmp api for test
 class UserSmsSetHandler(BaseHandler):
+    """ tmp api for test
+    """
     @is_login
     def get(self, count):
         with catch(self):
@@ -411,7 +373,7 @@ class UserUploadToken(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {get} /api/user/token 用户上传token
+        @api {get} /api/user/token 获取七牛的上传token
         @apiName UserUploadToken
         @apiGroup User
 
@@ -433,7 +395,7 @@ class UserUploadToken(BaseHandler):
     @is_login
     def delete(self):
         """
-        @api {delete} /api/user/token 用户删除token
+        @api {delete} /api/user/token 用户删除git token
         @apiName UserDeleteToken
         @apiGroup User
 
@@ -468,81 +430,9 @@ class FileUploadMixin(BaseHandler):
         return filename
 
 
-class GetCaptchaHandler(BaseHandler):
-    def get(self):
-        """
-        @api {get} /api/user/captcha 极验证验证码预处理
-        @apiName GetCaptChaHandler
-        @apiGroup User
-
-        @apiSuccessExample {json} Success-Response:
-            HTTP/1.1 200 OK
-            {
-                "status": 0,
-                "message": "success",
-                "data": {
-                    "success": int,
-                    "gt": str,
-                    "challenge": str,
-                    "new_captcha": boolean
-                }
-            }
-        """
-        with catch(self):
-            gt = GeetestLib(settings['gee_id'], settings['gee_key'])
-            status = gt.pre_process()
-            if not status:
-                status = 2
-            self.redis.set(gt.GT_STATUS_SESSION_KEY, status)
-            response_str = json.loads(gt.get_response_str())
-            self.success(response_str)
-
-
-class PasswordLoginHandler(UserBase):
-    @coroutine
-    def post(self):
-        """
-        @api {post} /api/user/login/password 密码登入
-        @apiName PasswordLoginHandler
-        @apiGroup User
-
-        @apiParam {String} mobile 手机号码
-        @apiParam {String} password 密码
-
-        @apiUse Login
-        """
-        with catch(self):
-            args = ['mobile', 'password']
-
-            self.guarantee(*args)
-            self.strip(*args)
-
-            validate_mobile(self.params['mobile'])
-            validate_user_password(self.params['password'])
-
-            password = self.params['password'].encode('utf-8')
-
-            data = yield self.user_service.select({'mobile': self.params['mobile']}, one=True)
-            if not data:
-                self.error(status=ERR_TIP['no_registered']['sts'], message=ERR_TIP['no_registered']['msg'])
-                return
-
-            hashed = data['password'].encode('utf-8')
-
-            if hashed and bcrypt.checkpw(password, hashed):
-                result = yield self.make_session(self.params['mobile'])
-
-                cid = self.redis.hget(LOGOUT_CID, self.params['mobile'])
-
-                result['cid'] = int(cid) if cid else 0
-                result['user'] = data
-                self.success(result)
-            else:
-                self.error(status=ERR_TIP['password_error']['sts'], message=ERR_TIP['password_error']['msg'])
-
-            self.log.stats('PasswordLogin, IP: {}, Mobile: {}'.format(self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.params['mobile']))
-
-
+#########################################################################################################################
+# 注册，登录，登出
+#########################################################################################################################
 class UserRegisterHandler(NeedSMSMixin, UserBase):
     @coroutine
     def post(self):
@@ -590,17 +480,140 @@ class UserRegisterHandler(NeedSMSMixin, UserBase):
 
             arg = {
                 'mobile': mobile,
-                'password': bcrypt.hashpw(self.params['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
                 'password_strength': password_strength(self.params['password'])
             }
             yield self.user_service.add(params=arg)
 
-            result = yield self.make_session(self.params['mobile'])
+            result = yield self.make_session(self.params['mobile'], set_token=True)
             self.clean()
             result['user'] = arg
             self.success(result)
 
 
+class PasswordLoginHandler(UserBase):
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/user/login/password 密码登录
+        @apiName PasswordLoginHandler
+        @apiGroup User
+
+        @apiParam {String} mobile 手机号码
+        @apiParam {String} password 密码
+
+        @apiUse Login
+        """
+        with catch(self):
+            args = ['mobile', 'password']
+
+            self.guarantee(*args)
+            self.strip(*args)
+
+            validate_mobile(self.params['mobile'])
+            validate_user_password(self.params['password'])
+
+            password = self.params['password'].encode('utf-8')
+
+            data = yield self.user_service.select({'mobile': self.params['mobile']}, one=True)
+            if not data:
+                self.error(status=ERR_TIP['no_registered']['sts'], message=ERR_TIP['no_registered']['msg'])
+                return
+
+            hashed = data['password'].encode('utf-8')
+
+            if hashed and bcrypt.checkpw(password, hashed):
+                result = yield self.make_session(self.params['mobile'], set_token=True)
+
+                cid = self.redis.hget(LOGOUT_CID, self.params['mobile'])
+
+                result['cid'] = int(cid) if cid else 0
+
+                data.pop('password', None)
+                result['user'] = data
+                self.success(result)
+            else:
+                self.error(status=ERR_TIP['password_error']['sts'], message=ERR_TIP['password_error']['msg'])
+
+            self.log.stats('PasswordLogin, IP: {}, Mobile: {}'.format(self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.params['mobile']))
+
+
+class UserLoginHandler(NeedSMSMixin, UserBase):
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/user/login 验证码登陆
+        @apiName UserLoginHandler
+        @apiGroup User
+
+        @apiParam {String} mobile
+        @apiParam {String} auth_code
+
+
+        @apiUse Login
+        """
+        with catch(self):
+            # 参数认证
+            args = ['mobile', 'auth_code']
+
+            self.guarantee(*args)
+            self.strip(*args)
+
+            validate_mobile(self.params['mobile'])
+            validate_auth_code(self.params['auth_code'])
+
+            mobile, auth_code = self.params['mobile'], self.params['auth_code']
+
+            is_ok = yield self.check(mobile, auth_code)
+            if not is_ok:
+                return
+
+            result = yield self.make_session(self.params['mobile'], set_token=True)
+
+            cid = self.redis.hget(LOGOUT_CID, self.params['mobile'])
+
+            result['cid'] = int(cid) if cid else 0
+
+            self.clean()
+
+            user = yield self.user_service.select({'mobile': mobile}, one=True)
+
+            result['user'] = user
+            if not user['password']:
+                user.pop('password', None)
+                self.error(status=ERR_TIP['no_registered_jump']['sts'],
+                           message=ERR_TIP['no_registered_jump']['msg'], data=result)
+                return
+            user.pop('password', None)
+            self.success(result)
+            self.log.stats('AuthcodeLogin, IP: {}, Mobile: {}'.format(
+                self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.params['mobile']))
+
+class UserLogoutHandler(BaseHandler):
+    @is_login
+    def post(self):
+        """
+        @api {post} /api/user/logout 用户退出
+        @apiName UserLogoutHandler
+        @apiGroup User
+
+        @apiParam {Number} cid
+
+        @apiUse Success
+        """
+        with catch(self):
+            self.redis.hset(LOGOUT_CID, self.current_user['mobile'], self.params.get('cid', 0))
+
+            self.del_session(self.current_user['id'])
+
+            self.success()
+
+            self.log.stats('Logout, IP: {}, Mobile: {}'.format(
+                self.request.headers.get("X-Real-IP") or self.request.remote_ip, self.current_user['mobile']))
+
+
+#########################################################################################################################
+# 修改密码
+#########################################################################################################################
 class UserResetPasswordHandler(NeedSMSMixin, UserBase):
     @coroutine
     def post(self):
@@ -649,68 +662,10 @@ class UserResetPasswordHandler(NeedSMSMixin, UserBase):
                                             sets={'password': hashed, 'password_strength': p_strength},
                                             conds={'mobile': self.params['mobile']}
             )
-            result = yield self.make_session(self.params['mobile'])
+            yield self.make_session(self.params['mobile'])
 
             self.clean()
 
-            self.success(result)
-
-
-class UserResetMobileHandler(NeedSMSMixin, UserBase):
-    @is_login
-    @coroutine
-    def post(self):
-        """
-        @api {post} /api/user/mobile/reset 重置手机号码
-        @apiName UserResetMobileHandler
-        @apiGroup User
-
-        @apiParam {String} new_mobile
-        @apiParam {String} auth_code
-        @apiParam {String} password
-
-        @apiUse Success
-        """
-        with catch(self):
-            args = ['new_mobile', 'auth_code', 'password']
-
-            self.guarantee(*args)
-            self.strip(*args)
-
-            validate_mobile(self.params['new_mobile'])
-            validate_auth_code(self.params['auth_code'])
-            validate_user_password(self.params['password'])
-
-            mobile = self.params['new_mobile']
-            auth_code = self.params['auth_code']
-            password = self.params['password'].encode('utf-8')
-
-            data = yield self.user_service.select(
-                fields='id',
-                conds={'mobile': mobile},
-                ct=False, ut=False, one=True
-            )
-            if data:
-                self.error(status=ERR_TIP['mobile_has_exist']['sts'], message=ERR_TIP['mobile_has_exist']['msg'])
-                return
-
-            is_ok = yield self.check(mobile, auth_code)
-            if not is_ok:
-                return
-
-            hashed = yield self.user_service.select(
-                fields='password',
-                conds={'id': self.current_user['id']},
-                ct=False, ut=False, one=True
-            )
-            result = bcrypt.checkpw(password, hashed['password'].encode('utf-8'))
-            if not result:
-                self.error(status=ERR_TIP['password_error']['sts'], message=ERR_TIP['password']['msg'])
-                return
-
-            yield self.user_service.update(sets={'mobile': mobile}, conds={'id': self.current_user['id']})
-            yield self.make_session(mobile)
-            self.clean()
             self.success()
 
 

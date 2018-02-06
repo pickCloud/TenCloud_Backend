@@ -93,7 +93,8 @@ def fuzzyfinder(user_input, sourece):
     :return:
     """
     suggestions = []
-    pattern = '.*?'.join(user_input)  # Converts 'djm' to 'd.*?j.*?m'
+    # pattern = '.*?'.join(user_input)  # Converts 'djm' to 'd.*?j.*?m'
+    pattern = user_input+'.*?'
     regex = re.compile(pattern)  # Compiles a regex.
     for item in sourece:
         match = regex.search(item)  # Checks if the current item matches the regex.

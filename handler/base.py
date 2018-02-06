@@ -40,17 +40,17 @@ __author__ = 'Jon'
 """
 
 import jwt
-import json
+import time
 import datetime
 import traceback
 
 import tornado.web
 from service.permission.permission_template import PermissionTemplateService
-from tornado.gen import coroutine, Task
+from tornado.gen import coroutine
 from tornado.websocket import WebSocketHandler
 
 from constant import SESSION_TIMEOUT, SESSION_KEY, TOKEN_EXPIRES_DAYS, RIGHT, SERVICE, SUCCESS_STATUS, FAILURE_STATUS, \
-                     FORM_COMPANY, FORM_PERSON
+                     FORM_COMPANY, FORM_PERSON, USER_LATEST_TOKEN
 from service.cluster.cluster import ClusterService
 from service.company.company import CompanyService
 from service.company.company_employee import CompanyEmployeeService
@@ -67,7 +67,9 @@ from service.user.sms import SMSService
 from service.user.user import UserService
 from setting import settings
 from utils.general import json_dumps, json_loads
+from utils.datetool import seconds_to_human
 from utils.error import AppError
+from utils.context import catch
 
 class BaseHandler(tornado.web.RequestHandler):
     cluster_service = ClusterService()
@@ -90,7 +92,6 @@ class BaseHandler(tornado.web.RequestHandler):
     user_access_project_service = UserAccessProjectService()
     user_access_filehub_service = UserAccessFilehubService()
 
-
     @property
     def db(self):
         return self.application.db
@@ -103,39 +104,55 @@ class BaseHandler(tornado.web.RequestHandler):
     def log(self):
         return self.application.log
 
+    def is_latest_token(self):
+        ''' 判断token是否最新
+        '''
+        data = json_loads(self.redis.hget(USER_LATEST_TOKEN, str(self.current_user['id'])))
+
+        flag = True if data and data.get('token', '') == self.params['token'] else False
+
+        return flag, data
+
     def encode_auth_token(self, user_id):
         ''' 创建token，包含用户id
         '''
         try:
+            t = datetime.datetime.now() + datetime.timedelta(days=TOKEN_EXPIRES_DAYS)
+            exp = datetime.datetime(t.year, t.month, t.day, 3, 0) # 凌晨3点，防止用户在使用中出现token过期
+
             payload = {
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=TOKEN_EXPIRES_DAYS),
-                'iat': datetime.datetime.utcnow(),
-                'sub': user_id
+                'exp': exp,
+                'iat': datetime.datetime.now(),
+                'uid': user_id
             }
             token = jwt.encode(payload, settings['token_secret'], algorithm='HS256')
 
             return token.decode('UTF-8')
         except Exception as e:
             self.log.error(traceback.format_exc())
-            return e
+            raise ValueError(e)
 
     def decode_auth_token(self, auth_token):
         ''' 解析token，提取用户id
         '''
         try:
             payload = jwt.decode(auth_token, settings['token_secret'])
-            return payload['sub']
+
+            if payload['exp'] < time.time():
+                raise AppError('过期token')
+
+            return payload.get('uid') or payload.get('sub') # sub为之前的字段名，暂时保留
         except jwt.ExpiredSignatureError:
             self.log.error('Signature expired: {}'.format(auth_token))
-            return ''
+            raise AppError('无效签名')
         except jwt.InvalidTokenError:
             self.log.error('Invalid token: {}'.format(auth_token))
-            return ''
+            raise AppError('无效token')
 
     def _with_token(self):
-        token = self.request.headers.get('Authorization')
+        token = self.request.headers.get('Authorization', '')
 
-        return self.decode_auth_token(token) if token else ''
+        return (self.decode_auth_token(token), token) if token else ('', '')
 
     def _decode_params(self):
         ''' 对self.params的values进行decode, 而且如果value长度为1, 返回最后一个元素
@@ -146,8 +163,6 @@ class BaseHandler(tornado.web.RequestHandler):
             else:
                 self.params[k] = [e.decode('utf-8') for e in v]
 
-
-    @coroutine
     def prepare(self):
         ''' 获取用户信息 && 获取请求的参数
 
@@ -155,24 +170,32 @@ class BaseHandler(tornado.web.RequestHandler):
                 >>> self.current_user['id']
                 >>> self.params['x']
         '''
-        self.params = {}
+        with catch(self):
+            self.params = {}
 
-        user_id = self._with_token()
+            user_id, token = self._with_token()
 
-        if user_id:
-            self.current_user = self.get_session(user_id)
+            if user_id:
+                self.current_user = self.get_session(user_id)
 
-        if self.request.headers.get('Content-Type', '').startswith('application/json') and self.request.body != '':
-            self.params = json.loads(self.request.body.decode('utf-8'))
-        else:
-            self.params = self.request.arguments.copy()
-            self._decode_params()
+            if self.request.headers.get('Content-Type', '').startswith('application/json') and self.request.body != '':
+                self.params = json_loads(self.request.body.decode('utf-8'))
+            else:
+                self.params = self.request.arguments.copy()
+                self._decode_params()
 
-        if self.request.headers.get('Cid'):
-            self.params['cid'] = int(self.request.headers['Cid'])
+            # 从这开始，才对self.params修改
+            if self.request.headers.get('Cid'):
+                self.params['cid'] = int(self.request.headers['Cid'])
+
+            self.params['token'] = token
 
     def on_finish(self):
-        self.params['session_id'] = self.current_user['id']
+        self.params.pop('token', None)
+
+        if self.current_user:
+            self.params['session_id'] = self.current_user['id']
+
         self.log.debug('{status} {method} {uri} {payload}'.format(status=self._status_code,
                                                                   method=self.request.method,
                                                                   uri=self.request.uri,
@@ -234,9 +257,10 @@ class BaseHandler(tornado.web.RequestHandler):
         self.redis.delete(SESSION_KEY.format(user_id=user_id))
 
     @coroutine
-    def make_session(self, mobile):
+    def make_session(self, mobile, set_token=False):
         '''
         :param mobile: 用户手机号
+        :param set_token: 注册/登录需要设置token
         :return: {'token'}
         '''
         params = {'mobile': mobile}
@@ -252,9 +276,12 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_session(data['id'], data)
 
         # 设置token
-        token = self.encode_auth_token(data['id'])
+        if set_token:
+            token = self.encode_auth_token(data['id'])
 
-        return {'token': token}
+            self.redis.hset(USER_LATEST_TOKEN, str(data['id']), json_dumps({'token': token, 'time': seconds_to_human()}))
+
+            return {'token': token}
 
     @coroutine
     def filter(self, data, service=SERVICE['s'], key='id'):

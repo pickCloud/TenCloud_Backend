@@ -37,6 +37,7 @@ COMPANY_PERMISSION = 'company_permissons'
 USER_PERMISSION = 'cid_{cid}:uid_{uid}'
 PERMISSIONS_FLAG = 1
 PERMISSIONS_NOTIFY_FLAG = 1 << 1
+USER_LATEST_TOKEN = 'user_latest_token'   # hash，用户最后登录信息，比如最新的token/登录时间
 ADMIN_CHANGED = 'admin_changed'
 ADMIN_NOT_CHANGED = 0
 EMPLOYEE_TO_ADMIN = 1
@@ -59,6 +60,7 @@ ERR_TIP = {
     'auth_code_has_error': {'sts': 10412, 'msg': '登陆验证码错误{count}次'},
     'auth_code_many_errors': {'sts': 10413, 'msg': '登陆验证码已连续错{count}次，请二个小时后再次尝试'.format(count=AUTH_CODE_ERROR_COUNT_LIMIT)},
     'auth_code_timeout':   {'sts': 10414, 'msg': '短信验证码已过期，请重新获取'},
+    'not_lastest_token':   {'sts': 10415, 'msg': '你的账号已于{time}在其它设备登录，请保管好你的账号。'},
 
     # 公司
     'company_exists': {'sts': 10000, 'msg': '企业已存在，可以让管理员邀请加入。'},

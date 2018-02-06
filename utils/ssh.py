@@ -54,7 +54,7 @@ class SSH:
             Usage::
                 >>> out, err = ssh.exec_rt('top -b -n 5', self.write_message) # tornado websocket
         '''
-        LOG.info('SSH CMD: %s' % cmd)
+        LOG.info('SSH RT_CMD: %s' % cmd)
 
         stdin, stdout, stderr = self._client.exec_command(cmd, get_pty=True)
         channel = stdout.channel
@@ -98,6 +98,11 @@ class SSH:
                         err.append(line)
 
         if err == ['[', ']']: err = []
+
+        if err:
+            self._log(err, 'RT_ERR')
+        else:
+            self._log(out, 'RT_OUT')
 
         return out, err
 

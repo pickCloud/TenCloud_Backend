@@ -23,3 +23,4 @@ def catch(handler):
         else:
             handler.error(str(e))
         handler.log.error(traceback.format_exc())
+        handler.finish()

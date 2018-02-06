@@ -100,9 +100,9 @@ class PermissionTemplateService(PermissionBaseService):
     def get_resources(self, cid, is_format = False):
         # 暂时获取所有资源
         files = yield self._get_resources(
-                                        fields='id, filename',
+                                        fields='id, filename, type',
                                         table='filehub',
-                                        extra='where lord={cid} and form = {form} and type=1'.format(cid=cid, form=RESOURCE_TYPE['firm'])
+                                        extra='where lord={cid} and form = {form}'.format(cid=cid, form=RESOURCE_TYPE['firm'])
                                         )
         projects = yield self._get_resources(
                                         fields='id, name',
@@ -182,4 +182,25 @@ class PermissionTemplateService(PermissionBaseService):
             'update_time': '',
             'type': 0
         }
+        return data
+
+    @coroutine
+    def check_pt_exist(self, pts):
+        data = []
+        for pt in pts:
+            tmp_data = yield self._check_pt_exist(pt)
+            data.append(tmp_data)
+        return data
+
+    @coroutine
+    def _check_pt_exist(self, data):
+        self.log.info(data)
+        servers = yield self.check_exist(table='server', ids=data['access_servers'])
+        projects = yield self.check_exist(table='project', ids=data['access_projects'])
+        files = yield self.check_exist(table='filehub', ids=data['access_filehub'])
+        permission = yield self.check_exist(table='permission', ids=data['permissions'])
+        data['access_servers'] = servers
+        data['access_projects'] = projects
+        data['access_filehub'] = files
+        data['permissions'] = permission
         return data
