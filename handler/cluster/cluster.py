@@ -45,6 +45,8 @@ class ClusterDetailHandler(BaseHandler):
          @apiGroup Cluster
 
          @apiParam {Number} id 集群id
+         @apiParam {Number} page
+         @apiParam {Number} page_num
 
          @apiSuccessExample {json} Success-Response:
              HTTP/1.1 200 OK
@@ -84,9 +86,12 @@ class ClusterDetailHandler(BaseHandler):
 
             server_list = yield self.filter(server_list)
 
+            page = int(self.params.get('page', 1))
+            page_num = int(self.params.get('page_num', MSG_PAGE_NUM))
+
             self.success({
                 'basic_info': basic_info,
-                'server_list': server_list
+                'server_list': server_list[page_num*(page-1):page_num*page]
             })
 
 
