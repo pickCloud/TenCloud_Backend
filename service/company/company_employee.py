@@ -105,7 +105,7 @@ class CompanyEmployeeService(BaseService):
         :param cid: 公司id
         '''
         sql = '''
-            SELECT ce.id, u.id AS uid, u.name, u.mobile, u.id_card, u.image_url,DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time, ce.status, ce.is_admin
+            SELECT ce.id, u.id AS uid, u.name, u.mobile, u.image_url,DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time, ce.status, ce.is_admin
             FROM company_employee ce
             JOIN user u ON ce.uid = u.id
             WHERE ce.cid = %s and ce.status != 5
@@ -148,7 +148,7 @@ class CompanyEmployeeService(BaseService):
     def get_employee_list_detail(self, cid):
 
         sql = """
-                SELECT ce.id, u.id AS uid, u.name, u.email, u.mobile, u.image_url, u.id_card,ce.status, ce.is_admin,DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time
+                SELECT ce.id, u.id AS uid, u.name, u.email, u.mobile, u.image_url,ce.status, ce.is_admin,DATE_FORMAT(ce.create_time, %s) AS create_time, DATE_FORMAT(ce.update_time, %s) AS update_time
                 FROM user AS u JOIN company_employee AS ce ON ce.uid = u.id WHERE ce.cid = %s and ce.status != 5
               """
         cur = yield self.db.execute(sql, [FULL_DATE_FORMAT, FULL_DATE_FORMAT, cid])
