@@ -50,7 +50,7 @@ from tornado.gen import coroutine
 from tornado.websocket import WebSocketHandler
 
 from constant import SESSION_TIMEOUT, SESSION_KEY, TOKEN_EXPIRES_DAYS, RIGHT, SERVICE, SUCCESS_STATUS, FAILURE_STATUS, \
-                     FORM_COMPANY, FORM_PERSON, USER_LATEST_TOKEN
+                     FORM_COMPANY, FORM_PERSON, USER_LATEST_TOKEN, FAILURE_CODE
 from service.cluster.cluster import ClusterService
 from service.company.company import CompanyService
 from service.company.company_employee import CompanyEmployeeService
@@ -139,15 +139,15 @@ class BaseHandler(tornado.web.RequestHandler):
             payload = jwt.decode(auth_token, settings['token_secret'])
 
             if payload['exp'] < time.time():
-                raise AppError('过期token')
+                raise AppError('过期token', code=403)
 
             return payload.get('uid') or payload.get('sub') # sub为之前的字段名，暂时保留
         except jwt.ExpiredSignatureError:
             self.log.error('Signature expired: {}'.format(auth_token))
-            raise AppError('无效签名')
+            raise AppError('无效签名', code=403)
         except jwt.InvalidTokenError:
             self.log.error('Invalid token: {}'.format(auth_token))
-            raise AppError('无效token')
+            raise AppError('无效token', code=403)
 
     def _with_token(self):
         token = self.request.headers.get('Authorization', '')
@@ -231,7 +231,7 @@ class BaseHandler(tornado.web.RequestHandler):
         '''
         self.write({"status": SUCCESS_STATUS, "message": message, "data": data})
 
-    def error(self, message='', data=None, code=400, status=FAILURE_STATUS):
+    def error(self, message='', data=None, code=FAILURE_CODE, status=FAILURE_STATUS):
         ''' 响应失败, 返回错误原因
         '''
         self.set_status(code)
