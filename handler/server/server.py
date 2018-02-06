@@ -47,10 +47,12 @@ class ServerNewHandler(WebSocketBaseHandler):
 
         if is_deploying:
             self.write_message('%s 正在部署' % self.params['public_ip'])
+            self.write_message('failure')
             return
 
         if is_deployed:
             self.write_message('%s 之前已部署' % self.params['public_ip'])
+            self.write_message('failure')
             return
 
         # 保存到redis之前加密
