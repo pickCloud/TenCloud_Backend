@@ -29,7 +29,7 @@ class PermissionService(PermissionBaseService):
                                                     params=arg
         )
         filehub_data = yield self._get_user_permission(
-                                                    fields='a.id, a.filename, a.type',
+                                                    fields='a.id, a.filename, a.type, a.mime',
                                                     table='filehub',
                                                     where_fields='a.id=b.fid',
                                                     where_table='user_access_filehub',
