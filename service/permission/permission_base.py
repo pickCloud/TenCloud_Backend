@@ -138,14 +138,14 @@ class PermissionBaseService(BaseService):
         return data
 
     @coroutine
-    def check_exist(self, table, ids):
+    def check_exist(self, table, ids, extra=''):
         if not ids:
             return ''
         ids = [i for i in ids.split(',')]
         conds = get_in_formats('id', ids)
         sql = """
-        SELECT id FROM {table} WHERE {conds}
-        """.format(table=table, conds=conds)
+        SELECT id FROM {table} WHERE  {conds} {extra}
+        """.format(table=table, conds=conds, extra=extra)
         cur = yield self.db.execute(sql, ids)
         data = ','.join([str(i['id']) for i in cur.fetchall()])
         return data
