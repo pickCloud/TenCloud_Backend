@@ -23,7 +23,7 @@ from utils.log import LOG
 from utils.ssh import SSH
 from utils.general import get_formats, get_in_formats, get_not_in_formats, choose_user_agent
 from constant import FULL_DATE_FORMAT, FULL_DATE_FORMAT_ESCAPE, POOL_COUNT, HTTP_TIMEOUT, ALIYUN_DOMAIN, NEG, \
-                     DEFAULT_PAGE_NUM
+                     DEFAULT_PAGE_NUM, MAX_PAGE_NUMBER
 
 
 class BaseService():
@@ -39,7 +39,8 @@ class BaseService():
     # DB SELECT
     ############################################################################################
     @coroutine
-    def select(self, conds=None, fields=None, ct=True, ut=True, df=None, one=False, extra='', page=None, num=None):
+    def select(self, conds=None, fields=None, ct=True, ut=True, df=None, one=False, extra='', page=None,
+               num=DEFAULT_PAGE_NUM):
         '''
         :param fields 字段名, str类型, 默认为类变量fields, 可传'id, name, ...'
         :param conds  条件, dict类型, 可传{'name': 'foo'}/{'name~': 'foo'} or {'age': [10, 20]}/{'age~': [10, 20]}
@@ -66,7 +67,8 @@ class BaseService():
 
         return data
 
-    def _create_query(self, fields=None, conds=None, params=None, ct=True, ut=True, df=None, extra='', page=None, num=None):
+    def _create_query(self, fields=None, conds=None, params=None, ct=True, ut=True, df=None, extra='', page=None,
+                      num=DEFAULT_PAGE_NUM):
         '''创建查询语句与参数, 供db.excute执行
            create_time, update_time比较特殊, 默认都有, 不需要时ct=False, ut=False
 
@@ -86,7 +88,7 @@ class BaseService():
         sql += 'FROM {table} '.format(table=self.table)
 
         if page:
-            page_num = int(num) if num else DEFAULT_PAGE_NUM
+            page_num = int(num) if 0 < int(num) < MAX_PAGE_NUMBER else DEFAULT_PAGE_NUM
             extra += ' LIMIT {},{} '.format((int(page)-1)*page_num, page_num)
 
         if not conds:
