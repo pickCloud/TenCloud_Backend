@@ -10,7 +10,7 @@ from utils.qcloud import Qcloud
 from utils.zcloud import Zcloud
 from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAINER_CMD, STOP_CONTAINER_CMD, \
                      DEL_CONTAINER_CMD, CONTAINER_INFO_CMD, ALIYUN_NAME, QCLOUD_NAME, FULL_DATE_FORMAT, ZCLOUD_NAME, \
-                     SERVERS_REPORT_INFO
+                     SERVERS_REPORT_INFO, TCLOUD_STATUS
 from utils.security import Aes
 from utils.general import get_in_formats, json_loads, json_dumps
 
@@ -66,6 +66,8 @@ class ServerService(BaseService):
 
         yield self.db.execute(sql, [params['name'], params['public_ip'], params['cluster_id'], instance_id, params['lord'], params['form']])
 
+        yield self.change_instance_status(status=TCLOUD_STATUS[3], id=instance_id)
+
     @coroutine
     def migrate_server(self, params):
         sql = " UPDATE server SET cluster_id=%s WHERE id IN (%s) " % (params['cluster_id'], get_formats(params['id']))
@@ -119,6 +121,7 @@ class ServerService(BaseService):
     def delete_server(self, params):
         for server_id in params['id']:
             yield self._delete_server(server_id=server_id)
+            yield self.change_instance_status(status=TCLOUD_STATUS[6], id=id)
 
     @coroutine
     def update_server(self, params):
@@ -357,14 +360,17 @@ class ServerService(BaseService):
     @coroutine
     def stop_server(self, id):
         yield self._operate_server(id, 'stop')
+        yield self.change_instance_status(status=TCLOUD_STATUS[9], id=id)
 
     @coroutine
     def start_server(self, id):
         yield self._operate_server(id, 'start')
+        yield self.change_instance_status(status=TCLOUD_STATUS[8], id=id)
 
     @coroutine
     def reboot_server(self, id):
         yield self._operate_server(id, 'reboot')
+        yield self.change_instance_status(status=TCLOUD_STATUS[7], id=id)
 
     @coroutine
     def _operate_server(self, id, cmd):
@@ -611,3 +617,11 @@ class ServerService(BaseService):
             }
         }
         return data, err
+
+    @coroutine
+    def change_instance_status(self, status, id):
+        ip = yield self.fetch_public_ip(server_id=id)
+        sql = """
+        update instance set status=%s where public_ip=%s
+        """
+        yield self.db.execute(sql, [status, ip])
