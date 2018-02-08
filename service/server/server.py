@@ -66,8 +66,6 @@ class ServerService(BaseService):
 
         yield self.db.execute(sql, [params['name'], params['public_ip'], params['cluster_id'], instance_id, params['lord'], params['form']])
 
-        yield self.change_instance_status(status=TCLOUD_STATUS[3], id=instance_id)
-
     @coroutine
     def migrate_server(self, params):
         sql = " UPDATE server SET cluster_id=%s WHERE id IN (%s) " % (params['cluster_id'], get_formats(params['id']))
@@ -121,7 +119,6 @@ class ServerService(BaseService):
     def delete_server(self, params):
         for server_id in params['id']:
             yield self._delete_server(server_id=server_id)
-            yield self.change_instance_status(status=TCLOUD_STATUS[6], id=id)
 
     @coroutine
     def update_server(self, params):
