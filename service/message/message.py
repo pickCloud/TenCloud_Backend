@@ -114,7 +114,7 @@ class MessageService(BaseService):
         '''
         yield self.add({
             'owner': params['owner'],
-            'content': MSG['server']['fail'].format(ip=params['ip']),
+            'content': MSG['server']['fail'].format(ip=params['ip'], reason=params['reason']),
             'mode': MSG_MODE['server'],
             'sub_mode': MSG_SUB_MODE['server_fail'],
             'tip': params['tip']

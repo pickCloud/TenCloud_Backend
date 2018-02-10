@@ -44,13 +44,25 @@ class ServerNewHandler(WebSocketBaseHandler):
         is_deploying = self.redis.hget(DEPLOYING, self.params['public_ip'])
         is_deployed  = self.redis.hget(DEPLOYED, self.params['public_ip'])
 
+        # 通知主机添加失败，后续需要将主机添加失败原因进行抽象分类告知用户
+        message = {
+            'owner': self.params.get('owner'),
+            'ip': self.params['public_ip'],
+            'tip': '{}'.format(self.params.get('lord') if self.params.get('form') == FORM_COMPANY else 0)
+        }
 
         if is_deploying:
-            self.write_message('%s 正在部署' % self.params['public_ip'])
+            reason = '%s 正在部署' % self.params['public_ip']
+            self.write_message(reason)
+            message['reason'] = reason
+            yield self.message_service.notify_server_add_failed(message)
             return
 
         if is_deployed:
-            self.write_message('%s 之前已部署' % self.params['public_ip'])
+            reason = '%s 之前已部署' % self.params['public_ip']
+            self.write_message(reason)
+            message['reason'] = reason
+            yield self.message_service.notify_server_add_failed(message)
             return
 
         # 保存到redis之前加密
@@ -70,20 +82,16 @@ class ServerNewHandler(WebSocketBaseHandler):
         # 部署失败
         if err:
             if err[0] == 'Authentication failed.':
-                self.write_message('认证失败')
+                reason = '认证失败'
+                self.write_message(reason)
+                message['reason'] = reason
+                yield self.message_service.notify_server_add_failed(message)
             self.write_message('failure')
             self.period.stop()
             self.close()
 
             self.redis.hdel(DEPLOYING, self.params['public_ip'])
 
-            # 通知主机添加失败，后续需要将主机添加失败原因进行抽象分类告知用户
-            message = {
-                'owner': self.params.get('owner'),
-                'ip': self.params['public_ip'],
-                'tip': '{}'.format(self.params.get('lord') if self.params.get('form') == FORM_COMPANY else 0)
-            }
-            self.message_service.notify_server_add_failed(message)
 
     def check(self):
         ''' 检查主机是否上报信息 '''
