@@ -37,7 +37,7 @@ class PermissionTemplateService(PermissionBaseService):
 
         if id_data.get('permissions', ''):
             permission_ids = '({ids})'.format(ids=id_data['permissions'])
-            permission_data = yield self._get_template_permission(fields='id, name, `group`', table='permission', params=permission_ids)
+            permission_data = yield self._get_template_permission(fields='id, name, `group`', table='permission', params=permission_ids, extra='is_show=1 AND')
 
         if id_data.get('access_servers', ''):
             server_ids = '({ids})'.format(ids=id_data['access_servers'])
@@ -100,7 +100,7 @@ class PermissionTemplateService(PermissionBaseService):
     def get_resources(self, cid, is_format = False):
         # 暂时获取所有资源
         files = yield self._get_resources(
-                                        fields='id, filename, type',
+                                        fields='id, filename, type, mime',
                                         table='filehub',
                                         extra='where lord={cid} and form = {form}'.format(cid=cid, form=RESOURCE_TYPE['firm'])
                                         )
@@ -110,7 +110,7 @@ class PermissionTemplateService(PermissionBaseService):
                                         extra='where lord={cid} and form = {form}'.format(cid=cid, form=RESOURCE_TYPE['firm'])
                                         )
 
-        permissions = yield self._get_resources(fields='id, name, `group`', table='permission')
+        permissions = yield self._get_resources(fields='id, name, `group`', table='permission', extra='where is_show=1')
         servers = yield self.fetch_instance_info(extra='where s.lord={cid} and s.form={form}'.format(cid=cid, form=RESOURCE_TYPE['firm']))
 
         if is_format:
@@ -194,11 +194,10 @@ class PermissionTemplateService(PermissionBaseService):
 
     @coroutine
     def _check_pt_exist(self, data):
-        self.log.info(data)
         servers = yield self.check_exist(table='server', ids=data['access_servers'])
         projects = yield self.check_exist(table='project', ids=data['access_projects'])
         files = yield self.check_exist(table='filehub', ids=data['access_filehub'])
-        permission = yield self.check_exist(table='permission', ids=data['permissions'])
+        permission = yield self.check_exist(table='permission', ids=data['permissions'],extra='AND is_show=1 ')
         data['access_servers'] = servers
         data['access_projects'] = projects
         data['access_filehub'] = files

@@ -454,6 +454,7 @@ CREATE TABLE `permission` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
+ALTER TABLE `permission` ADD COLUMN is_show tinyint(4) NOT NULL DEFAULT 1 COMMENT '是否显示， 0为隐藏，1为显示'
 
 * 用户权限表
 ```

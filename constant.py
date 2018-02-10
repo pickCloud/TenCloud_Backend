@@ -379,6 +379,7 @@ QINIU_THUMB = 'imageView2/1/w/50/h/50/format/webp/q/75|imageslim'
 NEG = '~'
 SUCCESS_STATUS = 0
 FAILURE_STATUS = 1
+FAILURE_CODE = 400
 
 FORM_PERSON = 1
 FORM_COMPANY = 2

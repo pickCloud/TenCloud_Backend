@@ -139,11 +139,17 @@ class ServerService(BaseService):
 
             if cond.get('provider'):
                 e.append(get_in_formats(field='i.provider', contents=cond['provider']))
-                arg.append(cond['provider'])
+                if isinstance(cond['provider'], list):
+                    arg.extend(cond['provider'])
+                else:
+                    arg.append(cond['provider'])
 
             if cond.get('region'):
                 e.append(get_in_formats(field='i.region_name', contents=cond['region']))
-                arg.append(cond['region'])
+                if isinstance(cond['region'], list):
+                    arg.extend(cond['region'])
+                else:
+                    arg.append(cond['region'])
 
             if cond.get('lord'):
                 e.append('s.lord=%s')
