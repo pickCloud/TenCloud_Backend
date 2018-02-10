@@ -496,7 +496,7 @@ MSG = {
     },
     'server': {
         'success': 'IP为【{ip}】的【{provider}】服务器已成功添加',
-        'fail': 'IP为【{ip}】的服务器添加失败',
+        'fail': 'IP为【{ip}】的服务器添加失败，失败原因：【{reason}】',
     },
     'image': '项目【{project}】构建镜像成功'
 }
