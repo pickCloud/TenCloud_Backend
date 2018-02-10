@@ -54,6 +54,7 @@ class ServerNewHandler(WebSocketBaseHandler):
         if is_deploying:
             reason = '%s 正在部署' % self.params['public_ip']
             self.write_message(reason)
+            self.write_message('failure')
             message['reason'] = reason
             yield self.message_service.notify_server_add_failed(message)
             return
@@ -61,6 +62,7 @@ class ServerNewHandler(WebSocketBaseHandler):
         if is_deployed:
             reason = '%s 之前已部署' % self.params['public_ip']
             self.write_message(reason)
+            self.write_message('failure')
             message['reason'] = reason
             yield self.message_service.notify_server_add_failed(message)
             return
