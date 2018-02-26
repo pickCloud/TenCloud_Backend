@@ -19,7 +19,8 @@ class PermissionService(PermissionBaseService):
                                                     table='permission',
                                                     where_fields='a.id=b.pid',
                                                     where_table='user_permission',
-                                                    params=arg
+                                                    params=arg,
+                                                    extra='and a.is_show=1'
         )
         project_data = yield self._get_user_permission(
                                                     fields='a.id, a.name',
@@ -87,13 +88,14 @@ class PermissionService(PermissionBaseService):
         return data
 
     @coroutine
-    def _get_user_permission(self, fields, table, where_fields, where_table, params):
+    def _get_user_permission(self, fields, table, where_fields, where_table, params, extra=''):
         sql = """
                 SELECT {fields} FROM {table} AS a JOIN {where_table} AS b 
-                ON {where_fields} WHERE b.uid=%s AND b.cid=%s
+                ON {where_fields} WHERE b.uid=%s AND b.cid=%s {extra}
               """.format(
                         fields=fields, table=table,
-                        where_fields=where_fields, where_table=where_table
+                        where_fields=where_fields, where_table=where_table,
+                        extra=extra
                         )
         cur = yield self.db.execute(sql, params)
         data = cur.fetchall()

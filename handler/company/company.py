@@ -356,6 +356,9 @@ class CompanyApplicationHandler(BaseHandler):
                 return
 
             for f in info['setting'].split(','):
+                # 临时屏蔽身份证
+                if f == 'id_card':
+                    continue
                 self.guarantee(f)
 
             # 刷新用户数据
