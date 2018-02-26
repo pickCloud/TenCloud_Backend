@@ -161,7 +161,7 @@ class ServerService(BaseService):
             JOIN instance i USING(instance_id)
             """+"""
             {where}
-            ORDER BY i.provider
+            ORDER BY i.provider AND s.name
         """.format(where=extra)
 
         cur = yield self.db.execute(sql, arg)
