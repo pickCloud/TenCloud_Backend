@@ -167,7 +167,7 @@ class ServerService(BaseService):
             JOIN instance i USING(instance_id)
             """+"""
             {where}
-            ORDER BY i.provider AND s.name
+            ORDER BY i.provider
         """.format(where=extra)
 
         cur = yield self.db.execute(sql, arg)
@@ -179,6 +179,7 @@ class ServerService(BaseService):
             info = json_loads(report_info.get(d['public_ip']))
             d.update(info)
 
+        data = sorted(data, key=lambda x: x['name'], reverse=True)
         return data
 
     @coroutine
