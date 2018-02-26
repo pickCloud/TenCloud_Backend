@@ -10,7 +10,7 @@ from utils.qcloud import Qcloud
 from utils.zcloud import Zcloud
 from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAINER_CMD, STOP_CONTAINER_CMD, \
                      DEL_CONTAINER_CMD, CONTAINER_INFO_CMD, ALIYUN_NAME, QCLOUD_NAME, FULL_DATE_FORMAT, ZCLOUD_NAME, \
-                     SERVERS_REPORT_INFO
+                     SERVERS_REPORT_INFO, TCLOUD_STATUS
 from utils.security import Aes
 from utils.general import get_in_formats, json_loads, json_dumps
 
@@ -167,7 +167,7 @@ class ServerService(BaseService):
             JOIN instance i USING(instance_id)
             """+"""
             {where}
-            ORDER BY i.provider
+            ORDER BY i.provider AND s.name
         """.format(where=extra)
 
         cur = yield self.db.execute(sql, arg)
@@ -363,14 +363,17 @@ class ServerService(BaseService):
     @coroutine
     def stop_server(self, id):
         yield self._operate_server(id, 'stop')
+        yield self.change_instance_status(status=TCLOUD_STATUS[9], id=id)
 
     @coroutine
     def start_server(self, id):
         yield self._operate_server(id, 'start')
+        yield self.change_instance_status(status=TCLOUD_STATUS[8], id=id)
 
     @coroutine
     def reboot_server(self, id):
         yield self._operate_server(id, 'reboot')
+        yield self.change_instance_status(status=TCLOUD_STATUS[7], id=id)
 
     @coroutine
     def _operate_server(self, id, cmd):
@@ -617,3 +620,11 @@ class ServerService(BaseService):
             }
         }
         return data, err
+
+    @coroutine
+    def change_instance_status(self, status, id):
+        ip = yield self.fetch_public_ip(server_id=id)
+        sql = """
+        update instance set status=%s where public_ip=%s
+        """
+        yield self.db.execute(sql, [status, ip])
