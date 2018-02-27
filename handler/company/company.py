@@ -691,43 +691,42 @@ class ComapnyEmployeeSearchHandler(BaseHandler):
         with catch(self):
             # 先获取公司下的所有员工信息，然后再进行加工筛选
             cid = self.params.get('cid')
-            search_data = yield self.company_employee_service.get_employee_list_detail(cid=cid)
+            data = yield self.company_employee_service.get_employee_list_detail(cid=cid)
 
             # 先根据公司设置判断是否要显示身份证信息，然后根据是否有查看身份证的权限过滤显示结果（管理员不依赖于权限，不过滤身份证信息）
-            display_flag, search_data = yield self.company_entry_setting_service.filter_by_setting(search_data, cid)
+            display_flag, data = yield self.company_entry_setting_service.filter_by_setting(data, cid)
             if display_flag:
                 is_admin = yield self.company_employee_service.select({'cid': cid, 'uid': self.current_user['id'], 'is_admin': 1}, one=True)
                 if not is_admin:
-                    search_data = yield self.user_permission_service.filter_id_card_info(search_data, cid, self.current_user['id'])
+                    data = yield self.user_permission_service.filter_id_card_info(data, cid, self.current_user['id'])
 
             params = {
                 'cid': self.params['cid'],
                 'status': self.params.get('status'),
                 'employee_name': self.params.get('employee_name'),
-                'data': search_data
+                'data': data
 
             }
 
             if not params.get('status'):
                 if params.get('employee_name'):
                     search_data = self.company_employee_service.search_by_name(params)
-                self.success(search_data)
-                return
+                else:
+                    search_data = data
             else:
                 if not params.get('employee_name'):
                     if params['status'] == APPLICATION_STATUS['accept']:
                         search_data = [
-                            i for i in search_data if
+                            i for i in data if
                             (i['status'] == params['status'] or i['status'] == APPLICATION_STATUS['founder'])
                         ]
                     else:
-                        search_data = [i for i in search_data if i['status'] == params['status']]
-                    self.success(search_data)
-                    return
+                        search_data = [i for i in data if i['status'] == params['status']]
                 else:
                     params['data'] = [i for i in params['data'] if i['status'] == params['status']]
                     search_data = self.company_employee_service.search_by_name(params)
-                    self.success(search_data)
+            search_data = sorted(search_data, key=lambda x: x['create_time'], reverse=True)
+            self.success(search_data)
 
 
 class CompanyEmployeeStatusHandler(BaseHandler):
