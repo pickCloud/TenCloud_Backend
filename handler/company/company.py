@@ -725,7 +725,7 @@ class ComapnyEmployeeSearchHandler(BaseHandler):
                 else:
                     params['data'] = [i for i in params['data'] if i['status'] == params['status']]
                     search_data = self.company_employee_service.search_by_name(params)
-            search_data = sorted(search_data, key=lambda x: x['create_time'], reverse=True)
+            search_data = sorted(search_data, key=lambda x: x['create_time'], reverse=False)
             self.success(search_data)
 
 
