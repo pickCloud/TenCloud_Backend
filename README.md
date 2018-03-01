@@ -264,7 +264,7 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE user ADD COLUMN gender tinyint(4) COMMENT '性别 1: 男性 2: 女性 3: 未知'
-ALTER TABLE user ADD COLUMN birthday int(10) COMMENT '生日'
+ALTER TABLE user ADD COLUMN birthday int(10) not null default '0' COMMENT '生日'
 ALTER TABLE user ADD COLUMN password_strength varchar(64) not null DEFAULT '' COMMENT '密码强度'
 ```
 

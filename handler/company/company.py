@@ -708,23 +708,18 @@ class ComapnyEmployeeSearchHandler(BaseHandler):
 
             }
 
-            if not params.get('status'):
-                if params.get('employee_name'):
-                    search_data = self.company_employee_service.search_by_name(params)
+            search_data = data
+            if params.get('status'):
+                if params['status'] == APPLICATION_STATUS['accept']:
+                    search_data = [
+                        i for i in data if
+                        (i['status'] == params['status'] or i['status'] == APPLICATION_STATUS['founder'])
+                    ]
                 else:
-                    search_data = data
-            else:
-                if not params.get('employee_name'):
-                    if params['status'] == APPLICATION_STATUS['accept']:
-                        search_data = [
-                            i for i in data if
-                            (i['status'] == params['status'] or i['status'] == APPLICATION_STATUS['founder'])
-                        ]
-                    else:
-                        search_data = [i for i in data if i['status'] == params['status']]
-                else:
-                    params['data'] = [i for i in params['data'] if i['status'] == params['status']]
-                    search_data = self.company_employee_service.search_by_name(params)
+                    search_data = [i for i in data if i['status'] == params['status']]
+            if params.get('employee_name'):
+                search_data = self.company_employee_service.search_by_name(params)
+
             search_data = sorted(search_data, key=lambda x: x['create_time'], reverse=False)
             self.success(search_data)
 
