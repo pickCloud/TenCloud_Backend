@@ -21,7 +21,7 @@ from handler.server.server import ServerNewHandler, ServerReport, ServerDelHandl
     ServerStopHandler, ServerStartHandler, ServerRebootHandler, \
     ServerStatusHandler, ServerContainerPerformanceHandler, ServerContainersHandler, \
     ServerContainersInfoHandler, ServerContainerStartHandler, ServerContainerStopHandler, \
-    ServerContainerDelHandler, OperationLogHandler
+    ServerContainerDelHandler, OperationLogHandler, SystemLoadHandler
 from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, \
                               UserUpdateHandler, UserUploadToken, GetCaptchaHandler, \
                               PasswordLoginHandler, UserRegisterHandler, UserResetPasswordHandler, \
@@ -55,6 +55,7 @@ routes = [
     (r'/api/server/(\d+)', ServerDetailHandler),
     (r'/api/server/update', ServerUpdateHandler),
     (r'/api/server/performance', ServerPerformanceHandler),
+    (r'/api/server/(\d+)/systemload', SystemLoadHandler),
 
     (r'/api/server/stop/(\d+)', ServerStopHandler),
     (r'/api/server/start/(\d+)', ServerStartHandler),
