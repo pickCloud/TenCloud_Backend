@@ -124,6 +124,7 @@ class ServerReport(BaseHandler):
         @apiParam {Object} memory Memory
         @apiParam {Object} disk Disk
         @apiParam {Object} net Net
+        @apiParam {Object} system_load 负载
 
         @apiUse Success
         """
