@@ -30,11 +30,12 @@ class ServerService(BaseService):
             sql = (base_sql % table) + suffix
             yield self.db.execute(sql, base_data + [content])
 
-        for (k, v) in params['docker'].items():
-            self._save_docker_report(base_data + [k] + [json.dumps(v)])
+        if params.get('docker'):
+            for (k, v) in params['docker'].items():
+                self._save_docker_report(base_data + [k] + [json.dumps(v)])
 
         # 保存最新至redis
-        public_ip, _ = params.pop('public_ip'), params.pop('docker', None)
+        public_ip = params.pop('public_ip')
         self.redis.hset(SERVERS_REPORT_INFO, public_ip, json_dumps(params))
 
     @coroutine
