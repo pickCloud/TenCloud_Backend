@@ -12,7 +12,7 @@ from utils.security import Aes
 from utils.decorator import is_login, require
 from utils.context import catch
 from constant import MONITOR_CMD, OPERATE_STATUS, OPERATION_OBJECT_STYPE, SERVER_OPERATE_STATUS, \
-      CONTAINER_OPERATE_STATUS, RIGHT, SERVICE, FORM_COMPANY
+      CONTAINER_OPERATE_STATUS, RIGHT, SERVICE, FORM_COMPANY, SERVERS_REPORT_INFO
 
 
 class ServerNewHandler(WebSocketBaseHandler):
@@ -124,6 +124,7 @@ class ServerReport(BaseHandler):
         @apiParam {Object} memory Memory
         @apiParam {Object} disk Disk
         @apiParam {Object} net Net
+        @apiParam {Object} system_load 负载
 
         @apiUse Success
         """
@@ -745,3 +746,34 @@ class OperationLogHandler(BaseHandler):
         with catch(self):
             data = yield self.server_operation_service.get_server_operation(self.params)
             self.success(data)
+
+class SystemLoadHandler(BaseHandler):
+    @require(service=SERVICE['s'])
+    @coroutine
+    def get(self, sid):
+        """
+        @api {get} /api/server/(\d+)/systemload
+        @apiName SystemLoadHandler
+        @apiGroup Server
+
+        @apiParam {number} sid 服务器id
+
+        @apiSuccessExample {json} Success-Response:
+        HTTP/1.1 200 OK
+        {
+            "status": 0,
+            "msg": "success",
+            "data": {
+                "date": "2018-03-08 14:23:30"
+                "run_time": "6天6小时30分钟"
+                "login_users": 1,
+                "one_minute_load": 0.14
+                "five_minute_load": 0.34
+                "fifteen_minute_load:" 0.24
+            }
+        }
+        """
+        with catch(self):
+            ip = yield self.server_service.fetch_public_ip(int(sid))
+            info = json.loads(self.redis.hget(SERVERS_REPORT_INFO, ip))
+            self.success(info['system_load'])
