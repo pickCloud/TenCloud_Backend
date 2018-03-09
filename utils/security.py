@@ -26,7 +26,7 @@ def password_strength(password):
         return strength[len(matches) - matches.count(None)]
 
 class Aes():
-    key = settings['aes_key']
+    key = settings['aes_key'].encode()
     length = len(key)
     mode = AES.MODE_CBC
 
