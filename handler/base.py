@@ -139,15 +139,15 @@ class BaseHandler(tornado.web.RequestHandler):
             payload = jwt.decode(auth_token, settings['token_secret'])
 
             if payload['exp'] < time.time():
-                raise AppError('过期token', code=403)
+                # raise AppError('过期token', code=403)
 
             return payload.get('uid') or payload.get('sub') # sub为之前的字段名，暂时保留
         except jwt.ExpiredSignatureError:
             self.log.error('Signature expired: {}'.format(auth_token))
-            raise AppError('无效签名', code=403)
+            # raise AppError('无效签名', code=403)
         except jwt.InvalidTokenError:
             self.log.error('Invalid token: {}'.format(auth_token))
-            raise AppError('无效token', code=403)
+            # raise AppError('无效token', code=403)
 
     def _with_token(self):
         token = self.request.headers.get('Authorization', '')
