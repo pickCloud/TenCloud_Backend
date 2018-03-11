@@ -140,7 +140,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
             if payload['exp'] < time.time():
                 # raise AppError('过期token', code=403)
-
+                pass
             return payload.get('uid') or payload.get('sub') # sub为之前的字段名，暂时保留
         except jwt.ExpiredSignatureError:
             self.log.error('Signature expired: {}'.format(auth_token))
