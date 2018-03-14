@@ -8,12 +8,6 @@ if [ -f ${agent_service_stroage} ];then
     sudo rm ${agent_service_stroage}
 fi
 
-agent="tencloud-agent"
-pid=$(pgrep -f ${agent})
-if pgrep -f ${agent} > /dev/null; then
-    echo "kill old version tencloud-agent"
-    sudo kill ${pid}
-fi
 agent_storage="/usr/sbin/agent"
 if [ -f ${agent_storage} ];then
     echo "delete old version tencloud-agent"
