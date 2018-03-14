@@ -40,42 +40,38 @@ User=root
 Group=root
 Restart=always
 RestartSec=1
-ExecStart=/usr/sbin/sync_linux_amd64 --debug=${debug} --interval=60 --addr=${addr}
+ExecStart=/usr/sbin/tencloud-agent --debug=${debug} --interval=60 --addr=${addr}
 
 [Install]
 WantedBy=multi-user.target
 EOF
 }
-report_data="report_data.service"
-report_data_storage="/etc/systemd/system/report_data.service"
-if [ -f ${report_data_storage} ];then
-    sudo systemctl stop ${report_data}
-    sudo systemctl disable ${report_data}
-    sudo rm ${report_data_storage}
-fi
-GenerateServiceFunc ${upload_url} ${debug} ${report_data}
-sudo mv ${report_data} ${report_data_storage}
-sudo chmod 644 ${report_data_storage}
 
-sync_linux_amd64="sync_linux_amd64"
-sync_url=${base_url}/supermonitor/${sync_linux_amd64}
-sync_storage="/usr/sbin/sync_linux_amd64"
-if [ -f ${sync_storage} ];then
-    sudo rm ${sync_storage}
-fi
-DownloadFunc ${sync_linux_amd64} ${sync_url} ${sync_storage}
-sudo chmod 755 ${sync_storage}
-pid=$(pgrep -f ${sync_linux_amd64})
-if pgrep -f ${sync_linux_amd64} > /dev/null; then
-    echo "kill old version sync"
-    sudo kill ${pid}
-fi
-echo "create sync"
-log="/var/log/report_data"
+RemoveOldVersion() {
+    addr=$1
+    curl -sSL $addr | sh
+}
+uninstall_url=${base_url}/supermonitor/uninstall.sh
+RemoveOldVersion ${uninstall_url}
+
+agent_service="tencloud-agent.service"
+agent_service_storage="/etc/systemd/system/tencloud-agent.service"
+GenerateServiceFunc ${upload_url} ${debug} ${agent_service}
+sudo mv ${agent_service} ${agent_service_storage}
+sudo chmod 644 ${agent_service_storage}
+
+agent="tencloud-agent"
+agent_url=${base_url}/supermonitor/${agent}
+agent_storage="/usr/sbin/tencloud-agent"
+DownloadFunc ${agent} ${agent_url} ${agent_storage}
+sudo chmod 755 ${agent_storage}
+
+echo "create tencloud agent log"
+log="/var/log/tencloud-agent"
 if [ ! -d ${log} ];then
     sudo mkdir -p ${log}
 fi
 
 sudo systemctl daemon-reload
-sudo systemctl enable ${report_data}
-sudo systemctl start ${report_data}
+sudo systemctl enable ${agent_service}
+sudo systemctl start ${agent_service}
