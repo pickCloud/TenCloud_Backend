@@ -8,7 +8,7 @@ if [ -f ${agent_service_stroage} ];then
     sudo rm ${agent_service_stroage}
 fi
 
-agent_storage="/usr/sbin/agent"
+agent_storage="/usr/sbin/tencloud-agent"
 if [ -f ${agent_storage} ];then
     echo "delete old version tencloud-agent"
     sudo rm ${agent_storage}
