@@ -1,24 +1,27 @@
 #!/bin/sh
-report_data="report_data.service"
-report_data_stroage="/etc/systemd/system/report_data.service"
-if [ -f ${report_data_stroage} ];then
-    sudo systemctl stop ${report_data}
-    sudo systemctl disable ${report_data}
-    sudo rm ${report_data_stroage}
+agent_service="tencloud-agent.service"
+agent_service_stroage="/etc/systemd/system/tencloud-agent.service"
+if [ -f ${agent_service_stroage} ];then
+    echo "delete old version tencloud-agent service"
+    sudo systemctl stop ${agent_service}
+    sudo systemctl disable ${agent_service}
+    sudo rm ${agent_service_stroage}
 fi
 
-sync_linux_amd64="sync_linux_amd64"
-pid=$(pgrep -f ${sync_linux_amd64})
-if pgrep -f ${sync_linux_amd64} > /dev/null; then
-    echo "kill old version sync"
+agent="tencloud-agent"
+pid=$(pgrep -f ${agent})
+if pgrep -f ${agent} > /dev/null; then
+    echo "kill old version tencloud-agent"
     sudo kill ${pid}
 fi
-sync_storage="/usr/sbin/sync_linux_amd64"
-if [ -f ${sync_storage} ];then
-    sudo rm ${sync_storage}
+agent_storage="/usr/sbin/agent"
+if [ -f ${agent_storage} ];then
+    echo "delete old version tencloud-agent"
+    sudo rm ${agent_storage}
 fi
 
-log="/var/log/report_data"
+log="/var/log/tencloud-agent"
 if [ -d ${log} ];then
+    echo "delete old version tencloud-agent log"
     sudo rm -rf ${log}
 fi
