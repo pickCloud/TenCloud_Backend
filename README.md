@@ -158,6 +158,9 @@ ALTER TABLE instance ADD COLUMN internet_max_bandwidth_out varchar(64) NOT NULL 
 ALTER TABLE instance ADD COLUMN system_disk_id varchar(128) NOT NULL DEFAULT '' COMMENT '系统盘id'
 ALTER TABLE instance ADD COLUMN system_disk_yype varchar(64) NOT NULL DEFAULT '' COMMENT '系统盘类型'
 ALTER TABLE instance ADD COLUMN system_disk_size varchar(64) NOT NULL DEFAULT '' COMMENT '系统盘大小'
+
+ALTER TABLE instance ADD COLUMN image_version varchar(64) NOT NULL DEFAULT '' COMMENT '镜像版本'
+ALTER TABLE instance ADD COLUMN image_name varchar(128) NOT NULL DEFAULT '' COMMENT '镜像名字'
 ```
 
 * cpu表

@@ -244,7 +244,9 @@ class ServerDetailHandler(BaseHandler):
                         "system_disk_id": str,
                         "system_disk_type": str,
                         "system_disk_size": str,
-                        "image_id": str
+                        "image_id": str,
+                        "image_version": str,
+                        "image_name": str
                     }
                 },
                 "business_info": {
@@ -290,7 +292,9 @@ class ServerDetailHandler(BaseHandler):
                     "system_disk_id": data['system_disk_id'],
                     "system_disk_type": data['system_disk_type'],
                     "system_disk_size": data['system_disk_size'],
-                    "image_id": data['image_id']
+                    "image_id": data['image_id'],
+                    "image_name": data['image_name'],
+                    "image_version": data['image_version']
 
                 }
             }

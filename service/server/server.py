@@ -192,7 +192,8 @@ class ServerService(BaseService):
                        s.name, s.public_ip, i.status AS machine_status, i.region_id, i.region_name,
                        s.business_status, i.cpu, i.memory, i.os_name, i.os_type, i.provider, i.create_time, i.expired_time, 
                        i.charge_type, i.instance_id, i.security_group_ids, i.instance_network_type, i.internet_max_bandwidth_in,
-                       i.internet_max_bandwidth_out, i.system_disk_id, i.system_disk_type, i.system_disk_size, i.image_id
+                       i.internet_max_bandwidth_out, i.system_disk_id, i.system_disk_type, i.system_disk_size, i.image_id, i.image_name,
+                       i.image_version
                 FROM server s 
                 JOIN instance i ON s.instance_id=i.instance_id 
                 JOIN cluster c ON  s.cluster_id=c.id 
