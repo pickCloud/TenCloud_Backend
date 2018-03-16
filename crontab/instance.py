@@ -46,6 +46,16 @@ class Instance:
         self.db = DB
         self.cur = ''
 
+    @staticmethod
+    # deal aliyun disk
+    def get_disk(x):
+        if (not isinstance(x, str)) or (x == ''):
+            return
+        array_x = x.split('_')
+        size = [x for x in array_x if x.endswith('G')]
+        disk_type = array_x[len(array_x)-2]
+        return size[0], disk_type
+
     def get_aliyun(self):
         self.provider = ALIYUN_NAME
 
@@ -63,6 +73,7 @@ class Instance:
                 for j in info['Instances']['Instance']:
                     status = ALIYUN_STATUS.get(j.get('Status', ''), j.get('Status', ''))
 
+                    disk_size, disk_type = Instance.get_disk(j.get('ImageId', ''))
                     self.data[j.get('InstanceId')] = {
                         'instance_id': j.get('InstanceId'),
                         'instance_name': j.get('InstanceName', ''),
@@ -81,7 +92,14 @@ class Instance:
                         'expired_time': j.get('ExpiredTime', ''),
                         'is_available': j.get('DeviceAvailable', ''),
                         'charge_type': j.get('InternetChargeType', ''),
-                        'provider': self.provider
+                        'provider': self.provider,
+                        'security_group_ids': j.get('SecurityGroupIds', '').get('SecurityGroupId', []),
+                        'instance_network_type': j.get('InstanceNetworkType', ''),
+                        'InternetMaxBandwidthIn': j.get('InternetMaxBandwidthIn', ''),
+                        'InternetMaxBandwidthOut': j.get('InternetMaxBandwidthOut', ''),
+                        'SystemDisk_Size': disk_size,
+                        'SystemDisk_ID': j.get('SystemDisk', {}).get('DiskId', ''),
+                        'SystemDisk_Type': disk_type,
                     }
 
     def get_qcloud(self):
@@ -91,7 +109,7 @@ class Instance:
             futures = []
 
             for region in QCLOUD_REGION_LIST:
-                url = Qcloud.make_url({'Action': 'DescribeInstances', 'Limit': 100, 'Region': region})
+                url = Qcloud.make_url({'Action': 'DescribeInstances', 'Limit': 100, 'Region': region, 'Version': '2017-03-12'})
                 futures.append(session.get(url))
 
             for f, region in zip(futures, QCLOUD_REGION_LIST):
@@ -119,7 +137,14 @@ class Instance:
                         'expired_time': j.get('deadlineTime', ''),
                         'is_available': j.get('DeviceAvailable', 1),
                         'charge_type': QCLOUD_PAYMODE.get(j.get('networkPayMode', ''), ''),
-                        'provider': self.provider
+                        'provider': self.provider,
+                        'security_group_ids': j.get('SecurityGroupIds', []),
+                        'instance_network_type': 'vpc',
+                        'InternetMaxBandwidthIn': '',
+                        'InternetMaxBandwidthOut': j.get('InternetAccessible', {}).get('InternetMaxBandwidthOut', ''),
+                        'SystemDisk_Size': j.get('SystemDisk', {}).get('DiskSize', ''),
+                        'SystemDisk_ID': j.get('SystemDisk', {}).get('DiskId', ''),
+                        'SystemDisk_Type': j.get('SystemDisk', {}).get('DiskType', ''),
                     }
 
     def get_zcloud(self):
@@ -157,7 +182,14 @@ class Instance:
                     'expired_time': '',
                     'is_available': 1,
                     'charge_type': '',
-                    'provider': self.provider
+                    'provider': self.provider,
+                    'security_group_ids': [i['GroupId'] for i in j.get('SecurityGroups', '')],
+                    'instance_network_type': 'vpc',
+                    'InternetMaxBandwidthIn': '',
+                    'InternetMaxBandwidthOut': '',
+                    'SystemDisk_Size': '',
+                    'SystemDisk_ID': '',
+                    'SystemDisk_Type': '',
                 }
 
     def save(self):

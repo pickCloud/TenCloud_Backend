@@ -12,7 +12,7 @@ from utils.security import Aes
 from utils.decorator import is_login, require
 from utils.context import catch
 from constant import MONITOR_CMD, OPERATE_STATUS, OPERATION_OBJECT_STYPE, SERVER_OPERATE_STATUS, \
-      CONTAINER_OPERATE_STATUS, RIGHT, SERVICE, FORM_COMPANY, SERVERS_REPORT_INFO
+      CONTAINER_OPERATE_STATUS, RIGHT, SERVICE, FORM_COMPANY, SERVERS_REPORT_INFO, THRESHOLD
 
 
 class ServerNewHandler(WebSocketBaseHandler):
@@ -236,7 +236,14 @@ class ServerDetailHandler(BaseHandler):
                         "cpu": int,
                         "memory": str,
                         "os_name": str,
-                        "os_type": str
+                        "os_type": str,
+                        "security_group_ids": [],
+                        "instance_network_type": str,
+                        "InternetMaxBandwidthIn": str,
+                        "InternetMaxBandwidthOut": str,
+                        "SystemDisk_ID": str,
+                        "SystemDisk_Type": str,
+                        "SystemDisk_Size": str
                     }
                 },
                 "business_info": {
@@ -246,6 +253,14 @@ class ServerDetailHandler(BaseHandler):
                         "expired_time": str,
                         "charge_type": str
                     }
+                },
+                // 各项阀值
+                "THRESHOLD": {
+                    "CPU_THRESHOLD": int,
+                    "MEM_THRESHOLD": int,
+                    "DISK_THRESHOLD": int,
+                    "NET_THRESHOLD": int,
+                    "BLOCK_THRESHOLD": int, // 磁盘io
                 }
             }
             }
@@ -274,7 +289,14 @@ class ServerDetailHandler(BaseHandler):
                     'cpu': data['cpu'],
                     'memory': data['memory'],
                     'os_name': data['os_name'],
-                    'os_type': data['os_type']
+                    'os_type': data['os_type'],
+                    "security_group_ids": data['security_group_ids'],
+                    "instance_network_type": data['instance_network_type'],
+                    "InternetMaxBandwidthIn": data['InternetMaxBandwidthIn'],
+                    "InternetMaxBandwidthOut": data['InternetMaxBandwidthOut'],
+                    "SystemDisk_ID": data['SystemDisk_ID'],
+                    "SystemDisk_Type": data['SystemDisk_Type'],
+                    "SystemDisk_Size": data['SystemDisk_Size']
                 }
             }
 
@@ -285,6 +307,13 @@ class ServerDetailHandler(BaseHandler):
                     'expired_time': data['expired_time'],
                     'charge_type': data['charge_type']
                 }
+            }
+            result['THRESHOLD'] = {
+                "CPU_THRESHOLD": THRESHOLD['CPU_THRESHOLD'],
+                "MEM_THRESHOLD": THRESHOLD['MEM_THRESHOLD'],
+                "DISK_THRESHOLD": THRESHOLD['DISK_THRESHOLD'],
+                "NET_THRESHOLD": THRESHOLD['NET_THRESHOLD'],
+                "BLOCK_THRESHOLD": THRESHOLD['BLOCK_THRESHOLD']
             }
 
             self.success(result)

@@ -646,3 +646,11 @@ SERVICE = {
         'personal': 'file_service'
     }
 }
+# 各项阀值
+THRESHOLD = {
+    "CPU_THRESHOLD": 0.8,
+    "MEM_THRESHOLD": 0.8,
+    "DISK_THRESHOLD": 0.8,
+    "NET_THRESHOLD": 0.8,
+    "BLOCK_THRESHOLD": 0.8
+}

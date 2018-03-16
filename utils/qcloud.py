@@ -57,7 +57,6 @@ class Qcloud:
         payload = cls.add_sign(params)
 
         url = domain + urllib.parse.urlencode(payload)
-
         return url
 
     #################################################################################################
@@ -82,14 +81,14 @@ class Qcloud:
 
 if __name__ == '__main__':
     instances = list()
-    #
-    # for region in QCLOUD_REGION_LIST:
-    #     url = Qcloud.make_url({'Action': 'DescribeInstances', 'Limit': 100, 'Region': region})
-    #     info = requests.get(url, timeout=3).json()
-    #
-    #     for j in info.get('instanceSet', []):
-    #         instances.append(j)
-    #
+
+    for region in QCLOUD_REGION_LIST:
+        url = Qcloud.make_url({'Action': 'DescribeInstances', 'Limit': 100, 'Region': region, 'Version': '2017-03-12'})
+        info = requests.get(url, timeout=3).json()
+
+        for j in info.get('Response').get('InstanceSet', []):
+            instances.append(j)
+
     from pprint import pprint
     pprint(instances)
 
