@@ -239,11 +239,12 @@ class ServerDetailHandler(BaseHandler):
                         "os_type": str,
                         "security_group_ids": [],
                         "instance_network_type": str,
-                        "InternetMaxBandwidthIn": str,
-                        "InternetMaxBandwidthOut": str,
-                        "SystemDisk_ID": str,
-                        "SystemDisk_Type": str,
-                        "SystemDisk_Size": str
+                        "internetMaxBandwidthIn": str,
+                        "internetMaxBandwidthOut": str,
+                        "system_disk_id": str,
+                        "system_disk_type": str,
+                        "system_disk_size": str,
+                        "image_id": str
                     }
                 },
                 "business_info": {
@@ -254,14 +255,6 @@ class ServerDetailHandler(BaseHandler):
                         "charge_type": str
                     }
                 },
-                // 各项阀值
-                "THRESHOLD": {
-                    "CPU_THRESHOLD": int,
-                    "MEM_THRESHOLD": int,
-                    "DISK_THRESHOLD": int,
-                    "NET_THRESHOLD": int,
-                    "BLOCK_THRESHOLD": int, // 磁盘io
-                }
             }
             }
         """
@@ -292,11 +285,12 @@ class ServerDetailHandler(BaseHandler):
                     'os_type': data['os_type'],
                     "security_group_ids": data['security_group_ids'],
                     "instance_network_type": data['instance_network_type'],
-                    "InternetMaxBandwidthIn": data['InternetMaxBandwidthIn'],
-                    "InternetMaxBandwidthOut": data['InternetMaxBandwidthOut'],
-                    "SystemDisk_ID": data['SystemDisk_ID'],
-                    "SystemDisk_Type": data['SystemDisk_Type'],
-                    "SystemDisk_Size": data['SystemDisk_Size']
+                    "internet_max_bandwidth_in": data['InternetMaxBandwidthIn'],
+                    "internet_max_bandwidth_out": data['InternetMaxBandwidthOut'],
+                    "system_disk_id": data['SystemDisk_ID'],
+                    "system_disk_type": data['SystemDisk_Type'],
+                    "system_disk_size": data['SystemDisk_Size'],
+
                 }
             }
 
@@ -307,13 +301,6 @@ class ServerDetailHandler(BaseHandler):
                     'expired_time': data['expired_time'],
                     'charge_type': data['charge_type']
                 }
-            }
-            result['THRESHOLD'] = {
-                "CPU_THRESHOLD": THRESHOLD['CPU_THRESHOLD'],
-                "MEM_THRESHOLD": THRESHOLD['MEM_THRESHOLD'],
-                "DISK_THRESHOLD": THRESHOLD['DISK_THRESHOLD'],
-                "NET_THRESHOLD": THRESHOLD['NET_THRESHOLD'],
-                "BLOCK_THRESHOLD": THRESHOLD['BLOCK_THRESHOLD']
             }
 
             self.success(result)
@@ -776,6 +763,7 @@ class OperationLogHandler(BaseHandler):
             data = yield self.server_operation_service.get_server_operation(self.params)
             self.success(data)
 
+
 class SystemLoadHandler(BaseHandler):
     @require(service=SERVICE['s'])
     @coroutine
@@ -806,3 +794,38 @@ class SystemLoadHandler(BaseHandler):
             ip = yield self.server_service.fetch_public_ip(int(sid))
             info = json.loads(self.redis.hget(SERVERS_REPORT_INFO, ip))
             self.success(info['system_load'])
+
+
+class ServerThresholdHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/server/threshold
+        @apiName ServerThresholdHandler
+        @apiGroup Server
+
+        @apiSuccessExample {json} Success-Response:
+        HTTP/1.1 200 OK
+        {
+            "status": 0,
+            "msg": "success",
+            "data": {
+                // 各项阀值
+                "cpu_threshold": int,
+                "memory_threshold": int,
+                "disk_threshold": int,
+                "net_threshold": int,
+                "block_threshold": int, // 磁盘io
+            }
+        }
+        """
+        with catch(self):
+            data = {
+                "cpu_threshold": THRESHOLD['CPU_THRESHOLD'],
+                "memory_threshold": THRESHOLD['MEM_THRESHOLD'],
+                "disk_threshold": THRESHOLD['DISK_THRESHOLD'],
+                "net_threshold": THRESHOLD['NET_THRESHOLD'],
+                "block_threshold": THRESHOLD['BLOCK_THRESHOLD']
+            }
+            self.success(data)

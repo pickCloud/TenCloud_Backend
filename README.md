@@ -153,11 +153,11 @@ ALTER TABLE instance ADD COLUMN region_name varchar(20) NOT NULL DEFAULT '' COMM
 
 ALTER TABLE instance ADD COLUMN security_group_ids varchar(128) NOT NULL DEFAULT '' COMMENT '安全组id'
 ALTER TABLE instance ADD COLUMN instance_network_type varchar(64) NOT NULL DEFAULT '' COMMENT '实例网络类型'
-ALTER TABLE instance ADD COLUMN InternetMaxBandwidthIn varchar(64) NOT NULL DEFAULT '' COMMENT '公网下行带宽'
-ALTER TABLE instance ADD COLUMN InternetMaxBandwidthOut varchar(64) NOT NULL DEFAULT '' COMMENT '公网上行带宽'
-ALTER TABLE instance ADD COLUMN SystemDisk_ID varchar(128) NOT NULL DEFAULT '' COMMENT '系统盘id'
-ALTER TABLE instance ADD COLUMN SystemDisk_Type varchar(64) NOT NULL DEFAULT '' COMMENT '系统盘类型'
-ALTER TABLE instance ADD COLUMN SystemDisk_Size varchar(64) NOT NULL DEFAULT '' COMMENT '系统盘大小'
+ALTER TABLE instance ADD COLUMN internet_max_bandwidth_in varchar(64) NOT NULL DEFAULT '' COMMENT '公网下行带宽'
+ALTER TABLE instance ADD COLUMN internet_max_bandwidth_out varchar(64) NOT NULL DEFAULT '' COMMENT '公网上行带宽'
+ALTER TABLE instance ADD COLUMN system_disk_id varchar(128) NOT NULL DEFAULT '' COMMENT '系统盘id'
+ALTER TABLE instance ADD COLUMN system_disk_yype varchar(64) NOT NULL DEFAULT '' COMMENT '系统盘类型'
+ALTER TABLE instance ADD COLUMN system_disk_size varchar(64) NOT NULL DEFAULT '' COMMENT '系统盘大小'
 ```
 
 * cpu表

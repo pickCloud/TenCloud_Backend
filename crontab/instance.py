@@ -95,11 +95,11 @@ class Instance:
                         'provider': self.provider,
                         'security_group_ids': j.get('SecurityGroupIds', '').get('SecurityGroupId', []),
                         'instance_network_type': j.get('InstanceNetworkType', ''),
-                        'InternetMaxBandwidthIn': j.get('InternetMaxBandwidthIn', ''),
-                        'InternetMaxBandwidthOut': j.get('InternetMaxBandwidthOut', ''),
-                        'SystemDisk_Size': disk_size,
-                        'SystemDisk_ID': j.get('SystemDisk', {}).get('DiskId', ''),
-                        'SystemDisk_Type': disk_type,
+                        'internet_max_bandwidth_in': j.get('InternetMaxBandwidthIn', ''),
+                        'internet_max_bandwidth_out': j.get('InternetMaxBandwidthOut', ''),
+                        'system_disk_size': disk_size,
+                        'system_disk_id': j.get('SystemDisk', {}).get('DiskId', ''),
+                        'system_disk_type': disk_type,
                     }
 
     def get_qcloud(self):
@@ -116,35 +116,34 @@ class Instance:
                 r = f.result()
                 info = r.json()
 
-                for j in info.get('instanceSet', []):
+                for j in info.get('Response', {}).get('InstanceSet', []):
                     status = QCLOUD_STATUS.get(j.get('status', ''), j.get('status', ''))
-
-                    self.data[j.get('instanceId')] = {
-                        'instance_id': j.get('instanceId'),
-                        'instance_name': j.get('instanceName', ''),
+                    self.data[j.get('InstanceId')] = {
+                        'instance_id': j.get('InstanceId'),
+                        'instance_name': j.get('InstanceName', ''),
                         'region_id': region,
                         'region_name': QCLOUD_REGION_NAME.get(region, region),
                         'hostname': j.get('HostName', ''),
-                        'image_id': j.get('unImgId', ''),
+                        'image_id': j.get('ImageId', ''),
                         'status': TCLOUD_STATUS_MAKER.get(status, status),
-                        'inner_ip': j.get('lanIp', ''),
-                        'public_ip': (j.get('wanIpSet') or [''])[0],
-                        'cpu': j.get('cpu', 0),
-                        'memory': j.get('mem', 0) * 1024,
-                        'os_name': j.get('os', ''),
+                        'inner_ip': j.get('PrivateIpAddresses', ''),
+                        'public_ip': j.get('PublicIpAddresses', ''),
+                        'cpu': j.get('CPU', 0),
+                        'memory': j.get('Memory', 0) * 1024,
+                        'os_name': j.get('OsName', ''),
                         'os_type': j.get('OSType', 'linux'),
-                        'create_time': j.get('createTime', ''),
-                        'expired_time': j.get('deadlineTime', ''),
+                        'create_time': j.get('CreatedTime', ''),
+                        'expired_time': j.get('ExpiredTime', ''),
                         'is_available': j.get('DeviceAvailable', 1),
-                        'charge_type': QCLOUD_PAYMODE.get(j.get('networkPayMode', ''), ''),
+                        'charge_type': j.get('InternetAccessible', {}).get('InternetChargeType', ''),
                         'provider': self.provider,
-                        'security_group_ids': j.get('SecurityGroupIds', []),
+                        'security_group_ids': '.'.join(j.get('SecurityGroupIds', [])),
                         'instance_network_type': 'vpc',
-                        'InternetMaxBandwidthIn': '',
-                        'InternetMaxBandwidthOut': j.get('InternetAccessible', {}).get('InternetMaxBandwidthOut', ''),
-                        'SystemDisk_Size': j.get('SystemDisk', {}).get('DiskSize', ''),
-                        'SystemDisk_ID': j.get('SystemDisk', {}).get('DiskId', ''),
-                        'SystemDisk_Type': j.get('SystemDisk', {}).get('DiskType', ''),
+                        'internet_max_bandwidth_in': '',
+                        'internet_max_bandwidth_out': j.get('InternetAccessible', {}).get('InternetMaxBandwidthOut', ''),
+                        'system_disk_size': j.get('SystemDisk', {}).get('DiskSize', ''),
+                        'system_disk_id': j.get('SystemDisk', {}).get('DiskId', ''),
+                        'system_disk_type': j.get('SystemDisk', {}).get('DiskType', ''),
                     }
 
     def get_zcloud(self):
@@ -185,11 +184,11 @@ class Instance:
                     'provider': self.provider,
                     'security_group_ids': [i['GroupId'] for i in j.get('SecurityGroups', '')],
                     'instance_network_type': 'vpc',
-                    'InternetMaxBandwidthIn': '',
-                    'InternetMaxBandwidthOut': '',
-                    'SystemDisk_Size': '',
-                    'SystemDisk_ID': '',
-                    'SystemDisk_Type': '',
+                    'internet_max_bandwidth_in': '',
+                    'internet_max_bandwidth_out': '',
+                    'system_disk_size': '',
+                    'system_disk_id': '',
+                    'system_disk_type': '',
                 }
 
     def save(self):
@@ -227,7 +226,6 @@ class Instance:
 
             sql = 'INSERT INTO instance( ' + ','.join(keys) + ')' + ' VALUES ('
             sql += get_formats(values) + ')'
-
             self.cur.execute(sql, values)
 
     def _to_update(self, instances):
