@@ -7,12 +7,16 @@ import hmac
 import urllib.request, urllib.parse
 import base64
 import requests
+from requests_futures.sessions import FuturesSession
 from constant import ALIYUN_DOMAIN, ALIYUN_REGION_LIST
 
 from setting import settings
 
+MAX_WORKERS = 20
+
 class Aliyun:
     domain = ALIYUN_DOMAIN
+
 
     #################################################################################################
     # 生成url
@@ -68,10 +72,16 @@ class Aliyun:
 
     #################################################################################################
     # 生成各种命令所需要的参数
+    # data 为instance各项属性，
     #################################################################################################
     @classmethod
-    def _common(cls, action, data):
-        return {'Action': action, 'InstanceId': data['instance_id']}
+    def _common(cls, action, data, extra=''):
+        cmd = {'Action': action, 'RegionId': data['RegionId'], 'InstanceId': data['InstanceId']}
+        if extra:
+            arg = {extra: data[extra]}
+            cmd.update(arg)
+            return cmd
+        return cmd
 
     @classmethod
     def stop(cls, data):
@@ -85,17 +95,83 @@ class Aliyun:
     def reboot(cls, data):
         return cls._common('RebootInstance', data)
 
+    @classmethod
+    def describe_images(cls, data):
+        cmd = cls._common('DescribeImages', data, 'ImageId')
+        url = cls.make_url(cmd)
+        info = requests.get(url).json()
+        images = info['Images']['Image']
+        return images
+
+    @classmethod
+    def describe_disks(cls, data):
+        cmd = cls._common('DescribeDisks', data)
+        url = cls.make_url(cmd)
+        info = requests.get(url).json()
+        disks = info['Disks']['Disk']
+        return disks
+        # array = []
+        # for d in disks:
+        #     disk = ''
+        #     for i in d:
+        #         disk = disk + i+','+str(d[i])
+        #     array.append(disk)
+        # return array
+
+    @classmethod
+    def describe_bandwidth(cls, data):
+        cmd = {
+            'Action': 'DescribeBandwidthLimitation',
+            'RegionId': data['RegionId'],
+            'InstanceId': data['InstanceId'],
+            'InstanceType': data['InstanceType'],
+            'InstanceChargeType': data['InstanceChargeType'],
+        }
+        url = cls.make_url(cmd)
+        info = requests.get(url).json()
+        bandwidth = info['Bandwidths']['Bandwidth']
+        return bandwidth
+        # array = []
+        # for d in bandwidth:
+        #     tmp = ''
+        #     for i in d:
+        #         tmp = tmp + i + ',' + str(d[i])
+        #     array.append(tmp)
+        # return array
+
+    @classmethod
+    # get all instances
+    def describe_instances(cls):
+        instance_urls = []
+        instances = []
+
+        for r in ALIYUN_REGION_LIST:
+            cmd = {'Action': 'DescribeInstances', 'RegionId': r}
+            instance_urls.append(cls.make_url(cmd))
+
+        for url in instance_urls:
+            r = requests.get(url).json()
+            for j in r['Instances']['Instance']:
+                if not j.get('InstanceId', ''):
+                    continue
+                else:
+                    instances.append(j)
+        return instances
+
 
 if __name__ == '__main__':
-    instances = list()
-
-    for region in ALIYUN_REGION_LIST:
-        url = Aliyun.make_url({'Action': 'DescribeInstances', 'RegionId': region})
-
-        info = requests.get(url, timeout=3).json()
-
-        for j in info['Instances']['Instance']:
-            instances.append(j)
-
-    from pprint import pprint
-    pprint(instances)
+    instance = Aliyun.describe_instances()
+    for i in instance:
+        print(Aliyun.describe_images(i))
+    # instances = list()
+    #
+    # for region in ALIYUN_REGION_LIST:
+    #     url = Aliyun.make_url({'Action': 'DescribeInstances', 'RegionId': region})
+    #
+    #     info = requests.get(url, timeout=3).json()
+    #
+    #     for j in info['Instances']['Instance']:
+    #         instances.append(j)
+    #
+    # from pprint import pprint
+    # pprint(instances)

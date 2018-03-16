@@ -46,61 +46,88 @@ class Instance:
         self.db = DB
         self.cur = ''
 
-    @staticmethod
-    # deal aliyun disk
-    def get_disk(x):
-        if (not isinstance(x, str)) or (x == ''):
-            return
-        array_x = x.split('_')
-        size = [x for x in array_x if x.endswith('G')]
-        disk_type = array_x[len(array_x)-2]
-        return size[0], disk_type
-
     def get_aliyun(self):
         self.provider = ALIYUN_NAME
 
-        with FuturesSession(max_workers=MAX_WORKERS) as session:
-            futures = []
+        instances = Aliyun.describe_instances()
+        if not len(instances):
+            return
+        for i in instances:
+            disks = Aliyun.describe_disks(i)
+            images = Aliyun.describe_images(i)
+            status = ALIYUN_STATUS.get(i.get('Status', ''), i.get('Status', ''))
+            self.data[i.get('InstanceId')]= {
+                'instance_id': i.get('InstanceId'),
+                'instance_name': i.get('InstanceName', ''),
+                'region_id': i.get('RegionId', ''),
+                'region_name': ALIYUN_REGION_NAME.get(i.get('RegionId', ''), i.get('RegionId', '')),
+                'hostname': i.get('HostName', ''),
 
-            for region in ALIYUN_REGION_LIST:
-                url = Aliyun.make_url({'Action': 'DescribeInstances', 'RegionId': region})
-                futures.append(session.get(url))
+                'image_id': images[0]['ImageId'] if len(images) else '',
+                'image_name': images[0]['ImageName'] if len(images) else '',
+                'image_version': images[0]['ImageVersion'] if len(images) else '' ,
 
-            for f in futures:
-                r = f.result()
-                info = r.json()
+                'status': TCLOUD_STATUS_MAKER.get(status, status),
+                'inner_ip': (i.get('InnerIpAddress', {}).get('IpAddress') or [''])[0],
+                'public_ip': (i.get('PublicIpAddress', {}).get('IpAddress') or [''])[0],
+                'cpu': i.get('Cpu', 0),
+                'memory': i.get('Memory', 0),
+                'os_name': i.get('OSName', ''),
+                'os_type': i.get('OSType', ''),
+                'create_time': i.get('CreationTime', ''),
+                'expired_time': i.get('ExpiredTime', ''),
+                'is_available': i.get('DeviceAvailable', ''),
+                'charge_type': i.get('InternetChargeType', ''),
+                'provider': self.provider,
+                'security_group_ids': i.get('SecurityGroupIds', '').get('SecurityGroupId', []),
+                'instance_network_type': i.get('InstanceNetworkType', ''),
+                'internet_max_bandwidth_in': str(i.get('InternetMaxBandwidthIn', ''))+"Mbps",
+                'internet_max_bandwidth_out': str(i.get('InternetMaxBandwidthOut', ''))+"Mbps",
 
-                for j in info['Instances']['Instance']:
-                    status = ALIYUN_STATUS.get(j.get('Status', ''), j.get('Status', ''))
-
-                    disk_size, disk_type = Instance.get_disk(j.get('ImageId', ''))
-                    self.data[j.get('InstanceId')] = {
-                        'instance_id': j.get('InstanceId'),
-                        'instance_name': j.get('InstanceName', ''),
-                        'region_id': j.get('RegionId', ''),
-                        'region_name': ALIYUN_REGION_NAME.get(j.get('RegionId', ''), j.get('RegionId', '')),
-                        'hostname': j.get('HostName', ''),
-                        'image_id': j.get('ImageId', ''),
-                        'status': TCLOUD_STATUS_MAKER.get(status, status),
-                        'inner_ip': (j.get('InnerIpAddress', {}).get('IpAddress') or [''])[0],
-                        'public_ip': (j.get('PublicIpAddress', {}).get('IpAddress') or [''])[0],
-                        'cpu': j.get('Cpu', 0),
-                        'memory': j.get('Memory', 0),
-                        'os_name': j.get('OSName', ''),
-                        'os_type': j.get('OSType', ''),
-                        'create_time': j.get('CreationTime', ''),
-                        'expired_time': j.get('ExpiredTime', ''),
-                        'is_available': j.get('DeviceAvailable', ''),
-                        'charge_type': j.get('InternetChargeType', ''),
-                        'provider': self.provider,
-                        'security_group_ids': j.get('SecurityGroupIds', '').get('SecurityGroupId', []),
-                        'instance_network_type': j.get('InstanceNetworkType', ''),
-                        'internet_max_bandwidth_in': j.get('InternetMaxBandwidthIn', ''),
-                        'internet_max_bandwidth_out': j.get('InternetMaxBandwidthOut', ''),
-                        'system_disk_size': disk_size,
-                        'system_disk_id': j.get('SystemDisk', {}).get('DiskId', ''),
-                        'system_disk_type': disk_type,
-                    }
+                'system_disk_size': str(disks[0]['Size'])+'G' if len(disks) else '',
+                'system_disk_id': disks[0]['DiskId'] if len(disks) else '',
+                'system_disk_type': disks[0]['Category'] if len(disks) else '',
+            }
+            # for f in instances:
+            #     r = f.result()
+            #     info = r.json()
+            #
+            #     for j in info['Instances']['Instance']:
+            #         status = ALIYUN_STATUS.get(j.get('Status', ''), j.get('Status', ''))
+            #
+            #         disk_size, disk_type = Instance.get_disk(j.get('ImageId', ''))
+            #         self.data[j.get('InstanceId')] = {
+            #             'instance_id': j.get('InstanceId'),
+            #             'instance_name': j.get('InstanceName', ''),
+            #             'region_id': j.get('RegionId', ''),
+            #             'region_name': ALIYUN_REGION_NAME.get(j.get('RegionId', ''), j.get('RegionId', '')),
+            #             'hostname': j.get('HostName', ''),
+            #
+            #             'image_id': j.get('ImageId', ''),
+            #             'image_name': '',
+            #             'image_version': '',
+            #
+            #             'status': TCLOUD_STATUS_MAKER.get(status, status),
+            #             'inner_ip': (j.get('InnerIpAddress', {}).get('IpAddress') or [''])[0],
+            #             'public_ip': (j.get('PublicIpAddress', {}).get('IpAddress') or [''])[0],
+            #             'cpu': j.get('Cpu', 0),
+            #             'memory': j.get('Memory', 0),
+            #             'os_name': j.get('OSName', ''),
+            #             'os_type': j.get('OSType', ''),
+            #             'create_time': j.get('CreationTime', ''),
+            #             'expired_time': j.get('ExpiredTime', ''),
+            #             'is_available': j.get('DeviceAvailable', ''),
+            #             'charge_type': j.get('InternetChargeType', ''),
+            #             'provider': self.provider,
+            #             'security_group_ids': j.get('SecurityGroupIds', '').get('SecurityGroupId', []),
+            #             'instance_network_type': j.get('InstanceNetworkType', ''),
+            #             'internet_max_bandwidth_in': j.get('InternetMaxBandwidthIn', ''),
+            #             'internet_max_bandwidth_out': j.get('InternetMaxBandwidthOut', ''),
+            #
+            #             'system_disk_size': disk_size,
+            #             'system_disk_id': j.get('SystemDisk', {}).get('DiskId', ''),
+            #             'system_disk_type': disk_type,
+            #         }
 
     def get_qcloud(self):
         self.provider = QCLOUD_NAME
@@ -140,7 +167,7 @@ class Instance:
                         'security_group_ids': '.'.join(j.get('SecurityGroupIds', [])),
                         'instance_network_type': 'vpc',
                         'internet_max_bandwidth_in': '',
-                        'internet_max_bandwidth_out': j.get('InternetAccessible', {}).get('InternetMaxBandwidthOut', ''),
+                        'internet_max_bandwidth_out': str(j.get('InternetAccessible', {}).get('InternetMaxBandwidthOut', ''))+"Mbps",
                         'system_disk_size': j.get('SystemDisk', {}).get('DiskSize', ''),
                         'system_disk_id': j.get('SystemDisk', {}).get('DiskId', ''),
                         'system_disk_type': j.get('SystemDisk', {}).get('DiskType', ''),
@@ -272,7 +299,6 @@ def main():
         logging.warning('{:>12}: {}'.format('Start ' + args.cloud, seconds_to_human(start_time)))
         try:
             cloud_func[args.cloud]()
-
             obj.save()
         except Exception:
             logging.error(traceback.format_exc())
