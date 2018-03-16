@@ -285,11 +285,12 @@ class ServerDetailHandler(BaseHandler):
                     'os_type': data['os_type'],
                     "security_group_ids": data['security_group_ids'],
                     "instance_network_type": data['instance_network_type'],
-                    "internet_max_bandwidth_in": data['InternetMaxBandwidthIn'],
-                    "internet_max_bandwidth_out": data['InternetMaxBandwidthOut'],
-                    "system_disk_id": data['SystemDisk_ID'],
-                    "system_disk_type": data['SystemDisk_Type'],
-                    "system_disk_size": data['SystemDisk_Size'],
+                    "internet_max_bandwidth_in": data['internet_max_bandwidth_in'],
+                    "internet_max_bandwidth_out": data['internet_max_bandwidth_out'],
+                    "system_disk_id": data['system_disk_id'],
+                    "system_disk_type": data['system_disk_type'],
+                    "system_disk_size": data['system_disk_size'],
+                    "image_id": data['image_id']
 
                 }
             }
