@@ -798,7 +798,6 @@ class SystemLoadHandler(BaseHandler):
 
 
 class ServerThresholdHandler(BaseHandler):
-    @is_login
     @coroutine
     def get(self):
         """
