@@ -255,12 +255,12 @@ class ServerDetailHandler(BaseHandler):
                     }
                 },
                 // 各项阀值
-                "threshold_value": {
-                    "cpu": int,
-                    "memory": int,
-                    "disk": int,
-                    "block": int, // 磁盘io
-                    "network": int,
+                "THRESHOLD": {
+                    "CPU_THRESHOLD": int,
+                    "MEM_THRESHOLD": int,
+                    "DISK_THRESHOLD": int,
+                    "NET_THRESHOLD": int,
+                    "BLOCK_THRESHOLD": int, // 磁盘io
                 }
             }
             }
