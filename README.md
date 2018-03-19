@@ -156,7 +156,7 @@ ALTER TABLE instance ADD COLUMN instance_network_type varchar(64) NOT NULL DEFAU
 ALTER TABLE instance ADD COLUMN internet_max_bandwidth_in varchar(64) NOT NULL DEFAULT '' COMMENT '公网下行带宽'
 ALTER TABLE instance ADD COLUMN internet_max_bandwidth_out varchar(64) NOT NULL DEFAULT '' COMMENT '公网上行带宽'
 ALTER TABLE instance ADD COLUMN system_disk_id varchar(128) NOT NULL DEFAULT '' COMMENT '系统盘id'
-ALTER TABLE instance ADD COLUMN system_disk_yype varchar(64) NOT NULL DEFAULT '' COMMENT '系统盘类型'
+ALTER TABLE instance ADD COLUMN system_disk_type varchar(64) NOT NULL DEFAULT '' COMMENT '系统盘类型'
 ALTER TABLE instance ADD COLUMN system_disk_size varchar(64) NOT NULL DEFAULT '' COMMENT '系统盘大小'
 
 ALTER TABLE instance ADD COLUMN image_version varchar(64) NOT NULL DEFAULT '' COMMENT '镜像版本'
