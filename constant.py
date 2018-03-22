@@ -664,6 +664,14 @@ THRESHOLD = {
     "BLOCK_THRESHOLD": 0.8
 }
 
+MONITOR_COLOR_TYPE = {
+    'serious_warning': 1,
+    'warning_plus': 2,
+    'warning': 3,
+    'safe': 4,
+    'free': 5
+}
+
 # 腾讯云存储类型
 TENCLOUD_DISK_TYPE = {
     'LOCAL_BASIC': '本地硬盘',
