@@ -8,7 +8,7 @@ import hmac
 import urllib.parse
 import binascii
 import requests
-from constant import QCLOUD_DOMAIN, QCLOUD_HOST, QCLOUD_REGION_LIST, QCLOUD_IMAGE_DOMAIN
+from constant import QCLOUD_DOMAIN, QCLOUD_REGION_LIST, QCLOUD_IMAGE_DOMAIN
 
 from setting import settings
 
@@ -66,7 +66,7 @@ class Qcloud:
     #################################################################################################
     @classmethod
     def _common(cls, action, data):
-        return {'Action': action, 'InstanceIds.0': data['InstanceId'], 'Region': data['region_id'], 'Version': '2017-03-12'}
+        return {'Action': action, 'InstanceIds.0': data['instance_id'], 'Region': data['region_id'], 'Version': '2017-03-12'}
 
     @classmethod
     def stop(cls, data):
@@ -82,28 +82,33 @@ class Qcloud:
 
     @classmethod
     def describe_instances(cls):
-        instances = []
+        qcloud_instances = []
 
         for r in QCLOUD_REGION_LIST:
             cmd = {'Action': 'DescribeInstances', 'Limit': 100, 'Region': r, 'Version': '2017-03-12'}
-            url = cls.make_url(cmd)
+            instance_url = cls.make_url(cmd)
 
-            result = requests.get(url).json()
+            result = requests.get(instance_url).json()
 
             if not result['Response'].get('InstanceSet', ''):
                 continue
 
-            for j in result['Response']['InstanceSet']:
-                    j.update({'region_id': r})
-                    instances.append(j)
-        return instances
+            for one in result['Response']['InstanceSet']:
+                    one.update({'region_id': r})
+                    qcloud_instances.append(one)
+        return qcloud_instances
 
     @classmethod
     def instance_status(cls, data):
-        cmd = cls._common('DescribeInstancesStatus', data)
-        url = cls.make_url(cmd)
-        info = requests.get(url).json()
-        return info['Response']['InstanceStatusSet'][0]['InstanceState']
+        cmd = {
+            'Action': 'DescribeInstancesStatus',
+            'InstanceIds.0': data['InstanceId'],
+            'Region': data['region_id'],
+            'Version': '2017-03-12'
+        }
+        status_url = cls.make_url(cmd)
+        status_info = requests.get(status_url).json()
+        return status_info['Response']['InstanceStatusSet'][0]['InstanceState']
 
     @classmethod
     def describe_images(cls, data):
@@ -113,9 +118,9 @@ class Qcloud:
             'ImageIds.1': data['ImageId'],
             'Region': data['region_id']
         }
-        url = cls.make_url(params=cmd, domain=QCLOUD_IMAGE_DOMAIN)
-        info = requests.get(url).json()
-        images = info['Response']['ImageSet']
+        image_url = cls.make_url(params=cmd, domain=QCLOUD_IMAGE_DOMAIN)
+        image_info = requests.get(image_url).json()
+        images = image_info['Response']['ImageSet']
 
         resp = list()
         if not len(images):

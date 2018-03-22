@@ -75,12 +75,7 @@ class Aliyun:
     #################################################################################################
     @classmethod
     def _common(cls, action, data, extra=''):
-        cmd = {'Action': action, 'RegionId': data['region_id'], 'InstanceId': data['InstanceId']}
-        if extra:
-            arg = {extra: data[extra]}
-            cmd.update(arg)
-            return cmd
-        return cmd
+        return {'Action': action, 'RegionId': data['region_id'], 'InstanceId': data['instance_id']}
 
     @classmethod
     def stop(cls, data):
@@ -97,11 +92,14 @@ class Aliyun:
     # 如果获取到空数据，很大原因是改image已被销毁，目前所有image中含有base的都已被阿里销毁
     @classmethod
     def describe_images(cls, data):
-
+        cmd = {
+            'Action': 'DescribeDisks',
+            'RegionId': data['region_id'],
+            'InstanceId': data['InstanceId']
+        }
         if data.get('ImageId', ''):
-            cmd = cls._common('DescribeImages', data, 'ImageId')
-        else:
-            cmd = cls._common('DescribeImages', data)
+            cmd.update({'ImageId': data['ImageId']})
+
         url = cls.make_url(cmd)
         info = requests.get(url).json()
         images = info['Images']['Image']
@@ -126,7 +124,11 @@ class Aliyun:
     # 提取disk信息，并返回其数组
     @classmethod
     def describe_disks(cls, data):
-        cmd = cls._common('DescribeDisks', data)
+        cmd = {
+            'Action': 'DescribeDisks',
+            'RegionId': data['region_id'],
+            'InstanceId': data['InstanceId']
+        }
         url = cls.make_url(cmd)
         info = requests.get(url).json()
         disks = info['Disks']['Disk']

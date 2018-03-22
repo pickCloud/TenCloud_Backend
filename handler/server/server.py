@@ -784,7 +784,7 @@ class SystemLoadHandler(BaseHandler):
     @coroutine
     def get(self, sid):
         """
-        @api {get} /api/server/(\d+)/systemload
+        @api {get} /api/server/(\d+)/systemload 服务器负载
         @apiName SystemLoadHandler
         @apiGroup Server
 
@@ -815,7 +815,7 @@ class ServerThresholdHandler(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {get} /api/server/threshold
+        @api {get} /api/server/threshold 服务器临界值标准
         @apiName ServerThresholdHandler
         @apiGroup Server
 
@@ -843,3 +843,33 @@ class ServerThresholdHandler(BaseHandler):
                 "block_threshold": THRESHOLD['BLOCK_THRESHOLD']
             }
             self.success(data)
+
+
+class ServerMontiorHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/server/monitor 服务器热图数据
+        @apiName ServerMonitorHandler
+        @apiGroup Server
+
+        @apiSuccessExample {json} Success-Response:
+        HTTP/1.1 200 OK
+        {
+            "status": 0,
+            "msg": "success",
+            "data": [
+                {
+                    "serverID": int,
+                    "name": string,
+                    "colorType": string,
+                    "cpuUsageRate": float,
+                    "memUsageRate": float,
+                    "diskUsageRate": float,
+                    "diskIO": float,
+                    "networkUsage": float,
+                }
+            ]
+        }
+        """
