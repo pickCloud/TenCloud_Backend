@@ -240,12 +240,25 @@ class ServerDetailHandler(BaseHandler):
                         "instance_network_type": str,
                         "internetMaxBandwidthIn": str,
                         "internetMaxBandwidthOut": str,
-                        "system_disk_id": str,
-                        "system_disk_type": str,
-                        "system_disk_size": str,
-                        "image_id": str,
-                        "image_version": str,
-                        "image_name": str
+                        "image_info":[
+                            {
+                                "image_id": str,
+                                "image_name": str,
+                                "image_version": str
+                            }
+                            ...
+                        ],
+                        "disk_info":[
+                            {
+                                "system_disk_id": str,
+                                "system_disk_type": str,
+                                "system_disk_size": str,
+                                "image_id": str,
+                                "image_version": str,
+                                "image_name": str
+                            }
+                            ...
+                        ]
                     }
                 },
                 "business_info": {
@@ -282,7 +295,7 @@ class ServerDetailHandler(BaseHandler):
                 one = dict()
                 one['system_disk_id'] = i['DiskId']
                 one['system_disk_type'] = i['Category']
-                one['system_disk_size'] = i['Size']
+                one['system_disk_size'] = str(i['Size'])+"G"
                 disk_info.append(one)
 
             image_info = list()
