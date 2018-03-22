@@ -141,9 +141,9 @@ class Aliyun:
             disk = dict()
             disk['DiskId'] = one['DiskId']
             disk['DiskName'] = one['DiskName']
-            disk['Type'] = one['Type']
-            disk['Category'] = one['Category']
-            disk['Size'] = one['Size']
+            disk['DiskType'] = one['Type']
+            disk['DiskCategory'] = one['Category']
+            disk['DiskSize'] = one['Size']
             disk['InstanceId'] = one['InstanceId']
             disk['Device'] = one['Device']
             resp.append(disk)

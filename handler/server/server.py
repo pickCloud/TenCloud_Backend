@@ -294,8 +294,8 @@ class ServerDetailHandler(BaseHandler):
             for i in json.loads(data.get('disk_info','')):
                 one = dict()
                 one['system_disk_id'] = i['DiskId']
-                one['system_disk_type'] = i['Category']
-                one['system_disk_size'] = str(i['Size'])+"G"
+                one['system_disk_type'] = i['DiskCategory']
+                one['system_disk_size'] = str(i['DiskSize'])+"G"
                 disk_info.append(one)
 
             image_info = list()

@@ -86,9 +86,9 @@ class Zcloud:
             disk = dict()
             disk['DiskId'] = one.get('VolumeId','')
             disk['DiskName'] = ''
-            disk['Type'] = ''
-            disk['Category'] = one.get('VolumeType','')
-            disk['Size'] = one['Size']
+            disk['DiskType'] = ''
+            disk['DiskCategory'] = one.get('VolumeType','')
+            disk['DiskSize'] = one['Size']
             disk['InstanceId'] = one.get('Attachments', [])[0].get('InstanceId','')
             disk['Device'] = one.get('Attachments', [])[0].get('Device','')
             resp.append(disk)
