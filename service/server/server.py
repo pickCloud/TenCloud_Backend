@@ -1,6 +1,7 @@
 __author__ = 'Jon'
 
 import json
+import random
 from tornado.gen import coroutine, sleep
 
 from service.base import BaseService
@@ -10,7 +11,7 @@ from utils.qcloud import Qcloud
 from utils.zcloud import Zcloud
 from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAINER_CMD, STOP_CONTAINER_CMD, \
                      DEL_CONTAINER_CMD, CONTAINER_INFO_CMD, ALIYUN_NAME, QCLOUD_NAME, FULL_DATE_FORMAT, ZCLOUD_NAME, \
-                     SERVERS_REPORT_INFO, TCLOUD_STATUS
+                     SERVERS_REPORT_INFO, TCLOUD_STATUS, THRESHOLD, MONITOR_COLOR_TYPE
 from utils.security import Aes
 from utils.general import get_in_formats, json_loads, json_dumps
 
@@ -631,3 +632,82 @@ class ServerService(BaseService):
         update instance set status=%s where public_ip=%s
         """
         yield self.db.execute(sql, [status, ip])
+
+    @coroutine
+    def _get_monitor_data(self, ip, table):
+        sql = "SELECT content FROM {TABLE} WHERE public_ip=%s ORDER BY created_time DESC LIMIT 1".format(TABLE=table)
+        cur = yield self.db.execute(sql, [ip])
+        data = cur.fetchone()
+        if data:
+            return data['content']
+        return
+
+    @coroutine
+    def _get_ip_name(self, sid):
+        sql = "SELECT public_ip, name FROM server WHERE id=%s limit 1"
+        cur = yield self.db.execute(sql, [sid])
+        data = cur.fetchone()
+        return data
+
+    @coroutine
+    def get_monitor_data(self, sids):
+        server_monitor_data = []
+        for i in sids:
+            server_info = yield self._get_ip_name(i)
+            ip, name = server_info['public_ip'], server_info['name']
+
+            cpu_content = yield self._get_monitor_data(ip=ip, table='cpu')
+            cpu_percent = float((json.loads(cpu_content))['percent'])/100
+
+            mem_content = yield self._get_monitor_data(ip=ip, table='memory')
+            mem_usage_rate = float((json.loads(mem_content))['percent'])/100
+
+            disk_content = yield self._get_monitor_data(ip=ip, table='disk')
+            disk_usage_rate = float((json.loads(disk_content))['percent'])/100
+
+            net_content = yield self._get_monitor_data(ip=ip, table='net')
+            net = str(json.loads(net_content)['input'])+'/'+str(json.loads(net_content)['output'])
+            bloc_io = random.random()
+
+            resp = {
+                'serverID': i,
+                'name': name,
+                'colorType': MONITOR_COLOR_TYPE['serious_warning'],
+                'cpuUsageRate': cpu_percent,
+                'memUsageRate': mem_usage_rate,
+                'diskUsageRate': disk_usage_rate,
+                'diskIO': bloc_io,
+                'networkUsage': net
+            }
+            if (cpu_percent == 1) or (mem_usage_rate == 1) or (disk_usage_rate==1) or (bloc_io == 1):
+                server_monitor_data.append(resp)
+                continue
+
+            if (cpu_percent <= 0.05) and (mem_usage_rate <= 0.05) and (disk_usage_rate <= 0.05) and (bloc_io <= 0.05):
+                resp['colorType'] = MONITOR_COLOR_TYPE['free']
+                server_monitor_data.append(resp)
+                continue
+
+            counter = 0
+            if cpu_percent >= THRESHOLD['CPU_THRESHOLD']:
+                counter += 1
+            if mem_usage_rate >= THRESHOLD['MEM_THRESHOLD']:
+                counter += 1
+            if disk_usage_rate >= THRESHOLD['DISK_THRESHOLD']:
+                counter += 1
+            if bloc_io >= THRESHOLD['BLOCK_THRESHOLD']:
+                counter += 1
+
+            if counter >= 2:
+                resp['colorType'] = MONITOR_COLOR_TYPE['warning_plus']
+
+            if counter == 1:
+                resp['colorType'] = MONITOR_COLOR_TYPE['warning']
+
+            if counter == 0:
+                resp['colorType'] = MONITOR_COLOR_TYPE['safe']
+
+            server_monitor_data.append(resp)
+            continue
+
+        return server_monitor_data

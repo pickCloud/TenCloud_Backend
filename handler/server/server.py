@@ -3,16 +3,16 @@ __author__ = 'Jon'
 import json
 import re
 
-from tornado.gen import coroutine, Task
+from tornado.gen import coroutine
 from tornado.ioloop import PeriodicCallback, IOLoop
 from handler.base import BaseHandler, WebSocketBaseHandler
 from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG, ERR_TIP
-from utils.general import validate_ip
+from utils.general import validate_ip, get_in_formats
 from utils.security import Aes
 from utils.decorator import is_login, require
 from utils.context import catch
 from constant import MONITOR_CMD, OPERATE_STATUS, OPERATION_OBJECT_STYPE, SERVER_OPERATE_STATUS, \
-      CONTAINER_OPERATE_STATUS, RIGHT, SERVICE, FORM_COMPANY, SERVERS_REPORT_INFO, THRESHOLD
+      CONTAINER_OPERATE_STATUS, RIGHT, SERVICE, FORM_COMPANY, SERVERS_REPORT_INFO, THRESHOLD, FORM_PERSON
 
 
 class ServerNewHandler(WebSocketBaseHandler):
@@ -873,3 +873,16 @@ class ServerMontiorHandler(BaseHandler):
             ]
         }
         """
+        with catch(self):
+            cid, uid = self.params.get('cid'), self.current_user['id']
+            if not cid:
+                sid = yield self.server_service.select(fields='id',conds={'lord': uid, 'form': FORM_PERSON}, ct=False, ut=False)
+            else:
+                sid = yield self.user_access_server_service.select(
+                                                        fields='sid',
+                                                        conds={'cid': cid, 'uid': uid},
+                                                        ct=False, ut=False
+                )
+            sids = [i['sid'] for i in sid]
+            data = yield self.server_service.get_monitor_data(sids)
+            self.success(data)
