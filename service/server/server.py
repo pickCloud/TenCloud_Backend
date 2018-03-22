@@ -654,20 +654,23 @@ class ServerService(BaseService):
         server_monitor_data = []
         for i in sids:
             server_info = yield self._get_ip_name(i)
+            if not server_info:
+                continue
+
             ip, name = server_info['public_ip'], server_info['name']
 
             cpu_content = yield self._get_monitor_data(ip=ip, table='cpu')
-            cpu_percent = float((json.loads(cpu_content))['percent'])/100
+            cpu_percent = float((json.loads(cpu_content))['percent'])
 
             mem_content = yield self._get_monitor_data(ip=ip, table='memory')
-            mem_usage_rate = float((json.loads(mem_content))['percent'])/100
+            mem_usage_rate = float((json.loads(mem_content))['percent'])
 
             disk_content = yield self._get_monitor_data(ip=ip, table='disk')
-            disk_usage_rate = float((json.loads(disk_content))['percent'])/100
+            disk_usage_rate = float((json.loads(disk_content))['percent'])
 
             net_content = yield self._get_monitor_data(ip=ip, table='net')
             net = str(json.loads(net_content)['input'])+'/'+str(json.loads(net_content)['output'])
-            bloc_io = random.random()
+            bloc_io = random.randint(0,101)
 
             resp = {
                 'serverID': i,
@@ -679,11 +682,11 @@ class ServerService(BaseService):
                 'diskIO': bloc_io,
                 'networkUsage': net
             }
-            if (cpu_percent == 1) or (mem_usage_rate == 1) or (disk_usage_rate==1) or (bloc_io == 1):
+            if (cpu_percent == 100) or (mem_usage_rate == 100) or (disk_usage_rate==100) or (bloc_io == 100):
                 server_monitor_data.append(resp)
                 continue
 
-            if (cpu_percent <= 0.05) and (mem_usage_rate <= 0.05) and (disk_usage_rate <= 0.05) and (bloc_io <= 0.05):
+            if (cpu_percent <= 5) and (mem_usage_rate <= 5) and (disk_usage_rate <= 5) and (bloc_io <= 5):
                 resp['colorType'] = MONITOR_COLOR_TYPE['free']
                 server_monitor_data.append(resp)
                 continue

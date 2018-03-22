@@ -7,7 +7,7 @@ from tornado.gen import coroutine
 from tornado.ioloop import PeriodicCallback, IOLoop
 from handler.base import BaseHandler, WebSocketBaseHandler
 from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG, ERR_TIP
-from utils.general import validate_ip, get_in_formats
+from utils.general import validate_ip
 from utils.security import Aes
 from utils.decorator import is_login, require
 from utils.context import catch
@@ -198,7 +198,6 @@ class ServerDelHandler(BaseHandler):
         """
         with catch(self):
             yield self.server_service.delete_server(self.params)
-            
             self.success()
 
 
@@ -863,11 +862,11 @@ class ServerMontiorHandler(BaseHandler):
                 {
                     "serverID": int,
                     "name": string,
-                    "colorType": string,
+                    "colorType": int,
                     "cpuUsageRate": float,
                     "memUsageRate": float,
                     "diskUsageRate": float,
-                    "diskIO": float,
+                    "diskIO": string,
                     "networkUsage": float,
                 }
             ]
