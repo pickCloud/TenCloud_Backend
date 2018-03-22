@@ -7,12 +7,11 @@ import hmac
 import urllib.request, urllib.parse
 import base64
 import requests
-from requests_futures.sessions import FuturesSession
+import json
 from constant import ALIYUN_DOMAIN, ALIYUN_REGION_LIST
 
 from setting import settings
 
-MAX_WORKERS = 20
 
 class Aliyun:
     domain = ALIYUN_DOMAIN
@@ -76,7 +75,7 @@ class Aliyun:
     #################################################################################################
     @classmethod
     def _common(cls, action, data, extra=''):
-        cmd = {'Action': action, 'RegionId': data['RegionId'], 'InstanceId': data['InstanceId']}
+        cmd = {'Action': action, 'RegionId': data['region_id'], 'InstanceId': data['InstanceId']}
         if extra:
             arg = {extra: data[extra]}
             cmd.update(arg)
@@ -95,28 +94,58 @@ class Aliyun:
     def reboot(cls, data):
         return cls._common('RebootInstance', data)
 
+    # 如果获取到空数据，很大原因是改image已被销毁，目前所有image中含有base的都已被阿里销毁
     @classmethod
     def describe_images(cls, data):
-        cmd = cls._common('DescribeImages', data, 'ImageId')
+
+        if data.get('ImageId', ''):
+            cmd = cls._common('DescribeImages', data, 'ImageId')
+        else:
+            cmd = cls._common('DescribeImages', data)
         url = cls.make_url(cmd)
         info = requests.get(url).json()
         images = info['Images']['Image']
-        return images
 
+        resp = list()
+        if not len(images):
+            return resp
+
+        for one in images:
+            image = dict()
+            image['ImageId'] = one['ImageId']
+            image['ImageVersion'] = one['ImageVersion']
+            image['OSType'] = one['OSType']
+            image['Platform'] = one['Platform']
+            image['Architecture'] = one['Architecture']
+            image['ImageName'] = one['ImageName']
+            image['Size'] = one['Size']
+            image['OSName'] = one['OSName']
+            resp.append(image)
+        return resp
+
+    # 提取disk信息，并返回其数组
     @classmethod
     def describe_disks(cls, data):
         cmd = cls._common('DescribeDisks', data)
         url = cls.make_url(cmd)
         info = requests.get(url).json()
         disks = info['Disks']['Disk']
-        return disks
-        # array = []
-        # for d in disks:
-        #     disk = ''
-        #     for i in d:
-        #         disk = disk + i+','+str(d[i])
-        #     array.append(disk)
-        # return array
+
+        resp = list()
+        if not len(disks):
+            return resp
+
+        for one in disks:
+            disk = dict()
+            disk['DiskId'] = one['DiskId']
+            disk['DiskName'] = one['DiskName']
+            disk['Type'] = one['Type']
+            disk['Category'] = one['Category']
+            disk['Size'] = one['Size']
+            disk['InstanceId'] = one['InstanceId']
+            disk['Device'] = one['Device']
+            resp.append(disk)
+        return resp
 
     @classmethod
     def describe_bandwidth(cls, data):
@@ -131,16 +160,9 @@ class Aliyun:
         info = requests.get(url).json()
         bandwidth = info['Bandwidths']['Bandwidth']
         return bandwidth
-        # array = []
-        # for d in bandwidth:
-        #     tmp = ''
-        #     for i in d:
-        #         tmp = tmp + i + ',' + str(d[i])
-        #     array.append(tmp)
-        # return array
 
-    @classmethod
     # get all instances
+    @classmethod
     def describe_instances(cls):
         instance_urls = []
         instances = []
@@ -151,18 +173,21 @@ class Aliyun:
 
         for url in instance_urls:
             r = requests.get(url).json()
+
+            if not r['Instances'].get('Instance', ''):
+                continue
+
             for j in r['Instances']['Instance']:
-                if not j.get('InstanceId', ''):
-                    continue
-                else:
-                    instances.append(j)
+                j.update({'region_id': j['RegionId']})
+                instances.append(j)
         return instances
 
 
 if __name__ == '__main__':
     instance = Aliyun.describe_instances()
     for i in instance:
-        print(Aliyun.describe_images(i))
+        ret = json.dumps(Aliyun.describe_disks(i))
+        print(ret)
     # instances = list()
     #
     # for region in ALIYUN_REGION_LIST:

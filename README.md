@@ -155,12 +155,15 @@ ALTER TABLE instance ADD COLUMN security_group_ids varchar(128) NOT NULL DEFAULT
 ALTER TABLE instance ADD COLUMN instance_network_type varchar(64) NOT NULL DEFAULT '' COMMENT '实例网络类型'
 ALTER TABLE instance ADD COLUMN internet_max_bandwidth_in varchar(64) NOT NULL DEFAULT '' COMMENT '公网下行带宽'
 ALTER TABLE instance ADD COLUMN internet_max_bandwidth_out varchar(64) NOT NULL DEFAULT '' COMMENT '公网上行带宽'
+
 ALTER TABLE instance ADD COLUMN system_disk_id varchar(128) NOT NULL DEFAULT '' COMMENT '系统盘id'
 ALTER TABLE instance ADD COLUMN system_disk_type varchar(64) NOT NULL DEFAULT '' COMMENT '系统盘类型'
 ALTER TABLE instance ADD COLUMN system_disk_size varchar(64) NOT NULL DEFAULT '' COMMENT '系统盘大小'
-
 ALTER TABLE instance ADD COLUMN image_version varchar(64) NOT NULL DEFAULT '' COMMENT '镜像版本'
 ALTER TABLE instance ADD COLUMN image_name varchar(128) NOT NULL DEFAULT '' COMMENT '镜像名字'
+
+ALTER TABLE instance ADD COLUMN image_info varchar(512) NOT NULL DEFAULT '' COMMENT '镜像信息';
+ALTER TABLE instance ADD COLUMN disk_info varchar(512) NOT NULL DEFAULT '' COMMENT '磁盘信息';
 ```
 
 * cpu表

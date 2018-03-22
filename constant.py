@@ -140,6 +140,7 @@ ALIYUN_STATUS = {
 #################################################################################################
 QCLOUD_NAME = '腾讯云'
 QCLOUD_DOMAIN = 'https://cvm.api.qcloud.com/v2/index.php?'
+QCLOUD_IMAGE_DOMAIN = 'https://image.api.qcloud.com/v2/index.php?'
 QCLOUD_HOST = QCLOUD_DOMAIN[8:-1]
 QCLOUD_REGION_NAME = {
     'ap-guangzhou': '华南地区（广州）',
@@ -315,7 +316,15 @@ TCLOUD_STATUS_MAKER = {
     'stopping': 9,
     'terminated':  5,
     'shutting-down': 6,
-    'rebooting':  7
+    'rebooting':  7,
+
+    # 腾讯云
+    'PENDING': 21,
+    'RUNNING': 2,
+    'STOPPED': 4,
+    'REBOOTING': 7,
+    'STARTING': 8,
+    'STOPPING': 9
 }
 
 #################################################################################################
@@ -653,4 +662,13 @@ THRESHOLD = {
     "DISK_THRESHOLD": 0.8,
     "NET_THRESHOLD": 0.8,
     "BLOCK_THRESHOLD": 0.8
+}
+
+# 腾讯云存储类型
+TENCLOUD_DISK_TYPE = {
+    'LOCAL_BASIC': '本地硬盘',
+    'LOCAL_SSD': '本地SSD硬盘',
+    'CLOUD_BASIC': '普通云硬盘',
+    'CLOUD_PREMIUM': '高性能云硬盘',
+    'CLOUD_SSD': 'SSD云硬盘'
 }
