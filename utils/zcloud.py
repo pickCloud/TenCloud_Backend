@@ -54,15 +54,62 @@ class Zcloud:
 
         return r[0].get('PublicIpAddress', '')
 
-if __name__ == '__main__':
-    instances = list()
+    @classmethod
+    def describe_image(cls, data):
+        c = cls._get_client(data['region_id'])
+        images = c.describe_images(ImageIds=[data['ImageId']])
+        resp = list()
+        if not len(images['Images']):
+            return resp
 
-    for region in ZCLOUD_REGION_LIST:
-       r = Zcloud.get_instances(region)
-       instances.extend(r)
+        for one in images['Images']:
+            image = dict()
+            image['ImageId'] = one.get('ImageId','')
+            image['ImageVersion'] = ''
+            image['OSType'] = one.get('ImageType','')
+            image['Platform'] = one.get('Platform','')
+            image['Architecture'] = one.get('Architecture','')
+            image['ImageName'] = one.get('Name','')
+            image['Size'] = ''
+            image['OSName'] = ''
+            resp.append(image)
+        return resp
+
+    @classmethod
+    def describe_disk(cls, data):
+        c = cls._get_client(data['region_id'])
+        disks = c.describe_volumes()
+        resp = list()
+        if not len(disks['Volumes']):
+            return resp
+        for one in disks['Volumes']:
+            disk = dict()
+            disk['DiskId'] = one.get('VolumeId','')
+            disk['DiskName'] = ''
+            disk['Type'] = ''
+            disk['Category'] = one.get('VolumeType','')
+            disk['Size'] = one['Size']
+            disk['InstanceId'] = one.get('Attachments', [])[0].get('InstanceId','')
+            disk['Device'] = one.get('Attachments', [])[0].get('Device','')
+            resp.append(disk)
+        return resp
+
+
+if __name__ == '__main__':
+    # image_1 = Zcloud.describe_image({'region_id': 'ap-southeast-1', 'ImageId': ['ami-68097514']})
+    # print(image_1)
+    # image_2 = Zcloud.describe_image({'region_id': 'us-west-2', 'ImageId':['ami-b5c509cd']})
+    # print(image_2)
+    disks_1 = Zcloud.describe_disk({'region_id': 'us-west-2'})
+    print(disks_1)
+    # instances = list()
+    #
+    # for region in ZCLOUD_REGION_LIST:
+    #    r = Zcloud.get_instances(region)
+    #    instances.extend(r)
 
     # r = Zcloud.get_instances(region='us-west-2', InstanceIds=['i-079a7ab649fb51f7d'])
     # instances.extend(r)
 
-    from pprint import pprint
-    pprint(instances)
+    # from pprint import pprint
+    # pprint(instances)

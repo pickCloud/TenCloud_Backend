@@ -262,7 +262,6 @@ class ServerDetailHandler(BaseHandler):
         """
         with catch(self):
             data = yield self.server_service.get_detail(int(id))
-
             result = dict()
 
             result['basic_info'] = {
@@ -279,6 +278,22 @@ class ServerDetailHandler(BaseHandler):
                 'created_time': data['server_created_time']
             }
 
+            disk_info = list()
+            for i in json.loads(data.get('disk_info','')):
+                one = dict()
+                one['system_disk_id'] = i['DiskId']
+                one['system_disk_type'] = i['Category']
+                one['system_disk_size'] = i['Size']
+                disk_info.append(one)
+
+            image_info = list()
+            for i in json.loads(data.get('image_info', '')):
+                one = dict()
+                one['image_id'] = i['ImageId']
+                one['image_name'] = i['ImageName']
+                one['image_version'] = i['ImageVersion']
+                image_info.append(one)
+
             result['system_info'] = {
                 'config': {
                     'cpu': data['cpu'],
@@ -289,13 +304,8 @@ class ServerDetailHandler(BaseHandler):
                     "instance_network_type": data['instance_network_type'],
                     "internet_max_bandwidth_in": data['internet_max_bandwidth_in'],
                     "internet_max_bandwidth_out": data['internet_max_bandwidth_out'],
-                    "system_disk_id": data['system_disk_id'],
-                    "system_disk_type": data['system_disk_type'],
-                    "system_disk_size": data['system_disk_size'],
-                    "image_id": data['image_id'],
-                    "image_name": data['image_name'],
-                    "image_version": data['image_version']
-
+                    'disk_info': disk_info,
+                    'image_info': image_info
                 }
             }
 
