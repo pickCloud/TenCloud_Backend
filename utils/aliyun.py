@@ -93,7 +93,7 @@ class Aliyun:
     @classmethod
     def describe_images(cls, data):
         cmd = {
-            'Action': 'DescribeDisks',
+            'Action': 'DescribeImages',
             'RegionId': data['region_id'],
             'InstanceId': data['InstanceId']
         }
