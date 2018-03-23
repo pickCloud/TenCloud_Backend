@@ -890,11 +890,19 @@ class ServerMontiorHandler(BaseHandler):
             if not cid:
                 sid = yield self.server_service.select(fields='id',conds={'lord': uid, 'form': FORM_PERSON}, ct=False, ut=False)
             else:
-                sid = yield self.user_access_server_service.select(
+                try:
+                    self.company_employee_service.check_admin(uid=uid, cid=cid)
+                    sid = yield self.user_access_server_service.select(
+                                                                fields='sid',
+                                                                conds={'cid': cid},
+                                                                ct=False, ut=False
+                    )
+                except:
+                    sid = yield self.user_access_server_service.select(
                                                         fields='sid',
                                                         conds={'cid': cid, 'uid': uid},
                                                         ct=False, ut=False
-                )
+                    )
             sids = [i['sid'] for i in sid]
             data = yield self.server_service.get_monitor_data(sids)
             self.success(data)

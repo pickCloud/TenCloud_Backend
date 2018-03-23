@@ -666,11 +666,15 @@ class ServerService(BaseService):
             mem_usage_rate = float((json.loads(mem_content))['percent'])
 
             disk_content = yield self._get_monitor_data(ip=ip, table='disk')
-            disk_usage_rate = float((json.loads(disk_content))['percent'])
+            disk_content = json.loads(disk_content)
+            disk_usage_rate = float((disk_content)['percent'])
 
             net_content = yield self._get_monitor_data(ip=ip, table='net')
-            net = str(json.loads(net_content)['input'])+'/'+str(json.loads(net_content)['output'])
-            bloc_io = random.randint(0,101)
+            net = str(json.loads(net_content)['input'])+'/'+str(json.loads(net_content)['output'])+"(KB/s)"
+
+            bloc_input = str(disk_content['input'])
+            bloc_output = str(disk_content['output'])
+            bloc_io = bloc_input+"/"+bloc_output+"(KB/s)"
 
             resp = {
                 'serverID': i,
