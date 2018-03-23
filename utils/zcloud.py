@@ -2,7 +2,7 @@ __author__ = 'Jon'
 
 
 import boto3
-from constant import ZCLOUD_REGION_LIST
+from constant import ZCLOUD_DISK_TYPE
 
 from setting import settings
 
@@ -84,10 +84,11 @@ class Zcloud:
             return resp
         for one in disks['Volumes']:
             disk = dict()
+            category = one.get('VolumeType','')
             disk['DiskId'] = one.get('VolumeId','')
             disk['DiskName'] = ''
             disk['DiskType'] = ''
-            disk['DiskCategory'] = one.get('VolumeType','')
+            disk['DiskCategory'] = ZCLOUD_DISK_TYPE.get(category, category)
             disk['DiskSize'] = one['Size']
             disk['InstanceId'] = one.get('Attachments', [])[0].get('InstanceId','')
             disk['Device'] = one.get('Attachments', [])[0].get('Device','')

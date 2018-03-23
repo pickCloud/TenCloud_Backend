@@ -18,7 +18,7 @@ from utils.zcloud import Zcloud
 from utils.datetool import seconds_to_human
 from utils.general import get_formats, get_in_formats
 from constant import ALIYUN_NAME, QCLOUD_NAME, ALIYUN_REGION_NAME, QCLOUD_REGION_NAME, ZCLOUD_REGION_LIST, \
-    ZCLOUD_TYPE, ZCLOUD_NAME, ZCLOUD_REGION_NAME, TCLOUD_STATUS_MAKER, TCLOUD_STATUS
+    ZCLOUD_TYPE, ZCLOUD_NAME, ZCLOUD_REGION_NAME, TCLOUD_STATUS_MAKER, TCLOUD_STATUS, TENCLOUD_DISK_TYPE
 from setting import settings
 from concurrent.futures import ThreadPoolExecutor, wait
 from DBUtils.PooledDB import PooledDB
@@ -90,9 +90,10 @@ class Instance:
         instances = Qcloud.describe_instances()
         for i in instances:
             status = TCLOUD_STATUS_MAKER.get(Qcloud.instance_status(i))
+            system_disk_type = i.get('SystemDisk', {}).get('DiskType')
             disks = [
                 {
-                    'DiskType': i.get('SystemDisk', {}).get('DiskType'),
+                    'DiskType': TENCLOUD_DISK_TYPE.get(system_disk_type, system_disk_type),
                     'DiskId': i.get('SystemDisk', {}).get('DiskId'),
                     'DiskSize': i.get('SystemDisk', {}).get('DiskSize', ''),
                     'DiskCategory': 'system'
@@ -100,7 +101,13 @@ class Instance:
             ]
             if i.get('DataDisks') is not None:
                 for d in i.get('DataDisks', []):
-                    d.update({'DiskCategory': 'data'})
+                    data_disk_type = d['DiskType']
+                    d.update(
+                        {
+                            'DiskCategory': 'data',
+                            'DiskType': TENCLOUD_DISK_TYPE.get(data_disk_type, data_disk_type)
+                        }
+                    )
                     disks.append(d)
             images = Qcloud.describe_images(i)
 
