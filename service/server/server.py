@@ -686,11 +686,11 @@ class ServerService(BaseService):
                 'diskIO': bloc_io,
                 'networkUsage': net
             }
-            if (cpu_percent == 100) or (mem_usage_rate == 100) or (disk_usage_rate==100) or (bloc_io == 100):
+            if (cpu_percent == 100) or (mem_usage_rate == 100) or (disk_usage_rate == 100) :
                 server_monitor_data.append(resp)
                 continue
 
-            if (cpu_percent <= 5) and (mem_usage_rate <= 5) and (disk_usage_rate <= 5) and (bloc_io <= 5):
+            if (cpu_percent <= 5) and (mem_usage_rate <= 5) and (disk_usage_rate <= 5):
                 resp['colorType'] = MONITOR_COLOR_TYPE['free']
                 server_monitor_data.append(resp)
                 continue
@@ -702,8 +702,7 @@ class ServerService(BaseService):
                 counter += 1
             if disk_usage_rate >= THRESHOLD['DISK_THRESHOLD']:
                 counter += 1
-            if bloc_io >= THRESHOLD['BLOCK_THRESHOLD']:
-                counter += 1
+
 
             if counter >= 2:
                 resp['colorType'] = MONITOR_COLOR_TYPE['warning_plus']
