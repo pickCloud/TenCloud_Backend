@@ -672,11 +672,29 @@ MONITOR_COLOR_TYPE = {
     'free': 5
 }
 
-# 腾讯云存储类型
+# 腾讯云存储类型 LOCAL_BASIC | LOCAL_SSD | CLOUD_BASIC | CLOUD_PREMIUM | CLOUD_SSD
 TENCLOUD_DISK_TYPE = {
     'LOCAL_BASIC': '本地硬盘',
     'LOCAL_SSD': '本地SSD硬盘',
     'CLOUD_BASIC': '普通云硬盘',
     'CLOUD_PREMIUM': '高性能云硬盘',
     'CLOUD_SSD': 'SSD云硬盘'
+}
+
+# 阿里云存储类型 cloud | cloud_efficiency | cloud_ssd | ephemeral_ssd | ephemeral
+ALIYUN_DISK_TYPE = {
+    'cloud': '普通云盘',
+    'cloud_efficiency': '高效云盘',
+    'cloud_ssd': 'SSD云盘',
+    'ephemeral_ssd': '本地 SSD 盘',
+    'ephemeral': '本地磁盘'
+}
+
+# 亚马逊云存储类型 standard | io1 | gp2 | sc1 | st1
+ZCLOUD_DISK_TYPE = {
+    'standard': '标准磁盘',
+    'io1': '预配置 IOPS SSD',
+    'gp2': '通用型 SSD ',
+    'sc1': 'Cold HDD',
+    'st1': '吞吐优化 HDD'
 }

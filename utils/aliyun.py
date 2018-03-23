@@ -8,7 +8,7 @@ import urllib.request, urllib.parse
 import base64
 import requests
 import json
-from constant import ALIYUN_DOMAIN, ALIYUN_REGION_LIST
+from constant import ALIYUN_DOMAIN, ALIYUN_REGION_LIST, ALIYUN_DISK_TYPE
 
 from setting import settings
 
@@ -139,10 +139,11 @@ class Aliyun:
 
         for one in disks:
             disk = dict()
+            category = one['Category']
             disk['DiskId'] = one['DiskId']
             disk['DiskName'] = one['DiskName']
             disk['DiskType'] = one['Type']
-            disk['DiskCategory'] = one['Category']
+            disk['DiskCategory'] = ALIYUN_DISK_TYPE.get(category, category)
             disk['DiskSize'] = one['Size']
             disk['InstanceId'] = one['InstanceId']
             disk['Device'] = one['Device']
