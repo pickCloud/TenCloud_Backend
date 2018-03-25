@@ -890,16 +890,16 @@ class ServerMontiorHandler(BaseHandler):
         with catch(self):
             cid, uid = self.params.get('cid'), self.current_user['id']
             if not cid:
-                sid = yield self.server_service.select(fields='id',conds={'lord': uid, 'form': FORM_PERSON}, ct=False, ut=False)
+                sid = yield self.server_service.select(fields='id', conds={'lord': uid, 'form': FORM_PERSON}, ct=False, ut=False)
             else:
-                try:
-                    self.company_employee_service.check_admin(uid=uid, cid=cid)
+                is_admin = yield self.company_employee_service.check_admin_bool(uid=uid, cid=cid)
+                if is_admin:
                     sid = yield self.server_service.select(
                                                                 fields='id as sid',
                                                                 conds={'lord': cid, 'form':RESOURCE_TYPE['firm'] },
                                                                 ct=False, ut=False
                     )
-                except:
+                else:
                     sid = yield self.user_access_server_service.select(
                                                         fields='sid',
                                                         conds={'cid': cid, 'uid': uid},

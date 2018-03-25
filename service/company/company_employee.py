@@ -23,6 +23,19 @@ class CompanyEmployeeService(BaseService):
             raise AppError(ERR_TIP['not_this_company_admin']['msg'], ERR_TIP['not_this_company_admin']['sts'])
 
     @coroutine
+    def check_admin_bool(self, cid, uid):
+        ''' 是否管理员
+        :param cid: 公司id
+        :param uid: 用户id
+        '''
+        data = yield self.select({'cid': cid, 'uid': uid, 'is_admin': 1}, one=True)
+
+        resp = True
+        if not data:
+            resp = False
+        return resp
+
+    @coroutine
     def check_staff(self, cid, uid):
         ''' 是否公司员工
         :param cid: 公司id
