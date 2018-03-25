@@ -714,8 +714,8 @@ class ServerService(BaseService):
                 'diskUsageRate': disk_usage_rate,
                 'diskIO': bloc_io,
                 'networkUsage': net,
-                'netDownload': net_download+"KB/s",
-                'netUpload': net_upload+"KB/s"
+                'netDownload': str(net_download)+"KB/s",
+                'netUpload': str(net_upload)+"KB/s"
             }
             if (cpu_percent == 100) or (mem_usage_rate == 100) or (disk_usage_rate == 100) or \
                     (bloc_io == 100) or (net_input == 100) or (net_output==100):
