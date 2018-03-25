@@ -684,7 +684,7 @@ class ServerService(BaseService):
                 continue
             disk_content = json.loads(disk_content)
             disk_usage_rate = float(disk_content['percent'])
-            bloc_io = (disk_content['utilize'])*100
+            bloc_io = disk_content['utilize']
 
             net_content = yield self._get_monitor_data(ip=ip, table='net')
             if net_content is None:
