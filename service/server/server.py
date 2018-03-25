@@ -678,14 +678,12 @@ class ServerService(BaseService):
             bloc_io = (disk_content['utilize'])*100
 
             bandwidth = yield self._get_max_bandwidth(ip)
-            self.log.info(bandwidth)
             max_input = int(bandwidth['internet_max_bandwidth_in'])
             max_output = int(bandwidth['internet_max_bandwidth_out'])
             net_content = yield self._get_monitor_data(ip=ip, table='net')
-            self.log.info(net_content)
             net_input = ((json.loads(net_content)['input'])/max_input)*100
             net_output = ((json.loads(net_content)['output'])/max_output)*100
-            net = str((json.loads(net_content)['input']))+'/'+str((json.loads(net_content)['output']))+"(KB/s)"
+            net = str(net_input)+'/'+str(net_output)
 
             resp = {
                 'serverID': i,
