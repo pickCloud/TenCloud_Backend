@@ -77,8 +77,8 @@ class Instance:
                 'charge_type': i.get('InternetChargeType', ''),
                 'provider': self.provider,
                 'instance_network_type': i.get('InstanceNetworkType', ''),
-                'internet_max_bandwidth_in': i.get('InternetMaxBandwidthIn', ''),
-                'internet_max_bandwidth_out': i.get('InternetMaxBandwidthOut', ''),
+                'internet_max_bandwidth_in': abs(i.get('InternetMaxBandwidthIn', '')),
+                'internet_max_bandwidth_out': abs(i.get('InternetMaxBandwidthOut', '')),
 
                 'disk_info': json.dumps(disks),
                 'image_info': json.dumps(images)
