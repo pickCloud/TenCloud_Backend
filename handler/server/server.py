@@ -12,7 +12,7 @@ from utils.security import Aes
 from utils.decorator import is_login, require
 from utils.context import catch
 from constant import MONITOR_CMD, OPERATE_STATUS, OPERATION_OBJECT_STYPE, SERVER_OPERATE_STATUS, \
-      CONTAINER_OPERATE_STATUS, RIGHT, SERVICE, FORM_COMPANY, SERVERS_REPORT_INFO, THRESHOLD, FORM_PERSON
+      CONTAINER_OPERATE_STATUS, RIGHT, SERVICE, FORM_COMPANY, SERVERS_REPORT_INFO, THRESHOLD, FORM_PERSON, RESOURCE_TYPE
 
 
 class ServerNewHandler(WebSocketBaseHandler):
@@ -881,6 +881,8 @@ class ServerMontiorHandler(BaseHandler):
                     "diskUsageRate": float,
                     "diskIO": string,
                     "networkUsage": float,
+                    "netDownload": str,
+                    "netUpload": str
                 }
             ]
         }
@@ -892,9 +894,9 @@ class ServerMontiorHandler(BaseHandler):
             else:
                 try:
                     self.company_employee_service.check_admin(uid=uid, cid=cid)
-                    sid = yield self.user_access_server_service.select(
-                                                                fields='sid',
-                                                                conds={'cid': cid},
+                    sid = yield self.server_service.select(
+                                                                fields='id as sid',
+                                                                conds={'lord': cid, 'form':RESOURCE_TYPE['firm'] },
                                                                 ct=False, ut=False
                     )
                 except:

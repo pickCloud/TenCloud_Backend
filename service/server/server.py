@@ -667,22 +667,42 @@ class ServerService(BaseService):
             ip, name = server_info['public_ip'], server_info['name']
 
             cpu_content = yield self._get_monitor_data(ip=ip, table='cpu')
-            cpu_percent = float((json.loads(cpu_content))['percent'])
+            if cpu_content is None:
+                self.log.error("server {ip} does not exist".format(ip=ip))
+                continue
+            cpu_percent = float(json.loads(cpu_content)['percent'])
 
             mem_content = yield self._get_monitor_data(ip=ip, table='memory')
-            mem_usage_rate = float((json.loads(mem_content))['percent'])
+            if mem_content is None:
+                self.log.error("server {ip} does not exist".format(ip=ip))
+                continue
+            mem_usage_rate = float(json.loads(mem_content)['percent'])
 
             disk_content = yield self._get_monitor_data(ip=ip, table='disk')
+            if disk_content is None:
+                self.log.error("server {ip} does not exist".format(ip=ip))
+                continue
             disk_content = json.loads(disk_content)
-            disk_usage_rate = float((disk_content)['percent'])
+            disk_usage_rate = float(disk_content['percent'])
             bloc_io = (disk_content['utilize'])*100
 
-            bandwidth = yield self._get_max_bandwidth(ip)
-            max_input = int(bandwidth['internet_max_bandwidth_in'])
-            max_output = int(bandwidth['internet_max_bandwidth_out'])
             net_content = yield self._get_monitor_data(ip=ip, table='net')
-            net_input = ((json.loads(net_content)['input'])/max_input)*100
-            net_output = ((json.loads(net_content)['output'])/max_output)*100
+            if net_content is None:
+                self.log.error("server {ip} does not exist".format(ip=ip))
+                continue
+            net_download = (json.loads(net_content))['input']
+            net_upload = (json.loads(net_content))['output']
+
+            # 带宽为Kb/s， 数据为KB/s
+            bandwidth = yield self._get_max_bandwidth(ip)
+            if bandwidth is None:
+                self.log.error("server {ip} max bandwidth does not exist".format(ip=ip))
+                continue
+            max_input = int(bandwidth['internet_max_bandwidth_in'])*100
+            max_output = int(bandwidth['internet_max_bandwidth_out'])*100
+
+            net_input = (net_download/max_input)*100
+            net_output = (net_upload/max_output)*100
             net = str(net_input)+'/'+str(net_output)
 
             resp = {
@@ -693,13 +713,17 @@ class ServerService(BaseService):
                 'memUsageRate': mem_usage_rate,
                 'diskUsageRate': disk_usage_rate,
                 'diskIO': bloc_io,
-                'networkUsage': net
+                'networkUsage': net,
+                'netDownload': net_download+"KB/s",
+                'netUpload': net_upload+"KB/s"
             }
-            if (cpu_percent == 100) or (mem_usage_rate == 100) or (disk_usage_rate == 100) or (bloc_io == 100) :
+            if (cpu_percent == 100) or (mem_usage_rate == 100) or (disk_usage_rate == 100) or \
+                    (bloc_io == 100) or (net_input == 100) or (net_output==100):
                 server_monitor_data.append(resp)
                 continue
 
-            if (cpu_percent <= 5) and (mem_usage_rate <= 5) and (disk_usage_rate <= 5) and(bloc_io <= 5):
+            if (cpu_percent <= 5) and (mem_usage_rate <= 5) and (disk_usage_rate <= 5) and(bloc_io <= 5)\
+                    and (net_input <= 5) and (net_output <= 5):
                 resp['colorType'] = MONITOR_COLOR_TYPE['free']
                 server_monitor_data.append(resp)
                 continue
@@ -727,5 +751,4 @@ class ServerService(BaseService):
 
             server_monitor_data.append(resp)
             continue
-
         return server_monitor_data
