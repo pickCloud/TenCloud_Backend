@@ -77,8 +77,8 @@ class Instance:
                 'charge_type': i.get('InternetChargeType', ''),
                 'provider': self.provider,
                 'instance_network_type': i.get('InstanceNetworkType', ''),
-                'internet_max_bandwidth_in': str(i.get('InternetMaxBandwidthIn', ''))+"Mbps",
-                'internet_max_bandwidth_out': str(i.get('InternetMaxBandwidthOut', ''))+"Mbps",
+                'internet_max_bandwidth_in': i.get('InternetMaxBandwidthIn', ''),
+                'internet_max_bandwidth_out': i.get('InternetMaxBandwidthOut', ''),
 
                 'disk_info': json.dumps(disks),
                 'image_info': json.dumps(images)
@@ -134,9 +134,8 @@ class Instance:
                 'charge_type': i.get('InternetAccessible', {}).get('InternetChargeType', ''),
                 'provider': self.provider,
                 'instance_network_type': 'vpc',
-                'internet_max_bandwidth_in': '',
-                'internet_max_bandwidth_out': str(
-                    i.get('InternetAccessible', {}).get('InternetMaxBandwidthOut', '')) + "Mbps",
+                'internet_max_bandwidth_in': 1,
+                'internet_max_bandwidth_out': i.get('InternetAccessible', {}).get('InternetMaxBandwidthOut', ''),
 
                 'disk_info': json.dumps(disks),
                 'image_info': json.dumps(images)
@@ -184,8 +183,8 @@ class Instance:
                     'provider': self.provider,
                     'security_group_ids': ','.join([i['GroupId'] for i in j.get('SecurityGroups', '')]),
                     'instance_network_type': 'vpc',
-                    'internet_max_bandwidth_in': '',
-                    'internet_max_bandwidth_out': '',
+                    'internet_max_bandwidth_in': 1,
+                    'internet_max_bandwidth_out': 1,
 
 
                     'image_info': json.dumps(images),

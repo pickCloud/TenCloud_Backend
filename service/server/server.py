@@ -650,6 +650,13 @@ class ServerService(BaseService):
         return data
 
     @coroutine
+    def _get_max_bandwidth(self, ip):
+        sql = "SELECT internet_max_bandwidth_in, internet_max_bandwidth_out FROM instance WHERE public_ip=%s limit 1"
+        cur = yield self.db.execute(sql, [ip])
+        data = cur.fetchone()
+        return data
+
+    @coroutine
     def get_monitor_data(self, sids):
         server_monitor_data = []
         for i in sids:
@@ -668,13 +675,15 @@ class ServerService(BaseService):
             disk_content = yield self._get_monitor_data(ip=ip, table='disk')
             disk_content = json.loads(disk_content)
             disk_usage_rate = float((disk_content)['percent'])
+            bloc_io = (disk_content['utilize'])*100
 
+            bandwidth = yield self._get_max_bandwidth(ip)
+            max_input = int(bandwidth['internet_max_bandwidth_in'])
+            max_output = int(bandwidth['internet_max_bandwidth_out'])
             net_content = yield self._get_monitor_data(ip=ip, table='net')
-            net = str(json.loads(net_content)['input'])+'/'+str(json.loads(net_content)['output'])+"(KB/s)"
-
-            bloc_input = str(disk_content['input'])
-            bloc_output = str(disk_content['output'])
-            bloc_io = bloc_input+"/"+bloc_output+"(KB/s)"
+            net_input = ((json.loads(net_content)['input'])/max_input)*100
+            net_output = ((json.loads(net_content)['output'])/max_output)*100
+            net = str(net_input)+'/'+str(net_output)
 
             resp = {
                 'serverID': i,
@@ -686,11 +695,11 @@ class ServerService(BaseService):
                 'diskIO': bloc_io,
                 'networkUsage': net
             }
-            if (cpu_percent == 100) or (mem_usage_rate == 100) or (disk_usage_rate == 100) :
+            if (cpu_percent == 100) or (mem_usage_rate == 100) or (disk_usage_rate == 100) or (bloc_io == 100) :
                 server_monitor_data.append(resp)
                 continue
 
-            if (cpu_percent <= 5) and (mem_usage_rate <= 5) and (disk_usage_rate <= 5):
+            if (cpu_percent <= 5) and (mem_usage_rate <= 5) and (disk_usage_rate <= 5) and(bloc_io <= 5):
                 resp['colorType'] = MONITOR_COLOR_TYPE['free']
                 server_monitor_data.append(resp)
                 continue
@@ -702,7 +711,10 @@ class ServerService(BaseService):
                 counter += 1
             if disk_usage_rate >= THRESHOLD['DISK_THRESHOLD']:
                 counter += 1
-
+            if bloc_io >= THRESHOLD['BLOCK_THRESHOLD']:
+                counter += 1
+            if (net_input >= THRESHOLD['NET_THRESHOLD']) or (net_output >= THRESHOLD['NET_THRESHOLD']):
+                counter += 1
 
             if counter >= 2:
                 resp['colorType'] = MONITOR_COLOR_TYPE['warning_plus']

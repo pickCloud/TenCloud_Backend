@@ -314,8 +314,8 @@ class ServerDetailHandler(BaseHandler):
                     'os_type': data['os_type'],
                     "security_group_ids": data['security_group_ids'],
                     "instance_network_type": data['instance_network_type'],
-                    "internet_max_bandwidth_in": data['internet_max_bandwidth_in'],
-                    "internet_max_bandwidth_out": data['internet_max_bandwidth_out'],
+                    "internet_max_bandwidth_in": data['internet_max_bandwidth_in']+"Mbps",
+                    "internet_max_bandwidth_out": data['internet_max_bandwidth_out']+"Mbps",
                     'disk_info': disk_info,
                     'image_info': image_info
                 }
