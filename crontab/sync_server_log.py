@@ -131,8 +131,8 @@ class ServerLog:
         return {'percent': avg}
 
     def cal_disk(self, ip):
-        total, free, percent = [], [], []
-        total_avg, free_avg, percent_avg = '', '', ''
+        total, free, percent, util = [], [], [], []
+        total_avg, free_avg, percent_avg, util_avg = '', '', '', ''
         resp = self.get_data(ip=ip, table='disk', fields='content')
         if resp:
             for x in resp:
@@ -140,10 +140,12 @@ class ServerLog:
                 total.append(content['total'])
                 free.append(content['free'])
                 percent.append(content['percent'])
+                util.append(content['utilize'])
             total_avg = "%.2f" % (statistics.mean(total))
             free_avg = "%.2f" % (statistics.mean(free))
             percent_avg = "%.2f" % (statistics.mean(percent))
-        return {'total': total_avg, 'free': free_avg, 'percent': percent_avg}
+            util_avg = ".2f" % (statistics.mean(util))
+        return {'total': total_avg, 'free': free_avg, 'percent': percent_avg, 'utilize': util_avg}
 
     def cal_memory(self, ip):
         total, free, percent, avaible = [], [], [], []
