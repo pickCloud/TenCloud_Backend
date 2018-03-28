@@ -77,8 +77,8 @@ class Instance:
                 'charge_type': i.get('InternetChargeType', ''),
                 'provider': self.provider,
                 'instance_network_type': i.get('InstanceNetworkType', ''),
-                'internet_max_bandwidth_in': abs(i.get('InternetMaxBandwidthIn', '')),
-                'internet_max_bandwidth_out': abs(i.get('InternetMaxBandwidthOut', '')),
+                'internet_max_bandwidth_in': 500,  # 阿里云的下行带宽不限制的，暂时使用500Mbps
+                'internet_max_bandwidth_out': i.get('InternetMaxBandwidthOut', ''),
 
                 'disk_info': json.dumps(disks),
                 'image_info': json.dumps(images)
@@ -111,6 +111,12 @@ class Instance:
                     disks.append(d)
             images = Qcloud.describe_images(i)
 
+            # 当购买出带宽小于10Mbps， 入带宽为10Mbps,大于10Mbps时，与出带宽一样
+            out_bandwidth = i.get('InternetAccessible', {}).get('InternetMaxBandwidthOut', '')
+            in_bandwith = 10
+            if out_bandwidth >= 10:
+                in_bandwith = out_bandwidth
+
             self.data[i['InstanceId']] = {
                 'instance_id': i.get('InstanceId'),
                 'instance_name': i.get('InstanceName'),
@@ -134,8 +140,8 @@ class Instance:
                 'charge_type': i.get('InternetAccessible', {}).get('InternetChargeType', ''),
                 'provider': self.provider,
                 'instance_network_type': 'vpc',
-                'internet_max_bandwidth_in': 1,
-                'internet_max_bandwidth_out': i.get('InternetAccessible', {}).get('InternetMaxBandwidthOut', ''),
+                'internet_max_bandwidth_in': in_bandwith,
+                'internet_max_bandwidth_out': out_bandwidth,
 
                 'disk_info': json.dumps(disks),
                 'image_info': json.dumps(images)
@@ -183,9 +189,8 @@ class Instance:
                     'provider': self.provider,
                     'security_group_ids': ','.join([i['GroupId'] for i in j.get('SecurityGroups', '')]),
                     'instance_network_type': 'vpc',
-                    'internet_max_bandwidth_in': 1,
-                    'internet_max_bandwidth_out': 1,
-
+                    'internet_max_bandwidth_in': ZCLOUD_TYPE.get(j.get('InstanceType'), [0])[2],
+                    'internet_max_bandwidth_out': ZCLOUD_TYPE.get(j.get('InstanceType'), [0])[2],
 
                     'image_info': json.dumps(images),
                     'disk_info': json.dumps(disks)
