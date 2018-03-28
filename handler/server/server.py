@@ -814,13 +814,19 @@ class SystemLoadHandler(BaseHandler):
                 "one_minute_load": 0.14
                 "five_minute_load": 0.34
                 "fifteen_minute_load:" 0.24
+                "monitor": object
             }
         }
         """
         with catch(self):
             ip = yield self.server_service.fetch_public_ip(int(sid))
-            info = json.loads(self.redis.hget(SERVERS_REPORT_INFO, ip))
-            self.success(info['system_load'])
+            info = json.loads(self.redis.hget(SERVERS_REPORT_INFO, ip))['system_load']
+
+            data = yield self.server_service.get_monitor_data([sid])
+            monitor_data = data[0]
+
+            info.update({'monitor': monitor_data})
+            self.success(info)
 
 
 class ServerThresholdHandler(BaseHandler):
