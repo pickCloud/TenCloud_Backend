@@ -400,11 +400,11 @@ class ServerService(BaseService):
         yield self.get(payload, host=cloud.domain)
 
     @coroutine
-    def get_instance_status(self, instance_id):
-        ''' 根据instance_id,查询当前主机开关状态
+    def get_instance_status(self, ip):
+        ''' 根据public ip查询当前主机开关状态
         '''
-        sql = " SELECT status FROM instance WHERE instance_id=%s "
-        cur = yield self.db.execute(sql, instance_id)
+        sql = " SELECT status FROM instance WHERE public_ip=%s "
+        cur = yield self.db.execute(sql, ip)
         data = cur.fetchone()
 
         return data.get('status')
@@ -684,7 +684,7 @@ class ServerService(BaseService):
                 continue
             disk_content = json.loads(disk_content)
             disk_usage_rate = float(disk_content['percent'])
-            bloc_io = disk_content['utilize']
+            disk_utilize = disk_content['utilize']
 
             net_content = yield self._get_monitor_data(ip=ip, table='net')
             if net_content is None:
@@ -711,17 +711,17 @@ class ServerService(BaseService):
                 'cpuUsageRate': cpu_percent,
                 'memUsageRate': mem_usage_rate,
                 'diskUsageRate': disk_usage_rate,
-                'diskIO': bloc_io,
-                'networkUsage': net,
+                'diskUtilize': disk_utilize,
+                'netUsageRate': net,
                 'netDownload': str(net_download)+"Kb/s",
                 'netUpload': str(net_upload)+"Kb/s"
             }
             if (cpu_percent == 100) or (mem_usage_rate == 100) or (disk_usage_rate == 100) or \
-                    (bloc_io == 100) or (net_input == 100) or (net_output==100):
+                    (disk_utilize == 100) or (net_input == 100) or (net_output==100):
                 server_monitor_data.append(resp)
                 continue
 
-            if (cpu_percent <= 5) and (mem_usage_rate <= 5) and (disk_usage_rate <= 5) and(bloc_io <= 5)\
+            if (cpu_percent <= 5) and (mem_usage_rate <= 5) and (disk_usage_rate <= 5) and(disk_utilize <= 5)\
                     and (net_input <= 5) and (net_output <= 5):
                 resp['colorType'] = MONITOR_COLOR_TYPE['free']
                 server_monitor_data.append(resp)
@@ -734,7 +734,7 @@ class ServerService(BaseService):
                 counter += 1
             if disk_usage_rate >= THRESHOLD['DISK_THRESHOLD']:
                 counter += 1
-            if bloc_io >= THRESHOLD['BLOCK_THRESHOLD']:
+            if disk_utilize >= THRESHOLD['BLOCK_THRESHOLD']:
                 counter += 1
             if (net_input >= THRESHOLD['NET_THRESHOLD']) or (net_output >= THRESHOLD['NET_THRESHOLD']):
                 counter += 1
