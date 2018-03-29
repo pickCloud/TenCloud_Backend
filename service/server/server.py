@@ -714,7 +714,9 @@ class ServerService(BaseService):
                 'diskUtilize': disk_utilize,
                 'netUsageRate': net,
                 'netDownload': str(net_download)+"Kb/s",
-                'netUpload': str(net_upload)+"Kb/s"
+                'netUpload': str(net_upload)+"Kb/s",
+                "netInputMax": max_input,
+                "netOutputMax": max_output
             }
             if (cpu_percent == 100) or (mem_usage_rate == 100) or (disk_usage_rate == 100) or \
                     (disk_utilize == 100) or (net_input == 100) or (net_output==100):
