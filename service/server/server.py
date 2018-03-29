@@ -700,8 +700,8 @@ class ServerService(BaseService):
             max_input = bandwidth['internet_max_bandwidth_in']
             max_output = bandwidth['internet_max_bandwidth_out']
 
-            net_input = (net_download/(max_input*1000))*100
-            net_output = (net_upload/(max_output*1000))*100
+            net_input = (net_download/int((max_input*1000)))*100
+            net_output = (net_upload/int((max_output*1000)))*100
             net = str(net_input)+'/'+str(net_output)
 
             resp = {
