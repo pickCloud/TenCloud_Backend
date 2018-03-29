@@ -18,7 +18,8 @@ from utils.zcloud import Zcloud
 from utils.datetool import seconds_to_human
 from utils.general import get_formats, get_in_formats
 from constant import ALIYUN_NAME, QCLOUD_NAME, ALIYUN_REGION_NAME, QCLOUD_REGION_NAME, ZCLOUD_REGION_LIST, \
-    ZCLOUD_TYPE, ZCLOUD_NAME, ZCLOUD_REGION_NAME, TCLOUD_STATUS_MAKER, TCLOUD_STATUS, TENCLOUD_DISK_TYPE
+    ZCLOUD_TYPE, ZCLOUD_NAME, ZCLOUD_REGION_NAME, TCLOUD_STATUS_MAKER, TCLOUD_STATUS, TENCLOUD_DISK_TYPE, \
+    TENCLOUD_INTERNET_PAID,TENCLOUD_INSTANCE_PAID, ALIYUN_INSTANCE_PAID, ALIYUN_INTERNET_PAID
 from setting import settings
 from concurrent.futures import ThreadPoolExecutor, wait
 from DBUtils.PooledDB import PooledDB
@@ -55,6 +56,9 @@ class Instance:
             disks = Aliyun.describe_disks(i)
             images = Aliyun.describe_images(i)
             status = TCLOUD_STATUS_MAKER.get(i.get('Status', ''), i.get('Status', ''))
+            charge_type = i.get('InstanceChargeType', '')
+            internet_charge_type = i.get('InternetChargeType', '')
+
             self.data[i.get('InstanceId')]= {
                 'instance_id': i.get('InstanceId'),
                 'instance_name': i.get('InstanceName', ''),
@@ -74,8 +78,8 @@ class Instance:
                 'create_time': i.get('CreationTime', ''),
                 'expired_time': i.get('ExpiredTime', ''),
                 'is_available': i.get('DeviceAvailable', ''),
-                'instance_charge_type': i.get('InstanceChargeType', ''),
-                'instance_internet_charge_type': i.get('InternetChargeType', ''),
+                'instance_charge_type': ALIYUN_INSTANCE_PAID.get(charge_type),
+                'instance_internet_charge_type': ALIYUN_INTERNET_PAID.get(internet_charge_type),
                 'provider': self.provider,
                 'instance_network_type': i.get('InstanceNetworkType', ''),
                 'internet_max_bandwidth_in': 500,  # 阿里云的下行带宽不限制的，暂时使用500Mbps
@@ -118,6 +122,9 @@ class Instance:
             if out_bandwidth >= 10:
                 in_bandwith = out_bandwidth
 
+            internet_charge_type = i.get('InternetAccessible', {}).get('InternetChargeType', '')
+            charge_type = i.get('InstanceChargeType', '')
+
             self.data[i['InstanceId']] = {
                 'instance_id': i.get('InstanceId'),
                 'instance_name': i.get('InstanceName'),
@@ -138,8 +145,8 @@ class Instance:
                 'create_time': i.get('CreatedTime', ''),
                 'expired_time': i.get('ExpiredTime', ''),
                 'is_available': i.get('DeviceAvailable', 1),
-                'instance_charge_type': i.get('InstanceChargeType', ''),
-                'instance_internet_charge_type': i.get('InternetAccessible', {}).get('InternetChargeType', ''),
+                'instance_charge_type': TENCLOUD_INSTANCE_PAID.get(charge_type),
+                'instance_internet_charge_type': TENCLOUD_INTERNET_PAID.get(internet_charge_type),
                 'provider': self.provider,
                 'instance_network_type': 'vpc',
                 'internet_max_bandwidth_in': in_bandwith,
