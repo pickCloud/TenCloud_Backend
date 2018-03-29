@@ -836,7 +836,9 @@ class SystemLoadHandler(BaseHandler):
                 'diskUtilize': '',
                 'netUsageRate': '',
                 'netDownload': '',
-                'netUpload': ''
+                'netUpload': '',
+                "netInputMax": '',
+                "netOutputMax": ''
             }
             monitor_data = data[0] if data else resp
 
@@ -903,7 +905,9 @@ class ServerMontiorHandler(BaseHandler):
                     "diskUtilize": string,
                     "netUsageRate": float,
                     "netDownload": str,
-                    "netUpload": str
+                    "netUpload": str,
+                    "netInputMax":str,
+                    "netOutputMax": str
                 }
             ]
         }
