@@ -697,11 +697,11 @@ class ServerService(BaseService):
             if bandwidth is None:
                 self.log.error("server {ip} max bandwidth does not exist".format(ip=ip))
                 continue
-            max_input = int(bandwidth['internet_max_bandwidth_in'])*1000
-            max_output = int(bandwidth['internet_max_bandwidth_out'])*1000
+            max_input = bandwidth['internet_max_bandwidth_in']
+            max_output = bandwidth['internet_max_bandwidth_out']
 
-            net_input = (net_download/max_input)*100
-            net_output = (net_upload/max_output)*100
+            net_input = (net_download/(max_input*1000))*100
+            net_output = (net_upload/(max_output*1000))*100
             net = str(net_input)+'/'+str(net_output)
 
             resp = {
@@ -715,8 +715,8 @@ class ServerService(BaseService):
                 'netUsageRate': net,
                 'netDownload': str(net_download)+"Kb/s",
                 'netUpload': str(net_upload)+"Kb/s",
-                "netInputMax": max_input,
-                "netOutputMax": max_output
+                "netInputMax": str(max_input)+"Mbps",
+                "netOutputMax": str(max_output)+"Mbps"
             }
             if (cpu_percent == 100) or (mem_usage_rate == 100) or (disk_usage_rate == 100) or \
                     (disk_utilize == 100) or (net_input == 100) or (net_output==100):
