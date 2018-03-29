@@ -40,7 +40,7 @@ User=root
 Group=root
 Restart=always
 RestartSec=1
-ExecStart=/usr/sbin/tencloud-agent --debug=${debug} --interval=60 --addr=${addr}
+ExecStart=/usr/sbin/tencloud-agent --debug=${debug} --interval=30 --addr=${addr}
 
 [Install]
 WantedBy=multi-user.target

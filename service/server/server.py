@@ -693,13 +693,12 @@ class ServerService(BaseService):
             net_download = (json.loads(net_content))['input']
             net_upload = (json.loads(net_content))['output']
 
-            # 带宽为Kb/s， 数据为KB/s
             bandwidth = yield self._get_max_bandwidth(ip)
             if bandwidth is None:
                 self.log.error("server {ip} max bandwidth does not exist".format(ip=ip))
                 continue
-            max_input = int(bandwidth['internet_max_bandwidth_in'])*100
-            max_output = int(bandwidth['internet_max_bandwidth_out'])*100
+            max_input = int(bandwidth['internet_max_bandwidth_in'])*1000
+            max_output = int(bandwidth['internet_max_bandwidth_out'])*1000
 
             net_input = (net_download/max_input)*100
             net_output = (net_upload/max_output)*100
@@ -714,8 +713,8 @@ class ServerService(BaseService):
                 'diskUsageRate': disk_usage_rate,
                 'diskIO': bloc_io,
                 'networkUsage': net,
-                'netDownload': str(net_download)+"KB/s",
-                'netUpload': str(net_upload)+"KB/s"
+                'netDownload': str(net_download)+"Kb/s",
+                'netUpload': str(net_upload)+"Kb/s"
             }
             if (cpu_percent == 100) or (mem_usage_rate == 100) or (disk_usage_rate == 100) or \
                     (bloc_io == 100) or (net_input == 100) or (net_output==100):
