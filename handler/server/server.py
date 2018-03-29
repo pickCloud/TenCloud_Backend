@@ -266,7 +266,8 @@ class ServerDetailHandler(BaseHandler):
                     "contract": {
                         "create_time": str,
                         "expired_time": str,
-                        "charge_type": str
+                        "instance_charge_type": str,
+                        "instance_internet_charge_type": str
                     }
                 },
             }
@@ -326,7 +327,8 @@ class ServerDetailHandler(BaseHandler):
                 'contract': {
                     'create_time': data['create_time'],
                     'expired_time': data['expired_time'],
-                    'charge_type': data['charge_type']
+                    'instance_internet_charge_type': data['instance_internet_charge_type'],
+                    'instance_charge_type': data['instance_charge_type']
                 }
             }
 
