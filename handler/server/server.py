@@ -519,15 +519,15 @@ class ServerRebootHandler(BaseHandler):
 
 
 class ServerStatusHandler(BaseHandler):
-    @is_login
+    @require(service=SERVICE['s'])
     @coroutine
-    def get(self, instance_id):
+    def get(self, id):
         """
         @api {get} /api/server/([\w\W]+)/status 查询实例状态
         @apiName ServerStatusHandler
         @apiGroup Server
 
-        @apiParam {Number} instance_id 实例id
+        @apiParam {Number} id 服务器id
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -538,7 +538,8 @@ class ServerStatusHandler(BaseHandler):
             }
         """
         with catch(self):
-            data = yield self.server_service.get_instance_status(instance_id)
+            ip = yield self.server_service.fetch_public_ip(server_id=int(id))
+            data = yield self.server_service.get_instance_status(ip)
 
             self.success(data)
 
@@ -823,7 +824,19 @@ class SystemLoadHandler(BaseHandler):
             info = json.loads(self.redis.hget(SERVERS_REPORT_INFO, ip))['system_load']
 
             data = yield self.server_service.get_monitor_data([sid])
-            monitor_data = data[0]
+            resp = {
+                'serverID': '',
+                'name': '',
+                'colorType': '',
+                'cpuUsageRate': '',
+                'memUsageRate': '',
+                'diskUsageRate': '',
+                'diskUtilize': '',
+                'netUsageRate': '',
+                'netDownload': '',
+                'netUpload': ''
+            }
+            monitor_data = data[0] if data else resp
 
             info.update({'monitor': monitor_data})
             self.success(info)
@@ -885,8 +898,8 @@ class ServerMontiorHandler(BaseHandler):
                     "cpuUsageRate": float,
                     "memUsageRate": float,
                     "diskUsageRate": float,
-                    "diskIO": string,
-                    "networkUsage": float,
+                    "diskUtilize": string,
+                    "netUsageRate": float,
                     "netDownload": str,
                     "netUpload": str
                 }
