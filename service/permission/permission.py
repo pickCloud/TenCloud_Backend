@@ -213,6 +213,10 @@ class UserAccessProjectService(UserAccessBaseService):
     fields = 'id, uid, pid, cid'
     resource = 'pid'
 
+class UserAccessApplicationService(UserAccessBaseService):
+    table = 'user_access_application'
+    fields = 'id, uid, aid, cid'
+    resource = 'aid'
 
 class UserAccessFilehubService(UserAccessBaseService):
     table = 'user_access_filehub'

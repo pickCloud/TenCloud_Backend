@@ -514,6 +514,33 @@ PROJECT_STATUS['build-failure'] = -2
 PROJECT_STATUS['deploy-failure'] = -4
 
 #################################################################################################
+# 应用状态
+# 0 初创建, 1 正常, 2 异常
+#################################################################################################
+APPLICATION_STATE = dict()
+APPLICATION_STATE['initial'] = 0
+APPLICATION_STATE['normal'] = 1
+APPLICATION_STATE['abnormal'] = 2
+
+#################################################################################################
+# 部署状态
+# 0 进行中, 1 已完成, 2 失败
+#################################################################################################
+DEPLOYMENT_STATUS = dict()
+DEPLOYMENT_STATUS['process'] = 0
+DEPLOYMENT_STATUS['complete'] = 1
+DEPLOYMENT_STATUS['fail'] = 2
+
+#################################################################################################
+# 部署状态
+# 0 未知, 1 成功, 2 失败
+#################################################################################################
+SERVICE_STATUS = dict()
+SERVICE_STATUS['unknown'] = 0
+SERVICE_STATUS['success'] = 1
+SERVICE_STATUS['failure'] = 2
+
+#################################################################################################
 # 文件下载
 #################################################################################################
 DISK_DOWNLOAD_URL = SERVER_URL + '/api/file/download/'
@@ -536,6 +563,7 @@ OPERATION_OBJECT_STYPE = dict()
 OPERATION_OBJECT_STYPE['server'] = 0
 OPERATION_OBJECT_STYPE['container'] = 1
 OPERATION_OBJECT_STYPE['project'] = 2
+OPERATION_OBJECT_STYPE['application'] = 2
 
 #################################################################################################
 # 主机操作行为码
@@ -705,6 +733,10 @@ SERVICE = {
     'f': {
         'company': 'user_access_filehub_service',
         'personal': 'file_service'
+    },
+    'a': {
+        'company': 'user_access_application_service',
+        'personal': 'application_service'
     }
 }
 # 各项阀值

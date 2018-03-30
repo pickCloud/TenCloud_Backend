@@ -57,7 +57,11 @@ from service.company.company_employee import CompanyEmployeeService
 from service.company.company_entry_setting import CompanyEntrySettingService
 from service.file.file import FileService
 from service.message.message import MessageService
-from service.permission.permission import PermissionService, UserPermissionService, UserAccessServerService, UserAccessProjectService, UserAccessFilehubService
+from service.permission.permission import PermissionService, UserPermissionService, UserAccessServerService, \
+                                          UserAccessProjectService, UserAccessFilehubService, UserAccessApplicationService
+from service.application.application import ApplicationService
+from service.application.deployment import DeploymentService
+from service.application.service import ServiceService
 from service.project.project import ProjectService
 from service.project.project_versions import ProjectVersionService
 from service.repository.repository import RepositoryService
@@ -75,6 +79,9 @@ class BaseHandler(tornado.web.RequestHandler):
     cluster_service = ClusterService()
     server_service = ServerService()
     project_service = ProjectService()
+    application_service = ApplicationService()
+    deployment_service = DeploymentService()
+    service_service = ServiceService()
     repos_service = RepositoryService()
     project_versions_service = ProjectVersionService()
     user_service = UserService()
@@ -91,6 +98,7 @@ class BaseHandler(tornado.web.RequestHandler):
     user_access_server_service = UserAccessServerService()
     user_access_project_service = UserAccessProjectService()
     user_access_filehub_service = UserAccessFilehubService()
+    user_access_application_service = UserAccessApplicationService()
 
     @property
     def db(self):

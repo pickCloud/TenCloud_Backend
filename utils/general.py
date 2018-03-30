@@ -65,6 +65,13 @@ def validate_id_card(number):
 
     _validate(regex, number, '请输入18位合法身份证号')
 
+
+def validate_application_name(name):
+    regex = r'^[-_0-9a-z]{1,64}$'
+
+    _validate(regex, name, '应用名称只能包含小写英文字母，数字，下划线，中划线，最长64个字符')
+
+
 def gen_random_code(length=6):
     return ''.join(random.sample('123456789', length))
 
