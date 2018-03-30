@@ -11,7 +11,7 @@ from handler.permission.permission import PermissionTemplateListHandler, Permiss
     PermissionTemplateAddHandler, PermissionResourcesHandler, PermissionTemplateDelHandler, \
     PermissionTemplateUpdateHandler
 from handler.application.application import ApplicationNewHandler, ApplicationDeleteHandler, ApplicationInfoHandler, \
-                                            ApplicationBriefHandler
+                                            ApplicationBriefHandler, ApplicationUpdateHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
     ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler, \
@@ -102,6 +102,7 @@ routes = [
     # 应用相关
     (r'/api/application/new', ApplicationNewHandler),
     (r'/api/application/del', ApplicationDeleteHandler),
+    (r'/api/application/update', ApplicationUpdateHandler),
     (r'/api/application', ApplicationInfoHandler),
     (r'/api/application/brief', ApplicationBriefHandler),
 
