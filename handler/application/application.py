@@ -64,9 +64,10 @@ class ApplicationNewHandler(BaseHandler):
                 return
 
             # 添加应用信息和公司应用相关的数据权限
-            self.params.update(self.get_lord())
-            self.params.pop('token')
-            new_app = yield self.application_service.add(self.params)
+            param.update(self.params)
+            param.pop('token', None)
+            param.pop('cid', None)
+            new_app = yield self.application_service.add(param)
 
             if self.params.get('form') == FORM_COMPANY:
                 param = {'uid': self.current_user['id'], 'cid': self.params.get('cid'), 'aid': new_app['id']}
@@ -137,15 +138,18 @@ class ApplicationInfoHandler(BaseHandler):
             }
         """
         with catch(self):
+            param = self.params
+            param.update(self.get_lord())
+            param.pop('token', None)
+            param.pop('cid', None)
+            page = int(param.pop('page', 1))
+            page_num = int(param.pop('page_num', MSG_PAGE_NUM))
+
             # 获取应用信息，如果未填写id的话则获取所有满足条件的应用
-            self.params.update(self.get_lord())
-            self.params.pop('token')
-            app_info = yield self.application_service.select(self.params)
+            app_info = yield self.application_service.select(param)
             app_info = yield self.filter(app_info, service=SERVICE['a'])
 
             # 对结果进行分页显示
-            page = int(self.params.pop('page', 1))
-            page_num = int(self.params.pop('page_num', MSG_PAGE_NUM))
             self.success(app_info[page_num * (page - 1):page_num * page])
 
 
