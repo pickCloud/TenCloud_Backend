@@ -246,13 +246,13 @@ class Instance:
 
     def _remove_invalid_status(self, instance):
         old_status = self.redis.hget(INSTANCE_STATUS, instance['public_ip'])
-        self.redis.hdel(INSTANCE_STATUS, instance['public_ip'])
         if old_status is None:
             old_status = instance['status']
         new_status = instance['status']
         old_bool = (old_status == TCLOUD_STATUS[7]) or (old_status == TCLOUD_STATUS[8]) or (old_status == TCLOUD_STATUS[9])
         if old_bool and (new_status == TCLOUD_STATUS[2]):
             return old_status
+        self.redis.hdel(INSTANCE_STATUS, instance['public_ip'])
         return new_status
 
     def _to_update(self, instances):
