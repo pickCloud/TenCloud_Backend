@@ -102,6 +102,55 @@ class ApplicationDeleteHandler(BaseHandler):
             self.success()
 
 
+class ApplicationUpdateHandler(BaseHandler):
+    @require(RIGHT['modify_project_info'], service=SERVICE['a'])
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/application/update 删除应用
+        @apiName ApplicationUpdateHandler
+        @apiGroup Application
+
+        @apiUse cidHeader
+
+        @apiParam {Number} id 项目id
+        @apiParam {String} name 应用名称
+        @apiParam {String} description 描述
+        @apiParam {String} repos_name 仓库名称
+        @apiParam {String} repos_ssh_url 应用在github的ssh地址
+        @apiParam {String} repos_https_url 应用在github的https地址
+        @apiParam {String} logo_url LOGO的url地址
+
+        @apiUse Success
+        """
+        with catch(self):
+            self.log.info('Update the application, ID: %s' % (self.params.get('id')))
+
+            # 检查修改后名字是否会出现冲突
+            param = self.get_lord()
+            param['name'] = self.params.get('name')
+            app_info = yield self.application_service.select(param, one=True)
+            if app_info and app_info['id'] != self.params.get('id'):
+                self.log.info('Failed to update application[%s] because of duplicate name' % (self.params.get('id')))
+                self.error('该应用名称已被使用，请换用其他名称')
+                return
+
+            # 无冲突项，则更新应用信息
+            sets = {
+                'name': self.params.get('name'),
+                'description': self.params.get('description'),
+                'repos_name': self.params.get('repos_name'),
+                'repos_ssh_url': self.params.get('repos_ssh_url'),
+                'repos_https_url': self.params.get('repos_https_url'),
+                'logo_url': self.params.get('logo_url')
+            }
+            yield self.application_service.update(sets=sets, conds={'id': self.params.get('id')})
+
+            self.log.info('Succeed in updating the application, ID: %s' % (self.params.get('id')))
+            self.success()
+
+
+
 class ApplicationInfoHandler(BaseHandler):
     @is_login
     @coroutine
