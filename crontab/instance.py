@@ -12,6 +12,7 @@ import json
 logging.basicConfig(stream=sys.stdout, level=logging.WARN)
 
 import pymysql.cursors
+from utils.db import REDIS
 from utils.aliyun import Aliyun
 from utils.qcloud import Qcloud
 from utils.zcloud import Zcloud
@@ -19,7 +20,7 @@ from utils.datetool import seconds_to_human
 from utils.general import get_formats, get_in_formats
 from constant import ALIYUN_NAME, QCLOUD_NAME, ALIYUN_REGION_NAME, QCLOUD_REGION_NAME, ZCLOUD_REGION_LIST, \
     ZCLOUD_TYPE, ZCLOUD_NAME, ZCLOUD_REGION_NAME, TCLOUD_STATUS_MAKER, TCLOUD_STATUS, TENCLOUD_DISK_TYPE, \
-    TENCLOUD_INTERNET_PAID,TENCLOUD_INSTANCE_PAID, ALIYUN_INSTANCE_PAID, ALIYUN_INTERNET_PAID
+    TENCLOUD_INTERNET_PAID,TENCLOUD_INSTANCE_PAID, ALIYUN_INSTANCE_PAID, ALIYUN_INTERNET_PAID, INSTANCE_STATUS
 from setting import settings
 from concurrent.futures import ThreadPoolExecutor, wait
 from DBUtils.PooledDB import PooledDB
@@ -45,6 +46,7 @@ class Instance:
         self.db_data = {}
         self.db = DB
         self.cur = ''
+        self.redis = REDIS
 
     def get_aliyun(self):
         self.provider = ALIYUN_NAME
@@ -242,6 +244,17 @@ class Instance:
             sql += get_formats(values) + ')'
             self.cur.execute(sql, values)
 
+    def _remove_invalid_status(self, instance):
+        old_status = self.redis.hget(INSTANCE_STATUS, instance['public_ip'])
+        self.redis.hdel(INSTANCE_STATUS, instance['public_ip'])
+        if old_status is None:
+            old_status = instance['status']
+        new_status = instance['status']
+        old_bool = (old_status == TCLOUD_STATUS[7]) or (old_status == TCLOUD_STATUS[8]) or (old_status == TCLOUD_STATUS[9])
+        if old_bool and (new_status == TCLOUD_STATUS[2]):
+            return old_status
+        return new_status
+
     def _to_update(self, instances):
         real_update = []
 
@@ -254,6 +267,7 @@ class Instance:
         for i in real_update:
             s, data = [], []
 
+            i['status'] = self._remove_invalid_status(i)
             for k, v in i.items():
                 s.append('{}=%s'.format(k))
                 data.append(v)

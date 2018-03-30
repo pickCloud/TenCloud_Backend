@@ -159,7 +159,7 @@ ALTER TABLE instance ADD COLUMN internet_max_bandwidth_out varchar(64) NOT NULL 
 ALTER TABLE instance ADD COLUMN image_info text NOT NULL COMMENT '镜像信息';
 ALTER TABLE instance ADD COLUMN disk_info text NOT NULL  COMMENT '磁盘信息';
 
-ALTER TABLE instance ADD COLUMN instance_charge_type varchar(128) NOT NULL DEFAULT '' COMMENT '实例付费方式'
+ALTER TABLE instance ADD COLUMN instance_charge_type varchar(128) NOT NULL DEFAULT '' COMMENT '实例付费方式';
 ALTER TABLE instance DROP COLUMN charge_type;
 ALTER TABLE instance ADD COLUMN instance_internet_charge_type varchar(128) NOT NULL DEFAULT '' COMMENT '实例网络付费方式'
 ```

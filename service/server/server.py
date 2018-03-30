@@ -11,7 +11,7 @@ from utils.qcloud import Qcloud
 from utils.zcloud import Zcloud
 from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAINER_CMD, STOP_CONTAINER_CMD, \
                      DEL_CONTAINER_CMD, CONTAINER_INFO_CMD, ALIYUN_NAME, QCLOUD_NAME, FULL_DATE_FORMAT, ZCLOUD_NAME, \
-                     SERVERS_REPORT_INFO, TCLOUD_STATUS, THRESHOLD, MONITOR_COLOR_TYPE
+                     SERVERS_REPORT_INFO, TCLOUD_STATUS, THRESHOLD, MONITOR_COLOR_TYPE, INSTANCE_STATUS
 from utils.security import Aes
 from utils.general import get_in_formats, json_loads, json_dumps
 
@@ -368,21 +368,26 @@ class ServerService(BaseService):
     def stop_server(self, id):
         yield self._operate_server(id, 'stop')
         yield self.change_instance_status(status=TCLOUD_STATUS[9], id=id)
+        ip = yield self.fetch_public_ip(server_id=id)
+        self.redis.hset(INSTANCE_STATUS, ip, TCLOUD_STATUS[9])
 
     @coroutine
     def start_server(self, id):
         yield self._operate_server(id, 'start')
         yield self.change_instance_status(status=TCLOUD_STATUS[8], id=id)
+        ip = yield self.fetch_public_ip(server_id=id)
+        self.redis.hset(INSTANCE_STATUS, ip, TCLOUD_STATUS[8])
 
     @coroutine
     def reboot_server(self, id):
         yield self._operate_server(id, 'reboot')
         yield self.change_instance_status(status=TCLOUD_STATUS[7], id=id)
+        ip = yield self.fetch_public_ip(server_id=id)
+        self.redis.hset(INSTANCE_STATUS, ip, TCLOUD_STATUS[7])
 
     @coroutine
     def _operate_server(self, id, cmd):
         info = yield self.fetch_instance_info(id)
-
         cloud = self._produce_cloud(info['provider'])
 
         # 亚马逊云与微软云，会变化public_ip
@@ -700,8 +705,8 @@ class ServerService(BaseService):
             max_input = bandwidth['internet_max_bandwidth_in']
             max_output = bandwidth['internet_max_bandwidth_out']
 
-            net_input = (net_download/int((max_input*1000)))*100
-            net_output = (net_upload/int((max_output*1000)))*100
+            net_input = (net_download/(int(max_input)*1000))*100
+            net_output = (net_upload/(int(max_output)*1000))*100
             net = str(net_input)+'/'+str(net_output)
 
             resp = {

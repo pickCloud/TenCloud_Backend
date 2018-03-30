@@ -43,7 +43,7 @@ ADMIN_NOT_CHANGED = 0
 EMPLOYEE_TO_ADMIN = 1
 ADMIN_TO_EMPLOYEE = 2
 SERVERS_REPORT_INFO = 'servers_report_info'
-
+INSTANCE_STATUS = 'instance_status'
 #################################################################################################
 # 错误代码及信息
 #################################################################################################
