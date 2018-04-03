@@ -144,9 +144,11 @@ class ApplicationUpdateHandler(BaseHandler):
                 'repos_name': self.params.get('repos_name'),
                 'repos_ssh_url': self.params.get('repos_ssh_url'),
                 'repos_https_url': self.params.get('repos_https_url'),
-                'logo_url': settings['qiniu_header_bucket_url'] + self.params.get('logo_url') \
-                            if self.params.get('logo_url', None) else ''
             }
+            if self.params.get('logo_url', ''):
+                sets['logo_url'] = self.params.get('logo_url') \
+                                   if self.params.get('logo_url').startswith(settings['qiniu_header_bucket_url']) \
+                                   else settings['qiniu_header_bucket_url'] + self.params.get('logo_url')
             yield self.application_service.update(sets=sets, conds={'id': self.params.get('id')})
 
             self.log.info('Succeed in updating the application, ID: %s' % (self.params.get('id')))
