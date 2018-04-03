@@ -67,6 +67,8 @@ class ApplicationNewHandler(BaseHandler):
             param.update(self.params)
             param.pop('token', None)
             param.pop('cid', None)
+            param['logo_url'] = settings['qiniu_header_bucket_url'] + param['logo_url'] \
+                                if self.params.get('logo_url', None) else ''
             new_app = yield self.application_service.add(param)
 
             if self.params.get('form') == FORM_COMPANY:
@@ -107,7 +109,7 @@ class ApplicationUpdateHandler(BaseHandler):
     @coroutine
     def post(self):
         """
-        @api {post} /api/application/update 删除应用
+        @api {post} /api/application/update 更新应用
         @apiName ApplicationUpdateHandler
         @apiGroup Application
 
@@ -142,8 +144,11 @@ class ApplicationUpdateHandler(BaseHandler):
                 'repos_name': self.params.get('repos_name'),
                 'repos_ssh_url': self.params.get('repos_ssh_url'),
                 'repos_https_url': self.params.get('repos_https_url'),
-                'logo_url': self.params.get('logo_url')
             }
+            if self.params.get('logo_url', ''):
+                sets['logo_url'] = self.params.get('logo_url') \
+                                   if self.params.get('logo_url').startswith(settings['qiniu_header_bucket_url']) \
+                                   else settings['qiniu_header_bucket_url'] + self.params.get('logo_url')
             yield self.application_service.update(sets=sets, conds={'id': self.params.get('id')})
 
             self.log.info('Succeed in updating the application, ID: %s' % (self.params.get('id')))
