@@ -79,3 +79,23 @@ class ServerCloudCredentialHandler(BaseHandler):
             data = yield self.cloud_credentials_service.get_server_info(self.params)
             yield self.cloud_credentials_service.add(arg)
             self.success(data)
+
+    # 仅供测试用，方面前端删除测试账号
+    @is_login
+    @coroutine
+    def delete(self):
+        """
+        @api {delete} /api/cloud/credential/ 公有云厂商认证
+        @apiName ServerCloudCredentialHandler
+        @apiGroup Server
+
+
+        @apiUse Success
+        """
+        with catch(self):
+            params = self.get_lord()
+            conds = {
+                'lord': params['lord'],
+                'form': params['form']
+            }
+            yield self.cloud_credentials_service.delete(conds=conds)
