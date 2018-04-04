@@ -69,6 +69,7 @@ from service.server.server import ServerService
 from service.server.server_operation import ServerOperationService
 from service.user.sms import SMSService
 from service.user.user import UserService
+from service.cloud.cloud_credentials import CloudCredentialsService
 from setting import settings
 from utils.general import json_dumps, json_loads
 from utils.datetool import seconds_to_human
@@ -97,8 +98,10 @@ class BaseHandler(tornado.web.RequestHandler):
     user_permission_service = UserPermissionService()
     user_access_server_service = UserAccessServerService()
     user_access_project_service = UserAccessProjectService()
-    user_access_filehub_service = UserAccessFilehubService()
+    user_access_filehub_service = UserAccessFilehubService(
+    cloud_credentials_service = CloudCredentialsService(
     user_access_application_service = UserAccessApplicationService()
+
 
     @property
     def db(self):

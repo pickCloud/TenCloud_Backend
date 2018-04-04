@@ -78,7 +78,14 @@ ERR_TIP = {
     'server_name_repeat': {'sts': 10501, 'msg': '名称不能重复'},
 
     # permission template
-    'permission_template_cannot_operate': {'sts': 10601, 'msg': '该模版不可操作'}
+    'permission_template_cannot_operate': {'sts': 10601, 'msg': '该模版不可操作'},
+
+    # cloud
+    'cloud_unsupported': {'sts': 10801, 'msg': '暂不支持该厂商'},
+    'cloud_access_key_exist': {'sts': 10802, 'msg': '该access_key已添加过'},
+
+    # app interior error
+    'arg_error': {'sts': 10110, 'msg':'参数错误，请核对文档'}
 }
 
 #################################################################################################
@@ -377,6 +384,12 @@ TCLOUD_STATUS_MAKER = {
     'REBOOTING': 7,
     'STARTING': 8,
     'STOPPING': 9
+}
+
+TENCLOUD_PROVIDER_LIST = {
+    'aliyun': 1,
+    'qcloud': 2,
+    'zcloud': 3
 }
 
 #################################################################################################
