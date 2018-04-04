@@ -642,7 +642,7 @@ class CompanyApplicationWaitingHandler(BaseHandler):
             data = yield self.company_entry_setting_service.select(fields='cid', conds={'code': self.params['code']}, one=True)
 
             if not data:
-                self.error('未识别的code')
+                self.error('邀请码已失效')
                 return
 
             conds = {'cid': data['cid'], 'uid': self.current_user['id']}
