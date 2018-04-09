@@ -9,13 +9,13 @@ from utils.security import Aes
 from handler.base import BaseHandler
 from constant import TENCLOUD_PROVIDER_LIST, ERR_TIP
 
-class ServerCloudsHandler(BaseHandler):
+class CloudsHandler(BaseHandler):
     @coroutine
     def get(self):
         """
         @api {get} /api/clouds/support 支持的公有云列表
-        @apiName ServerCloudsHandler
-        @apiGroup Server
+        @apiName CloudsHandler
+        @apiGroup Cloud
         @apiSuccessExample {json} Success-Response:
         HTTP/1.1 200 OK
         {
@@ -35,17 +35,17 @@ class ServerCloudsHandler(BaseHandler):
             self.success(data)
 
 
-class ServerCloudCredentialHandler(BaseHandler):
+class CloudCredentialHandler(BaseHandler):
     @is_login
     @coroutine
     def post(self):
         """
         @api {post} /api/cloud/credential 公有云厂商认证
-        @apiName ServerCloudCredentialHandler
-        @apiGroup Server
+        @apiName CloudCredentialHandler
+        @apiGroup Cloud
 
-        @apiParam cloud_type 厂商内部id
-        @apiParam content 凭证内容
+        @apiParam {Number} cloud_type 厂商内部id
+        @apiParam {Object} content 凭证内容
 
         @apiSuccessExample {json} Success-Response:
         HTTP/1.1 200 OK
@@ -85,9 +85,9 @@ class ServerCloudCredentialHandler(BaseHandler):
     @coroutine
     def delete(self):
         """
-        @api {delete} /api/cloud/credential/ 公有云厂商认证
-        @apiName ServerCloudCredentialHandler
-        @apiGroup Server
+        @api {delete} /api/cloud/credential 公有云厂商认证
+        @apiName CloudCredentialHandler
+        @apiGroup Cloud
 
 
         @apiUse Success
