@@ -41,7 +41,7 @@ class CloudCredentialsService(BaseService):
         resp = []
         access_key = credentials['access_key']
         access_secret = credentials['access_secret']
-        if cloud_type == TENCLOUD_PROVIDER_LIST['aliyun']:
+        if cloud_type == TENCLOUD_PROVIDER_LIST['阿里云']:
             ecs = AliyunECSBase(access_key_id=access_key, access_key_secret=access_secret, ecs_domain=ALIYUN_DOMAIN)
             for i in ecs.get_all_region_instance():
                 is_add = yield self.check_instance(i['InstanceId'])
@@ -54,7 +54,7 @@ class CloudCredentialsService(BaseService):
                     'region_id': i.get('RegionId')
                 }
                 resp.append(ret)
-        elif cloud_type == TENCLOUD_PROVIDER_LIST['qcloud']:
+        elif cloud_type == TENCLOUD_PROVIDER_LIST['腾讯云']:
             cvm = QcloudCVMBase(access_key_id=access_key, access_key_secret=access_secret, cvm_domain=QCLOUD_DOMAIN)
             for i in cvm.get_all_region_instance():
                 is_add = yield self.check_instance(i['InstanceId'])
@@ -67,7 +67,7 @@ class CloudCredentialsService(BaseService):
                     'region_id': i.get('region_id')
                 }
                 resp.append(ret)
-        elif cloud_type == TENCLOUD_PROVIDER_LIST['zcloud']:
+        elif cloud_type == TENCLOUD_PROVIDER_LIST['亚马逊云']:
             ec2 = ZcloudEC2(access_key_id=access_key, access_key_secret=access_secret)
             for i in ec2.get_all_region_instance():
                 is_add = yield self.check_instance(i['InstanceId'])
