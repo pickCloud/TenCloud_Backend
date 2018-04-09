@@ -98,8 +98,8 @@ class BaseHandler(tornado.web.RequestHandler):
     user_permission_service = UserPermissionService()
     user_access_server_service = UserAccessServerService()
     user_access_project_service = UserAccessProjectService()
-    user_access_filehub_service = UserAccessFilehubService(
-    cloud_credentials_service = CloudCredentialsService(
+    user_access_filehub_service = UserAccessFilehubService()
+    cloud_credentials_service = CloudCredentialsService()
     user_access_application_service = UserAccessApplicationService()
 
 
