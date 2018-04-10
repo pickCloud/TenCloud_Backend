@@ -266,7 +266,8 @@ class ServerDetailHandler(BaseHandler):
                     "contract": {
                         "create_time": str,
                         "expired_time": str,
-                        "charge_type": str
+                        "instance_charge_type": str,
+                        "instance_internet_charge_type": str
                     }
                 },
             }
@@ -326,7 +327,8 @@ class ServerDetailHandler(BaseHandler):
                 'contract': {
                     'create_time': data['create_time'],
                     'expired_time': data['expired_time'],
-                    'charge_type': data['charge_type']
+                    'instance_internet_charge_type': data['instance_internet_charge_type'],
+                    'instance_charge_type': data['instance_charge_type']
                 }
             }
 
@@ -519,15 +521,15 @@ class ServerRebootHandler(BaseHandler):
 
 
 class ServerStatusHandler(BaseHandler):
-    @is_login
+    @require(service=SERVICE['s'])
     @coroutine
-    def get(self, instance_id):
+    def get(self, id):
         """
         @api {get} /api/server/([\w\W]+)/status 查询实例状态
         @apiName ServerStatusHandler
         @apiGroup Server
 
-        @apiParam {Number} instance_id 实例id
+        @apiParam {Number} id 服务器id
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -538,7 +540,8 @@ class ServerStatusHandler(BaseHandler):
             }
         """
         with catch(self):
-            data = yield self.server_service.get_instance_status(instance_id)
+            ip = yield self.server_service.fetch_public_ip(server_id=int(id))
+            data = yield self.server_service.get_instance_status(ip)
 
             self.success(data)
 
@@ -814,13 +817,33 @@ class SystemLoadHandler(BaseHandler):
                 "one_minute_load": 0.14
                 "five_minute_load": 0.34
                 "fifteen_minute_load:" 0.24
+                "monitor": object
             }
         }
         """
         with catch(self):
             ip = yield self.server_service.fetch_public_ip(int(sid))
-            info = json.loads(self.redis.hget(SERVERS_REPORT_INFO, ip))
-            self.success(info['system_load'])
+            info = json.loads(self.redis.hget(SERVERS_REPORT_INFO, ip))['system_load']
+
+            data = yield self.server_service.get_monitor_data([sid])
+            resp = {
+                'serverID': '',
+                'name': '',
+                'colorType': '',
+                'cpuUsageRate': '',
+                'memUsageRate': '',
+                'diskUsageRate': '',
+                'diskUtilize': '',
+                'netUsageRate': '',
+                'netDownload': '',
+                'netUpload': '',
+                "netInputMax": '',
+                "netOutputMax": ''
+            }
+            monitor_data = data[0] if data else resp
+
+            info.update({'monitor': monitor_data})
+            self.success(info)
 
 
 class ServerThresholdHandler(BaseHandler):
@@ -879,10 +902,12 @@ class ServerMontiorHandler(BaseHandler):
                     "cpuUsageRate": float,
                     "memUsageRate": float,
                     "diskUsageRate": float,
-                    "diskIO": string,
-                    "networkUsage": float,
+                    "diskUtilize": string,
+                    "netUsageRate": float,
                     "netDownload": str,
-                    "netUpload": str
+                    "netUpload": str,
+                    "netInputMax":str,
+                    "netOutputMax": str
                 }
             ]
         }

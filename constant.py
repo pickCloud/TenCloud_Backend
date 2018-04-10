@@ -43,7 +43,7 @@ ADMIN_NOT_CHANGED = 0
 EMPLOYEE_TO_ADMIN = 1
 ADMIN_TO_EMPLOYEE = 2
 SERVERS_REPORT_INFO = 'servers_report_info'
-
+INSTANCE_STATUS = 'instance_status'
 #################################################################################################
 # 错误代码及信息
 #################################################################################################
@@ -78,7 +78,14 @@ ERR_TIP = {
     'server_name_repeat': {'sts': 10501, 'msg': '名称不能重复'},
 
     # permission template
-    'permission_template_cannot_operate': {'sts': 10601, 'msg': '该模版不可操作'}
+    'permission_template_cannot_operate': {'sts': 10601, 'msg': '该模版不可操作'},
+
+    # cloud
+    'cloud_unsupported': {'sts': 10801, 'msg': '暂不支持该厂商'},
+    'cloud_access_key_exist': {'sts': 10802, 'msg': '该access_key已添加过'},
+
+    # app interior error
+    'arg_error': {'sts': 10110, 'msg':'参数错误，请核对文档'}
 }
 
 #################################################################################################
@@ -135,6 +142,24 @@ ALIYUN_STATUS = {
     'Deleted': '已释放'
 }
 
+# 阿里云存储类型 cloud | cloud_efficiency | cloud_ssd | ephemeral_ssd | ephemeral
+ALIYUN_DISK_TYPE = {
+    'cloud': '普通云盘',
+    'cloud_efficiency': '高效云盘',
+    'cloud_ssd': 'SSD云盘',
+    'ephemeral_ssd': '本地 SSD 盘',
+    'ephemeral': '本地磁盘'
+}
+
+# 阿里云付费方式
+ALIYUN_INSTANCE_PAID = {
+    'PrePaid': '包年包月',
+    'PostPaid': '按量付费'
+}
+ALIYUN_INTERNET_PAID = {
+    'PayByTraffic': '按流量计费',
+    'PayByBandwidth': '按带宽计费'
+}
 #################################################################################################
 # 腾讯云相关
 #################################################################################################
@@ -185,6 +210,27 @@ QCLOUD_PAYMODE = {
     3: '按带宽'
 }
 
+# 腾讯云存储类型 LOCAL_BASIC | LOCAL_SSD | CLOUD_BASIC | CLOUD_PREMIUM | CLOUD_SSD
+TENCLOUD_DISK_TYPE = {
+    'LOCAL_BASIC': '本地硬盘',
+    'LOCAL_SSD': '本地SSD硬盘',
+    'CLOUD_BASIC': '普通云硬盘',
+    'CLOUD_PREMIUM': '高性能云硬盘',
+    'CLOUD_SSD': 'SSD云硬盘'
+}
+
+TENCLOUD_INSTANCE_PAID = {
+    'PREPAID': '包年包月',
+    'POSTPAID_BY_HOUR': '按量计费',
+    'CDHPAID': 'CDH付费',
+}
+
+TENCLOUD_INTERNET_PAID = {
+    'BANDWIDTH_PREPAID': '预付费按带宽结算',
+    'TRAFFIC_POSTPAID_BY_HOUR':'流量按小时后付费',
+    'BANDWIDTH_POSTPAID_BY_HOUR': '带宽按小时后付费',
+    'BANDWIDTH_PACKAGE': '带宽包用户'
+}
 #################################################################################################
 # 亚马逊云相关
 #################################################################################################
@@ -210,57 +256,60 @@ ZCLOUD_REGION_NAME = {
 ZCLOUD_REGION_LIST = ZCLOUD_REGION_NAME.keys()
 
 ZCLOUD_TYPE = {
-    # cpu, memory
-    't2.nano': [1, 0.5],
-    't2.micro': [1, 1],
-    't2.small': [1, 2],
-    't2.medium': [2, 4],
-    't2.large': [2, 8],
-    't2.xlarge': [4, 16],
-    't2.2xlarge': [8, 32],
-    'm4.large': [2, 8],
-    'm4.xlarge': [4, 16],
-    'm4.2xlarge': [8, 32],
-    'm4.4xlarge': [16, 64],
-    'm4.10xlarge': [40, 160],
-    'm4.16xlarge': [64, 256],
-    'm3.medium': [1, 3.75],
-    'm3.large': [2, 7.5],
-    'm3.xlarge': [4, 15],
-    'm3.2xlarge': [8, 30],
-    'c4.large': [2, 3.75],
-    'c4.xlarge': [4, 7.5],
-    'c4.2xlarge': [8, 15],
-    'c4.4xlarge': [16, 30],
-    'c4.8xlarge': [36, 60],
-    'c3.large': [2, 3.75],
-    'c3.xlarge': [4, 7.5],
-    'c3.2xlarge': [8, 15],
-    'c3.4xlarge': [16, 30],
-    'c3.8xlarge': [32, 60],
-    'x1.32xlarge': [128, 1952],
-    'x1.16xlarge': [64, 976],
-    'r4.large': [2, 15.25],
-    'r4.xlarge': [4, 30.5],
-    'r4.2xlarge': [8, 61],
-    'r4.4xlarge': [16, 122],
-    'r4.8xlarge': [32, 244],
-    'r4.16xlarge': [64, 488],
-    'r3.large': [2, 15.25],
-    'r3.xlarge': [4, 30.5],
-    'r3.2xlarge': [8, 61],
-    'r3.4xlarge': [16, 122],
-    'r3.8xlarge': [32, 244],
-    'i3.large': [2, 15.25],
-    'i3.xlarge': [4, 30.5],
-    'i3.2xlarge': [8, 61],
-    'i3.4xlarge': [16, 122],
-    'i3.8xlarge': [32, 244],
-    'i3.16xlarge': [64, 488],
-    'd2.xlarge': [4, 30.5],
-    'd2.2xlarge': [8, 61],
-    'd2.4xlarge': [16, 122],
-    'd2.8xlarge': [32, 244]
+    # cpu, memory, max_bandwidth Mb/s
+    't2.nano': [1, 0.5, 497],
+    't2.micro': [1, 1, 991],
+    't2.small': [1, 2, 992],
+    't2.medium': [2, 4, 996],
+    't2.large': [2, 8, 1003],
+    't2.xlarge': [4, 16, 1011],
+    't2.2xlarge': [8, 32, 1019],
+    'm4.large': [2, 8, 489],
+    'm4.xlarge': [4, 16, 841],
+    'm4.2xlarge': [8, 32, 1033],
+    'm4.4xlarge': [16,64, 2066],
+    'm4.10xlarge': [40, 160, 5725],
+    'm4.16xlarge': [64, 256, 23913],
+    'm3.medium': [1, 3.75, 335],
+    'm3.large': [2, 7.5, 709],
+    'm3.xlarge': [4, 15, 1029],
+    'm3.2xlarge': [8, 30, 1029],
+    'c4.large': [2, 3.75, 662],
+    'c4.xlarge': [4, 7.5, 1337],
+    'c4.2xlarge': [8, 15, 2521],
+    'c4.4xlarge': [16, 30, 5037],
+    'c4.8xlarge': [36, 60, 5840],
+
+    # 上一代实例
+    'c3.large': [2, 3.75, 618],
+    'c3.xlarge': [4, 7.5, 974.333],
+    'c3.2xlarge': [8, 15, 1116.16],
+    'c3.4xlarge': [16, 30, 2242.56],
+    'c3.8xlarge': [32, 60, 9835.52],
+
+    'x1.32xlarge': [128, 1952, 20611],
+    'x1.16xlarge': [64, 976, 10166],
+    'r4.large': [2, 15.25, 9770],
+    'r4.xlarge': [4, 30.5, 10092],
+    'r4.2xlarge': [8, 61, 10098],
+    'r4.4xlarge': [16, 122, 10099],
+    'r4.8xlarge': [32, 244, 10099],
+    'r4.16xlarge': [64, 488, 23758],
+    'r3.large': [2, 15.25, 539],
+    'r3.xlarge': [4, 30.5, 792],
+    'r3.2xlarge': [8, 61, 1030],
+    'r3.4xlarge': [16, 122, 2058],
+    'r3.8xlarge': [32, 244, 5641],
+    'i3.large': [2, 15.25, 9945],
+    'i3.xlarge': [4, 30.5, 10053],
+    'i3.2xlarge': [8, 61, 10098],
+    'i3.4xlarge': [16, 122, 10098],
+    'i3.8xlarge': [32, 244, 10099],
+    'i3.16xlarge': [64, 488, 23554],
+    'd2.xlarge': [4, 30.5, 1337],
+    'd2.2xlarge': [8, 61, 2521],
+    'd2.4xlarge': [16, 122, 5037],
+    'd2.8xlarge': [32, 244, 9216]
 }
 
 ZCLOUD_STATUS = {
@@ -272,6 +321,16 @@ ZCLOUD_STATUS = {
     'shutting-down': '释放中',
     'rebooting': '重启中'
 }
+
+# 亚马逊云存储类型 standard | io1 | gp2 | sc1 | st1
+ZCLOUD_DISK_TYPE = {
+    'standard': '标准磁盘',
+    'io1': '预配置 IOPS SSD',
+    'gp2': '通用型 SSD ',
+    'sc1': 'Cold HDD',
+    'st1': '吞吐优化 HDD'
+}
+
 
 #################################################################################################
 # 拾云相关
@@ -325,6 +384,12 @@ TCLOUD_STATUS_MAKER = {
     'REBOOTING': 7,
     'STARTING': 8,
     'STOPPING': 9
+}
+
+TENCLOUD_PROVIDER_LIST = {
+    '阿里云': 1,
+    '腾讯云': 2,
+    '亚马逊云': 3
 }
 
 #################################################################################################
@@ -709,31 +774,4 @@ MONITOR_COLOR_TYPE = {
     'warning': 3,
     'safe': 4,
     'free': 5
-}
-
-# 腾讯云存储类型 LOCAL_BASIC | LOCAL_SSD | CLOUD_BASIC | CLOUD_PREMIUM | CLOUD_SSD
-TENCLOUD_DISK_TYPE = {
-    'LOCAL_BASIC': '本地硬盘',
-    'LOCAL_SSD': '本地SSD硬盘',
-    'CLOUD_BASIC': '普通云硬盘',
-    'CLOUD_PREMIUM': '高性能云硬盘',
-    'CLOUD_SSD': 'SSD云硬盘'
-}
-
-# 阿里云存储类型 cloud | cloud_efficiency | cloud_ssd | ephemeral_ssd | ephemeral
-ALIYUN_DISK_TYPE = {
-    'cloud': '普通云盘',
-    'cloud_efficiency': '高效云盘',
-    'cloud_ssd': 'SSD云盘',
-    'ephemeral_ssd': '本地 SSD 盘',
-    'ephemeral': '本地磁盘'
-}
-
-# 亚马逊云存储类型 standard | io1 | gp2 | sc1 | st1
-ZCLOUD_DISK_TYPE = {
-    'standard': '标准磁盘',
-    'io1': '预配置 IOPS SSD',
-    'gp2': '通用型 SSD ',
-    'sc1': 'Cold HDD',
-    'st1': '吞吐优化 HDD'
 }

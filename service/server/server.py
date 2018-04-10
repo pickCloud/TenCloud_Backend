@@ -11,7 +11,7 @@ from utils.qcloud import Qcloud
 from utils.zcloud import Zcloud
 from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAINER_CMD, STOP_CONTAINER_CMD, \
                      DEL_CONTAINER_CMD, CONTAINER_INFO_CMD, ALIYUN_NAME, QCLOUD_NAME, FULL_DATE_FORMAT, ZCLOUD_NAME, \
-                     SERVERS_REPORT_INFO, TCLOUD_STATUS, THRESHOLD, MONITOR_COLOR_TYPE
+                     SERVERS_REPORT_INFO, TCLOUD_STATUS, THRESHOLD, MONITOR_COLOR_TYPE, INSTANCE_STATUS
 from utils.security import Aes
 from utils.general import get_in_formats, json_loads, json_dumps
 
@@ -192,7 +192,7 @@ class ServerService(BaseService):
                 SELECT s.id, s.cluster_id, DATE_FORMAT(s.create_time, %s) AS server_created_time , c.name AS cluster_name, 
                        s.name, s.public_ip, i.status AS machine_status, i.region_id, i.region_name,
                        s.business_status, i.cpu, i.memory, i.os_name, i.os_type, i.provider, i.create_time, i.expired_time, 
-                       i.charge_type, i.instance_id, i.security_group_ids, i.instance_network_type, i.internet_max_bandwidth_in,
+                       i.instance_internet_charge_type,instance_charge_type, i.instance_id, i.security_group_ids, i.instance_network_type, i.internet_max_bandwidth_in,
                        i.internet_max_bandwidth_out, i.disk_info, i.image_info
                 FROM server s 
                 JOIN instance i ON s.instance_id=i.instance_id 
@@ -368,21 +368,26 @@ class ServerService(BaseService):
     def stop_server(self, id):
         yield self._operate_server(id, 'stop')
         yield self.change_instance_status(status=TCLOUD_STATUS[9], id=id)
+        ip = yield self.fetch_public_ip(server_id=id)
+        self.redis.hset(INSTANCE_STATUS, ip, TCLOUD_STATUS[9])
 
     @coroutine
     def start_server(self, id):
         yield self._operate_server(id, 'start')
         yield self.change_instance_status(status=TCLOUD_STATUS[8], id=id)
+        ip = yield self.fetch_public_ip(server_id=id)
+        self.redis.hset(INSTANCE_STATUS, ip, TCLOUD_STATUS[8])
 
     @coroutine
     def reboot_server(self, id):
         yield self._operate_server(id, 'reboot')
         yield self.change_instance_status(status=TCLOUD_STATUS[7], id=id)
+        ip = yield self.fetch_public_ip(server_id=id)
+        self.redis.hset(INSTANCE_STATUS, ip, TCLOUD_STATUS[7])
 
     @coroutine
     def _operate_server(self, id, cmd):
         info = yield self.fetch_instance_info(id)
-
         cloud = self._produce_cloud(info['provider'])
 
         # 亚马逊云与微软云，会变化public_ip
@@ -400,11 +405,11 @@ class ServerService(BaseService):
         yield self.get(payload, host=cloud.domain)
 
     @coroutine
-    def get_instance_status(self, instance_id):
-        ''' 根据instance_id,查询当前主机开关状态
+    def get_instance_status(self, ip):
+        ''' 根据public ip查询当前主机开关状态
         '''
-        sql = " SELECT status FROM instance WHERE instance_id=%s "
-        cur = yield self.db.execute(sql, instance_id)
+        sql = " SELECT status FROM instance WHERE public_ip=%s "
+        cur = yield self.db.execute(sql, ip)
         data = cur.fetchone()
 
         return data.get('status')
@@ -684,7 +689,7 @@ class ServerService(BaseService):
                 continue
             disk_content = json.loads(disk_content)
             disk_usage_rate = float(disk_content['percent'])
-            bloc_io = disk_content['utilize']
+            disk_utilize = disk_content['utilize']
 
             net_content = yield self._get_monitor_data(ip=ip, table='net')
             if net_content is None:
@@ -693,16 +698,15 @@ class ServerService(BaseService):
             net_download = (json.loads(net_content))['input']
             net_upload = (json.loads(net_content))['output']
 
-            # 带宽为Kb/s， 数据为KB/s
             bandwidth = yield self._get_max_bandwidth(ip)
             if bandwidth is None:
                 self.log.error("server {ip} max bandwidth does not exist".format(ip=ip))
                 continue
-            max_input = int(bandwidth['internet_max_bandwidth_in'])*100
-            max_output = int(bandwidth['internet_max_bandwidth_out'])*100
+            max_input = bandwidth['internet_max_bandwidth_in']
+            max_output = bandwidth['internet_max_bandwidth_out']
 
-            net_input = (net_download/max_input)*100
-            net_output = (net_upload/max_output)*100
+            net_input = (net_download/(int(max_input)*1000))*100
+            net_output = (net_upload/(int(max_output)*1000))*100
             net = str(net_input)+'/'+str(net_output)
 
             resp = {
@@ -712,17 +716,19 @@ class ServerService(BaseService):
                 'cpuUsageRate': cpu_percent,
                 'memUsageRate': mem_usage_rate,
                 'diskUsageRate': disk_usage_rate,
-                'diskIO': bloc_io,
-                'networkUsage': net,
-                'netDownload': str(net_download)+"KB/s",
-                'netUpload': str(net_upload)+"KB/s"
+                'diskUtilize': disk_utilize,
+                'netUsageRate': net,
+                'netDownload': str(net_download)+"Kb/s",
+                'netUpload': str(net_upload)+"Kb/s",
+                "netInputMax": str(max_input)+"Mbps",
+                "netOutputMax": str(max_output)+"Mbps"
             }
             if (cpu_percent == 100) or (mem_usage_rate == 100) or (disk_usage_rate == 100) or \
-                    (bloc_io == 100) or (net_input == 100) or (net_output==100):
+                    (disk_utilize == 100) or (net_input == 100) or (net_output==100):
                 server_monitor_data.append(resp)
                 continue
 
-            if (cpu_percent <= 5) and (mem_usage_rate <= 5) and (disk_usage_rate <= 5) and(bloc_io <= 5)\
+            if (cpu_percent <= 5) and (mem_usage_rate <= 5) and (disk_usage_rate <= 5) and(disk_utilize <= 5)\
                     and (net_input <= 5) and (net_output <= 5):
                 resp['colorType'] = MONITOR_COLOR_TYPE['free']
                 server_monitor_data.append(resp)
@@ -735,7 +741,7 @@ class ServerService(BaseService):
                 counter += 1
             if disk_usage_rate >= THRESHOLD['DISK_THRESHOLD']:
                 counter += 1
-            if bloc_io >= THRESHOLD['BLOCK_THRESHOLD']:
+            if disk_utilize >= THRESHOLD['BLOCK_THRESHOLD']:
                 counter += 1
             if (net_input >= THRESHOLD['NET_THRESHOLD']) or (net_output >= THRESHOLD['NET_THRESHOLD']):
                 counter += 1

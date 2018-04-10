@@ -12,13 +12,15 @@ import json
 logging.basicConfig(stream=sys.stdout, level=logging.WARN)
 
 import pymysql.cursors
+from utils.db import REDIS
 from utils.aliyun import Aliyun
 from utils.qcloud import Qcloud
 from utils.zcloud import Zcloud
 from utils.datetool import seconds_to_human
 from utils.general import get_formats, get_in_formats
 from constant import ALIYUN_NAME, QCLOUD_NAME, ALIYUN_REGION_NAME, QCLOUD_REGION_NAME, ZCLOUD_REGION_LIST, \
-    ZCLOUD_TYPE, ZCLOUD_NAME, ZCLOUD_REGION_NAME, TCLOUD_STATUS_MAKER, TCLOUD_STATUS, TENCLOUD_DISK_TYPE
+    ZCLOUD_TYPE, ZCLOUD_NAME, ZCLOUD_REGION_NAME, TCLOUD_STATUS_MAKER, TCLOUD_STATUS, TENCLOUD_DISK_TYPE, \
+    TENCLOUD_INTERNET_PAID,TENCLOUD_INSTANCE_PAID, ALIYUN_INSTANCE_PAID, ALIYUN_INTERNET_PAID, INSTANCE_STATUS
 from setting import settings
 from concurrent.futures import ThreadPoolExecutor, wait
 from DBUtils.PooledDB import PooledDB
@@ -44,6 +46,7 @@ class Instance:
         self.db_data = {}
         self.db = DB
         self.cur = ''
+        self.redis = REDIS
 
     def get_aliyun(self):
         self.provider = ALIYUN_NAME
@@ -55,6 +58,9 @@ class Instance:
             disks = Aliyun.describe_disks(i)
             images = Aliyun.describe_images(i)
             status = TCLOUD_STATUS_MAKER.get(i.get('Status', ''), i.get('Status', ''))
+            charge_type = i.get('InstanceChargeType', '')
+            internet_charge_type = i.get('InternetChargeType', '')
+
             self.data[i.get('InstanceId')]= {
                 'instance_id': i.get('InstanceId'),
                 'instance_name': i.get('InstanceName', ''),
@@ -74,11 +80,12 @@ class Instance:
                 'create_time': i.get('CreationTime', ''),
                 'expired_time': i.get('ExpiredTime', ''),
                 'is_available': i.get('DeviceAvailable', ''),
-                'charge_type': i.get('InternetChargeType', ''),
+                'instance_charge_type': ALIYUN_INSTANCE_PAID.get(charge_type),
+                'instance_internet_charge_type': ALIYUN_INTERNET_PAID.get(internet_charge_type),
                 'provider': self.provider,
                 'instance_network_type': i.get('InstanceNetworkType', ''),
-                'internet_max_bandwidth_in': abs(i.get('InternetMaxBandwidthIn', '')),
-                'internet_max_bandwidth_out': abs(i.get('InternetMaxBandwidthOut', '')),
+                'internet_max_bandwidth_in': 500,  # 阿里云的下行带宽不限制的，暂时使用500Mbps
+                'internet_max_bandwidth_out': i.get('InternetMaxBandwidthOut', ''),
 
                 'disk_info': json.dumps(disks),
                 'image_info': json.dumps(images)
@@ -111,6 +118,15 @@ class Instance:
                     disks.append(d)
             images = Qcloud.describe_images(i)
 
+            # 当购买出带宽小于10Mbps， 入带宽为10Mbps,大于10Mbps时，与出带宽一样
+            out_bandwidth = i.get('InternetAccessible', {}).get('InternetMaxBandwidthOut', '')
+            in_bandwith = 10
+            if out_bandwidth >= 10:
+                in_bandwith = out_bandwidth
+
+            internet_charge_type = i.get('InternetAccessible', {}).get('InternetChargeType', '')
+            charge_type = i.get('InstanceChargeType', '')
+
             self.data[i['InstanceId']] = {
                 'instance_id': i.get('InstanceId'),
                 'instance_name': i.get('InstanceName'),
@@ -131,11 +147,12 @@ class Instance:
                 'create_time': i.get('CreatedTime', ''),
                 'expired_time': i.get('ExpiredTime', ''),
                 'is_available': i.get('DeviceAvailable', 1),
-                'charge_type': i.get('InternetAccessible', {}).get('InternetChargeType', ''),
+                'instance_charge_type': TENCLOUD_INSTANCE_PAID.get(charge_type),
+                'instance_internet_charge_type': TENCLOUD_INTERNET_PAID.get(internet_charge_type),
                 'provider': self.provider,
                 'instance_network_type': 'vpc',
-                'internet_max_bandwidth_in': 1,
-                'internet_max_bandwidth_out': i.get('InternetAccessible', {}).get('InternetMaxBandwidthOut', ''),
+                'internet_max_bandwidth_in': in_bandwith,
+                'internet_max_bandwidth_out': out_bandwidth,
 
                 'disk_info': json.dumps(disks),
                 'image_info': json.dumps(images)
@@ -183,9 +200,8 @@ class Instance:
                     'provider': self.provider,
                     'security_group_ids': ','.join([i['GroupId'] for i in j.get('SecurityGroups', '')]),
                     'instance_network_type': 'vpc',
-                    'internet_max_bandwidth_in': 1,
-                    'internet_max_bandwidth_out': 1,
-
+                    'internet_max_bandwidth_in': ZCLOUD_TYPE.get(j.get('InstanceType'), [0])[2],
+                    'internet_max_bandwidth_out': ZCLOUD_TYPE.get(j.get('InstanceType'), [0])[2],
 
                     'image_info': json.dumps(images),
                     'disk_info': json.dumps(disks)
@@ -228,6 +244,17 @@ class Instance:
             sql += get_formats(values) + ')'
             self.cur.execute(sql, values)
 
+    def _remove_invalid_status(self, instance):
+        old_status = self.redis.hget(INSTANCE_STATUS, instance['public_ip'])
+        if old_status is None:
+            old_status = instance['status']
+        new_status = instance['status']
+        old_bool = (old_status == TCLOUD_STATUS[7]) or (old_status == TCLOUD_STATUS[8]) or (old_status == TCLOUD_STATUS[9])
+        if old_bool and (new_status == TCLOUD_STATUS[2]):
+            return old_status
+        self.redis.hdel(INSTANCE_STATUS, instance['public_ip'])
+        return new_status
+
     def _to_update(self, instances):
         real_update = []
 
@@ -240,6 +267,7 @@ class Instance:
         for i in real_update:
             s, data = [], []
 
+            i['status'] = self._remove_invalid_status(i)
             for k, v in i.items():
                 s.append('{}=%s'.format(k))
                 data.append(v)

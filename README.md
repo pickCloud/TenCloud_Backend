@@ -158,6 +158,10 @@ ALTER TABLE instance ADD COLUMN internet_max_bandwidth_out varchar(64) NOT NULL 
 
 ALTER TABLE instance ADD COLUMN image_info text NOT NULL COMMENT '镜像信息';
 ALTER TABLE instance ADD COLUMN disk_info text NOT NULL  COMMENT '磁盘信息';
+
+ALTER TABLE instance ADD COLUMN instance_charge_type varchar(128) NOT NULL DEFAULT '' COMMENT '实例付费方式';
+ALTER TABLE instance DROP COLUMN charge_type;
+ALTER TABLE instance ADD COLUMN instance_internet_charge_type varchar(128) NOT NULL DEFAULT '' COMMENT '实例网络付费方式'
 ```
 
 * cpu表
@@ -516,6 +520,17 @@ CREATE TABLE `user_access_filehub` (
 ```
 update company_employee set status=status+2
 
+# 厂商凭证
+CREATE TABLE `cloud_credentials` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `content` text NOT NULL COMMENT '云厂商的api凭证的具体内容, 如access_id, access_secret',
+  `cloud_type` tinyint(4) NOT NULL COMMENT '1阿里云，2腾讯云, 3亚马逊云',
+  `lord` int(11) NOT NULL COMMENT 'uid/cid',
+  `form` tinyint(4) NOT NULL DEFAULT '1' COMMENT '所有者类型 1个人/2公司',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB CHARSET=utf8mb4 COMMENT='云厂商凭证';
 
 ## 测试
 ```
