@@ -11,8 +11,9 @@ from utils.context import catch
 from utils.general import validate_application_name
 from setting import settings
 from handler.user import user
-from constant import SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, OPERATE_STATUS,\
-      RIGHT, SERVICE, FORM_COMPANY, FORM_PERSON, MSG_PAGE_NUM, APPLICATION_STATE, DEPLOYMENT_STATUS, SERVICE_STATUS
+from constant import SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, OPERATE_STATUS, LABEL_TYPE, \
+                     RIGHT, SERVICE, FORM_COMPANY, FORM_PERSON, MSG_PAGE_NUM, APPLICATION_STATE, DEPLOYMENT_STATUS, \
+                     SERVICE_STATUS
 
 
 class ApplicationNewHandler(BaseHandler):
@@ -33,6 +34,7 @@ class ApplicationNewHandler(BaseHandler):
         @apiParam {String} repos_https_url 应用在github的https地址
         @apiParam {String} logo_url LOGO的url地址
         @apiParam {Number} image_id 镜像ID
+        @apiParam {[]Number} labels 标签ID(传递时注意保证ID是从小到大的顺序)
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -63,10 +65,11 @@ class ApplicationNewHandler(BaseHandler):
                 self.error('该应用名称已被使用，请换用其他名称')
                 return
 
-            # 添加应用信息和公司应用相关的数据权限
+            # 添加应用信息，标签关系和公司应用相关的数据权限
             param.update(self.params)
             param.pop('token', None)
             param.pop('cid', None)
+            param['labels'] = ','.join(str(i) for i in param.pop('labels', []))
             param['logo_url'] = settings['qiniu_header_bucket_url'] + param['logo_url'] \
                                 if self.params.get('logo_url', None) else ''
             new_app = yield self.application_service.add(param)
@@ -122,6 +125,7 @@ class ApplicationUpdateHandler(BaseHandler):
         @apiParam {String} repos_ssh_url 应用在github的ssh地址
         @apiParam {String} repos_https_url 应用在github的https地址
         @apiParam {String} logo_url LOGO的url地址
+        @apiParam {[]Number} labels 标签ID(传递时注意保证ID是从小到大的顺序)
 
         @apiUse Success
         """
@@ -144,6 +148,7 @@ class ApplicationUpdateHandler(BaseHandler):
                 'repos_name': self.params.get('repos_name'),
                 'repos_ssh_url': self.params.get('repos_ssh_url'),
                 'repos_https_url': self.params.get('repos_https_url'),
+                'labels': ','.join(str(i) for i in self.params.pop('labels', []))
             }
             if self.params.get('logo_url', ''):
                 sets['logo_url'] = self.params.get('logo_url') \
@@ -171,9 +176,9 @@ class ApplicationInfoHandler(BaseHandler):
         @apiParam {Number} status 应用状态(0.初创建 1.正常 2.异常)
         @apiParam {Number} page 页数
         @apiParam {Number} page_num 每页显示项数
-        @apiParam {String} label 应用标签
+        @apiParam {Number} label 应用标签ID
 
-        @apiDescription 样例: /api/application?id=\d&status=\d&page=\d&page_num=\d&label=\w*
+        @apiDescription 样例: /api/application?id=\d&status=\d&page=\d&page_num=\d&label=\d
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -198,9 +203,10 @@ class ApplicationInfoHandler(BaseHandler):
             param.pop('cid', None)
             page = int(param.pop('page', 1))
             page_num = int(param.pop('page_num', MSG_PAGE_NUM))
+            label = int(param.pop('label', 0))
 
             # 获取应用信息，如果未填写id的话则获取所有满足条件的应用
-            app_info = yield self.application_service.select(param)
+            app_info = yield self.application_service.fetch_with_label(param, label)
             app_info = yield self.filter(app_info, service=SERVICE['a'])
 
             # 对结果进行分页显示
@@ -250,3 +256,8 @@ class ApplicationBriefHandler(BaseHandler):
                 'docker_num': 0,
                 'service_num': len(service_list)
             })
+
+
+class ImageCreationHandler(WebSocketBaseHandler):
+    def on_message(self, message):
+        pass

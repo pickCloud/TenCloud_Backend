@@ -69,6 +69,7 @@ from service.server.server import ServerService
 from service.server.server_operation import ServerOperationService
 from service.user.sms import SMSService
 from service.user.user import UserService
+from service.label.label import LabelService
 from service.cloud.cloud_credentials import CloudCredentialsService
 from setting import settings
 from utils.general import json_dumps, json_loads
@@ -88,6 +89,7 @@ class BaseHandler(tornado.web.RequestHandler):
     user_service = UserService()
     file_service = FileService(ak=settings['qiniu_access_key'], sk=settings['qiniu_secret_key'])
     sms_service = SMSService()
+    label_service = LabelService()
     server_operation_service = ServerOperationService()
     company_service = CompanyService()
     company_employee_service = CompanyEmployeeService()

@@ -72,6 +72,18 @@ def validate_application_name(name):
     _validate(regex, name, '应用名称只能包含小写英文字母，数字，下划线，中划线，最长64个字符')
 
 
+def validate_image_name(name):
+    regex = r'^[_0-9a-z][_0-9a-z.-]{0,127}$'
+
+    _validate(regex, name, '镜像名称只能包含小写英文字母，数字，下划线，中划线，英文句号，最长128个字符')
+
+
+def validate_image_version_name(name):
+    regex = r'^[_0-9a-z.-]{1,64}$'
+
+    _validate(regex, name, '镜像版本号只能包含小写英文字母，数字，下划线，中划线，英文句号，最长64个字符')
+
+
 def gen_random_code(length=6):
     return ''.join(random.sample('123456789', length))
 
