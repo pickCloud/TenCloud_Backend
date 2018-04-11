@@ -42,7 +42,7 @@ class RepositoryHandler(BaseHandler):
         with catch(self):
             token = self.redis.hget(GIT_TOKEN, str(self.current_user['id']))
             if not token:
-                url = yield self.repos_service.auth_callback(self.params['url'])
+                url = yield self.repos_service.auth_callback(self.params['url'], self.current_user['id'])
                 self.error(message='Require token!', code=401, data={'url': url})
                 return
 
@@ -88,7 +88,7 @@ class RepositoryBranchHandler(BaseHandler):
             token = self.redis.hget(GIT_TOKEN, str(self.current_user['id']))
 
             if not token:
-                url = yield self.repos_service.auth_callback(self.params['url'])
+                url = yield self.repos_service.auth_callback(self.params['url'], self.current_user['id'])
                 self.error(message='Require token!', code=401, data={'url': url})
                 return
 
@@ -105,6 +105,8 @@ class GithubOauthCallbackHandler(BaseHandler):
         with catch(self):
             token = yield self.repos_service.fetch_token(self.params.get('code'))
 
-            self.redis.hset(GIT_TOKEN, str(self.current_user['id']), token)
+            if token:
+                self.redis.hset(GIT_TOKEN, str(self.params.get('uid')), token)
+
             url = self.get_argument('redirect_url')
             self.redirect(url=url, permanent=False, status=302)
