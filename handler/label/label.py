@@ -53,7 +53,7 @@ class LabelAddHandler(BaseHandler):
         @apiUse cidHeader
 
         @apiParam {String} name 标签名称
-        @apiParam {Number} type 标签类型
+        @apiParam {Number} type 标签类型(1.应用,2.镜像)
 
         @apiUse Success
         """

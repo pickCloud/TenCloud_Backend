@@ -52,10 +52,10 @@ class RepositoryService(BaseService):
         return result.get('access_token')
 
     @coroutine
-    def auth_callback(self, original_path):
+    def auth_callback(self, original_path, uid):
         original_path = original_path + '?' + 'token=true'
         redirect_uri = GIT_CALLBACK + '?' + urlencode(
-                {'redirect_url': original_path}
+                {'redirect_url': original_path, 'uid': uid}
         )
         params = {
             'client_id': settings['git_client_id'],
