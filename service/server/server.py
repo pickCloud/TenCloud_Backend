@@ -14,6 +14,7 @@ from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAIN
                      SERVERS_REPORT_INFO, TCLOUD_STATUS, THRESHOLD, MONITOR_COLOR_TYPE, INSTANCE_STATUS
 from utils.security import Aes
 from utils.general import get_in_formats, json_loads, json_dumps
+from utils.faker import is_faker, fake_performance
 
 class ServerService(BaseService):
     table = 'server'
@@ -164,7 +165,7 @@ class ServerService(BaseService):
             extra += ' AND '.join(e)
 
         sql = """
-            SELECT s.id, s.name, s.public_ip, i.provider, i.instance_name, i.region_name AS address, i.status AS machine_status
+            SELECT s.id, s.name, s.public_ip, i.instance_id, i.provider, i.instance_name, i.region_name AS address, i.status AS machine_status
             FROM server s
             JOIN instance i USING(instance_id)
             """+"""
@@ -178,7 +179,7 @@ class ServerService(BaseService):
         # 添加最新上报信息
         report_info = self.redis.hgetall(SERVERS_REPORT_INFO)
         for d in data:
-            info = json_loads(report_info.get(d['public_ip']))
+            info = fake_performance() if is_faker(d['instance_id']) else json_loads(report_info.get(d['public_ip']))
             d.update(info)
 
         data = sorted(data, key=lambda x: x['name'], reverse=True)
