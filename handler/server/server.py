@@ -7,7 +7,7 @@ from tornado.gen import coroutine
 from tornado.ioloop import PeriodicCallback, IOLoop
 from handler.base import BaseHandler, WebSocketBaseHandler
 from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG, ERR_TIP
-from utils.general import validate_ip
+from utils.general import validate_ip, json_loads
 from utils.security import Aes
 from utils.decorator import is_login, require
 from utils.context import catch
@@ -17,7 +17,7 @@ from constant import MONITOR_CMD, OPERATE_STATUS, OPERATION_OBJECT_STYPE, SERVER
 
 class ServerNewHandler(WebSocketBaseHandler):
     def on_message(self, message):
-        self.params.update(json.loads(message))
+        self.params.update(json_loads(message))
 
         # 参数认证
         try:
@@ -136,7 +136,7 @@ class ServerReport(BaseHandler):
                 raise ValueError('%s not in deploying/deployed' % self.params['public_ip'])
 
             if deploying_msg:
-                data = json.loads(deploying_msg)
+                data = json_loads(deploying_msg)
                 self.params.update({
                     'name': data['name'],
                     'cluster_id': data['cluster_id'],
@@ -292,7 +292,7 @@ class ServerDetailHandler(BaseHandler):
             }
 
             disk_info = list()
-            for i in json.loads(data.get('disk_info','')):
+            for i in json_loads(data.get('disk_info','')):
                 one = dict()
                 one['system_disk_id'] = i['DiskId']
                 one['system_disk_type'] = i['DiskCategory']
@@ -300,7 +300,7 @@ class ServerDetailHandler(BaseHandler):
                 disk_info.append(one)
 
             image_info = list()
-            for i in json.loads(data.get('image_info', '')):
+            for i in json_loads(data.get('image_info', '')):
                 one = dict()
                 one['image_id'] = i['ImageId']
                 one['image_name'] = i['ImageName']
@@ -823,7 +823,7 @@ class SystemLoadHandler(BaseHandler):
         """
         with catch(self):
             ip = yield self.server_service.fetch_public_ip(int(sid))
-            info = json.loads(self.redis.hget(SERVERS_REPORT_INFO, ip))['system_load']
+            info = json_loads(self.redis.hget(SERVERS_REPORT_INFO, ip))['system_load']
 
             data = yield self.server_service.get_monitor_data([sid])
             resp = {
