@@ -939,5 +939,22 @@ class ServerMontiorHandler(BaseHandler):
                                                         ct=False, ut=False
                     )
             sids = [i['sid'] for i in sid]
+
+            faker_sids = []
+            for sid in sids:
+                data = yield self.server_service.fetch_instance_info(sid)
+                if is_faker(data['instance_id']):
+                    faker_sids.append(sid)
+
+            if faker_sids:
+                data = []
+                for sid in faker_sids:
+                    instance_info = yield self.server_service.fetch_instance_info(sid)
+                    server_info = yield self.server_service.select(conds={'id': sid}, fields='name', one=True)
+                    if instance_info and is_faker(instance_info['instance_id']):
+                        data.append(fake_systemload({'sid': int(sid), 'name': server_info['name'], 'monitor': True}))
+                self.success(data)
+                return
+
             data = yield self.server_service.get_monitor_data(sids)
             self.success(data)

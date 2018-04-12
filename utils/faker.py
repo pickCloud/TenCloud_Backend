@@ -136,6 +136,9 @@ def fake_systemload(params):
         'run_time': run_time()
     }
 
+    if params.get('monitor'):
+        return systemload['monitor']
+
     return systemload
 
 if __name__ == '__main__':
