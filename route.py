@@ -12,7 +12,7 @@ from handler.permission.permission import PermissionTemplateListHandler, Permiss
     PermissionTemplateUpdateHandler
 from handler.application.application import ApplicationNewHandler, ApplicationDeleteHandler, ApplicationInfoHandler, \
                                             ApplicationBriefHandler, ApplicationUpdateHandler
-from handler.label.label import LabelListHandler, LabelAddHandler
+from handler.label.label import LabelListHandler, LabelAddHandler, LabelDelHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
     ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler, \
@@ -114,6 +114,7 @@ routes = [
     # 标签相关
     (r'/api/label/new', LabelAddHandler),
     (r'/api/label/list', LabelListHandler),
+    (r'/api/label/del', LabelDelHandler),
 
     # 用户相关
     (r'/api/user', UserDetailHandler),
