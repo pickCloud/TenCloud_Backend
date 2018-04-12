@@ -72,3 +72,27 @@ class LabelAddHandler(BaseHandler):
                 yield self.label_service.add(param)
                 self.log.info('Succeed in add the label, name: %s, type: %d' % (param['name'], param['type']))
                 self.success()
+
+
+class LabelDelHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/label/del 删除标签
+        @apiName LabelDelHandler
+        @apiGroup Label
+
+        @apiUse cidHeader
+
+        @apiParam {Number} id 标签ID
+
+        @apiUse Success
+        """
+        with catch(self):
+            self.guarantee('id')
+
+            yield self.label_service.delete(conds={'id': self.params.get('id')})
+            self.log.info('Succeed in del the label, ID: %d' % (self.params.get('id')))
+
+            self.success()
