@@ -11,6 +11,7 @@ from utils.general import validate_ip, json_loads
 from utils.security import Aes
 from utils.decorator import is_login, require
 from utils.context import catch
+from utils.faker import is_faker, fake_systemload
 from constant import MONITOR_CMD, OPERATE_STATUS, OPERATION_OBJECT_STYPE, SERVER_OPERATE_STATUS, \
       CONTAINER_OPERATE_STATUS, RIGHT, SERVICE, FORM_COMPANY, SERVERS_REPORT_INFO, THRESHOLD, FORM_PERSON, RESOURCE_TYPE
 
@@ -822,6 +823,13 @@ class SystemLoadHandler(BaseHandler):
         }
         """
         with catch(self):
+            sid = int(sid)
+            instance_info = yield self.server_service.fetch_instance_info(sid)
+            server_info = yield self.server_service.select(conds={'id': sid}, fields='name', one=True)
+            if instance_info and is_faker(instance_info['instance_id']):
+                self.success(fake_systemload({'sid': int(sid), 'name': server_info['name']}))
+                return
+
             ip = yield self.server_service.fetch_public_ip(int(sid))
             info = json_loads(self.redis.hget(SERVERS_REPORT_INFO, ip))['system_load']
 
