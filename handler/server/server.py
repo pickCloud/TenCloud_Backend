@@ -957,7 +957,7 @@ class ServerMontiorHandler(BaseHandler):
                         data.append(fake_systemload({'sid': int(sid), 'name': server_info['name'], 'monitor': True}))
 
                 real_data = yield self.server_service.get_monitor_data(real_sids)
-                data.append(real_data)
+                data.extend(real_data)
 
                 self.success(data)
                 return
