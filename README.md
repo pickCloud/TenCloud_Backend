@@ -521,6 +521,7 @@ CREATE TABLE `user_access_filehub` (
 update company_employee set status=status+2
 
 # 厂商凭证
+```
 CREATE TABLE `cloud_credentials` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `content` text NOT NULL COMMENT '云厂商的api凭证的具体内容, 如access_id, access_secret',
@@ -531,6 +532,7 @@ CREATE TABLE `cloud_credentials` (
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB CHARSET=utf8mb4 COMMENT='云厂商凭证';
+```
 
 ## 测试
 ```
