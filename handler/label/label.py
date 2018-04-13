@@ -69,9 +69,9 @@ class LabelAddHandler(BaseHandler):
                 self.log.info('The label exists, name: %s, type: %d' % (param['name'], param['type']))
                 self.error('添加的标签【%s】已经存在' % param['name'])
             else:
-                yield self.label_service.add(param)
+                result = yield self.label_service.add(param)
                 self.log.info('Succeed in add the label, name: %s, type: %d' % (param['name'], param['type']))
-                self.success()
+                self.success(result)
 
 
 class LabelDelHandler(BaseHandler):
