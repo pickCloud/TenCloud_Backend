@@ -92,7 +92,7 @@ class CloudCredentialHandler(BaseHandler):
 
             for data in self.params['data']:
                 yield self.server_service.add({
-                    'name': '%s演示%s'.format(data['provider'], random.randint(1, 100)),
+                    'name': '{}演示{}'.format(data['provider'], random.randint(1, 100)),
                     'public_ip': data['public_ip'],
                     'cluster_id': data['cloud_type'],
                     'instance_id': data['instance_id'],

@@ -768,7 +768,7 @@ class ServerService(BaseService):
     def search_fc_instance(self, params):
         ''' 搜索fc开头的instance, 用于批量导入的模拟 '''
         sql = '''
-            select i.instance_id, i.public_ip, i.provider, i.instance_network_type as net_type, i.region_id, IF(s.instance_id, 1, 0) is_add
+            select i.instance_id, i.public_ip, i.provider, i.instance_network_type as net_type, i.region_id, s.instance_id IS NOT NULL AS is_add
             from instance i left join server s using(instance_id) where i.provider=%s and i.instance_id like 'fc%%'
         '''
         cur = yield self.db.execute(sql, [params['provider']])
