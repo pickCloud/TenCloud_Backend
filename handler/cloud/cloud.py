@@ -40,7 +40,7 @@ class CloudCredentialHandler(BaseHandler):
     @coroutine
     def post(self):
         """
-        @api {post} /api/cloud/credential 公有云厂商认证
+        @api {post} /api/clouds/credentials 公有云厂商认证
         @apiName CloudCredentialHandler
         @apiGroup Cloud
 
