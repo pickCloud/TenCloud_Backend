@@ -77,13 +77,15 @@ def fake_performance(params):
 
         net.append({'created_time': t, 'input': net_input(), 'output': net_output()})
 
-
-    performance = {
-        'cpu': cpu,
-        'disk': disk,
-        'memory':  memory,
-        'net': net
-    }
+    if params['type'] == 0:
+        performance = {
+            'cpu': cpu,
+            'disk': disk,
+            'memory':  memory,
+            'net': net
+        }
+    else:
+        performance = []
 
     return  performance
 
