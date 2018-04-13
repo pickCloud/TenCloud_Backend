@@ -14,6 +14,7 @@ from constant import UNINSTALL_CMD, DEPLOYED, LIST_CONTAINERS_CMD, START_CONTAIN
                      SERVERS_REPORT_INFO, TCLOUD_STATUS, THRESHOLD, MONITOR_COLOR_TYPE, INSTANCE_STATUS
 from utils.security import Aes
 from utils.general import get_in_formats, json_loads, json_dumps
+from utils.faker import is_faker, fake_report_info, fake_performance
 
 class ServerService(BaseService):
     table = 'server'
@@ -164,7 +165,7 @@ class ServerService(BaseService):
             extra += ' AND '.join(e)
 
         sql = """
-            SELECT s.id, s.name, s.public_ip, i.provider, i.instance_name, i.region_name AS address, i.status AS machine_status
+            SELECT s.id, s.name, s.public_ip, i.instance_id, i.provider, i.instance_name, i.region_name AS address, i.status AS machine_status
             FROM server s
             JOIN instance i USING(instance_id)
             """+"""
@@ -178,7 +179,7 @@ class ServerService(BaseService):
         # 添加最新上报信息
         report_info = self.redis.hgetall(SERVERS_REPORT_INFO)
         for d in data:
-            info = json_loads(report_info.get(d['public_ip']))
+            info = fake_report_info() if is_faker(d['instance_id']) else json_loads(report_info.get(d['public_ip']))
             d.update(info)
 
         data = sorted(data, key=lambda x: x['name'], reverse=True)
@@ -304,6 +305,10 @@ class ServerService(BaseService):
     @coroutine
     def get_performance(self, params):
         params['public_ip'] = yield self.fetch_public_ip(params['id'])
+
+        info = yield self.fetch_instance_info(params['id'])
+        if info and is_faker(info['instance_id']):
+            return fake_performance(params)
 
         data = {}
         if params['type'] == 0:
@@ -758,3 +763,18 @@ class ServerService(BaseService):
             server_monitor_data.append(resp)
             continue
         return server_monitor_data
+
+    @coroutine
+    def search_fc_instance(self, params):
+        ''' 搜索fc开头的instance, 用于批量导入的模拟 '''
+        sql = '''
+            select i.instance_id, i.public_ip, i.provider, i.instance_network_type as net_type, i.region_id, s.instance_id IS NOT NULL AS is_add
+            from instance i left join server s using(instance_id) where i.provider=%s and i.instance_id like 'fc%%'
+        '''
+        cur = yield self.db.execute(sql, [params['provider']])
+        data = cur.fetchall()
+
+        for d in data:
+            d['is_add'] = bool(d['is_add'])
+
+        return data

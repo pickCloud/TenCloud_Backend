@@ -389,8 +389,10 @@ TCLOUD_STATUS_MAKER = {
 TENCLOUD_PROVIDER_LIST = {
     '阿里云': 1,
     '腾讯云': 2,
-    '亚马逊云': 3
+    '亚马逊云': 3,
+    '微软云': 4
 }
+TENCLOUD_PROVIDER_NAME = dict(zip(TENCLOUD_PROVIDER_LIST.values(), TENCLOUD_PROVIDER_LIST.keys()))
 
 #################################################################################################
 # http相关

@@ -7,17 +7,18 @@ from tornado.gen import coroutine
 from tornado.ioloop import PeriodicCallback, IOLoop
 from handler.base import BaseHandler, WebSocketBaseHandler
 from constant import DEPLOYING, DEPLOYED, DEPLOYED_FLAG, ERR_TIP
-from utils.general import validate_ip
+from utils.general import validate_ip, json_loads
 from utils.security import Aes
 from utils.decorator import is_login, require
 from utils.context import catch
+from utils.faker import is_faker, fake_systemload
 from constant import MONITOR_CMD, OPERATE_STATUS, OPERATION_OBJECT_STYPE, SERVER_OPERATE_STATUS, \
       CONTAINER_OPERATE_STATUS, RIGHT, SERVICE, FORM_COMPANY, SERVERS_REPORT_INFO, THRESHOLD, FORM_PERSON, RESOURCE_TYPE
 
 
 class ServerNewHandler(WebSocketBaseHandler):
     def on_message(self, message):
-        self.params.update(json.loads(message))
+        self.params.update(json_loads(message))
 
         # 参数认证
         try:
@@ -136,7 +137,7 @@ class ServerReport(BaseHandler):
                 raise ValueError('%s not in deploying/deployed' % self.params['public_ip'])
 
             if deploying_msg:
-                data = json.loads(deploying_msg)
+                data = json_loads(deploying_msg)
                 self.params.update({
                     'name': data['name'],
                     'cluster_id': data['cluster_id'],
@@ -292,7 +293,7 @@ class ServerDetailHandler(BaseHandler):
             }
 
             disk_info = list()
-            for i in json.loads(data.get('disk_info','')):
+            for i in json_loads(data.get('disk_info','')):
                 one = dict()
                 one['system_disk_id'] = i['DiskId']
                 one['system_disk_type'] = i['DiskCategory']
@@ -300,7 +301,7 @@ class ServerDetailHandler(BaseHandler):
                 disk_info.append(one)
 
             image_info = list()
-            for i in json.loads(data.get('image_info', '')):
+            for i in json_loads(data.get('image_info', '')):
                 one = dict()
                 one['image_id'] = i['ImageId']
                 one['image_name'] = i['ImageName']
@@ -822,8 +823,15 @@ class SystemLoadHandler(BaseHandler):
         }
         """
         with catch(self):
+            sid = int(sid)
+            instance_info = yield self.server_service.fetch_instance_info(sid)
+            server_info = yield self.server_service.select(conds={'id': sid}, fields='name', one=True)
+            if instance_info and is_faker(instance_info['instance_id']):
+                self.success(fake_systemload({'sid': int(sid), 'name': server_info['name']}))
+                return
+
             ip = yield self.server_service.fetch_public_ip(int(sid))
-            info = json.loads(self.redis.hget(SERVERS_REPORT_INFO, ip))['system_load']
+            info = json_loads(self.redis.hget(SERVERS_REPORT_INFO, ip))['system_load']
 
             data = yield self.server_service.get_monitor_data([sid])
             resp = {
@@ -931,5 +939,28 @@ class ServerMontiorHandler(BaseHandler):
                                                         ct=False, ut=False
                     )
             sids = [i['sid'] for i in sid]
+
+            faker_sids, real_sids = [], []
+            for sid in sids:
+                data = yield self.server_service.fetch_instance_info(sid)
+                if is_faker(data['instance_id']):
+                    faker_sids.append(sid)
+                else:
+                    real_sids.append(sid)
+
+            if faker_sids:
+                data = []
+                for sid in faker_sids:
+                    instance_info = yield self.server_service.fetch_instance_info(sid)
+                    server_info = yield self.server_service.select(conds={'id': sid}, fields='name', one=True)
+                    if instance_info and is_faker(instance_info['instance_id']):
+                        data.append(fake_systemload({'sid': int(sid), 'name': server_info['name'], 'monitor': True}))
+
+                real_data = yield self.server_service.get_monitor_data(real_sids)
+                data.extend(real_data)
+
+                self.success(data)
+                return
+
             data = yield self.server_service.get_monitor_data(sids)
             self.success(data)
