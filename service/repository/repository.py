@@ -14,9 +14,9 @@ class RepositoryService(BaseService):
     def fetch_repos(self, token):
         ''' git账号下的所有仓库
         '''
-        self.headers['Authorization'] = self.headers['Authorization'].format(token=token)
+        headers = {'Authorization': 'token {token}'.format(token=token)}
 
-        data = yield self.get(host=GIT_REPOS_URL, headers=self.headers)
+        data = yield self.get(host=GIT_REPOS_URL, headers=headers)
         result = [{'repos_url': d.get('ssh_url', ''),
                    'repos_name': d.get('full_name', ''),
                    'http_url': d.get('clone_url', '')} for d in data]
@@ -27,9 +27,9 @@ class RepositoryService(BaseService):
     def fetch_branches(self, repos_name, token):
         ''' 根据repos_name获取所有分支
         '''
-        self.headers['Authorization'] = self.headers['Authorization'].format(token=token)
+        headers = {'Authorization': 'token {token}'.format(token=token)}
 
-        data = yield self.get(host=GIT_BRANCH_URL.format(repos_name=repos_name), headers=self.headers)
+        data = yield self.get(host=GIT_BRANCH_URL.format(repos_name=repos_name), headers=headers)
 
         result = [{'branch_name': d.get('name')} for d in data]
 
