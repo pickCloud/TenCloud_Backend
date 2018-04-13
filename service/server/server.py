@@ -774,4 +774,7 @@ class ServerService(BaseService):
         cur = yield self.db.execute(sql, [params['provider']])
         data = cur.fetchall()
 
+        for d in data:
+            d['is_add'] = bool(d['is_add'])
+
         return data
