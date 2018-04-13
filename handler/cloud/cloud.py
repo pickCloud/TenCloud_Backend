@@ -1,4 +1,4 @@
-
+import random
 from tornado.gen import coroutine
 
 from utils.decorator import is_login
@@ -7,7 +7,7 @@ from utils.general import json_dumps
 from utils.error import AppError
 from utils.security import Aes
 from handler.base import BaseHandler
-from constant import TENCLOUD_PROVIDER_LIST, ERR_TIP
+from constant import TENCLOUD_PROVIDER_LIST, TENCLOUD_PROVIDER_NAME
 
 class CloudsHandler(BaseHandler):
     @coroutine
@@ -66,19 +66,41 @@ class CloudCredentialHandler(BaseHandler):
         """
         with catch(self):
             self.params.update(self.get_lord())
-            arg = {
-                'cloud_type': self.params['cloud_type'],
-                'content': Aes.encrypt(str(self.params['content'])),
-                'lord': self.params['lord'],
-                'form': self.params['form']
-            }
-            key_id = yield self.cloud_credentials_service.select(fields='id', conds={'content':arg['content']}, one=True)
-            if key_id is not None:
-                raise AppError(ERR_TIP['cloud_access_key_exist']['msg'], ERR_TIP['cloud_access_key_exist']['sts'])
+            provider = TENCLOUD_PROVIDER_NAME[self.params['cloud_type']]
 
-            data = yield self.cloud_credentials_service.get_server_info(self.params)
-            yield self.cloud_credentials_service.add(arg)
+            data = yield self.server_service.search_fc_instance({'provider': provider})
+
             self.success(data)
+
+    @is_login
+    @coroutine
+    def put(self):
+        """
+        @api {put} /api/cloud/credential 公有云机器添加
+        @apiName CloudCredentialHandler
+        @apiGroup Cloud
+
+        @apiParam {Number} cloud_type 厂商内部id
+        @apiParam {String} provider
+        @apiParam {String} public_ip
+        @apiParam {String} instance_id
+
+        @apiUse Success
+        """
+        with catch(self):
+            self.params.update(self.get_lord())
+
+            for data in self.params['data']:
+                yield self.server_service.add({
+                    'name': '%s演示%s'.format(data['provider'], random.randint(1, 100)),
+                    'public_ip': data['public_ip'],
+                    'cluster_id': data['cloud_type'],
+                    'instance_id': data['instance_id'],
+                    'lord': self.params['lord'],
+                    'form': self.params['form']
+                })
+
+            self.success()
 
     # 仅供测试用，方面前端删除测试账号
     @is_login
