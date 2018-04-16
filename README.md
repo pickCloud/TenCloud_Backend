@@ -517,8 +517,9 @@ CREATE TABLE `user_access_filehub` (
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-```
+  
 update company_employee set status=status+2
+```
 
 # 厂商凭证
 ```
