@@ -113,7 +113,7 @@ main(){
     code_get;
     remove_old_image;
     code_build;
-    image_push;
+#    image_push;
     shell_unlock;
 }
 
