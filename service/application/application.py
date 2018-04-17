@@ -63,7 +63,6 @@ class ApplicationService(BaseService):
         sql += ' AND '.join(conds)
         self.sync_db_execute(sql, arg)
 
-
     def sync_fetch_ssh_login_info(self, params):
         sql = "SELECT s.public_ip, sa.username, sa.passwd FROM server s JOIN server_account sa USING(public_ip) WHERE "
         conds, data = [], []
@@ -81,7 +80,6 @@ class ApplicationService(BaseService):
 
         return res
 
-
     def sync_insert_log(self, params):
         sql = """
                 INSERT INTO _image (name, version, log) VALUES (%s, %s, %s) 
@@ -90,9 +88,9 @@ class ApplicationService(BaseService):
         arg = [params['name'], params['version'], params['log'], params['log']]
         self.sync_db_execute(sql, arg)
 
-
     def create_image(self, params, out_func=None):
-        cmd = CREATE_IMAGE_CMD + ' '.join([params['image_name'], params['repos_https_url'], params['branch_name'], params['version']])
+        cmd = CREATE_IMAGE_CMD + ' '.join([params['app_name'], params['image_name'], params['repos_https_url'],
+                                           params['branch_name'], params['version']])
         ssh = SSH(hostname=params['public_ip'], port=22, username=params['username'], passwd=params['passwd'])
         out, err = ssh.exec_rt(cmd, out_func)
         return out, err
