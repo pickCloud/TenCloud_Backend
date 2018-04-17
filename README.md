@@ -388,8 +388,9 @@ CREATE TABLE `company` (
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-```
+  
 ALTER TABLE company ADD COLUMN image_url varchar(128) NOT NULL DEFAULT '' COMMENT '企业logo'
+```
 
 * 公司员工表
 ```
@@ -464,8 +465,9 @@ CREATE TABLE `permission` (
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-```
+  
 ALTER TABLE `permission` ADD COLUMN is_show tinyint(4) NOT NULL DEFAULT 1 COMMENT '是否显示， 0为隐藏，1为显示'
+```
 
 * 用户权限表
 ```

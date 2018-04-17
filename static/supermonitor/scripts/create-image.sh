@@ -5,17 +5,20 @@ LOG_DATE=$(date "+%Y-%m-%d")
 LOG_TIME=$(date "+%H-%M-%S")
 
 # version
-version=$4
+version=$5
 
 # args
-branch=$3
+branch=$4
 
 #Code ENV
+#APP_NAME=$1
 APP_NAME=$1
-BASE_DIR="$HOME/deploy"
-CODE_DIR="${BASE_DIR}/code/${APP_NAME}"
-CODE_URL=$2
-LOCK_FILE="/tmp/"${APP_NAME}"-"${version}".lock"
+IMAGE_NAME=$2
+#BASE_DIR="$HOME/deploy"
+BASE_DIR="$HOME/build"
+CODE_DIR="${BASE_DIR}/code/${APP_NAME}/${IMAGE_NAME}"
+CODE_URL=$3
+LOCK_FILE="/tmp/"${APP_NAME}"-"${IMAGE_NAME}"-"${version}".lock"
 
 #Shell env
 SHELL_NAME="deploy-app.sh"
@@ -60,7 +63,9 @@ code_build(){
         git checkout --progress "${branch}" 2>&1
         log "checkout to correct branch"
     fi
-    IMAGE_REGISTRY=${APP_NAME}":"${version}
+    # 将Dockerfile文件移动到对应应用目录下面
+    cp ${BASE_DIR}/dockerfile/${APP_NAME}_${IMAGE_NAME}.dockerfile ./Dockerfile
+    IMAGE_REGISTRY=${APP_NAME}"/"${IMAGE_NAME}":"${version}
     if docker build -t "${IMAGE_REGISTRY}" .;then
         log "image build successfull"
     else
@@ -74,9 +79,9 @@ code_build(){
 
 remove_old_image(){
     log "remove_old_image"
-    has_old_image=`docker images -q ${APP_NAME}":"${version}`
+    has_old_image=`docker images -q ${APP_NAME}"/"${IMAGE_NAME}":"${version}`
     if [ $has_old_image ]; then
-        docker rmi ${APP_NAME}":"${version}
+        docker rmi ${APP_NAME}"/"${IMAGE_NAME}":"${version}
     fi
 
     log "finish remove_old_image"
