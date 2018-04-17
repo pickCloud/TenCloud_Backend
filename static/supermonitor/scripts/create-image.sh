@@ -63,8 +63,12 @@ code_build(){
         git checkout --progress "${branch}" 2>&1
         log "checkout to correct branch"
     fi
+
     # 将Dockerfile文件移动到对应应用目录下面
-    cp ${BASE_DIR}/dockerfile/${APP_NAME}_${IMAGE_NAME}.dockerfile ./Dockerfile
+    if [ -f "${BASE_DIR}/dockerfile/${APP_NAME}_${IMAGE_NAME}.dockerfile" ]; then
+        cp ${BASE_DIR}/dockerfile/${APP_NAME}_${IMAGE_NAME}.dockerfile ./Dockerfile
+    fi
+
     IMAGE_REGISTRY=${APP_NAME}"/"${IMAGE_NAME}":"${version}
     if docker build -t "${IMAGE_REGISTRY}" .;then
         log "image build successfull"
