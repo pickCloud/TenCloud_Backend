@@ -11,7 +11,7 @@ from handler.permission.permission import PermissionTemplateListHandler, Permiss
     PermissionTemplateAddHandler, PermissionResourcesHandler, PermissionTemplateDelHandler, \
     PermissionTemplateUpdateHandler
 from handler.application.application import ApplicationNewHandler, ApplicationDeleteHandler, ApplicationInfoHandler, \
-                                            ApplicationBriefHandler, ApplicationUpdateHandler
+                                            ApplicationBriefHandler, ApplicationUpdateHandler, ImageCreationHandler
 from handler.label.label import LabelListHandler, LabelAddHandler, LabelDelHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
@@ -103,6 +103,9 @@ routes = [
     (r'/api/repos', RepositoryHandler),
     (r'/api/repos/branches', RepositoryBranchHandler),
     (r'/api/github/oauth/callback', GithubOauthCallbackHandler),
+
+    # 构建相关
+    (r'/api/build', ImageCreationHandler),
 
     # 应用相关
     (r'/api/application/new', ApplicationNewHandler),

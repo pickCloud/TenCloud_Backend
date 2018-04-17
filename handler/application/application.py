@@ -2,6 +2,7 @@
 
 import traceback
 import json
+import os
 
 from tornado.gen import coroutine
 from tornado.ioloop import IOLoop
@@ -11,7 +12,7 @@ from utils.context import catch
 from utils.general import validate_application_name
 from setting import settings
 from handler.user import user
-from constant import SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, OPERATE_STATUS, LABEL_TYPE, \
+from constant import SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, OPERATE_STATUS, LABEL_TYPE, PROJECT_OPERATE_STATUS, \
                      RIGHT, SERVICE, FORM_COMPANY, FORM_PERSON, MSG_PAGE_NUM, APPLICATION_STATE, DEPLOYMENT_STATUS, \
                      SERVICE_STATUS
 
@@ -260,4 +261,113 @@ class ApplicationBriefHandler(BaseHandler):
 
 class ImageCreationHandler(WebSocketBaseHandler):
     def on_message(self, message):
+        self.params = json.loads(message)
+
+        try:
+            args = ['image_name', 'version', 'repos_https_url', 'branch_name', 'app_id', 'app_name', 'dockerfile']
+
+            self.guarantee(*args)
+
+            # 记录用户操作应用开始构建的动作
+            log_params = {
+                'user_id': self.current_user['id'],
+                'object_id': self.params['app_id'],
+                'object_type': OPERATION_OBJECT_STYPE['application'],
+            }
+            IOLoop.current().spawn_callback(callback=self.init_operation_log, params=log_params)
+
+            # 生成dockerfile文件
+            self.save_dockerfile(self.params['image_name'], self.params['app_name'], self.params['dockerfile'])
+            # 获取构建服务器的信息并进行构建
+            login_info = self.application_service.sync_fetch_ssh_login_info({'public_ip': settings['ip_for_image_creation']})
+            self.params.update(login_info)
+            out, err = self.application_service.create_image(params=self.params, out_func=self.write_message)
+
+            # 保存构建日志
+            log = {"out": out, "err": err}
+            arg = {'name': self.params['prj_name'], 'version': self.params['version'], 'log': json.dumps(log)}
+            self.application_service.sync_insert_log(arg)
+
+            # 构建成功或失败错误，刷新应用的状态（正常或异常）
+            if err:
+                self.application_service.sync_update_status({'status': APPLICATION_STATE['abnormal'], 'id': self.params.get('app_id')})
+            else:
+                IOLoop.current().spawn_callback(callback=self.finish_operation_log, params=log_params)
+                self.application_service.sync_update_status({'status': APPLICATION_STATE['normal'], 'id': self.params.get('app_id')})
+
+            self.write_message(FAILURE if err else SUCCESS)
+        except Exception as e:
+            self.log.error(traceback.format_exc())
+            self.write_message(FAILURE)
+        finally:
+            self.close()
+
+    @coroutine
+    def init_operation_log(self, log_params):
+        yield self.server_operation_service.add(params={
+            'user_id': log_params['user_id'],
+            'object_id': log_params['object_id'],
+            'object_type': log_params['object_type'],
+            'operation': PROJECT_OPERATE_STATUS['build'],
+            'operation_status': OPERATE_STATUS['fail'],
+        })
+
+    @coroutine
+    def finish_operation_log(self, log_params):
+        yield self.server_operation_service.update(
+            sets={'operation_status': OPERATE_STATUS['success']},
+            conds={
+                'user_id': log_params['user_id'],
+                'object_id': log_params['object_id'],
+                'object_type': log_params['object_type']
+            }
+        )
+
+    def save_dockerfile(self, image_name, app_name, dockerfile=''):
+        if not dockerfile:
+            raise ValueError('请输入Dockerfile内容')
+
+        full_path = os.join(os.environ['HOME'], 'dockerfile')
+        if not os.path.exists(full_path): os.makedirs(full_path)
+
+        filename = os.path.join(full_path, app_name+"_"+image_name)
+
+        with open(filename, 'wb') as f:
+            f.write(dockerfile.encode())
+
+        return image_name
+
+
+class ImageUploadDockerfileHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/image/new 创建新应用
+        @apiName ApplicationNewHandler
+        @apiGroup Application
+
+        @apiUse cidHeader
+
+        @apiParam {String} name 应用名称
+        @apiParam {String} description 描述
+        @apiParam {String} repos_name 仓库名称
+        @apiParam {String} repos_ssh_url 应用在github的ssh地址
+        @apiParam {String} repos_https_url 应用在github的https地址
+        @apiParam {String} logo_url LOGO的url地址
+        @apiParam {Number} image_id 镜像ID
+        @apiParam {[]Number} labels 标签ID(传递时注意保证ID是从小到大的顺序)
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": {
+                    "id": int,
+                    "name": str,
+                    "description": str
+                }
+            }
+        """
         pass
