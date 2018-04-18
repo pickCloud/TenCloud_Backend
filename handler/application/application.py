@@ -335,7 +335,7 @@ class ImageCreationHandler(WebSocketBaseHandler):
         full_path = os.path.join('/root', 'dockerfile')
         if not os.path.exists(full_path): os.makedirs(full_path)
 
-        filename = os.path.join(full_path, app_name+"_"+image_name)
+        filename = os.path.join(full_path, app_name+"_"+image_name+".dockerfile")
 
         with open(filename, 'wb') as f:
             f.write(dockerfile.encode())
