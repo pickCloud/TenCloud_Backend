@@ -293,11 +293,11 @@ class ImageCreationHandler(WebSocketBaseHandler):
             # 构建成功或失败错误，刷新应用的状态（正常或异常）
             if err:
                 self.application_service.sync_update({'status': APPLICATION_STATE['abnormal']}, {'id': self.params.get('app_id')})
-                self.image_service.sync_update({'state': IMAGE_STATUS['success']}, {'name': self.params['image_name'], 'version': self.params['version']})
+                self.image_service.sync_update({'state': IMAGE_STATUS['failure']}, {'name': self.params['image_name'], 'version': self.params['version']})
             else:
                 IOLoop.current().spawn_callback(callback=self.finish_operation_log, params=log_params)
                 self.application_service.sync_update({'status': APPLICATION_STATE['normal']}, {'id': self.params.get('app_id')})
-                self.image_service.sync_update({'state': IMAGE_STATUS['failure']}, {'name': self.params['image_name'], 'version': self.params['version']})
+                self.image_service.sync_update({'state': IMAGE_STATUS['success']}, {'name': self.params['image_name'], 'version': self.params['version']})
 
             self.write_message(FAILURE if err else SUCCESS)
         except Exception as e:
@@ -331,7 +331,7 @@ class ImageCreationHandler(WebSocketBaseHandler):
         if not dockerfile:
             raise ValueError('请输入Dockerfile内容')
 
-        full_path = os.join(os.environ['HOME'], 'dockerfile')
+        full_path = os.path.join(os.environ['HOME'], 'dockerfile')
         if not os.path.exists(full_path): os.makedirs(full_path)
 
         filename = os.path.join(full_path, app_name+"_"+image_name)
