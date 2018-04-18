@@ -110,3 +110,20 @@ class GithubOauthCallbackHandler(BaseHandler):
 
             url = self.get_argument('redirect_url')
             self.redirect(url=url, permanent=False, status=302)
+
+
+class GithubOauthClearHandle(BaseHandler):
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/github/clear 清除github的授权
+        @apiName GithubOauthClearHandle
+        @apiGroup Repository
+
+        @apiUse cidHeader
+
+        @apiUse Success
+        """
+        with catch(self):
+            self.redis.hdel(GIT_TOKEN, str(self.current_user['id']))
+            self.success()

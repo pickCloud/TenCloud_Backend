@@ -62,6 +62,7 @@ from service.permission.permission import PermissionService, UserPermissionServi
 from service.application.application import ApplicationService
 from service.application.deployment import DeploymentService
 from service.application.service import ServiceService
+from service.imagehub.image import ImageService
 from service.project.project import ProjectService
 from service.project.project_versions import ProjectVersionService
 from service.repository.repository import RepositoryService
@@ -82,6 +83,7 @@ class BaseHandler(tornado.web.RequestHandler):
     server_service = ServerService()
     project_service = ProjectService()
     application_service = ApplicationService()
+    image_service = ImageService()
     deployment_service = DeploymentService()
     service_service = ServiceService()
     repos_service = RepositoryService()
