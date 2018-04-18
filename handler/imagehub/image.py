@@ -17,8 +17,8 @@ class ImageDetailHandler(BaseHandler):
     def get(self):
         """
         @api {get} /api/image 镜像信息
-        @apiName ApplicationInfoHandler
-        @apiGroup Application
+        @apiName ImageDetailHandler
+        @apiGroup Image
 
         @apiUse cidHeader
 
