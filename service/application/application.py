@@ -73,8 +73,8 @@ class ApplicationService(BaseService):
                 INSERT INTO _image (name, version, log, app_id, dockerfile, form, lord) VALUES (%s, %s, %s, %s, %s, %s, %s) 
                 ON DUPLICATE key UPDATE log=%s, update_time=NOW()
               """
-        arg = [params['name'], params['version'], params['log'], params['app_id'], params['dockerfile'], params['log'],
-               params['form'], params['lord']]
+        arg = [params['name'], params['version'], params['log'], params['app_id'], params['dockerfile'],
+               params['form'], params['lord'], params['log']]
         self.sync_db_execute(sql, arg)
 
     def create_image(self, params, out_func=None):
