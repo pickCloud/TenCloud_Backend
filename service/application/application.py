@@ -51,18 +51,6 @@ class ApplicationService(BaseService):
         data = cur.fetchall()
         return data
 
-    def sync_update_status(self, params):
-        sql = 'UPDATE {table} SET status=%s WHERE '.format(table=self.table)
-        conds, arg = [], [params['status']]
-        if params.get('id'):
-            conds.append('id=%s')
-            arg.append(params['id'])
-        if params.get('name'):
-            conds.append('name=%s')
-            arg.append(params['name'])
-        sql += ' AND '.join(conds)
-        self.sync_db_execute(sql, arg)
-
     def sync_fetch_ssh_login_info(self, params):
         sql = "SELECT s.public_ip, sa.username, sa.passwd FROM server s JOIN server_account sa USING(public_ip) WHERE "
         conds, data = [], []
@@ -80,7 +68,7 @@ class ApplicationService(BaseService):
 
         return res
 
-    def sync_insert_log(self, params):
+    def add_image_data(self, params):
         sql = """
                 INSERT INTO _image (name, version, log) VALUES (%s, %s, %s) 
                 ON DUPLICATE key UPDATE log=%s, update_time=NOW()

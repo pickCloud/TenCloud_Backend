@@ -21,19 +21,6 @@ class ProjectService(BaseService):
                 deploy_ips, container_name, image_source, lord, form
             """
 
-    def sync_db_execute(self, sql, params):
-        cur = self.sync_db.cursor()
-        cur.execute(sql, params)
-        cur.close()
-
-    def sync_db_fetchone(self, sql, params):
-        cur = self.sync_db.cursor()
-        cur.execute(sql, params)
-        res = cur.fetchone()
-        cur.close()
-
-        return res
-
     def sync_update_status(self, params):
         sql = 'UPDATE {table} SET status=%s WHERE '.format(table=self.table)
         conds, arg = [], [params['status']]

@@ -18,7 +18,8 @@ from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDe
     ProjectImageCreationHandler, ProjectImageFindHandler, ProjectVersionsHandler, \
     ProjectImageLogHandler, ProjectContainersListHanler, ProjectImageUpload, \
     ProjectImageCloudDownload
-from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler, GithubOauthCallbackHandler
+from handler.repository.repository import RepositoryHandler, RepositoryBranchHandler, GithubOauthCallbackHandler, \
+    GithubOauthClearHandle
 from handler.server.server import ServerNewHandler, ServerReport, ServerDelHandler, \
     ServerDetailHandler, ServerPerformanceHandler, ServerUpdateHandler, \
     ServerStopHandler, ServerStartHandler, ServerRebootHandler, \
@@ -103,6 +104,7 @@ routes = [
     (r'/api/repos', RepositoryHandler),
     (r'/api/repos/branches', RepositoryBranchHandler),
     (r'/api/github/oauth/callback', GithubOauthCallbackHandler),
+    (r'/api/github/clear', GithubOauthClearHandle),
 
     # 构建相关
     (r'/api/build', ImageCreationHandler),

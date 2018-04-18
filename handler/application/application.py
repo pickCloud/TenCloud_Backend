@@ -14,7 +14,7 @@ from setting import settings
 from handler.user import user
 from constant import SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, OPERATE_STATUS, LABEL_TYPE, PROJECT_OPERATE_STATUS, \
                      RIGHT, SERVICE, FORM_COMPANY, FORM_PERSON, MSG_PAGE_NUM, APPLICATION_STATE, DEPLOYMENT_STATUS, \
-                     SERVICE_STATUS
+                     SERVICE_STATUS, IMAGE_STATUS
 
 
 class ApplicationNewHandler(BaseHandler):
@@ -283,17 +283,21 @@ class ImageCreationHandler(WebSocketBaseHandler):
             self.params.update(login_info)
             out, err = self.application_service.create_image(params=self.params, out_func=self.write_message)
 
-            # 保存构建日志
+            # 生成镜像数据
             log = {"out": out, "err": err}
-            arg = {'name': self.params['prj_name'], 'version': self.params['version'], 'log': json.dumps(log)}
-            self.application_service.sync_insert_log(arg)
+            arg = {'name': self.params['image_name'], 'version': self.params['version'], 'app_id': self.params['app_id'],
+                   'dockerfile': self.params['dockerfile'], 'log': json.dumps(log)}
+            arg.update(self.get_lord())
+            self.application_service.add_image_data(arg)
 
             # 构建成功或失败错误，刷新应用的状态（正常或异常）
             if err:
-                self.application_service.sync_update_status({'status': APPLICATION_STATE['abnormal'], 'id': self.params.get('app_id')})
+                self.application_service.sync_update({'status': APPLICATION_STATE['abnormal']}, {'id': self.params.get('app_id')})
+                self.image_service.sync_update({'state': IMAGE_STATUS['success']}, {'name': self.params['image_name'], 'version': self.params['version']})
             else:
                 IOLoop.current().spawn_callback(callback=self.finish_operation_log, params=log_params)
-                self.application_service.sync_update_status({'status': APPLICATION_STATE['normal'], 'id': self.params.get('app_id')})
+                self.application_service.sync_update({'status': APPLICATION_STATE['normal']}, {'id': self.params.get('app_id')})
+                self.image_service.sync_update({'state': IMAGE_STATUS['failure']}, {'name': self.params['image_name'], 'version': self.params['version']})
 
             self.write_message(FAILURE if err else SUCCESS)
         except Exception as e:

@@ -282,3 +282,32 @@ class BaseService():
             return out, err
         except Exception as e:
             return [], [str(e)]
+
+    def sync_db_execute(self, sql, params):
+        cur = self.sync_db.cursor()
+        cur.execute(sql, params)
+        cur.close()
+
+    def sync_db_fetchone(self, sql, params):
+        cur = self.sync_db.cursor()
+        cur.execute(sql, params)
+        res = cur.fetchone()
+        cur.close()
+
+        return res
+
+    def sync_update(self, sets=None, conds=None, table=None):
+        '''
+        :param sets:   dict e.g. {'name': 'foo', 'description': 'boo'}
+        :param conds:  dict 同select
+        '''
+        sets, s_params = self.make_pair(sets)
+        conds, c_params = self.make_pair(conds)
+
+        sql = "UPDATE {table} SET ".format(table=table or self.table)
+
+        sql += ','.join(sets)
+
+        sql += ' WHERE ' + ' AND '.join(conds)
+
+        self.sync_db_execute(sql, s_params + c_params)
