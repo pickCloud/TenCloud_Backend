@@ -4,7 +4,7 @@ from tornado.ioloop import IOLoop
 from handler.base import BaseHandler, WebSocketBaseHandler
 from utils.decorator import is_login, require
 from utils.context import catch
-from utils.general import validate_application_name
+from utils.general import validate_image_name
 from setting import settings
 from constant import SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, OPERATE_STATUS, LABEL_TYPE, PROJECT_OPERATE_STATUS, \
                      RIGHT, SERVICE, FORM_COMPANY, FORM_PERSON, MSG_PAGE_NUM, APPLICATION_STATE, DEPLOYMENT_STATUS, \
@@ -48,7 +48,67 @@ class ImageDetailHandler(BaseHandler):
         """
         with catch(self):
             param = self.get_lord()
+            if self.params.get('app_id'):
+                param['app_id'] = self.params.get('app_id')
 
-            data = yield self.image_service.select(conds=param)
+            page = self.params.get('page', 1)
+            page_num = self.params.get('page_num', MSG_PAGE_NUM)
+            label = int(self.params.get('label', 0))
 
-            self.success(data)
+            data = yield self.image_service.fetch_with_label(param, label)
+
+            self.success(data[page_num * (page - 1):page_num * page])
+
+
+class ImageNewHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/image/new 创建新镜像
+        @apiName ImageNewHandler
+        @apiGroup Image
+
+        @apiUse cidHeader
+
+        @apiParam {String} name 镜像名称
+        @apiParam {String} version 镜像版本
+        @apiParam {Number} type 镜像类型(0.内部应用, 1.外部镜像)
+        @apiParam {String} description 描述
+        @apiParam {String} url 镜像URL
+        @apiParam {String} logo_url LOGO地址
+        @apiParam {String} repos_name 代码仓库名称
+        @apiParam {String} repos_url 代码仓库github地址
+        @apiParam {String} dockerfile dockerfile
+        @apiParam {Number} app_id 所属应用ID
+        @apiParam {[]Number} labels 标签ID(传递时注意保证ID是从小到大的顺序)
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": {
+                    "id": int,
+                    "update_time": time
+                }
+            }
+        """
+        with catch(self):
+            self.guarantee('name', 'version', 'app_id')
+            self.log.info('Create new image, name: %s, version: %s, app_id: %s'
+                          % (self.params.get('name'), self.params.get('version'), self.params.get('app_id')))
+
+            validate_image_name('name')
+            param = self.params
+            param.pop('token', None)
+            param.pop('cid', None)
+            param.update(self.get_lord())
+            param['labels'] = ','.join(str(i) for i in param.pop('labels', []))
+            param['logo_url'] = settings['qiniu_header_bucket_url'] + param['logo_url'] if self.params.get('logo_url', None) else ''
+
+            new_image = yield self.image_service.add(param)
+
+            self.log.info('Succeeded to create new image, name: %s, version: %s, app_id: %s'
+                          % (self.params.get('name'), self.params.get('version'), self.params.get('app_id')))
+            self.success(new_image)

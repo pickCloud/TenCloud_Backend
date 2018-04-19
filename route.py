@@ -12,6 +12,7 @@ from handler.permission.permission import PermissionTemplateListHandler, Permiss
     PermissionTemplateUpdateHandler
 from handler.application.application import ApplicationNewHandler, ApplicationDeleteHandler, ApplicationInfoHandler, \
                                             ApplicationBriefHandler, ApplicationUpdateHandler, ImageCreationHandler
+from handler.imagehub.image import ImageDetailHandler, ImageNewHandler
 from handler.label.label import LabelListHandler, LabelAddHandler, LabelDelHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
@@ -108,6 +109,10 @@ routes = [
 
     # 构建相关
     (r'/api/build', ImageCreationHandler),
+
+    # 镜像相关
+    (r'/api/image', ImageDetailHandler),
+    (r'/api/image/new', ImageNewHandler),
 
     # 应用相关
     (r'/api/application/new', ApplicationNewHandler),
