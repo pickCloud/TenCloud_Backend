@@ -9,7 +9,7 @@ from tornado.ioloop import IOLoop
 from handler.base import BaseHandler, WebSocketBaseHandler
 from utils.decorator import is_login, require
 from utils.context import catch
-from utils.general import validate_application_name
+from utils.general import validate_application_name, validate_image_name
 from setting import settings
 from handler.user import user
 from constant import SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, OPERATE_STATUS, LABEL_TYPE, PROJECT_OPERATE_STATUS, \
@@ -267,6 +267,7 @@ class ImageCreationHandler(WebSocketBaseHandler):
             args = ['image_name', 'version', 'repos_https_url', 'branch_name', 'app_id', 'app_name', 'dockerfile']
 
             self.guarantee(*args)
+            validate_image_name(self.params.get('image_name'))
 
             # 记录用户操作应用开始构建的动作
             log_params = {
@@ -302,6 +303,7 @@ class ImageCreationHandler(WebSocketBaseHandler):
             self.write_message(FAILURE if err else SUCCESS)
         except Exception as e:
             self.log.error(traceback.format_exc())
+            self.write_message(str(e))
             self.write_message(FAILURE)
         finally:
             self.close()
@@ -375,4 +377,5 @@ class ImageUploadDockerfileHandler(BaseHandler):
                 }
             }
         """
-        pass
+        with catch(self):
+            pass

@@ -19,38 +19,6 @@ class ApplicationService(BaseService):
                 image_id, lord, form
             """
 
-    @coroutine
-    def fetch_with_label(self, params=None, label=None, fields=None, table=None):
-        sql = """
-            SELECT {fields}, group_concat(l.name order by l.id) as label_name
-            FROM {table} a
-            LEFT JOIN label as l
-            ON find_in_set(l.id, a.labels) 
-        """
-
-        # 给每个查询的字段加上a.前缀，并且将时间字段格式化
-        field = re.sub('(\w+)', lambda x: 'a.' + x.group(0), fields or self.fields)
-        field += ", DATE_FORMAT(a.create_time, '%s') AS create_time " % FULL_DATE_FORMAT_ESCAPE
-        field += ", DATE_FORMAT(a.update_time, '%s') AS update_time " % FULL_DATE_FORMAT_ESCAPE
-
-        #
-        conds, param = self.make_pair(params)
-        if conds:
-            sql += " WHERE a." + " AND a.".join(conds)
-
-        if label:
-            if conds:
-                sql += " AND find_in_set(%s, a.labels) "
-            else:
-                sql += " WHERE find_in_set(%s, a.labels) "
-            param.append(label)
-
-        sql += " GROUP BY a.id "
-
-        cur = yield self.db.execute(sql.format(table=table or self.table, fields=field), param)
-        data = cur.fetchall()
-        return data
-
     def sync_fetch_ssh_login_info(self, params):
         sql = "SELECT s.public_ip, sa.username, sa.passwd FROM server s JOIN server_account sa USING(public_ip) WHERE "
         conds, data = [], []
@@ -71,10 +39,10 @@ class ApplicationService(BaseService):
     def add_image_data(self, params):
         sql = """
                 INSERT INTO _image (name, version, log, app_id, dockerfile, form, lord) VALUES (%s, %s, %s, %s, %s, %s, %s) 
-                ON DUPLICATE key UPDATE log=%s, update_time=NOW()
+                ON DUPLICATE key UPDATE log=%s, update_time=NOW(), dockerfile=%s
               """
         arg = [params['name'], params['version'], params['log'], params['app_id'], params['dockerfile'],
-               params['form'], params['lord'], params['log']]
+               params['form'], params['lord'], params['log'], params['dockerfile']]
         self.sync_db_execute(sql, arg)
 
     def create_image(self, params, out_func=None):
