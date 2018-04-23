@@ -8,7 +8,7 @@ from utils.general import fuzzyfinder
 
 class ClusterService(BaseService):
     table  = 'cluster'
-    fields = 'id, name, description, status'
+    fields = 'id, name, description, status, type'
 
     def select_by_name(self, data, server_name):
         names = []

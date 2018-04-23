@@ -154,6 +154,10 @@ class ServerService(BaseService):
                 else:
                     arg.append(cond['region'])
 
+            if cond.get('cluster_id'):
+                e.append('s.cluster_id=%s')
+                arg.append(cond['cluster_id'])
+
             if cond.get('lord'):
                 e.append('s.lord=%s')
                 arg.append(cond['lord'])
@@ -165,7 +169,7 @@ class ServerService(BaseService):
             extra += ' AND '.join(e)
 
         sql = """
-            SELECT s.id, s.name, s.public_ip, i.instance_id, i.provider, i.instance_name, i.region_name AS address, i.status AS machine_status
+            SELECT s.id, s.name, s.public_ip, s.cluster_id, i.instance_id, i.provider, i.instance_name, i.region_name AS address, i.status AS machine_status
             FROM server s
             JOIN instance i USING(instance_id)
             """+"""
