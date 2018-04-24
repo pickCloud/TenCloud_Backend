@@ -51,16 +51,15 @@ class ServerService(BaseService):
                 kv[member] = params.get(member)
 
         if kv:
-            sql = "INSERT INTO k8s(public_ip, %s) VALUES(%s, %s)" \
-                  " ON DUPLICATE KEY UPDATE update_time=NOW(),"
-
             key = ','.join(kv.keys())
             value = ','.join(kv.values())
             sets, sets_params = self.make_pair(kv)
 
+            sql = "INSERT INTO k8s (public_ip, {fields}) VALUES (%s, %s)" \
+                  " ON DUPLICATE KEY UPDATE update_time=NOW(),".format(fields=key)
             sql += ','.join(sets)
 
-            yield self.db.execute(sql, [key] + params['public_ip'] + [value] + sets_params)
+            yield self.db.execute(sql, [params['public_ip']] + [value] + sets_params)
 
     @coroutine
     def _save_docker_report(self, params):
