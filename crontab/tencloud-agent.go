@@ -86,6 +86,7 @@ type Stat struct {
 	Net        *NetStat               `json:"net"`
 	SystemLoad *SystemLoad            `json:"system_load"`
 	Docker     map[string]*DockerStat `json:"docker"`
+	K8sNode    string                 `json:"k8s_node"`
 }
 
 type IPInfo struct {
@@ -421,6 +422,20 @@ func (a *agent) getSystemLoad() (*SystemLoad, error) {
 	resp.LoginUsers = len(strings.Split(string(u), " "))
 	return resp, nil
 }
+
+func (a *agent) getK8sNodeInfo() (string, error) {
+	out, err := exec.Command("kubectl", "get", "node", "-o", "yaml").Output()
+	if err != nil {
+		return "", err
+	}
+
+	if bytes.Contains(out, []byte("The connection to the server")) {
+	    return "", err
+	}
+
+	return string(out), nil
+}
+
 func (a *agent) postData() {
 	ip := DefaultIP
 	if !a.debug {
@@ -460,6 +475,12 @@ func (a *agent) postData() {
 		a.logger.Println(err)
 		docker = map[string]*DockerStat{}
 	}
+	k8s_node, err := a.getK8sNodeInfo()
+	if err != nil {
+	    a.logger.Println(err)
+	    k8s_node = ""
+	}
+
 	stat := &Stat{
 		IP:         ip,
 		Time:       time.Now().Unix(),
@@ -469,6 +490,7 @@ func (a *agent) postData() {
 		Net:        net,
 		SystemLoad: load,
 		Docker:     docker,
+        K8sNode:    k8s_node,
 	}
 	b, err := json.Marshal(stat)
 	if err != nil {
