@@ -36,9 +36,31 @@ class ServerService(BaseService):
             for (k, v) in params['docker'].items():
                 self._save_docker_report(base_data + [k] + [json.dumps(v)])
 
+        yield self._save_k8s_report(params)
+
         # 保存最新至redis
         public_ip = params.pop('public_ip')
         self.redis.hset(SERVERS_REPORT_INFO, public_ip, json_dumps(params))
+
+    @coroutine
+    def _save_k8s_report(self, params):
+        kv = {}
+
+        for member in ['k8s_node', 'k8s_pod', 'k8s_deployment', 'k8s_service']:
+            if params.get(member):
+                kv[member] = params.get(member)
+
+        if kv:
+            sql = "INSERT INTO k8s(public_ip, %s) VALUES(%s, %s)" \
+                  " ON DUPLICATE KEY UPDATE update_time=NOW(),"
+
+            key = ','.join(kv.keys())
+            value = ','.join(kv.values())
+            sets, sets_params = self.make_pair(kv)
+
+            sql += ','.join(sets)
+
+            yield self.db.execute(sql, [key] + params['public_ip'] + [value] + sets_params)
 
     @coroutine
     def _save_docker_report(self, params):
