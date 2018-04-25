@@ -270,3 +270,39 @@ class ClusterSummaryHandler(BaseHandler):
                 'payment_num': 0
             }
             self.success(data)
+
+
+class ClusterNodeListHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/cluster/node 集群Node列表数据
+        @apiName ClusterNodeListHandler
+        @apiGroup Cluster
+
+        @apiParam {Number} cluster_id 集群ID，不传代表获取所有集群列表
+
+        @apiUse cidHeader
+
+        @apiSuccessExample {json} Success-Response:
+         HTTP/1.1 200 OK
+         {
+             "status": 0,
+             "message": "success",
+             "data": {[
+                 "id": 37,
+                 "type": 1,     # 集群类型(1.Kubernetes集群 2.超级计算能力 2.高可用)
+                 "description": "test",
+                 "master_server_id": 193,
+                 "public_ip": "1.1.1.1",
+                 "k8s_node": "apiVersion: v1..."    # K8s Node信息，YAML格式
+             }],
+             ...
+         }
+        """
+        with catch(self):
+            cluster_id = self.params.get('id', None)
+            data = yield self.cluster_service.get_node_list(cluster_id)
+
+            self.success(data)
