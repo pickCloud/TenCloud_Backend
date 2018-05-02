@@ -204,7 +204,7 @@ class ClusterSearchHandler(BaseHandler):
             }
         """
         with catch(self):
-            cluster_id = self.param.get('cluster_id', 0)
+            cluster_id = self.params.get('cluster_id', 0)
             region_name = self.params.get('region_name', [])
             provider_name = self.params.get('provider_name', [])
             server_name = self.params.get('server_name', '')

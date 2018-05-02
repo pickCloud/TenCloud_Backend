@@ -38,7 +38,7 @@ class ApplicationService(BaseService):
 
     def add_image_data(self, params):
         sql = """
-                INSERT INTO _image (name, version, log, app_id, dockerfile, form, lord) VALUES (%s, %s, %s, %s, %s, %s, %s) 
+                INSERT INTO image (name, version, log, app_id, dockerfile, form, lord) VALUES (%s, %s, %s, %s, %s, %s, %s) 
                 ON DUPLICATE key UPDATE log=%s, update_time=NOW(), dockerfile=%s
               """
         arg = [params['name'], params['version'], params['log'], params['app_id'], params['dockerfile'],
