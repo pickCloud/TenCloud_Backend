@@ -109,6 +109,7 @@ LOAD_IMAGE_FILE = 'docker load --input {filename}'
 LOAD_IMAGE = """|tail -1|cut -d ' ' -f 3|awk '{b="docker tag "$0" hub.10.com/library/"$0; system(b); c="docker push hub.10.com/library/"$0; system(c)}'"""
 
 CLOUD_DOWNLOAD_IMAGE = 'wget -b -c --tries=3 --directory-prefix={store_path} {image_url}'
+K8S_DEPLOY_CMD = 'kubectl apply -f {server_url}/yaml/'.format(server_url=SERVER_URL)
 
 #################################################################################################
 # 阿里云相关
@@ -523,6 +524,14 @@ LABEL_TYPE['application'] = 1
 LABEL_TYPE['image'] = 2
 
 #################################################################################################
+# 部署类型
+# 1 K8S部署, 2 Docker原生部署
+#################################################################################################
+DEPLOYMENT_TYPE = dict()
+DEPLOYMENT_TYPE['k8s'] = 1
+DEPLOYMENT_TYPE['docker'] = 2
+
+#################################################################################################
 # 项目状态
 # 0 初创建, 1 构建中, 2 构建成功, 3 部署中， 4 部署成功, -2 构建失败, -4 部署失败',
 #################################################################################################
@@ -586,6 +595,7 @@ MAX_PAGE_NUMBER = 100
 OPERATE_STATUS = dict()
 OPERATE_STATUS['success'] = 0
 OPERATE_STATUS['fail'] = 1
+OPERATE_STATUS['processing'] = 2
 
 #################################################################################################
 # 操作对象类型
@@ -595,6 +605,7 @@ OPERATION_OBJECT_STYPE['server'] = 0
 OPERATION_OBJECT_STYPE['container'] = 1
 OPERATION_OBJECT_STYPE['project'] = 2
 OPERATION_OBJECT_STYPE['application'] = 2
+OPERATION_OBJECT_STYPE['deployment'] = 3
 
 #################################################################################################
 # 主机操作行为码

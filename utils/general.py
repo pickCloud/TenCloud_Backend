@@ -72,6 +72,12 @@ def validate_application_name(name):
     _validate(regex, name, '应用名称只能包含小写英文字母，数字，下划线，中划线，最长64个字符')
 
 
+def validate_deployment_name(name):
+    regex = r'^[-_0-9a-z]{1,128}$'
+
+    _validate(regex, name, '部署名称只能包含小写英文字母，数字，下划线，中划线，最长128个字符')
+
+
 def validate_image_name(name):
     regex = r'^[_0-9a-z][_0-9a-z.-]{0,127}$'
 

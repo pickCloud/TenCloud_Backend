@@ -297,6 +297,14 @@ class BaseService():
 
         return res
 
+    def sync_db_fetchall(self, sql, params):
+        cur = self.sync_db.cursor()
+        cur.execute(sql, params)
+        res = cur.fetchall()
+        cur.close()
+
+        return res
+
     def sync_update(self, sets=None, conds=None, table=None):
         '''
         :param sets:   dict e.g. {'name': 'foo', 'description': 'boo'}
@@ -312,6 +320,35 @@ class BaseService():
         sql += ' WHERE ' + ' AND '.join(conds)
 
         self.sync_db_execute(sql, s_params + c_params)
+
+    def sync_select(self, conds=None, fields=None, ct=True, ut=True, df=None, one=False, extra='', page=None,
+                    num=DEFAULT_PAGE_NUM):
+        '''
+        :param fields 字段名, str类型, 默认为类变量fields, 可传'id, name, ...'
+        :param conds  条件, dict类型, 可传{'name': 'foo'}/{'name~': 'foo'} or {'age': [10, 20]}/{'age~': [10, 20]}
+        :param ct     是否获取创建时间, True/False
+        :param ut     是否获取更新时间, True/False
+        :param df     创建时间/更新时间的字符串格式, 可传'%Y-%m-%d %H:%M:%S'
+        :param one    是否一行, True/False
+        :param extra   额外
+        :param page   页数
+        :param num    每页消息数
+
+        Usage::
+            >>> self.select(conds={'id': 1}, ct=False)
+
+        :return: [{'id': 1, ...}, ...]
+        '''
+        conds, params = self.make_pair(conds)
+
+        sql_params = self._create_query(fields=fields, conds=conds, params=params, ct=ct, ut=ut, df=df, extra=extra,
+                                        page=page, num=num)
+        cur = self.sync_db.cursor()
+        cur.execute(*sql_params)
+
+        data = cur.fetchone() if one else cur.fetchall()
+
+        return data
 
     @coroutine
     def fetch_with_label(self, params=None, label=None, fields=None, table=None):
