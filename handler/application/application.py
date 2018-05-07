@@ -350,8 +350,8 @@ class ImageUploadDockerfileHandler(BaseHandler):
     @coroutine
     def post(self):
         """
-        @api {post} /api/image/new 创建新应用
-        @apiName ApplicationNewHandler
+        @api {post} /api/image/upload 创建新应用
+        @apiName ImageUploadDockerfileHandler
         @apiGroup Application
 
         @apiUse cidHeader

@@ -13,6 +13,7 @@ from handler.permission.permission import PermissionTemplateListHandler, Permiss
 from handler.application.application import ApplicationNewHandler, ApplicationDeleteHandler, ApplicationInfoHandler, \
                                             ApplicationBriefHandler, ApplicationUpdateHandler, ImageCreationHandler
 from handler.imagehub.image import ImageDetailHandler, ImageNewHandler
+from handler.application.deployment import K8sDeploymentHandler
 from handler.label.label import LabelListHandler, LabelAddHandler, LabelDelHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
@@ -110,6 +111,9 @@ routes = [
 
     # 构建相关
     (r'/api/build', ImageCreationHandler),
+
+    # 部署相关
+    (r'/api/k8s_deploy', K8sDeploymentHandler),
 
     # 镜像相关
     (r'/api/image', ImageDetailHandler),
