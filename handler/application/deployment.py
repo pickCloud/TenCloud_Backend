@@ -101,7 +101,7 @@ class K8sDeploymentNameCheck(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {post} /api/deployment/check_name 检查部署名称
+        @api {get} /api/deployment/check_name 检查部署名称
         @apiName K8sDeploymentNameCheck
         @apiGroup Deployment
 
