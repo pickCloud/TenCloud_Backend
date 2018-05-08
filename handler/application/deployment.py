@@ -95,8 +95,42 @@ class K8sDeploymentHandler(WebSocketBaseHandler):
         finally:
             self.close()
 
+
 class K8sDeploymentNameCheck(BaseHandler):
+    @is_login
+    @coroutine
     def get(self):
+        """
+        @api {post} /api/deployment/check_name 检查部署名称
+        @apiName K8sDeploymentNameCheck
+        @apiGroup Deployment
+
+        @apiUse cidHeader
+
+        @apiParam {String} name 公司名称
+        @apiParam {Number} app_id 应用ID
+        @apiParam {Number} server_id 服务器ID
+
+        @apiUse Success
+        """
+        self.guarantee(['name', 'app_id'])
+
+        validate_deployment_name(self.params['name'])
+
+        is_duplicate = yield self.deployment_service.select({'name': self.params['name'],
+                                                             'app_id': self.params['app_id']})
+        if is_duplicate:
+            self.error('该部署名称已被使用，请换用其他名称')
+            return
+
+        if self.params.get('server_id'):
+            is_duplicate = yield self.deployment_service.select({'name': self.params['name'],
+                                                                 'server_id': self.params['server_id']})
+            if is_duplicate:
+                self.error('该部署名称已被使用，请换用其他名称或在其他集群上部署')
+                return
+
+        self.success()
 
 
 class K8sYamlGenerateHandler(BaseHandler):
