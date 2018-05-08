@@ -69,12 +69,12 @@ class K8sDeploymentHandler(WebSocketBaseHandler):
 
             # 获取集群master的信息并进行部署
             login_info = self.application_service.sync_fetch_ssh_login_info({'public_ip': server_info['public_ip']})
-            login_info.udpate({'filename': filename})
+            login_info.update({'filename': filename})
             out, err = self.deployment_service.k8s_deploy(params=login_info, out_func=self.write_message)
 
             # 生成部署数据
             log = {"out": out, "err": err}
-            arg = {'name': self.params['image_name'], 'app_id': self.params['app_id'], 'type': DEPLOYMENT_TYPE['k8s'],
+            arg = {'name': self.params['deployment_name'], 'app_id': self.params['app_id'], 'type': DEPLOYMENT_TYPE['k8s'],
                    'status': DEPLOYMENT_STATUS['fail'] if err else DEPLOYMENT_STATUS['complete'],
                    'yaml': self.params['yaml'], 'verbose': json.dumps(log), 'server_id': self.params['server_id']}
             arg.update(self.get_lord())
@@ -94,6 +94,43 @@ class K8sDeploymentHandler(WebSocketBaseHandler):
             self.write_message(FAILURE)
         finally:
             self.close()
+
+
+class K8sDeploymentNameCheck(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/deployment/check_name 检查部署名称
+        @apiName K8sDeploymentNameCheck
+        @apiGroup Deployment
+
+        @apiUse cidHeader
+
+        @apiParam {String} name 公司名称
+        @apiParam {Number} app_id 应用ID
+        @apiParam {Number} server_id 服务器ID
+
+        @apiUse Success
+        """
+        self.guarantee(['name', 'app_id'])
+
+        validate_deployment_name(self.params['name'])
+
+        is_duplicate = yield self.deployment_service.select({'name': self.params['name'],
+                                                             'app_id': self.params['app_id']})
+        if is_duplicate:
+            self.error('该部署名称已被使用，请换用其他名称')
+            return
+
+        if self.params.get('server_id'):
+            is_duplicate = yield self.deployment_service.select({'name': self.params['name'],
+                                                                 'server_id': self.params['server_id']})
+            if is_duplicate:
+                self.error('该部署名称已被使用，请换用其他名称或在其他集群上部署')
+                return
+
+        self.success()
 
 
 class K8sYamlGenerateHandler(BaseHandler):

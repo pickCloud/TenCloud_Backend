@@ -4,6 +4,7 @@ logs
 setting.py
 Dashboard.iml
 static/apidoc/*
+static/yaml/*
 .vscode/*
 env
 nohup.out
