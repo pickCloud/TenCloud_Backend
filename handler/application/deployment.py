@@ -114,24 +114,25 @@ class K8sDeploymentNameCheck(BaseHandler):
 
         @apiUse Success
         """
-        self.guarantee('name', 'app_id')
+        with catch(self):
+            self.guarantee('name', 'app_id')
 
-        validate_deployment_name(self.params['name'])
+            validate_deployment_name(self.params['name'])
 
-        is_duplicate = yield self.deployment_service.select({'name': self.params['name'],
-                                                             'app_id': self.params['app_id']})
-        if is_duplicate:
-            self.error('该部署名称已被使用，请换用其他名称')
-            return
-
-        if self.params.get('server_id'):
             is_duplicate = yield self.deployment_service.select({'name': self.params['name'],
-                                                                 'server_id': self.params['server_id']})
+                                                                 'app_id': self.params['app_id']})
             if is_duplicate:
-                self.error('该部署名称已被使用，请换用其他名称或在其他集群上部署')
+                self.error('该部署名称已被使用，请换用其他名称')
                 return
 
-        self.success()
+            if self.params.get('server_id'):
+                is_duplicate = yield self.deployment_service.select({'name': self.params['name'],
+                                                                     'server_id': self.params['server_id']})
+                if is_duplicate:
+                    self.error('该部署名称已被使用，请换用其他名称或在其他集群上部署')
+                    return
+
+            self.success()
 
 
 class K8sDeploymentYamlGenerateHandler(BaseHandler):
@@ -181,47 +182,47 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
         #         - containerPort: 80
         #           protocol: TCP
         #           name: port1
+        with catch(self):
+            self.guarantee('app_name', 'deployment_name', 'replica_num', 'container_name', 'image_name')
 
-        self.guarantee('app_name', 'deployment_name', 'replica_num', 'container_name', 'image_name')
+            deployment_name = self.params['app_name']+"-"+self.params['deployment_name']
+            labels = {'app': deployment_name}
 
-        deployment_name = self.params['app_name']+"-"+self.params['deployment_name']
-        labels = {'app': deployment_name}
+            # 如果用户配置了POD模板标签，则添加到YAML内容中
+            if self.params.get('pod_label'):
+                labels.update(self.params['pod_label'])
 
-        # 如果用户配置了POD模板标签，则添加到YAML内容中
-        if self.params.get('pod_label'):
-            labels.update(self.params['pod_label'])
-
-        yaml_json = {'apiVersion': 'apps/v1',
-                     'kind': 'Deployment',
-                     'metadata': {
-                         'name': deployment_name
-                     },
-                     'spec': {
-                         'replicas': self.params['replica_num'],
-                         'selector': {
-                             'matchLabels': labels,
+            yaml_json = {'apiVersion': 'apps/v1',
+                         'kind': 'Deployment',
+                         'metadata': {
+                             'name': deployment_name
                          },
-                         'template': {
-                             'metadata': {
-                                 'labels': labels,
+                         'spec': {
+                             'replicas': self.params['replica_num'],
+                             'selector': {
+                                 'matchLabels': labels,
                              },
-                             'spec': {
-                                 'containers': [
-                                     {
-                                         'name': self.params['container_name'],
-                                         'image': self.params['image_name']
-                                     }
-                                 ]
+                             'template': {
+                                 'metadata': {
+                                     'labels': labels,
+                                 },
+                                 'spec': {
+                                     'containers': [
+                                         {
+                                             'name': self.params['container_name'],
+                                             'image': self.params['image_name']
+                                         }
+                                     ]
+                                 }
                              }
                          }
-                     }
-                     }
+                         }
 
-        if self.params.get('ports'):
-            yaml_json['spec']['template']['spec']['containers'][0]['ports'] = self.params.get('ports')
+            if self.params.get('ports'):
+                yaml_json['spec']['template']['spec']['containers'][0]['ports'] = self.params.get('ports')
 
-        result = yaml.dump(yaml_json, default_flow_style=False)
-        self.success(result)
+            result = yaml.dump(yaml_json, default_flow_style=False)
+            self.success(result)
 
 
 
