@@ -42,7 +42,10 @@ class ApplicationNewHandler(BaseHandler):
             {
                 "status": 0,
                 "msg": "success",
-                "data": "yaml"
+                "data": {
+                    "id": int,
+                    "update_time": datetime
+                }
             }
         """
         with catch(self):
@@ -346,7 +349,7 @@ class ImageUploadDockerfileHandler(BaseHandler):
     @coroutine
     def post(self):
         """
-        @api {post} /api/image/upload 创建新应用
+        @api {post} /api/image/upload 上传镜像Dockerfile
         @apiName ImageUploadDockerfileHandler
         @apiGroup Application
 
