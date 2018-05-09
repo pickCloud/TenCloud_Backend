@@ -1,6 +1,7 @@
 import traceback
 import json
 import os
+import yaml
 
 from tornado.gen import coroutine
 from tornado.ioloop import IOLoop
@@ -133,24 +134,22 @@ class K8sDeploymentNameCheck(BaseHandler):
         self.success()
 
 
-class K8sYamlGenerateHandler(BaseHandler):
+class K8sDeploymentYamlGenerateHandler(BaseHandler):
     @is_login
     def post(self):
         """
-        @api {post} /api/deployment/generate 生成yaml配置文件
-        @apiName K8sYamlGenerateHandler
+        @api {post} /api/deployment/generate 生成部署yaml配置文件
+        @apiName K8sDeploymentYamlGenerateHandler
         @apiGroup Deployment
 
         @apiUse cidHeader
 
-        @apiParam {String} name 部署名称
-        @apiParam {Number} pod_num 预期POD数量
-        @apiParam {[]String} pod_label POD模板标签
+        @apiParam {String} deployment_name 部署名称
+        @apiParam {Number} replica_num 预期POD数量
+        @apiParam {Dict} pod_label POD模板标签
         @apiParam {String} container_name 容器名称
-        @apiParam {String} image_id 容器镜像ID
-        @apiParam {[]String} ports 容器端口
-        @apiParam {Number} image_id 镜像ID
-        @apiParam {[]Number} labels 标签ID(传递时注意保证ID是从小到大的顺序)
+        @apiParam {String} image_name 容器镜像名称
+        @apiParam {[]{'protocol','containerPort'}} ports 容器端口
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -165,27 +164,68 @@ class K8sYamlGenerateHandler(BaseHandler):
             }
         """
 
-        """
-        apiVersion: apps/v1
-        kind: Deployment
-        metadata:
-          name: nginx-deployment
-          labels:
-            app: nginx
-        spec:
-          replicas: 3
-          selector:
-            matchLabels:
-              app: nginx
-          template:
-            metadata:
-              labels:
-                app: nginx
-            spec:
-              containers:
-              - name: nginx
-                image: nginx:1.7.9
-                ports:
-                - containerPort: 80
-        """
-        self.guarantee(['name', 'replica', 'container'])
+        # apiVersion: apps/v1
+        # kind: Deployment
+        # metadata:
+        #   name: nginx-deployment
+        # spec:
+        #   replicas: 3
+        #   selector:
+        #     matchLabels:
+        #       app: nginx
+        #   template:
+        #     metadata:
+        #       labels:
+        #         app: nginx
+        #     spec:
+        #       containers:
+        #       - name: nginx
+        #         image: nginx:1.7.9
+        #         ports:
+        #         - containerPort: 80
+
+        self.guarantee('app_name', 'deployment_name', 'replica_num', 'container_name', 'image_name')
+
+        deployment_name = self.params['app_name']+"-"+self.params['deployment_name']
+        labels = {'app': deployment_name}
+
+        # 如果用户配置了POD模板标签，则添加到YAML内容中
+        if self.params.get('pod_label'):
+            labels.update(self.params['pod_label'])
+
+        yaml_json = {'apiVersion': 'apps/v1',
+                     'kind': 'Deployment',
+                     'metadata': {
+                         'name': deployment_name
+                     },
+                     'spec': {
+                         'replicas': self.params['replica_num'],
+                         'selector': {
+                             'matchLabels': labels,
+                         },
+                         'template': {
+                             'metadata': {
+                                 'labels': labels,
+                             },
+                             'spec': {
+                                 'containers': [
+                                     {
+                                         'name': self.params['container_name'],
+                                         'image': self.params['image_name']
+                                     }
+                                 ]
+                             }
+                         }
+                     }
+                     }
+
+        if self.params.get('ports'):
+            yaml_json['spec']['template']['spec']['containers'][0]['ports'] = self.params.get('ports')
+
+        result = yaml.dump(yaml_json, default_flow_style=False)
+        self.success(result)
+
+
+
+
+
