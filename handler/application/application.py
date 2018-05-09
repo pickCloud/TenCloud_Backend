@@ -42,11 +42,7 @@ class ApplicationNewHandler(BaseHandler):
             {
                 "status": 0,
                 "msg": "success",
-                "data": {
-                    "id": int,
-                    "name": str,
-                    "description": str
-                }
+                "data": "yaml"
             }
         """
         with catch(self):
