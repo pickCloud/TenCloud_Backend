@@ -114,7 +114,7 @@ class K8sDeploymentNameCheck(BaseHandler):
 
         @apiUse Success
         """
-        self.guarantee(['name', 'app_id'])
+        self.guarantee('name', 'app_id')
 
         validate_deployment_name(self.params['name'])
 
@@ -149,18 +149,14 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
         @apiParam {Dict} pod_label POD模板标签
         @apiParam {String} container_name 容器名称
         @apiParam {String} image_name 容器镜像名称
-        @apiParam {[]{'protocol','containerPort'}} ports 容器端口
+        @apiParam {[]{'protocol','containerPort','name'}} ports 容器端口
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
             {
                 "status": 0,
                 "msg": "success",
-                "data": {
-                    "id": int,
-                    "name": str,
-                    "description": str
-                }
+                "data": "yaml"
             }
         """
 
@@ -183,6 +179,8 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
         #         image: nginx:1.7.9
         #         ports:
         #         - containerPort: 80
+        #           protocol: TCP
+        #           name: port1
 
         self.guarantee('app_name', 'deployment_name', 'replica_num', 'container_name', 'image_name')
 
