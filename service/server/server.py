@@ -52,14 +52,14 @@ class ServerService(BaseService):
 
         if kv:
             key = ','.join(kv.keys())
-            value = ','.join(kv.values())
+            value = ','.join(['%s'] * len(kv))
             sets, sets_params = self.make_pair(kv)
 
-            sql = "INSERT INTO k8s (public_ip, {fields}) VALUES (%s, %s)" \
-                  " ON DUPLICATE KEY UPDATE update_time=NOW(),".format(fields=key)
+            sql = "INSERT INTO k8s (public_ip, {fields}) VALUES (%s, {value})" \
+                  " ON DUPLICATE KEY UPDATE update_time=NOW(),".format(fields=key, value=value)
             sql += ','.join(sets)
 
-            yield self.db.execute(sql, [params['public_ip']] + [value] + sets_params)
+            yield self.db.execute(sql, [params['public_ip']] + sets_params + sets_params)
 
     @coroutine
     def _save_docker_report(self, params):

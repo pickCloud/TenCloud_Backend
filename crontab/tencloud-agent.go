@@ -87,6 +87,10 @@ type Stat struct {
 	SystemLoad *SystemLoad            `json:"system_load"`
 	Docker     map[string]*DockerStat `json:"docker"`
 	K8sNode    string                 `json:"k8s_node"`
+	K8sDeploy  string                 `json:"k8s_deployment"`
+	K8sRS      string                 `json:"k8s_replicaset"`
+	K8sPod     string                 `json:"k8s_pod"`
+	K8sService string                 `json:"k8s_service"`
 }
 
 type IPInfo struct {
@@ -424,13 +428,38 @@ func (a *agent) getSystemLoad() (*SystemLoad, error) {
 }
 
 func (a *agent) getK8sNodeInfo() (string, error) {
-	out, err := exec.Command("kubectl", "get", "node", "-o", "yaml").Output()
+	out, err := exec.Command("kubectl", "get", "nodes", "-o", "yaml").Output()
 	if err != nil {
 		return "", err
 	}
 
 	if bytes.Contains(out, []byte("The connection to the server")) {
-	    return "", err
+		return "", err
+	}
+
+	if bytes.Contains(out, []byte("No resources found.")) {
+		return "", err
+	}
+
+	return string(out), nil
+}
+
+func (a *agent) getK8sResourceInfo(obj string) (string, error) {
+	out, err := exec.Command("kubectl", "get", obj, "-o", "yaml").Output()
+	if err != nil {
+		return "", err
+	}
+
+	if bytes.Contains(out, []byte("The connection to the server")) {
+		return "", err
+	}
+
+	if bytes.Contains(out, []byte("No resources found.")) {
+		return "", err
+	}
+
+	if bytes.Contains(out, []byte("error: the server doesn't have a resource type")) {
+		return "", err
 	}
 
 	return string(out), nil
@@ -477,8 +506,32 @@ func (a *agent) postData() {
 	}
 	k8s_node, err := a.getK8sNodeInfo()
 	if err != nil {
-	    a.logger.Println(err)
-	    k8s_node = ""
+		a.logger.Println(err)
+		k8s_node = ""
+	}
+
+	k8s_deployment, err := a.getK8sResourceInfo("deployments")
+	if err != nil {
+		a.logger.Println(err)
+		k8s_deployment = ""
+	}
+
+	k8s_replicaset, err := a.getK8sResourceInfo("replicasets")
+	if err != nil {
+		a.logger.Println(err)
+		k8s_replicaset = ""
+	}
+
+	k8s_pod, err := a.getK8sResourceInfo("pods")
+	if err != nil {
+		a.logger.Println(err)
+		k8s_pod = ""
+	}
+
+	k8s_service, err := a.getK8sResourceInfo("services")
+	if err != nil {
+		a.logger.Println(err)
+		k8s_service = ""
 	}
 
 	stat := &Stat{
@@ -490,7 +543,11 @@ func (a *agent) postData() {
 		Net:        net,
 		SystemLoad: load,
 		Docker:     docker,
-        K8sNode:    k8s_node,
+		K8sNode:    k8s_node,
+		K8sDeploy:  k8s_deployment,
+		K8sRS:      k8s_replicaset,
+		K8sPod:     k8s_pod,
+		K8sService: k8s_service,
 	}
 	b, err := json.Marshal(stat)
 	if err != nil {
