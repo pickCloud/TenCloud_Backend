@@ -260,7 +260,7 @@ class ApplicationBriefHandler(BaseHandler):
 
 class ImageCreationHandler(WebSocketBaseHandler):
     def on_message(self, message):
-        self.params = json.loads(message)
+        self.params.update(json.loads(message))
 
         try:
             args = ['image_name', 'version', 'repos_https_url', 'branch_name', 'app_id', 'app_name', 'dockerfile']

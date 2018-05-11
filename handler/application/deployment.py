@@ -40,7 +40,7 @@ class K8sDeploymentHandler(WebSocketBaseHandler):
         })
 
     def on_message(self, message):
-        self.params = json.loads(message)
+        self.params.update(json.loads(message))
 
         try:
             args = ['app_id', 'app_name', 'deployment_name', 'server_id', 'yaml']
@@ -146,6 +146,7 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
         @apiUse cidHeader
 
         @apiParam {String} deployment_name 部署名称
+        @apiParam {String} app_name 应用名称
         @apiParam {Number} replica_num 预期POD数量
         @apiParam {Dict} pod_label POD模板标签
         @apiParam {String} container_name 容器名称
@@ -225,6 +226,10 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
             self.success(result)
 
 
+class DeploymentListHandler(BaseHandler):
+    def get(self):
+        with catch(self):
+            pass
 
 
 
