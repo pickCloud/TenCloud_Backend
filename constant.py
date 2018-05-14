@@ -109,7 +109,7 @@ LOAD_IMAGE_FILE = 'docker load --input {filename}'
 LOAD_IMAGE = """|tail -1|cut -d ' ' -f 3|awk '{b="docker tag "$0" hub.10.com/library/"$0; system(b); c="docker push hub.10.com/library/"$0; system(c)}'"""
 
 CLOUD_DOWNLOAD_IMAGE = 'wget -b -c --tries=3 --directory-prefix={store_path} {image_url}'
-K8S_DEPLOY_CMD = 'kubectl apply -f {server_url}/yaml/'.format(server_url=SERVER_URL)
+K8S_APPLY_CMD = 'kubectl apply -f {server_url}/yaml/'.format(server_url=SERVER_URL)
 
 #################################################################################################
 # 阿里云相关
@@ -616,6 +616,7 @@ OPERATION_OBJECT_STYPE['container'] = 1
 OPERATION_OBJECT_STYPE['project'] = 2
 OPERATION_OBJECT_STYPE['application'] = 2
 OPERATION_OBJECT_STYPE['deployment'] = 3
+OPERATION_OBJECT_STYPE['service'] = 4
 
 #################################################################################################
 # 主机操作行为码

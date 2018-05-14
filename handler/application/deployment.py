@@ -17,17 +17,7 @@ from constant import SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, OPERATE_STATUS, L
 
 
 class K8sDeploymentHandler(WebSocketBaseHandler):
-    def save_yaml(self, app_name, deployment_name, yaml):
-        full_path = os.path.join('/var/www/Dashboard/static', 'yaml')
-        if not os.path.exists(full_path): os.makedirs(full_path)
 
-        filename = app_name + "_" + deployment_name + ".yaml"
-        fullname = os.path.join(full_path, filename)
-
-        with open(fullname, 'wb') as f:
-            f.write(yaml.encode())
-
-        return filename
 
     @coroutine
     def init_operation_log(self, log_params):
@@ -66,12 +56,12 @@ class K8sDeploymentHandler(WebSocketBaseHandler):
             IOLoop.current().spawn_callback(callback=self.init_operation_log, params=log_params)
 
             # 生成yaml文件并归档到服务器yaml目录下
-            filename = self.save_yaml(self.params['app_name'], self.params['deployment_name'], self.params['yaml'])
+            filename = self.save_yaml(self.params['app_name'], self.params['deployment_name'], 'deployment', self.params['yaml'])
 
             # 获取集群master的信息并进行部署
             login_info = self.application_service.sync_fetch_ssh_login_info({'public_ip': server_info['public_ip']})
             login_info.update({'filename': filename})
-            out, err = self.deployment_service.k8s_deploy(params=login_info, out_func=self.write_message)
+            out, err = self.k8s_apply(params=login_info, out_func=self.write_message)
 
             # 生成部署数据
             log = {"out": out, "err": err}
@@ -187,7 +177,7 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
             self.guarantee('app_name', 'deployment_name', 'replica_num', 'container_name', 'image_name')
 
             deployment_name = self.params['app_name']+"-"+self.params['deployment_name']
-            labels = {'app': deployment_name}
+            labels = {'app': deployment_name, 'lord_app': self.params['app_name']}
 
             # 如果用户配置了POD模板标签，则添加到YAML内容中
             if self.params.get('pod_label'):

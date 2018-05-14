@@ -46,8 +46,7 @@ class ServerService(BaseService):
     def _save_k8s_report(self, params):
         kv = {}
 
-        # for member in ['k8s_node', 'k8s_pod', 'k8s_deployment', 'k8s_service']:
-        for member in ['k8s_node']:
+        for member in ['k8s_node', 'k8s_pod', 'k8s_deployment', 'k8s_service', 'k8s_replicaset', 'k8s_pod']:
             if params.get(member):
                 kv[member] = params.get(member)
 
@@ -61,6 +60,11 @@ class ServerService(BaseService):
             sql += ','.join(sets)
 
             yield self.db.execute(sql, [params['public_ip']] + sets_params + sets_params)
+
+            if kv.get('k8s_node'):
+                sql = "INSERT INTO k8s_node (public_ip, node) VALUES (%s, %s)" \
+                      " ON DUPLICATE KEY UPDATE update_time=NOW(), node=%s"
+                yield self.db.execute(sql, [params['public_ip'], kv['k8s_node'], kv['k8s_node']])
 
     @coroutine
     def _save_docker_report(self, params):
