@@ -51,7 +51,10 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
                             'apiVersion': 'v1',
                             'kind': 'Service',
                             'metadata': {
-                                'name': service_name
+                                'name': service_name,
+                                'labels': {
+                                    'lord_app': self.params['app_name']
+                                }
                             },
                             'spec': {
                                 'type': K8S_SERVICE_TYPE[self.params['service_type']]

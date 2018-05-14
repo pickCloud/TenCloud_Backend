@@ -47,9 +47,9 @@ class ClusterService(BaseService):
     @coroutine
     def get_node_list(self, cluster_id):
         sql = """
-            SELECT c.id, c.name, c.type, c.description, c.master_server_id, k.public_ip ,k.k8s_node
+            SELECT c.id, c.name, c.type, c.description, c.master_server_id, k.public_ip ,k.node
             FROM cluster as c
-            JOIN k8s as k
+            JOIN k8s_node as k
             JOIN server as s
             WHERE c.master_server_id=s.id AND s.public_ip=k.public_ip 
         """

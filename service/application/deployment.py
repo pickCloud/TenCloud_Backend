@@ -1,7 +1,7 @@
 
 from service.base import BaseService
 from utils.ssh import SSH
-from constant import K8S_DEPLOY_CMD
+from constant import K8S_APPLY_CMD
 
 
 class DeploymentService(BaseService):
@@ -10,12 +10,6 @@ class DeploymentService(BaseService):
                 id, name, status, app_id, type, yaml,
                 server_id, verbose, lord, form
             """
-
-    def k8s_deploy(self, params, out_func=None):
-        cmd = K8S_DEPLOY_CMD + params['filename']
-        ssh = SSH(hostname=params['public_ip'], port=22, username=params['username'], passwd=params['passwd'])
-        out, err = ssh.exec_rt(cmd, out_func)
-        return out, err
 
     def add_deployment(self, params):
         sql = """

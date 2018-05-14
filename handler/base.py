@@ -43,6 +43,7 @@ import jwt
 import time
 import datetime
 import traceback
+import os
 
 import tornado.web
 from service.permission.permission_template import PermissionTemplateService
@@ -50,7 +51,7 @@ from tornado.gen import coroutine
 from tornado.websocket import WebSocketHandler
 
 from constant import SESSION_TIMEOUT, SESSION_KEY, TOKEN_EXPIRES_DAYS, RIGHT, SERVICE, SUCCESS_STATUS, FAILURE_STATUS, \
-                     FORM_COMPANY, FORM_PERSON, USER_LATEST_TOKEN, FAILURE_CODE
+                     FORM_COMPANY, FORM_PERSON, USER_LATEST_TOKEN, FAILURE_CODE, K8S_APPLY_CMD
 from service.cluster.cluster import ClusterService
 from service.company.company import CompanyService
 from service.company.company_employee import CompanyEmployeeService
@@ -77,6 +78,7 @@ from utils.general import json_dumps, json_loads
 from utils.datetool import seconds_to_human
 from utils.error import AppError
 from utils.context import catch
+from utils.ssh import SSH
 
 class BaseHandler(tornado.web.RequestHandler):
     cluster_service = ClusterService()
@@ -341,3 +343,21 @@ class WebSocketBaseHandler(WebSocketHandler, BaseHandler):
 
     def on_close(self):
         pass
+
+    def k8s_apply(self, params, out_func=None):
+        cmd = K8S_APPLY_CMD + params['filename']
+        ssh = SSH(hostname=params['public_ip'], port=22, username=params['username'], passwd=params['passwd'])
+        out, err = ssh.exec_rt(cmd, out_func)
+        return out, err
+
+    def save_yaml(self, app_name, obj_name, obj_type, yaml):
+        full_path = os.path.join('/var/www/Dashboard/static', 'yaml')
+        if not os.path.exists(full_path): os.makedirs(full_path)
+
+        filename = app_name + "." + obj_name + "." + obj_type + ".yaml"
+        fullname = os.path.join(full_path, filename)
+
+        with open(fullname, 'wb') as f:
+            f.write(yaml.encode())
+
+        return filename
