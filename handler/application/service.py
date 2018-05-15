@@ -56,7 +56,7 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
                                 'name': service_name,
                                 'labels': {
                                     'internal_name': service_name,
-                                    'app_id': self.params['app_id']
+                                    'app_id': str(self.params['app_id'])
                                 }
                             },
                             'spec': {
