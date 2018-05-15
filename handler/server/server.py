@@ -202,7 +202,22 @@ class ServerReport(BaseHandler):
                         yield getattr(self, kv[member]).update(sets={'verbose': yaml.dump(item, default_flow_style=False)},
                                                                conds={'name': obj_name, 'app_id': int(app_id)})
 
-        # rs/pod资源
+        # deployment下属资源: rs/pod
+        kv = {'k8s_replicaset': 'replicaset_service',
+              'k8s_pod': 'pod_service'}
+        for member in kv.keys():
+            if params.get(member):
+                verbose = yaml.load(params[member])
+
+                for item in verbose.get('items', []):
+                    internal_name = item['metadata']['labels'].get('internal_name', '') if item['metadata'].get('labels') else ''
+                    deployment_name = internal_name[internal_name.find('.')+1:]
+                    deployment_info = yield self.deployment_service.select({'name': deployment_name}, one=True)
+                    obj_name = item['metadata']['name'][item['metadata']['name'].find('.')+1:]
+
+                    if deployment_info:
+                        yield getattr(self, kv[member]).add({'name': obj_name, 'deployment_id': deployment_info['id'],
+                                                             'verbose': yaml.dump(item, default_flow_style=False)})
 
 class ServerDelHandler(BaseHandler):
     @require(RIGHT['delete_server'], service=SERVICE['s'])

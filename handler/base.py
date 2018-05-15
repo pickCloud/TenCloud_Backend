@@ -61,7 +61,7 @@ from service.message.message import MessageService
 from service.permission.permission import PermissionService, UserPermissionService, UserAccessServerService, \
                                           UserAccessProjectService, UserAccessFilehubService, UserAccessApplicationService
 from service.application.application import ApplicationService
-from service.application.deployment import DeploymentService
+from service.application.deployment import DeploymentService, ReplicaSetService, PodService
 from service.application.service import ServiceService
 from service.imagehub.image import ImageService
 from service.project.project import ProjectService
@@ -87,6 +87,8 @@ class BaseHandler(tornado.web.RequestHandler):
     application_service = ApplicationService()
     image_service = ImageService()
     deployment_service = DeploymentService()
+    replicaset_service = ReplicaSetService()
+    pod_service = PodService()
     service_service = ServiceService()
     repos_service = RepositoryService()
     project_versions_service = ProjectVersionService()
