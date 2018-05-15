@@ -67,7 +67,7 @@ class K8sDeploymentHandler(WebSocketBaseHandler):
             log = {"out": out, "err": err}
             arg = {'name': self.params['deployment_name'], 'app_id': self.params['app_id'], 'type': DEPLOYMENT_TYPE['k8s'],
                    'status': DEPLOYMENT_STATUS['fail'] if err else DEPLOYMENT_STATUS['complete'],
-                   'yaml': self.params['yaml'], 'verbose': json.dumps(log), 'server_id': self.params['server_id']}
+                   'yaml': self.params['yaml'], 'log': json.dumps(log), 'server_id': self.params['server_id']}
             arg.update(self.get_lord())
             self.deployment_service.add_deployment(arg)
 
@@ -136,6 +136,7 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
         @apiUse cidHeader
 
         @apiParam {String} deployment_name 部署名称
+        @apiParam {Number} app_id 应用ID
         @apiParam {String} app_name 应用名称
         @apiParam {Number} replica_num 预期POD数量
         @apiParam {Dict} pod_label POD模板标签
@@ -174,10 +175,10 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
         #           protocol: TCP
         #           name: port1
         with catch(self):
-            self.guarantee('app_name', 'deployment_name', 'replica_num', 'container_name', 'image_name')
+            self.guarantee('app_id', 'app_name', 'deployment_name', 'replica_num', 'container_name', 'image_name')
 
-            deployment_name = self.params['app_name']+"-"+self.params['deployment_name']
-            labels = {'app': deployment_name, 'lord_app': self.params['app_name']}
+            deployment_name = self.params['app_name']+"."+self.params['deployment_name']
+            labels = {'internal_name': deployment_name, 'app_id': self.params['app_id']}
 
             # 如果用户配置了POD模板标签，则添加到YAML内容中
             if self.params.get('pod_label'):
@@ -186,7 +187,8 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
             yaml_json = {'apiVersion': 'apps/v1',
                          'kind': 'Deployment',
                          'metadata': {
-                             'name': deployment_name
+                             'name': deployment_name,
+                             'labels': labels
                          },
                          'spec': {
                              'replicas': self.params['replica_num'],
@@ -217,9 +219,69 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
 
 
 class DeploymentListHandler(BaseHandler):
+    @is_login
+    @coroutine
     def get(self):
+        """
+        @api {get} /api/deployment/list 部署列表
+        @apiName DeploymentListHandler
+        @apiGroup Deployment
+
+        @apiUse cidHeader
+
+        @apiParam {Number} app_id 应用ID
+        @apiParam {Number} status 部署状态(1.进行中, 2.已完成, 3.失败)
+        @apiParam {Number} page 页数
+        @apiParam {Number} page_num 每页显示项数
+
+        @apiDescription 样例: /api/deployment/list?app_id=\d&status=\d&page=\d&page_num=\d
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": [
+                    {
+                        "id": int,
+                        "name": str,
+                        "status": int,
+                        ...
+                    },
+                    ...
+                ]
+            }
+        """
         with catch(self):
-            pass
+            param = self.get_lord()
+
+            if self.params.get('app_id'):
+                param['app_id'] = int(self.params.get('app_id'))
+            if self.params.get('status'):
+                param['status'] = int(self.params.get('status'))
+            page = int(self.params.get('page', 1))
+            page_num = int(self.params.get('page_num', MSG_PAGE_NUM))
+
+            brief = yield self.deployment_service.select(conds=param)
+
+            for i in brief:
+                app_info = yield self.application_service.select(conds={'id': i['app_id']}, one=True)
+                i['app_name'] = app_info['name']
+
+                # 从k8s集群上报过来的yaml信息中解析出pod状态等信息
+                verbose = i.pop('verbose', None)
+                verbose = yaml.load(verbose) if verbose else None
+                if verbose:
+                    i['replicas'] = verbose['status']['replicas']
+                    i['readyReplicas'] = verbose['status']['readyReplicas']
+                    i['updatedReplicas'] = verbose['status']['updatedReplicas']
+                    i['availableReplicas'] = verbose['status']['availableReplicas']
+
+                # 去除一些查询列表时用不到的字段
+                i.pop('log', None)
+                i.pop('yaml', None)
+
+            self.success(brief[page_num*(page-1):page_num*page])
 
 
 

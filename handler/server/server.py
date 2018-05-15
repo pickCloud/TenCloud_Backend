@@ -2,6 +2,7 @@ __author__ = 'Jon'
 
 import json
 import re
+import yaml
 
 from tornado.gen import coroutine
 from tornado.ioloop import PeriodicCallback, IOLoop
@@ -179,7 +180,27 @@ class ServerReport(BaseHandler):
 
             yield self.server_service.save_report(self.params)
 
+            # 将上报的k8s资源刷新到各个具体的对象表中
+            yield self.update_k8s_resource(self.params)
+
             self.success()
+
+    @coroutine
+    def update_k8s_resource(self, params):
+        kv = {'k8s_deployment': 'deployment_service'}
+
+        for member in kv.keys():
+            if params.get(member):
+                verbose = yaml.load(params[member])
+
+                for item in verbose.get('items', []):
+                    internal_name = item['metadata']['labels'].get('internal_name', '') if item['metadata'].get('labels') else ''
+                    deployment_name = internal_name[internal_name.find('.')+1:]
+                    app_id = item['metadata']['labels'].get('app_id', 0) if item['metadata'].get('labels') else 0
+
+                    if app_id:
+                        yield getattr(self, kv[member]).update(sets={'verbose': yaml.dump(item, default_flow_style=False)},
+                                                               conds={'name': deployment_name, 'app_id': app_id})
 
 
 class ServerDelHandler(BaseHandler):

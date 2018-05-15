@@ -27,6 +27,8 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
         @apiUse cidHeader
 
         @apiParam {String} service_name 服务名称
+        @apiParam {String} app_name 应用名称
+        @apiParam {Number} app_id 应用ID
         @apiParam {Number} service_source 服务来源（1.内部服务，2.外部服务）
         @apiParam {Dict} pod_label POD模板标签
         @apiParam {Number} service_type 服务类型（1.集群内访问，2.集群内外部可访问，3.负载均衡器）
@@ -43,9 +45,9 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
             }
         """
         with catch(self):
-            self.guarantee('app_name', 'service_name', 'service_source', 'service_type')
+            self.guarantee('app_id', 'app_name', 'service_name', 'service_source', 'service_type')
 
-            service_name = self.params['app_name'] + "-" + self.params['service_name']
+            service_name = self.params['app_name'] + "." + self.params['service_name']
 
             yaml_json = {
                             'apiVersion': 'v1',
@@ -53,7 +55,8 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
                             'metadata': {
                                 'name': service_name,
                                 'labels': {
-                                    'lord_app': self.params['app_name']
+                                    'internal_name': service_name,
+                                    'app_id': self.params['app_id']
                                 }
                             },
                             'spec': {
