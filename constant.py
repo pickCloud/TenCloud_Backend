@@ -558,9 +558,9 @@ APPLICATION_STATE['abnormal'] = 2
 # 0 进行中, 1 已完成, 2 失败
 #################################################################################################
 DEPLOYMENT_STATUS = dict()
-DEPLOYMENT_STATUS['process'] = 0
-DEPLOYMENT_STATUS['complete'] = 1
-DEPLOYMENT_STATUS['fail'] = 2
+DEPLOYMENT_STATUS['process'] = 1
+DEPLOYMENT_STATUS['complete'] = 2
+DEPLOYMENT_STATUS['fail'] = 3
 
 #################################################################################################
 # 服务状态
