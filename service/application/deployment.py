@@ -20,3 +20,12 @@ class DeploymentService(BaseService):
                params['log'], params['form'], params['lord'], params['status'], params['yaml'], params['server_id'],
                params['log']]
         self.sync_db_execute(sql, arg)
+
+
+class ReplicaSetService(BaseService):
+    table = 'replicaset'
+    fields = "id, name, deployment_id, verbose"
+
+class PodService(BaseService):
+    table = 'pod'
+    fields = "id, name, deployment_id, verbose"

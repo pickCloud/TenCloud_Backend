@@ -33,6 +33,7 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
         @apiParam {Dict} pod_label POD模板标签
         @apiParam {Number} service_type 服务类型（1.集群内访问，2.集群内外部可访问，3.负载均衡器）
         @apiParam {String} clusterIP 集群IP
+        @apiParam {String} loadBalancerIP 负载均衡器IP
         @apiParam {[]String} externalIPs 外部IP
         @apiParam {[]{'name', 'protocol', 'port', 'targetPort', 'nodePort'}} ports 容器端口
 
