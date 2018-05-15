@@ -178,7 +178,7 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
             self.guarantee('app_id', 'app_name', 'deployment_name', 'replica_num', 'container_name', 'image_name')
 
             deployment_name = self.params['app_name']+"."+self.params['deployment_name']
-            labels = {'internal_name': deployment_name, 'app_id': self.params['app_id']}
+            labels = {'internal_name': deployment_name, 'app_id': str(self.params['app_id'])}
 
             # 如果用户配置了POD模板标签，则添加到YAML内容中
             if self.params.get('pod_label'):

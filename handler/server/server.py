@@ -195,13 +195,14 @@ class ServerReport(BaseHandler):
 
                 for item in verbose.get('items', []):
                     internal_name = item['metadata']['labels'].get('internal_name', '') if item['metadata'].get('labels') else ''
-                    deployment_name = internal_name[internal_name.find('.')+1:]
+                    obj_name = internal_name[internal_name.find('.')+1:]
                     app_id = item['metadata']['labels'].get('app_id', 0) if item['metadata'].get('labels') else 0
 
                     if app_id:
                         yield getattr(self, kv[member]).update(sets={'verbose': yaml.dump(item, default_flow_style=False)},
-                                                               conds={'name': deployment_name, 'app_id': app_id})
+                                                               conds={'name': obj_name, 'app_id': int(app_id)})
 
+        # rs/pod资源
 
 class ServerDelHandler(BaseHandler):
     @require(RIGHT['delete_server'], service=SERVICE['s'])
