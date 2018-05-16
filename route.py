@@ -13,8 +13,9 @@ from handler.permission.permission import PermissionTemplateListHandler, Permiss
 from handler.application.application import ApplicationNewHandler, ApplicationDeleteHandler, ApplicationInfoHandler, \
                                             ApplicationBriefHandler, ApplicationUpdateHandler, ImageCreationHandler
 from handler.imagehub.image import ImageDetailHandler, ImageNewHandler
-from handler.application.deployment import K8sDeploymentHandler, K8sDeploymentNameCheck, DeploymentListHandler, \
-                                           K8sDeploymentYamlGenerateHandler
+from handler.application.deployment import K8sDeploymentHandler, K8sDeploymentNameCheck, DeploymentBriefHandler, \
+                                           K8sDeploymentYamlGenerateHandler, DeploymentRepicasSetSourceHandler, \
+                                           DeploymentPodSourceHandler
 from handler.application.service import K8sServiceYamlGenerateHandler
 from handler.label.label import LabelListHandler, LabelAddHandler, LabelDelHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
@@ -118,7 +119,9 @@ routes = [
     (r'/api/k8s_deploy', K8sDeploymentHandler),
     (r'/api/deployment/check_name', K8sDeploymentNameCheck),
     (r'/api/deployment/generate', K8sDeploymentYamlGenerateHandler),
-    (r'/api/deployment/list', DeploymentListHandler),
+    (r'/api/deployment/brief', DeploymentBriefHandler),
+    (r'/api/deployment/replicas', DeploymentRepicasSetSourceHandler),
+    (r'/api/deployment/pods', DeploymentPodSourceHandler),
 
     # service相关
     (r'/api/service/generate', K8sServiceYamlGenerateHandler),

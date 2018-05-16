@@ -218,23 +218,27 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
             self.success(result)
 
 
-class DeploymentListHandler(BaseHandler):
+class DeploymentBriefHandler(BaseHandler):
     @is_login
     @coroutine
     def get(self):
         """
-        @api {get} /api/deployment/list 部署列表
-        @apiName DeploymentListHandler
+        @api {get} /api/deployment/brief 部署列表
+        @apiName DeploymentBriefHandler
         @apiGroup Deployment
 
         @apiUse cidHeader
 
         @apiParam {Number} app_id 应用ID
         @apiParam {Number} status 部署状态(1.进行中, 2.已完成, 3.失败)
+        @apiParam {Number} deployment_id 部署ID(* 可选字段)
+        @apiParam {Number} show_yaml 是否查询yaml内容(0.否 1.是)
+        @apiParam {Number} show_log 是否查询Log内容(0.否 1.是)
         @apiParam {Number} page 页数
         @apiParam {Number} page_num 每页显示项数
 
-        @apiDescription 样例: /api/deployment/list?app_id=\d&status=\d&page=\d&page_num=\d
+        @apiDescription 样例: /api/deployment/brief?app_id=\d&status=\d&page=\d&page_num=\d
+                        or /api/deployment/brief?deployment_id=\d&
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -259,8 +263,12 @@ class DeploymentListHandler(BaseHandler):
                 param['app_id'] = int(self.params.get('app_id'))
             if self.params.get('status'):
                 param['status'] = int(self.params.get('status'))
+            if self.params.get('deployment_id'):
+                param['id'] = int(self.params.get('status'))
             page = int(self.params.get('page', 1))
             page_num = int(self.params.get('page_num', MSG_PAGE_NUM))
+            show_yaml = int(self.params.get('show_yaml', 0))
+            show_log = int(self.params.get('show_log', 0))
 
             brief = yield self.deployment_service.select(conds=param)
 
@@ -278,10 +286,118 @@ class DeploymentListHandler(BaseHandler):
                     i['availableReplicas'] = verbose['status']['availableReplicas']
 
                 # 去除一些查询列表时用不到的字段
-                i.pop('log', None)
-                i.pop('yaml', None)
+                if not show_log: i.pop('log', None)
+                if not show_yaml: i.pop('yaml', None)
 
             self.success(brief[page_num*(page-1):page_num*page])
 
 
+class DeploymentRepicasSetSourceHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/deployment/replicas 部署的ReplicasSet信息
+        @apiName DeploymentRepicasSetSourceHandler
+        @apiGroup Deployment
 
+        @apiUse cidHeader
+
+        @apiParam {Number} deployment_id 部署ID
+        @apiParam {Number} show_verbose 显示具体yaml内容
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": [
+                    {
+                        "id": int,
+                        "name": str,
+                        "deployment_id": str,
+                        "replicas": int,        //预设pod数量
+                        "availableReplicas": int,   //当前pod数量
+                        "readyReplicas": int,       //就绪pod数量
+                        "verbose": str,
+                        "create_time": time,
+                        "update_time": time
+                    },
+                    ...
+                ]
+            }
+        """
+        with catch(self):
+            self.guarantee('deployment_id')
+            show_yaml = int(self.params.get('show_yaml', 0))
+
+            replicaset = yield self.replicaset_service.select({'deployment_id': self.params['deployment_id']})
+            for i in replicaset:
+                verbose = i.get('verbose', None) if show_yaml else i.pop('verbose', None)
+                if verbose:
+                    verbose = yaml.load(verbose)
+                    i['replicas'] = verbose['status'].get('replicas', None)
+                    i['availableReplicas'] = verbose['status'].get('availableReplicas', None)
+                    i['readyReplicas'] = verbose['status'].get('readyReplicas', None)
+
+            self.success(replicaset)
+
+
+class DeploymentPodSourceHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/deployment/pods 部署的ReplicasSet信息
+        @apiName DeploymentPodSourceHandler
+        @apiGroup Deployment
+
+        @apiUse cidHeader
+
+        @apiParam {Number} deployment_id 部署ID
+        @apiParam {Number} show_verbose 显示具体yaml内容
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": [
+                    {
+                        "id": int,
+                        "name": str,
+                        "deployment_id": str,
+                        "readyStatus": str,        //就绪情况
+                        "podStatus": int,           //pod状态
+                        "restartStatus": int,       //重启次数
+                        "verbose": str,
+                        "create_time": time,
+                        "update_time": time
+                    },
+                    ...
+                ]
+            }
+        """
+        with catch(self):
+            self.guarantee('deployment_id')
+            show_yaml = int(self.params.get('show_yaml', 0))
+
+            pods = yield self.pod_service.select({'deployment_id': self.params['deployment_id']})
+            for i in pods:
+                verbose = i.get('verbose', None) if show_yaml else i.pop('verbose', None)
+                if verbose:
+                    verbose = yaml.load(verbose)
+
+                    ready = 0
+                    total = 0
+                    restart = 0
+                    for container in verbose['status'].get('containerStatuses', []):
+                        ready += 1 if container.get('ready', False) else 0
+                        total += 1
+                        restart += int(container.get('restartCount', 0))
+
+                    i['readyStatus'] = str(ready) + '/' + str(total)
+                    i['podStatus'] = verbose['status'].get('phase', '')
+                    i['restartStatus'] = restart
+
+            self.success(pods)
