@@ -67,9 +67,9 @@ def validate_id_card(number):
 
 
 def validate_application_name(name):
-    regex = r'^[-_0-9a-z]{1,64}$'
+    regex = r'^[-0-9a-z]{1,64}$'
 
-    _validate(regex, name, '应用名称只能包含小写英文字母，数字，下划线，中划线，最长64个字符')
+    _validate(regex, name, '应用名称只能包含小写英文字母，数字，中划线，最长64个字符')
 
 
 def validate_deployment_name(name):
