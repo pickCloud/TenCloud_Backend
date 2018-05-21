@@ -8,7 +8,7 @@ from tornado.ioloop import IOLoop
 from handler.base import BaseHandler, WebSocketBaseHandler
 from utils.decorator import is_login, require
 from utils.context import catch
-from utils.general import validate_application_name, validate_image_name, validate_deployment_name
+from utils.general import validate_application_name, validate_image_name, validate_k8s_object_name
 from setting import settings
 from handler.user import user
 from constant import SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, OPERATE_STATUS, LABEL_TYPE, PROJECT_OPERATE_STATUS, \
@@ -30,7 +30,8 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
         @apiParam {String} app_name 应用名称
         @apiParam {Number} app_id 应用ID
         @apiParam {Number} service_source 服务来源（1.内部服务，2.外部服务）
-        @apiParam {Dict} pod_label POD模板标签
+        @apiParam {[]Number} deployment_ids 部署列表
+        @apiParam {[]String} deployment_names 部署列表
         @apiParam {Number} service_type 服务类型（1.集群内访问，2.集群内外部可访问，3.负载均衡器）
         @apiParam {String} clusterIP 集群IP
         @apiParam {String} loadBalancerIP 负载均衡器IP
@@ -46,7 +47,8 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
             }
         """
         with catch(self):
-            self.guarantee('app_id', 'app_name', 'service_name', 'service_source', 'service_type')
+            self.guarantee('app_id', 'app_name', 'service_name', 'service_source', 'service_type', 'deployment_ids',
+                           'deployment_names')
 
             service_name = self.params['app_name'] + "." + self.params['service_name']
 
@@ -61,12 +63,19 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
                                 }
                             },
                             'spec': {
+                                'selector': {
+                                    'matchLabels': {
+                                        'app_id': str(self.params['app_id'])
+                                    },
+                                    'matchExpressions': [
+                                        {'key': 'internal_name',
+                                         'operator': 'In',
+                                         'values': self.params['deployment_names']}
+                                    ]
+                                },
                                 'type': K8S_SERVICE_TYPE[self.params['service_type']]
                             }
             }
-
-            if self.params.get('pod_label'):
-                yaml_json['spec']['selector'] = self.params['pod_label']
 
             if self.params.get('ports'):
                 yaml_json['spec']['ports'] = self.params['ports']
@@ -80,3 +89,61 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
             result = yaml.dump(yaml_json, default_flow_style=False)
             self.success(result)
 
+
+class K8sServiceHandler(WebSocketBaseHandler):
+    def on_message(self, message):
+        self.params.update(json.loads(message))
+
+        try:
+            args = ['app_id', 'app_name', 'service_name', 'deployment_ids', 'yaml']
+            self.guarantee(*args)
+            validate_k8s_object_name(self.params['deployment_name'])
+
+            # 检查服务名称是否冲突
+            deployment_info = self.deployment_service.sync_select({'id': self.params['deployment_ids'][0]}, one=True)
+            server_id = deployment_info['server_id']
+            duplicate = self.deployment_service.sync_select({'server_id': server_id, 'name': self.params['service_name']})
+            if duplicate:
+                raise ValueError('该集群内已有同名服务运行，请换用其他名称')
+
+            # 获取需要部署的主机IP
+            server_info = self.server_service.sync_select(conds={'id': server_id}, one=True)
+            if not server_info:
+                raise ValueError('没有可用于部署的主机，请尝试其他集群')
+
+            # 记录用户操作应用开始构建的动作
+
+
+            # 生成yaml文件并归档到服务器yaml目录下
+            filename = self.save_yaml(self.params['app_name'], self.params['service_name'], 'service',
+                                      self.params['yaml'])
+
+            # 获取集群master的信息并进行部署
+            login_info = self.application_service.sync_fetch_ssh_login_info({'public_ip': server_info['public_ip']})
+            login_info.update({'filename': filename})
+            out, err = self.k8s_apply(params=login_info, out_func=self.write_message)
+
+            # 生成部署数据
+            log = {"out": out, "err": err}
+            arg = {'name': self.params['service_name'], 'app_id': self.params['app_id'],
+                   'type': K8S_SERVICE_TYPE[int(self.params.get('type', K8S_SERVICE_TYPE.index('ClusterIP')))],
+                   'state': SERVICE_STATUS['failure'] if err else SERVICE_STATUS['success'],
+                   'yaml': self.params['yaml'], 'log': json.dumps(log)}
+            arg.update(self.get_lord())
+            self.service_service.sync_add(arg)
+
+            if err:
+                self.application_service.sync_update({'status': APPLICATION_STATE['abnormal']},
+                                                     {'id': self.params.get('app_id')})
+            else:
+                self.application_service.sync_update({'status': APPLICATION_STATE['normal']},
+                                                     {'id': self.params.get('app_id')})
+
+            # 反馈结果
+            self.write_message(FAILURE if err else SUCCESS)
+        except Exception as e:
+            self.log.error(traceback.format_exc())
+            self.write_message(str(e))
+            self.write_message(FAILURE)
+        finally:
+            self.close()

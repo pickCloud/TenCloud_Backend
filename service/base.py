@@ -350,6 +350,27 @@ class BaseService():
 
         return data
 
+    def sync_add(self, params=None):
+        '''
+        :param params: hash 数据库字段:值, 可传{'name': 'foo', 'description': 'boo'}
+        :return: {
+            'id': cur.lastrowid,
+            'update_time': datetime.datetime.now().strftime(FULL_DATE_FORMAT)
+        }
+        '''
+        fields = ','.join(params.keys())
+        values = list(params.values())
+        sets, sets_params = self.make_pair(params)
+
+        sql = """
+                INSERT INTO {table} ({fields}) VALUES ({formats})
+                ON DUPLICATE KEY UPDATE update_time=NOW()
+              """.format(table=self.table, fields=fields, formats=get_formats(values))
+        sql += ',' + ','.join(sets)
+
+        self.sync_db_execute(sql, values + values)
+
+
     @coroutine
     def fetch_with_label(self, params=None, label=None, fields=None, table=None):
         sql = """
