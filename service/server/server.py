@@ -46,7 +46,7 @@ class ServerService(BaseService):
     def _save_k8s_report(self, params):
         kv = {}
 
-        for member in ['k8s_node', 'k8s_pod', 'k8s_deployment', 'k8s_service', 'k8s_replicaset', 'k8s_pod']:
+        for member in ['k8s_node', 'k8s_pod', 'k8s_deployment', 'k8s_service', 'k8s_replicaset']:
             if params.get(member):
                 kv[member] = params.get(member)
 

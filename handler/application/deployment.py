@@ -8,7 +8,7 @@ from tornado.ioloop import IOLoop
 from handler.base import BaseHandler, WebSocketBaseHandler
 from utils.decorator import is_login, require
 from utils.context import catch
-from utils.general import validate_application_name, validate_image_name, validate_deployment_name
+from utils.general import validate_application_name, validate_image_name, validate_k8s_object_name
 from setting import settings
 from handler.user import user
 from constant import SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, OPERATE_STATUS, LABEL_TYPE, PROJECT_OPERATE_STATUS, \
@@ -35,7 +35,7 @@ class K8sDeploymentHandler(WebSocketBaseHandler):
         try:
             args = ['app_id', 'app_name', 'deployment_name', 'server_id', 'yaml']
             self.guarantee(*args)
-            validate_deployment_name(self.params['deployment_name'])
+            validate_k8s_object_name(self.params['deployment_name'])
 
             # 检查部署名称是否冲突
             duplicate = self.deployment_service.sync_select({'server_id': self.params['server_id'], 'name': self.params['deployment_name']})
@@ -107,7 +107,7 @@ class K8sDeploymentNameCheck(BaseHandler):
         with catch(self):
             self.guarantee('name', 'app_id')
 
-            validate_deployment_name(self.params['name'])
+            validate_k8s_object_name(self.params['name'])
 
             is_duplicate = yield self.deployment_service.select({'name': self.params['name'],
                                                                  'app_id': self.params['app_id']})
