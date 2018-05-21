@@ -86,6 +86,9 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
             if self.params.get('externalIPs'):
                 yaml_json['spec']['externalIPs'] = self.params['externalIPs']
 
+            if self.params.get('loadBalancerIP'):
+                yaml_json['spec']['loadBalancerIP'] = self.params['loadBalancerIP']
+
             result = yaml.dump(yaml_json, default_flow_style=False)
             self.success(result)
 
@@ -147,3 +150,74 @@ class K8sServiceHandler(WebSocketBaseHandler):
             self.write_message(FAILURE)
         finally:
             self.close()
+
+
+class ServiceBriefHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/service/brief 部署列表
+        @apiName ServiceBriefHandler
+        @apiGroup Service
+
+        @apiUse cidHeader
+
+        @apiParam {Number} app_id 应用ID
+        @apiParam {Number} state 服务状态(1.未知, 2.成功, 3.失败)
+        @apiParam {Number} service_id 服务ID(* 可选字段)
+        @apiParam {Number} show_yaml 是否查询yaml内容(0.否 1.是)
+        @apiParam {Number} show_log 是否查询Log内容(0.否 1.是)
+        @apiParam {Number} page 页数
+        @apiParam {Number} page_num 每页显示项数
+
+        @apiDescription 样例: /api/service/brief?app_id=\d&status=\d&page=\d&page_num=\d
+                        or /api/service/brief?service_id=\d&
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": [
+                    {
+                        "id": int,
+                        "name": str,
+                        "state": int,
+                        ...
+                    },
+                    ...
+                ]
+            }
+        """
+        with catch(self):
+            param = self.get_lord()
+
+            if self.params.get('app_id'):
+                param['app_id'] = int(self.params.get('app_id'))
+            if self.params.get('state'):
+                param['state'] = int(self.params.get('state'))
+            if self.params.get('service_id'):
+                param['id'] = int(self.params.get('service_id'))
+            page = int(self.params.get('page', 1))
+            page_num = int(self.params.get('page_num', MSG_PAGE_NUM))
+            show_yaml = int(self.params.get('show_yaml', 0))
+            show_log = int(self.params.get('show_log', 0))
+
+            brief = yield self.service_service.select(conds=param)
+
+            for i in brief:
+                # 从k8s集群上报过来的yaml信息中解析出pod状态等信息
+                verbose = i.pop('verbose', None)
+                verbose = yaml.load(verbose) if verbose else None
+                if verbose:
+                    i['clusterIP'] = verbose['spec'].get('clusterIP', '')
+                    i['externalIPs'] = verbose['spec'].get('externalIPs', '')
+                    i['loadBalancerIP'] = verbose['spec'].get('loadBalancerIP', '')
+                    i['ports'] = verbose['spec'].get('ports', '')
+
+                # 去除一些查询列表时用不到的字段
+                if not show_log: i.pop('log', None)
+                if not show_yaml: i.pop('yaml', None)
+
+            self.success(brief[page_num * (page - 1):page_num * page])

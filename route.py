@@ -16,7 +16,7 @@ from handler.imagehub.image import ImageDetailHandler, ImageNewHandler
 from handler.application.deployment import K8sDeploymentHandler, K8sDeploymentNameCheck, DeploymentBriefHandler, \
                                            K8sDeploymentYamlGenerateHandler, DeploymentRepicasSetSourceHandler, \
                                            DeploymentPodSourceHandler
-from handler.application.service import K8sServiceYamlGenerateHandler
+from handler.application.service import K8sServiceYamlGenerateHandler, ServiceBriefHandler
 from handler.label.label import LabelListHandler, LabelAddHandler, LabelDelHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
@@ -125,6 +125,7 @@ routes = [
 
     # service相关
     (r'/api/service/generate', K8sServiceYamlGenerateHandler),
+    (r'/api/service/brief', ServiceBriefHandler),
 
     # 镜像相关
     (r'/api/image', ImageDetailHandler),

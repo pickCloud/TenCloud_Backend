@@ -246,7 +246,7 @@ class ApplicationBriefHandler(BaseHandler):
             param['status'] = DEPLOYMENT_STATUS['complete']
             deploy_list = yield self.deployment_service.select(conds=param)
 
-            param['status'] = SERVICE_STATUS['success']
+            param['state'] = SERVICE_STATUS['success']
             service_list = yield self.service_service.select(conds=param)
 
             self.success({
