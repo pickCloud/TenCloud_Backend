@@ -87,7 +87,7 @@ class K8sDeploymentHandler(WebSocketBaseHandler):
             self.close()
 
 
-class K8sDeploymentNameCheck(BaseHandler):
+class K8sDeploymentNameCheckHandler(BaseHandler):
     @is_login
     @coroutine
     def get(self):
@@ -140,8 +140,9 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
         @apiParam {String} app_name 应用名称
         @apiParam {Number} replica_num 预期POD数量
         @apiParam {Dict} pod_label POD模板标签
-        @apiParam {String} container_name 容器名称
-        @apiParam {String} image_name 容器镜像名称
+        @apiParam {[]{'name','image','ports'}} containers 容器
+        @apiParam {String} name 容器名称
+        @apiParam {String} image 容器镜像名称
         @apiParam {[]{'protocol','containerPort','name'}} ports 容器端口
 
         @apiSuccessExample {json} Success-Response:
@@ -175,7 +176,7 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
         #           protocol: TCP
         #           name: port1
         with catch(self):
-            self.guarantee('app_id', 'app_name', 'deployment_name', 'replica_num', 'container_name', 'image_name')
+            self.guarantee('app_id', 'app_name', 'deployment_name', 'replica_num', 'containers')
 
             deployment_name = self.params['app_name']+"."+self.params['deployment_name']
             labels = {'internal_name': deployment_name, 'app_id': str(self.params['app_id'])}
@@ -200,19 +201,14 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
                                      'labels': labels,
                                  },
                                  'spec': {
-                                     'containers': [
-                                         {
-                                             'name': self.params['container_name'],
-                                             'image': self.params['image_name']
-                                         }
-                                     ]
+                                     'containers': []
                                  }
                              }
                          }
                          }
 
-            if self.params.get('ports'):
-                yaml_json['spec']['template']['spec']['containers'][0]['ports'] = self.params.get('ports')
+            if self.params.get('containers'):
+                yaml_json['spec']['template']['spec']['containers'] = self.params.get('containers')
 
             result = yaml.dump(yaml_json, default_flow_style=False)
             self.success(result)
@@ -292,13 +288,13 @@ class DeploymentBriefHandler(BaseHandler):
             self.success(brief[page_num*(page-1):page_num*page])
 
 
-class DeploymentRepicasSetSourceHandler(BaseHandler):
+class DeploymentReplicasSetSourceHandler(BaseHandler):
     @is_login
     @coroutine
     def get(self):
         """
         @api {get} /api/deployment/replicas 部署的ReplicasSet信息
-        @apiName DeploymentRepicasSetSourceHandler
+        @apiName DeploymentReplicasSetSourceHandler
         @apiGroup Deployment
 
         @apiUse cidHeader
@@ -348,7 +344,7 @@ class DeploymentPodSourceHandler(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {get} /api/deployment/pods 部署的ReplicasSet信息
+        @api {get} /api/deployment/pods 部署的Pod信息
         @apiName DeploymentPodSourceHandler
         @apiGroup Deployment
 
@@ -368,8 +364,9 @@ class DeploymentPodSourceHandler(BaseHandler):
                         "name": str,
                         "deployment_id": str,
                         "readyStatus": str,        //就绪情况
-                        "podStatus": int,           //pod状态
+                        "podStatus": str,           //pod状态
                         "restartStatus": int,       //重启次数
+                        "labels": [],               //标签
                         "verbose": str,
                         "create_time": time,
                         "update_time": time
@@ -399,5 +396,6 @@ class DeploymentPodSourceHandler(BaseHandler):
                     i['readyStatus'] = str(ready) + '/' + str(total)
                     i['podStatus'] = verbose['status'].get('phase', '')
                     i['restartStatus'] = restart
+                    i['labels'] = verbose['metadata'].get('labels', [])
 
             self.success(pods)
