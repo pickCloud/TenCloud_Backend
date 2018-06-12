@@ -260,7 +260,7 @@ class DeploymentBriefHandler(BaseHandler):
             if self.params.get('status'):
                 param['status'] = int(self.params.get('status'))
             if self.params.get('deployment_id'):
-                param['id'] = int(self.params.get('status'))
+                param['id'] = int(self.params.get('deployment_id'))
             page = int(self.params.get('page', 1))
             page_num = int(self.params.get('page_num', MSG_PAGE_NUM))
             show_yaml = int(self.params.get('show_yaml', 0))
