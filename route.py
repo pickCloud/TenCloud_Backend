@@ -10,13 +10,14 @@ from handler.permission.permission import PermissionTemplateListHandler, Permiss
     PermissionTemplateRenameHandler, PermissionUserDetailHandler, PermissionUserUpdateHandler, \
     PermissionTemplateAddHandler, PermissionResourcesHandler, PermissionTemplateDelHandler, \
     PermissionTemplateUpdateHandler
-from handler.application.application import ApplicationNewHandler, ApplicationDeleteHandler, ApplicationInfoHandler, \
-                                            ApplicationBriefHandler, ApplicationUpdateHandler, ImageCreationHandler
+from handler.application.application import ApplicationNewHandler, ApplicationDeleteHandler, ApplicationBriefHandler, \
+                                            ApplicationSummaryHandler, ApplicationUpdateHandler, ImageCreationHandler, \
+                                            SubApplicationBriefHandler
 from handler.imagehub.image import ImageDetailHandler, ImageNewHandler
 from handler.application.deployment import K8sDeploymentHandler, K8sDeploymentNameCheckHandler, DeploymentBriefHandler, \
                                            K8sDeploymentYamlGenerateHandler, DeploymentReplicasSetSourceHandler, \
                                            DeploymentPodSourceHandler
-from handler.application.service import K8sServiceYamlGenerateHandler, ServiceBriefHandler
+from handler.application.service import K8sServiceYamlGenerateHandler, ServiceBriefHandler, ServiceDetailHandler
 from handler.label.label import LabelListHandler, LabelAddHandler, LabelDelHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
@@ -126,6 +127,7 @@ routes = [
     # service相关
     (r'/api/service/generate', K8sServiceYamlGenerateHandler),
     (r'/api/service/brief', ServiceBriefHandler),
+    (r'/api/service/detail', ServiceDetailHandler),
 
     # 镜像相关
     (r'/api/image', ImageDetailHandler),
@@ -135,8 +137,9 @@ routes = [
     (r'/api/application/new', ApplicationNewHandler),
     (r'/api/application/del', ApplicationDeleteHandler),
     (r'/api/application/update', ApplicationUpdateHandler),
-    (r'/api/application', ApplicationInfoHandler),
     (r'/api/application/brief', ApplicationBriefHandler),
+    (r'/api/application/summary', ApplicationSummaryHandler),
+    (r'/api/sub_application/brief', SubApplicationBriefHandler),
 
     # 标签相关
     (r'/api/label/new', LabelAddHandler),
