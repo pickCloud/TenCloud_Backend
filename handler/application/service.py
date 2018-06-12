@@ -157,22 +157,19 @@ class ServiceBriefHandler(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {get} /api/service/brief 部署列表
+        @api {get} /api/service/brief 服务概况
         @apiName ServiceBriefHandler
         @apiGroup Service
 
         @apiUse cidHeader
 
         @apiParam {Number} app_id 应用ID
-        @apiParam {Number} state 服务状态(1.未知, 2.成功, 3.失败)
-        @apiParam {Number} service_id 服务ID(* 可选字段)
-        @apiParam {Number} show_yaml 是否查询yaml内容(0.否 1.是)
-        @apiParam {Number} show_log 是否查询Log内容(0.否 1.是)
-        @apiParam {Number} page 页数
-        @apiParam {Number} page_num 每页显示项数
+        @apiParam {Number} [state] 服务状态(1.未知, 2.成功, 3.失败)
+        @apiParam {Number} [service_id] 服务ID(* 可选字段)
+        @apiParam {Number} [page] 页数
+        @apiParam {Number} [page_num] 每页显示项数
 
-        @apiDescription 样例: /api/service/brief?app_id=\d&status=\d&page=\d&page_num=\d
-                        or /api/service/brief?service_id=\d&
+        @apiDescription 样例: /api/service/brief?app_id=\d&state=\d&page=\d&page_num=\d
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -184,7 +181,79 @@ class ServiceBriefHandler(BaseHandler):
                         "id": int,
                         "name": str,
                         "state": int,
-                        ...
+                        "app_id": int,
+                        "type": int,
+                        "configPods": int,
+                        "runningPods": int
+                    },
+                    ...
+                ]
+            }
+        """
+        with catch(self):
+            param = self.get_lord()
+
+            if self.params.get('app_id'):
+                param['app_id'] = int(self.params.get('app_id'))
+            if self.params.get('state'):
+                param['state'] = int(self.params.get('state'))
+            if self.params.get('service_id'):
+                param['id'] = int(self.params.get('service_id'))
+            page = int(self.params.get('page', 1))
+            page_num = int(self.params.get('page_num', MSG_PAGE_NUM))
+
+            fields = "id, name, app_id, type, state"
+            brief = yield self.service_service.select(conds=param, fields=fields)
+            for i in brief:
+                # 从k8s集群上报过来的yaml信息中解析出pod状态等信息
+                verbose = i.pop('verbose', None)
+                verbose = yaml.load(verbose) if verbose else None
+                if verbose:
+                    i['configPods'] = 0
+                    i['runningPods'] = 0
+
+            self.success(brief[page_num * (page - 1):page_num * page])
+
+class ServiceDetailHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/service/detail 服务详情
+        @apiName ServiceDetailHandler
+        @apiGroup Service
+
+        @apiUse cidHeader
+
+        @apiParam {Number} app_id 应用ID
+        @apiParam {Number} [state] 服务状态(1.未知, 2.成功, 3.失败)
+        @apiParam {Number} [service_id] 服务ID(* 可选字段)
+        @apiParam {Number} [show_yaml] 是否查询yaml内容(0.否 1.是)
+        @apiParam {Number} [show_log] 是否查询Log内容(0.否 1.是)
+        @apiParam {Number} [page] 页数
+        @apiParam {Number} [page_num] 每页显示项数
+
+        @apiDescription 样例: /api/service/detail?app_id=\d&state=\d&page=\d&page_num=\d
+                        or /api/service/detail?service_id=\d&
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": [
+                    {
+                        "id": int,
+                        "name": str,
+                        "app_id": int,
+                        "type": int,
+                        "state": int,
+                        "source": int,
+                        "yaml": str,
+                        "log": str,
+                        "verbose": str,
+                        "form": int,
+                        "lord": int
                     },
                     ...
                 ]

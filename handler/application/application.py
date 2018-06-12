@@ -161,24 +161,24 @@ class ApplicationUpdateHandler(BaseHandler):
 
 
 
-class ApplicationInfoHandler(BaseHandler):
+class ApplicationBriefHandler(BaseHandler):
     @is_login
     @coroutine
     def get(self):
         """
-        @api {get} /api/application 应用信息
-        @apiName ApplicationInfoHandler
+        @api {get} /api/application/brief 应用信息
+        @apiName ApplicationBriefHandler
         @apiGroup Application
 
         @apiUse cidHeader
 
-        @apiParam {Number} id 应用ID
-        @apiParam {Number} status 应用状态(0.初创建 1.正常 2.异常)
-        @apiParam {Number} page 页数
-        @apiParam {Number} page_num 每页显示项数
-        @apiParam {Number} label 应用标签ID
+        @apiParam {Number} [id] 应用ID（填写此字段代表获取指定的应用信息）
+        @apiParam {Number} [master_app] 主应用ID（填写此字段代表获取指定主应用下的子应用信息）
+        @apiParam {Number} [page] 页数
+        @apiParam {Number} [page_num] 每页显示项数
+        @apiParam {Number} [label] 应用标签ID
 
-        @apiDescription 样例: /api/application?id=\d&status=\d&page=\d&page_num=\d&label=\d
+        @apiDescription 样例: /api/application?id=\d&page=\d&page_num=\d&label=\d
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -190,7 +190,10 @@ class ApplicationInfoHandler(BaseHandler):
                         "id": int,
                         "name": str,
                         "description": str,
-                        ...
+                        "logo_url": str,
+                        "label_name": str,
+                        "form": int,
+                        "lord": int
                     },
                     ...
                 ]
@@ -206,20 +209,123 @@ class ApplicationInfoHandler(BaseHandler):
             label = int(param.pop('label', 0))
 
             # 获取应用信息，如果未填写id的话则获取所有满足条件的应用
-            app_info = yield self.application_service.fetch_with_label(param, label)
+            fields = "id, name, description, logo_url, label_name, lord, form"
+            app_info = yield self.application_service.fetch_with_label(param, label, fields)
             app_info = yield self.filter(app_info, service=SERVICE['a'])
 
             # 对结果进行分页显示
             self.success(app_info[page_num * (page - 1):page_num * page])
 
 
-class ApplicationBriefHandler(BaseHandler):
+# class ApplicationDetailHandler(BaseHandler):
+#     @is_login
+#     @coroutine
+#     def get(self):
+#         """
+#         @api {get} /api/application/detail 主应用详情
+#         @apiName ApplicationInfoHandler
+#         @apiGroup Application
+#
+#         @apiUse cidHeader
+#
+#         @apiParam {Number} id 主应用ID
+#
+#         @apiDescription 获取主应用详情，包含微服务列表和子应用列表
+#
+#         @apiSuccessExample {json} Success-Response:
+#             HTTP/1.1 200 OK
+#             {
+#                 "status": 0,
+#                 "msg": "success",
+#                 "data": [
+#                     {
+#                         "id": int,
+#                         "name": str,
+#                         "description": str,
+#                         "logo_url": str,
+#                         "label_name": str,
+#                         "form": int,
+#                         "lord": int
+#                     },
+#                     ...
+#                 ]
+#             }
+#         """
+#         with catch(self):
+#             self.guarantee('id')
+#
+#
+
+
+
+class SubApplicationBriefHandler(BaseHandler):
     @is_login
     @coroutine
     def get(self):
         """
-        @api {get} /api/application/brief 应用概述信息
-        @apiName ApplicationBriefHandler
+        @api {get} /api/sub_application/brief 子应用信息
+        @apiName SubApplicationInfoHandler
+        @apiGroup Application
+
+        @apiUse cidHeader
+
+        @apiParam {Number} master_app 主应用ID
+        @apiParam {Number} [id] 子应用ID
+        @apiParam {Number} [page] 页数
+        @apiParam {Number} [page_num] 每页显示项数
+
+        @apiDescription 样例: /api/sub_application/brief?master_app=\d
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": [
+                    {
+                        "id": int,
+                        "name": str,
+                        "description": str,
+                        "master_app": int,
+                        "repos_name": str,
+                        "repos_ssh_url": str,
+                        "repos_https_url": str,
+                        "logo_url": str,
+                        "image_id": int,
+                        "form": int,
+                        "lord": int
+                    },
+                    ...
+                ]
+            }
+        """
+        with catch(self):
+            self.guarantee('master_app')
+
+            param = self.params
+            param.update(self.get_lord())
+            param.pop('token', None)
+            param.pop('cid', None)
+            page = int(param.pop('page', 1))
+            page_num = int(param.pop('page_num', MSG_PAGE_NUM))
+
+            # 获取应用信息，如果未填写id的话则获取所有满足条件的应用
+            fields = "id, name, description, master_app, repos_name, repos_ssh_url, repos_https_url, logo_url, " \
+                     "image_id, form, lord"
+            app_info = yield self.application_service.select(param, fields)
+            app_info = yield self.filter(app_info, service=SERVICE['a'])
+
+            # 对结果进行分页显示
+            self.success(app_info[page_num * (page - 1):page_num * page])
+
+
+class ApplicationSummaryHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/application/summary 应用概述信息
+        @apiName ApplicationSummaryHandler
         @apiGroup Application
 
         @apiUse cidHeader
