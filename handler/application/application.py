@@ -217,47 +217,6 @@ class ApplicationBriefHandler(BaseHandler):
             self.success(app_info[page_num * (page - 1):page_num * page])
 
 
-# class ApplicationDetailHandler(BaseHandler):
-#     @is_login
-#     @coroutine
-#     def get(self):
-#         """
-#         @api {get} /api/application/detail 主应用详情
-#         @apiName ApplicationInfoHandler
-#         @apiGroup Application
-#
-#         @apiUse cidHeader
-#
-#         @apiParam {Number} id 主应用ID
-#
-#         @apiDescription 获取主应用详情，包含微服务列表和子应用列表
-#
-#         @apiSuccessExample {json} Success-Response:
-#             HTTP/1.1 200 OK
-#             {
-#                 "status": 0,
-#                 "msg": "success",
-#                 "data": [
-#                     {
-#                         "id": int,
-#                         "name": str,
-#                         "description": str,
-#                         "logo_url": str,
-#                         "label_name": str,
-#                         "form": int,
-#                         "lord": int
-#                     },
-#                     ...
-#                 ]
-#             }
-#         """
-#         with catch(self):
-#             self.guarantee('id')
-#
-#
-
-
-
 class SubApplicationBriefHandler(BaseHandler):
     @is_login
     @coroutine
