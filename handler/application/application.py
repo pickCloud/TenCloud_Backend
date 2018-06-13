@@ -174,14 +174,13 @@ class ApplicationBriefHandler(BaseHandler):
     @coroutine
     def get(self):
         """
-        @api {get} /api/application/brief 应用信息
+        @api {get} /api/application/brief 主应用信息
         @apiName ApplicationBriefHandler
         @apiGroup Application
 
         @apiUse cidHeader
 
         @apiParam {Number} [id] 应用ID（填写此字段代表获取指定的应用信息）
-        @apiParam {Number} [master_app] 主应用ID（填写此字段代表获取指定主应用下的子应用信息）
         @apiParam {Number} [page] 页数
         @apiParam {Number} [page_num] 每页显示项数
         @apiParam {Number} [label] 应用标签ID
@@ -215,7 +214,7 @@ class ApplicationBriefHandler(BaseHandler):
             page = int(param.pop('page', 1))
             page_num = int(param.pop('page_num', MSG_PAGE_NUM))
             label = int(param.pop('label', 0))
-            param['master_app'] = self.params.get('master_app', 0)
+            param['master_app'] = 0
 
             # 获取应用信息，如果未填写id的话则获取所有满足条件的应用
             fields = "id, name, description, logo_url, lord, form"
