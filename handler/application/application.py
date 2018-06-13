@@ -209,7 +209,7 @@ class ApplicationBriefHandler(BaseHandler):
             label = int(param.pop('label', 0))
 
             # 获取应用信息，如果未填写id的话则获取所有满足条件的应用
-            fields = "id, name, description, logo_url, label_name, lord, form"
+            fields = "id, name, description, logo_url, lord, form"
             app_info = yield self.application_service.fetch_with_label(param, label, fields)
             app_info = yield self.filter(app_info, service=SERVICE['a'])
 
