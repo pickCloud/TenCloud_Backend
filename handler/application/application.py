@@ -215,6 +215,7 @@ class ApplicationBriefHandler(BaseHandler):
             page = int(param.pop('page', 1))
             page_num = int(param.pop('page_num', MSG_PAGE_NUM))
             label = int(param.pop('label', 0))
+            param['master_app'] = 0
 
             # 获取应用信息，如果未填写id的话则获取所有满足条件的应用
             fields = "id, name, description, logo_url, lord, form"
