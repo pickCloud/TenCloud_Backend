@@ -29,13 +29,14 @@ class ApplicationNewHandler(BaseHandler):
         @apiUse cidHeader
 
         @apiParam {String} name 应用名称
-        @apiParam {String} description 描述
-        @apiParam {String} repos_name 仓库名称
-        @apiParam {String} repos_ssh_url 应用在github的ssh地址
-        @apiParam {String} repos_https_url 应用在github的https地址
-        @apiParam {String} logo_url LOGO的url地址
-        @apiParam {Number} image_id 镜像ID
-        @apiParam {[]Number} labels 标签ID(传递时注意保证ID是从小到大的顺序)
+        @apiParam {Number} [master_app] 主应用ID（填写此字段代表创建子应用）
+        @apiParam {String} [description] 描述
+        @apiParam {String} [repos_name] 仓库名称（子应用字段）
+        @apiParam {String} [repos_ssh_url] 应用在github的ssh地址（子应用字段）
+        @apiParam {String} [repos_https_url] 应用在github的https地址（子应用字段）
+        @apiParam {String} [logo_url] LOGO的url地址
+        @apiParam {Number} [image_id] 镜像ID（子应用字段）
+        @apiParam {[]Number} [labels] 标签ID(主应用字段，传递时注意保证ID是从小到大的顺序)
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -59,6 +60,7 @@ class ApplicationNewHandler(BaseHandler):
             # 检查是否有重复的应用
             param = self.get_lord()
             param['name'] = self.params.get('name')
+            param['master_app'] = self.params.get('master_app', 0)
             is_duplicate_name = yield self.application_service.select(param)
             if is_duplicate_name:
                 self.log.error('Failed to create new application because of duplicate name %s' % param['name'])
@@ -73,10 +75,16 @@ class ApplicationNewHandler(BaseHandler):
             param['logo_url'] = settings['qiniu_header_bucket_url'] + param['logo_url'] \
                                 if self.params.get('logo_url', None) else ''
             new_app = yield self.application_service.add(param)
+            if not param['master_app']:
+                param['master_app'] = new_app['id']
+                new_subapp = yield self.application_service.add(param)
 
             if self.params.get('form') == FORM_COMPANY:
                 param = {'uid': self.current_user['id'], 'cid': self.params.get('cid'), 'aid': new_app['id']}
-                self.user_access_application_service.add(param)
+                yield self.user_access_application_service.add(param)
+                if 'new_app' in dir():
+                    param['aid'] = new_subapp['id']
+                    yield self.user_access_application_service.add(param)
 
             self.log.info('Succeeded to create new application, name: %s, repos name: %s, repos url: %s'
                           % (self.params.get('name'), self.params.get('repos_name'), self.params.get('repos_https_url')))
