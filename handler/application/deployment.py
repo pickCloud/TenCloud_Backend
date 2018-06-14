@@ -225,13 +225,13 @@ class DeploymentBriefHandler(BaseHandler):
 
         @apiUse cidHeader
 
-        @apiParam {Number} app_id 应用ID
-        @apiParam {Number} status 部署状态(1.进行中, 2.已完成, 3.失败)
-        @apiParam {Number} deployment_id 部署ID(* 可选字段)
-        @apiParam {Number} show_yaml 是否查询yaml内容(0.否 1.是)
-        @apiParam {Number} show_log 是否查询Log内容(0.否 1.是)
-        @apiParam {Number} page 页数
-        @apiParam {Number} page_num 每页显示项数
+        @apiParam {Number} [app_id] 应用ID
+        @apiParam {Number} [status] 部署状态(1.进行中, 2.已完成, 3.失败)
+        @apiParam {Number} [deployment_id] 部署ID
+        @apiParam {Number} [show_yaml] 是否查询yaml内容(0.否 1.是)
+        @apiParam {Number} [show_log] 是否查询Log内容(0.否 1.是)
+        @apiParam {Number} [page] 页数
+        @apiParam {Number} [page_num] 每页显示项数
 
         @apiDescription 样例: /api/deployment/brief?app_id=\d&status=\d&page=\d&page_num=\d
                         or /api/deployment/brief?deployment_id=\d&
@@ -287,6 +287,76 @@ class DeploymentBriefHandler(BaseHandler):
 
             self.success(brief[page_num*(page-1):page_num*page])
 
+
+class DeploymentLastestHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/deployment/latest 最新的部署
+        @apiName DeploymentLastestHandler
+        @apiGroup Deployment
+
+        @apiUse cidHeader
+
+        @apiParam {Number} app_id 应用ID
+        @apiParam {Number} [show_yaml] 是否查询yaml内容(0.否 1.是)
+        @apiParam {Number} [show_log] 是否查询Log内容(0.否 1.是)
+
+        @apiDescription 样例: /api/deployment/brief?app_id=\d&status=\d&page=\d&page_num=\d
+                        or /api/deployment/brief?deployment_id=\d&
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": {
+                    "id": int,
+                    "name": str,
+                    "status": int,              //部署状态(1.进行中, 2.已完成, 3.失败)
+                    "app_id": int,
+                    "app_name": str,
+                    "type": int,                //部署类型(1 K8S部署, 2 Docker原生部署)
+                    "server_id": int,
+                    "replicas": int,            //预设实例数量
+                    "readyReplicas": int,       //当前实例数量
+                    "updatedReplicas": int,     //更新实例数量
+                    "availableReplicas": int,   //可用实例数量
+                    "form": int,
+                    "lord": int,
+                    "create_time": str,
+                    'update_time": str,
+                }
+            }
+        """
+        with catch(self):
+            param = self.get_lord()
+
+            if self.params.get('app_id'):
+                param['app_id'] = int(self.params.get('app_id'))
+
+            show_yaml = int(self.params.get('show_yaml', 0))
+            show_log = int(self.params.get('show_log', 0))
+
+            deployment_info = yield self.deployment_service.select(conds=param, one=True, extra=' ORDER BY update_time DESC ')
+            app_info = yield self.application_service.select(conds={'id': deployment_info['app_id']}, one=True)
+            deployment_info['app_name'] = app_info['name']
+
+            # 从k8s集群上报过来的yaml信息中解析出pod状态等信息
+            verbose = deployment_info.pop('verbose', None)
+            verbose = yaml.load(verbose) if verbose else None
+            if verbose:
+                deployment_info['replicas'] = verbose['status']['replicas']
+                deployment_info['readyReplicas'] = verbose['status']['readyReplicas']
+                deployment_info['updatedReplicas'] = verbose['status']['updatedReplicas']
+                deployment_info['availableReplicas'] = verbose['status']['availableReplicas']
+
+            # 去除一些查询列表时用不到的字段
+            if not show_log: deployment_info.pop('log', None)
+            if not show_yaml: deployment_info.pop('yaml', None)
+
+            self.success(deployment_info)
 
 class DeploymentReplicasSetSourceHandler(BaseHandler):
     @is_login
