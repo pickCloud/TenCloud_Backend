@@ -180,11 +180,10 @@ class ServiceBriefHandler(BaseHandler):
                     {
                         "id": int,
                         "name": str,
-                        "state": int,
+                        "state": int,           // service状态(1.未知, 2.成功, 3.失败)
                         "app_id": int,
-                        "type": int,
-                        "configPods": int,
-                        "runningPods": int
+                        "type": int,            // service类型(1.ClusterIP, 2.NodeIP, 3.LoadBalancer)
+                        "source": int,          // 服务来源(1.集群内服务 2.集群外服务)
                     },
                     ...
                 ]
@@ -202,15 +201,8 @@ class ServiceBriefHandler(BaseHandler):
             page = int(self.params.get('page', 1))
             page_num = int(self.params.get('page_num', MSG_PAGE_NUM))
 
-            fields = "id, name, app_id, type, state"
+            fields = "id, name, app_id, type, source, state"
             brief = yield self.service_service.select(conds=param, fields=fields)
-            for i in brief:
-                # 从k8s集群上报过来的yaml信息中解析出pod状态等信息
-                verbose = i.pop('verbose', None)
-                verbose = yaml.load(verbose) if verbose else None
-                if verbose:
-                    i['configPods'] = 0
-                    i['runningPods'] = 0
 
             self.success(brief[page_num * (page - 1):page_num * page])
 

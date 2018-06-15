@@ -303,8 +303,7 @@ class DeploymentLastestHandler(BaseHandler):
         @apiParam {Number} [show_yaml] 是否查询yaml内容(0.否 1.是)
         @apiParam {Number} [show_log] 是否查询Log内容(0.否 1.是)
 
-        @apiDescription 样例: /api/deployment/brief?app_id=\d&status=\d&page=\d&page_num=\d
-                        or /api/deployment/brief?deployment_id=\d&
+        @apiDescription 获取最新的部署对象
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -326,7 +325,7 @@ class DeploymentLastestHandler(BaseHandler):
                     "form": int,
                     "lord": int,
                     "create_time": str,
-                    'update_time": str,
+                    "update_time": str,
                 }
             }
         """
