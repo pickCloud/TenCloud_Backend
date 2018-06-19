@@ -75,15 +75,33 @@ class ApplicationNewHandler(BaseHandler):
             param['logo_url'] = settings['qiniu_header_bucket_url'] + param['logo_url'] \
                                 if self.params.get('logo_url', None) else ''
             new_app = yield self.application_service.add(param)
+            # 添加主应用的时候，一并生成一条同名的子应用和ingress相关子应用
             if not param['master_app']:
                 param['master_app'] = new_app['id']
                 new_subapp = yield self.application_service.add(param)
 
+                ingress_param = {'name': 'Nginx-ingress-controller', 'master_app': new_app['id'],
+                                 'description': 'NGINX Ingress Controller for Kubernetes',
+                                 'status': APPLICATION_STATE['normal']}
+                ingress_param.update(self.get_lord())
+                ingress_controller = yield self.application_service.add(ingress_param)
+
+                ingress_param['name'] = 'Ingress-default-backend'
+                ingress_param['description'] = 'A simple webserver that satisfies the ingress default backend'
+                ingress_backend = yield self.application_service.add(ingress_param)
+
+            # 给用户添加相应应用的权限
             if self.params.get('form') == FORM_COMPANY:
                 param = {'uid': self.current_user['id'], 'cid': self.params.get('cid'), 'aid': new_app['id']}
                 yield self.user_access_application_service.add(param)
-                if 'new_app' in dir():
+                if 'new_subapp' in dir():
                     param['aid'] = new_subapp['id']
+                    yield self.user_access_application_service.add(param)
+
+                    param['aid'] = ingress_controller['id']
+                    yield self.user_access_application_service.add(param)
+
+                    param['aid'] = ingress_backend['id']
                     yield self.user_access_application_service.add(param)
 
             self.log.info('Succeeded to create new application, name: %s, repos name: %s, repos url: %s'
