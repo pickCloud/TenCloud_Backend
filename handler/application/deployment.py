@@ -277,10 +277,10 @@ class DeploymentBriefHandler(BaseHandler):
                 verbose = i.pop('verbose', None)
                 verbose = yaml.load(verbose) if verbose else None
                 if verbose:
-                    i['replicas'] = verbose['status']['replicas']
-                    i['readyReplicas'] = verbose['status']['readyReplicas']
-                    i['updatedReplicas'] = verbose['status']['updatedReplicas']
-                    i['availableReplicas'] = verbose['status']['availableReplicas']
+                    i['replicas'] = verbose['status'].get('replicas', 0)
+                    i['readyReplicas'] = verbose['status'].get('readyReplicas', 0)
+                    i['updatedReplicas'] = verbose['status'].get('updatedReplicas', 0)
+                    i['availableReplicas'] = verbose['status'].get('availableReplicas', 0)
 
                 # 去除一些查询列表时用不到的字段
                 if not show_log: i.pop('log', None)
@@ -351,10 +351,10 @@ class DeploymentLastestHandler(BaseHandler):
             verbose = deployment_info.pop('verbose', None)
             verbose = yaml.load(verbose) if verbose else None
             if verbose:
-                deployment_info['replicas'] = verbose['status']['replicas']
-                deployment_info['readyReplicas'] = verbose['status']['readyReplicas']
-                deployment_info['updatedReplicas'] = verbose['status']['updatedReplicas']
-                deployment_info['availableReplicas'] = verbose['status']['availableReplicas']
+                deployment_info['replicas'] = verbose['status'].get('replicas', 0)
+                deployment_info['readyReplicas'] = verbose['status'].get('readyReplicas', 0)
+                deployment_info['updatedReplicas'] = verbose['status'].get('updatedReplicas', 0)
+                deployment_info['availableReplicas'] = verbose['status'].get('availableReplicas', 0)
 
             # 去除一些查询列表时用不到的字段
             if not show_log: deployment_info.pop('log', None)
