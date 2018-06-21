@@ -70,7 +70,7 @@ class K8sDeploymentHandler(WebSocketBaseHandler):
                    'yaml': self.params['yaml'], 'log': json.dumps(log), 'server_id': self.params['server_id']}
             arg.update(self.get_lord())
             res = self.deployment_service.add_deployment(arg)
-            self.write_message('deployment ID:' + res.get('id', 0))
+            self.write_message('deployment ID:' + str(res.get('id', 0)))
 
             if err:
                 self.application_service.sync_update({'status': APPLICATION_STATE['abnormal']}, {'id': self.params.get('app_id')})
