@@ -19,7 +19,8 @@ class DeploymentService(BaseService):
         arg = [params['name'], params['status'],  params['app_id'], params['type'], params['yaml'], params['server_id'],
                params['log'], params['form'], params['lord'], params['status'], params['yaml'], params['server_id'],
                params['log']]
-        self.sync_db_execute(sql, arg)
+        index = self.sync_db_execute(sql, arg)
+        return {'id': index}
 
 
 class ReplicaSetService(BaseService):
