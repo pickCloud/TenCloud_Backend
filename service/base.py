@@ -287,7 +287,9 @@ class BaseService():
     def sync_db_execute(self, sql, params):
         cur = self.sync_db.cursor()
         cur.execute(sql, params)
+        index = cur.lastrowid
         cur.close()
+        return index
 
     def sync_db_fetchone(self, sql, params):
         cur = self.sync_db.cursor()

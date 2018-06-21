@@ -69,7 +69,8 @@ class K8sDeploymentHandler(WebSocketBaseHandler):
                    'status': DEPLOYMENT_STATUS['fail'] if err else DEPLOYMENT_STATUS['complete'],
                    'yaml': self.params['yaml'], 'log': json.dumps(log), 'server_id': self.params['server_id']}
             arg.update(self.get_lord())
-            self.deployment_service.add_deployment(arg)
+            res = self.deployment_service.add_deployment(arg)
+            self.write_message('deployment ID:' + res.get('id', 0))
 
             if err:
                 self.application_service.sync_update({'status': APPLICATION_STATE['abnormal']}, {'id': self.params.get('app_id')})
@@ -339,6 +340,10 @@ class DeploymentLastestHandler(BaseHandler):
             show_log = int(self.params.get('show_log', 0))
 
             deployment_info = yield self.deployment_service.select(conds=param, one=True, extra=' ORDER BY update_time DESC ')
+            if not deployment_info:
+                self.success()
+                return
+
             app_info = yield self.application_service.select(conds={'id': deployment_info['app_id']}, one=True)
             deployment_info['app_name'] = app_info['name']
 
