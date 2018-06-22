@@ -272,6 +272,10 @@ class DeploymentBriefHandler(BaseHandler):
             for i in brief:
                 app_info = yield self.application_service.select(conds={'id': i['app_id']}, one=True)
                 i['app_name'] = app_info['name']
+                i['replicas'] = 0
+                i['readyReplicas'] = 0
+                i['updatedReplicas'] = 0
+                i['availableReplicas'] = 0
 
                 # 从k8s集群上报过来的yaml信息中解析出pod状态等信息
                 verbose = i.pop('verbose', None)
@@ -346,6 +350,10 @@ class DeploymentLastestHandler(BaseHandler):
 
             app_info = yield self.application_service.select(conds={'id': deployment_info['app_id']}, one=True)
             deployment_info['app_name'] = app_info['name']
+            deployment_info['replicas'] = 0
+            deployment_info['readyReplicas'] = 0
+            deployment_info['updatedReplicas'] = 0
+            deployment_info['availableReplicas'] = 0
 
             # 从k8s集群上报过来的yaml信息中解析出pod状态等信息
             verbose = deployment_info.pop('verbose', None)
