@@ -167,7 +167,7 @@ class ApplicationUpdateHandler(BaseHandler):
             if self.params.get('master_app', None) is not None:
                 param['master_app'] = self.params.get('master_app')
             else:
-                origin_app = yield self.application_service.select({'id': self.params.get('id')})
+                origin_app = yield self.application_service.select({'id': self.params.get('id')}, one=True)
                 param['master_app'] = origin_app['master_app']
             app_info = yield self.application_service.select(param, one=True)
             if app_info and app_info['id'] != self.params.get('id'):
