@@ -144,14 +144,17 @@ class ApplicationUpdateHandler(BaseHandler):
 
         @apiUse cidHeader
 
-        @apiParam {Number} id 项目id
+        @apiParam {Number} id 应用id
+        @apiParam {Number} master_app 主应用id
         @apiParam {String} name 应用名称
-        @apiParam {String} description 描述
-        @apiParam {String} repos_name 仓库名称
-        @apiParam {String} repos_ssh_url 应用在github的ssh地址
-        @apiParam {String} repos_https_url 应用在github的https地址
-        @apiParam {String} logo_url LOGO的url地址
-        @apiParam {[]Number} labels 标签ID(传递时注意保证ID是从小到大的顺序)
+        @apiParam {String} [description] 描述
+        @apiParam {String} [repos_name] 仓库名称
+        @apiParam {String} [repos_ssh_url] 应用在github的ssh地址
+        @apiParam {String} [repos_https_url] 应用在github的https地址
+        @apiParam {String} [logo_url] LOGO的url地址
+        @apiParam {[]Number} [labels] 标签ID(传递时注意保证ID是从小到大的顺序)
+
+        @apiDescription 主应用无需传递repos相关字段，子应用无需传递labels相关字段
 
         @apiUse Success
         """
@@ -161,6 +164,11 @@ class ApplicationUpdateHandler(BaseHandler):
             # 检查修改后名字是否会出现冲突
             param = self.get_lord()
             param['name'] = self.params.get('name')
+            if self.params.get('master_app', None) is not None:
+                param['master_app'] = self.params.get('master_app')
+            else:
+                origin_app = yield self.application_service.select({'id': self.params.get('id')})
+                param['master_app'] = origin_app['master_app']
             app_info = yield self.application_service.select(param, one=True)
             if app_info and app_info['id'] != self.params.get('id'):
                 self.log.info('Failed to update application[%s] because of duplicate name' % (self.params.get('id')))
@@ -170,10 +178,10 @@ class ApplicationUpdateHandler(BaseHandler):
             # 无冲突项，则更新应用信息
             sets = {
                 'name': self.params.get('name'),
-                'description': self.params.get('description'),
-                'repos_name': self.params.get('repos_name'),
-                'repos_ssh_url': self.params.get('repos_ssh_url'),
-                'repos_https_url': self.params.get('repos_https_url'),
+                'description': self.params.get('description', ''),
+                'repos_name': self.params.get('repos_name', ''),
+                'repos_ssh_url': self.params.get('repos_ssh_url', ''),
+                'repos_https_url': self.params.get('repos_https_url', ''),
                 'labels': ','.join(str(i) for i in self.params.pop('labels', []))
             }
             if self.params.get('logo_url', ''):
