@@ -127,7 +127,10 @@ class ApplicationDeleteHandler(BaseHandler):
         with catch(self):
             self.log.info('Delete the application, ID: %s' % (self.params.get('id')))
 
+            # 删除应用，同时删除子应用（如果存在的话）
             yield self.application_service.delete({'id': self.params.get('id')})
+            yield self.application_service.delete({'master_app': self.params.get('id')})
+
             self.log.info('Succeeded to delete the application, ID: %s' % (self.params.get('id')))
 
             self.success()
@@ -243,7 +246,7 @@ class ApplicationBriefHandler(BaseHandler):
             param['master_app'] = 0
 
             # 获取应用信息，如果未填写id的话则获取所有满足条件的应用
-            fields = "id, name, description, logo_url, lord, form"
+            fields = "id, name, description, labels, logo_url, lord, form"
             app_info = yield self.application_service.fetch_with_label(param, label, fields)
             app_info = yield self.filter(app_info, service=SERVICE['a'])
 
