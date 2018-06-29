@@ -38,7 +38,7 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
         @apiParam {String} [clusterIP] 集群IP
         @apiParam {String} [loadBalancerIP] 负载均衡器IP
         @apiParam {[]String} [externalIPs] 外部IP
-        @apiParam {[]{'name': String, 'protocol': String, 'port': Number, 'targetPort': Number}} ports 容器端口
+        @apiParam {[]{'name': String, 'protocol': String, 'port': Number, 'targetPort': Number}} ports 端口
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -98,18 +98,19 @@ class K8sServiceHandler(WebSocketBaseHandler):
         self.params.update(json.loads(message))
 
         try:
-            args = ['app_id', 'app_name', 'service_name', 'deployment_ids', 'yaml']
+            args = ['app_id', 'app_name', 'service_name', 'service_type', 'service_source', 'yaml']
             self.guarantee(*args)
-            validate_k8s_object_name(self.params['deployment_name'])
+            validate_k8s_object_name(self.params['service_name'])
 
             # 检查服务名称是否冲突
-            deployment_info = self.deployment_service.sync_select({'id': self.params['deployment_ids'][0]}, one=True)
-            server_id = deployment_info['server_id']
-            duplicate = self.deployment_service.sync_select({'server_id': server_id, 'name': self.params['service_name']})
+            duplicate = self.service_service.sync_select({'name': self.params['service_name'],
+                                                          'app_id': self.params['app_id']}, one=True)
             if duplicate:
                 raise ValueError('该集群内已有同名服务运行，请换用其他名称')
 
             # 获取需要部署的主机IP
+            app_info = self.application_service.sync_select({'id': self.params['app_id']}, one=True)
+            server_id = app_info['server_id'] if app_info else 0
             server_info = self.server_service.sync_select(conds={'id': server_id}, one=True)
             if not server_info:
                 raise ValueError('没有可用于部署的主机，请尝试其他集群')
@@ -134,6 +135,7 @@ class K8sServiceHandler(WebSocketBaseHandler):
                    'yaml': self.params['yaml'], 'log': json.dumps(log)}
             arg.update(self.get_lord())
             self.service_service.sync_add(arg)
+            # self.write_message('deployment ID:' + str(res.get('id', 0)))
 
             if err:
                 self.application_service.sync_update({'status': APPLICATION_STATE['abnormal']},
