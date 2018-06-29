@@ -77,7 +77,7 @@ def validate_k8s_object_name(name):
     regex = r'^[-.0-9a-z]{1,128}$'
     _validate(regex, name, '名称只能包含小写英文字母，数字，中划线，小数点，最长128个字符')
 
-    # 检查部署名称组成是否合法
+    # 检查k8s对象名称组成是否合法
     regex = r'^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
     _validate(regex, name, '名称只能包含小写英文字母，数字，中划线，小数点，最长128个字符')
 
