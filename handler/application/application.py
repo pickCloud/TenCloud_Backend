@@ -91,7 +91,7 @@ class ApplicationNewHandler(BaseHandler):
                 ingress_backend = yield self.application_service.add(ingress_param)
 
             # 给用户添加相应应用的权限
-            if self.params.get('form') == FORM_COMPANY:
+            if self.params.get('cid') == FORM_COMPANY:
                 param = {'uid': self.current_user['id'], 'cid': self.params.get('cid'), 'aid': new_app['id']}
                 yield self.user_access_application_service.add(param)
                 if 'new_subapp' in dir():
