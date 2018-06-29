@@ -13,7 +13,7 @@ from setting import settings
 from handler.user import user
 from constant import SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, OPERATE_STATUS, LABEL_TYPE, PROJECT_OPERATE_STATUS, \
                      RIGHT, SERVICE, FORM_COMPANY, FORM_PERSON, MSG_PAGE_NUM, APPLICATION_STATE, DEPLOYMENT_STATUS, \
-                     SERVICE_STATUS, DEPLOYMENT_TYPE, K8S_SERVICE_TYPE
+                     SERVICE_STATUS, DEPLOYMENT_TYPE, K8S_SERVICE_TYPE, SERVICE_SOURCE_TYPE
 
 
 class K8sServiceYamlGenerateHandler(BaseHandler):
@@ -29,14 +29,16 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
         @apiParam {String} service_name 服务名称
         @apiParam {String} app_name 应用名称
         @apiParam {Number} app_id 应用ID
-        @apiParam {Number} service_source 服务来源（1.内部服务，2.外部服务）
-        @apiParam {[]Number} deployment_ids 部署列表
-        @apiParam {[]String} deployment_names 部署列表
+        @apiParam {Dict} [labels] 服务标签
+        @apiParam {Number} service_source 服务来源（1.内部服务，通过标签选择，2.外部服务，通过IP映射，3.外部服务，通过别名映射）
+        @apiParam {Dict} [selector_label] 内部服务选择标签（当服务来源选择1内部服务时使用）
+        @apiParam {String} [externalIpMap] 外部服务IP（当服务来源选择2.外部服务，通过IP映射时使用）
+        @apiParam {String} [externalName] 外部服务别名（当服务来源选择3.外部服务，通过别名映射时使用）
         @apiParam {Number} service_type 服务类型（1.集群内访问，2.集群内外部可访问，3.负载均衡器）
-        @apiParam {String} clusterIP 集群IP
-        @apiParam {String} loadBalancerIP 负载均衡器IP
-        @apiParam {[]String} externalIPs 外部IP
-        @apiParam {[]{'name', 'protocol', 'port', 'targetPort', 'nodePort'}} ports 容器端口
+        @apiParam {String} [clusterIP] 集群IP
+        @apiParam {String} [loadBalancerIP] 负载均衡器IP
+        @apiParam {[]String} [externalIPs] 外部IP
+        @apiParam {[]{'name': String, 'protocol': String, 'port': Number, 'targetPort': Number}} ports 容器端口
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -47,8 +49,7 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
             }
         """
         with catch(self):
-            self.guarantee('app_id', 'app_name', 'service_name', 'service_source', 'service_type', 'deployment_ids',
-                           'deployment_names')
+            self.guarantee('app_id', 'app_name', 'service_name', 'service_source', 'service_type')
 
             service_name = self.params['app_name'] + "." + self.params['service_name']
 
@@ -63,16 +64,6 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
                                 }
                             },
                             'spec': {
-                                'selector': {
-                                    'matchLabels': {
-                                        'app_id': str(self.params['app_id'])
-                                    },
-                                    'matchExpressions': [
-                                        {'key': 'internal_name',
-                                         'operator': 'In',
-                                         'values': self.params['deployment_names']}
-                                    ]
-                                },
                                 'type': K8S_SERVICE_TYPE[self.params['service_type']]
                             }
             }
@@ -88,6 +79,15 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
 
             if self.params.get('loadBalancerIP'):
                 yaml_json['spec']['loadBalancerIP'] = self.params['loadBalancerIP']
+
+            source_type = self.params.get('service_source', 0)
+            if source_type == SERVICE_SOURCE_TYPE['by_label']:
+                self.guarantee('selector_label')
+                yaml_json['spec']['selector'] = self.params.get('selector_label', {})
+            elif source_type == SERVICE_SOURCE_TYPE['by_cname']:
+                self.guarantee('externalName')
+                yaml_json['spec']['type'] = 'ExternalName'
+                yaml_json['spec']['externalName'] = self.params.get('externalName', '')
 
             result = yaml.dump(yaml_json, default_flow_style=False)
             self.success(result)
