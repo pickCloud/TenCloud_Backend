@@ -32,8 +32,9 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
         @apiParam {Dict} [labels] 服务标签
         @apiParam {Number} service_source 服务来源（1.内部服务，通过标签选择，2.外部服务，通过IP映射，3.外部服务，通过别名映射）
         @apiParam {Dict} [selector_label] 内部服务选择标签（当服务来源选择1内部服务时使用）
-        @apiParam {String} [externalIpMap] 外部服务IP（当服务来源选择2.外部服务，通过IP映射时使用）
+        @apiParam {Dict{'ip': String, 'port': Number}} [externalIpMap] 外部服务IP（当服务来源选择2.外部服务，通过IP映射时使用）
         @apiParam {String} [externalName] 外部服务别名（当服务来源选择3.外部服务，通过别名映射时使用）
+        @apiParam {String} [Namespace] 外部服务命名空间（当服务来源选择3.外部服务，通过别名映射时使用）
         @apiParam {Number} service_type 服务类型（1.集群内访问，2.集群内外部可访问，3.负载均衡器）
         @apiParam {String} [clusterIP] 集群IP
         @apiParam {String} [loadBalancerIP] 负载均衡器IP
