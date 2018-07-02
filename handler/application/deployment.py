@@ -247,7 +247,19 @@ class DeploymentBriefHandler(BaseHandler):
                         "id": int,
                         "name": str,
                         "status": int,
-                        ...
+                        "app_id": int,
+                        "app_name": str,
+                        "type": int,
+                        "yaml": str,
+                        "server_id": int,
+                        "verbose": str,
+                        "log": str,
+                        "form": int,
+                        "lord": int,
+                        "replicas": int,
+                        "readyReplicas": int,
+                        "updatedReplicas": int,
+                        "availableReplicas": int,
                     },
                     ...
                 ]
@@ -481,3 +493,55 @@ class DeploymentPodSourceHandler(BaseHandler):
                     i['labels'] = verbose['metadata'].get('labels', [])
 
             self.success(pods)
+
+
+class ApplicationPodLabelsHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/application/pod_labels 应用的实例标签
+        @apiName ApplicationPodLabelsHandler
+        @apiGroup Application
+
+        @apiUse cidHeader
+
+        @apiParam {Number} app_id 主应用ID
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": [
+                    {
+                        "name": str,
+                        "id": int,
+                        "pod_num": int,
+                        "labels": [],               //标签
+                    },
+                    ...
+                ]
+            }
+        """
+        with catch(self):
+            self.guarantee('app_id')
+            result = []
+
+            sub_app_list = yield self.application_service.select({'master_app': self.params.get('app_id')})
+            for sub_app in sub_app_list:
+                sub_id = sub_app['id']
+                labels = []
+                pod_num = 0
+                deployment_list = yield self.deployment_service.select({'app_id': sub_id})
+                for each_deployment in deployment_list:
+                    verbose = each_deployment.get('verbose', None)
+                    if verbose:
+                        verbose = yaml.load(verbose)
+                        pod_num += verbose['spec'].get('replicas', 0)
+                        labels.append(verbose['spec']['template']['metadata'].get('labels', {}))
+
+                # 将每个子应用下面的标签整理在一起
+                result.append({'name': sub_app['name'], 'id': sub_id, 'pod_num': pod_num, 'labels': labels})
+
+            self.success(result)

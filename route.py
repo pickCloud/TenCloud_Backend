@@ -16,7 +16,8 @@ from handler.application.application import ApplicationNewHandler, ApplicationDe
 from handler.imagehub.image import ImageDetailHandler, ImageNewHandler
 from handler.application.deployment import K8sDeploymentHandler, K8sDeploymentNameCheckHandler, DeploymentBriefHandler, \
                                            K8sDeploymentYamlGenerateHandler, DeploymentReplicasSetSourceHandler, \
-                                           DeploymentPodSourceHandler, DeploymentLastestHandler
+                                           DeploymentPodSourceHandler, DeploymentLastestHandler, \
+                                           ApplicationPodLabelsHandler
 from handler.application.service import K8sServiceYamlGenerateHandler, ServiceBriefHandler, ServiceDetailHandler, \
                                         K8sServiceHandler
 from handler.label.label import LabelListHandler, LabelAddHandler, LabelDelHandler
@@ -143,6 +144,7 @@ routes = [
     (r'/api/application/brief', ApplicationBriefHandler),
     (r'/api/application/summary', ApplicationSummaryHandler),
     (r'/api/sub_application/brief', SubApplicationBriefHandler),
+    (r'/api/application/pod_lables', ApplicationPodLabelsHandler),
 
     # 标签相关
     (r'/api/label/new', LabelAddHandler),
