@@ -14,7 +14,7 @@ from setting import settings
 from handler.user import user
 from constant import SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, OPERATE_STATUS, LABEL_TYPE, PROJECT_OPERATE_STATUS, \
                      RIGHT, SERVICE, FORM_COMPANY, FORM_PERSON, MSG_PAGE_NUM, APPLICATION_STATE, DEPLOYMENT_STATUS, \
-                     SERVICE_STATUS, IMAGE_STATUS
+                     SERVICE_STATUS, IMAGE_STATUS, REPOS_DOMAIN
 
 
 class ApplicationNewHandler(BaseHandler):
@@ -388,6 +388,7 @@ class ImageCreationHandler(WebSocketBaseHandler):
             # 生成镜像数据
             log = {"out": out, "err": err}
             arg = {'name': self.params['image_name'], 'version': self.params['version'], 'app_id': self.params['app_id'],
+                   'url': REPOS_DOMAIN + '/' + self.params['app_name'] + '/' + self.params['image_name'] + ':' + self.params['version'],
                    'dockerfile': self.params['dockerfile'], 'log': json.dumps(log)}
             arg.update(self.get_lord())
             self.application_service.add_image_data(arg)
