@@ -26,7 +26,7 @@ SHELL_LOG="${BASE_DIR}/log/${SHELL_NAME}.log"
 
 # Docker
 IMAGE_REGISTRY=""
-REGISRTY="hub.10.com/library"
+REGISRTY="47.75.159.100:5000"
 
 log(){
     log_info=$1
@@ -117,7 +117,7 @@ main(){
     code_get;
     remove_old_image;
     code_build;
-#    image_push;
+    image_push;
     shell_unlock;
 }
 

@@ -98,7 +98,7 @@ MONITOR_CMD = 'curl -sSL {server_url}/supermonitor/install.sh | sh -s {server_ur
 UNINSTALL_CMD = 'curl -sSL {server_url}/supermonitor/uninstall.sh | sh '.format(server_url=SERVER_URL)
 CREATE_IMAGE_CMD = 'curl -sSL {server_url}/supermonitor/scripts/create-image.sh | sh -s '.format(server_url=SERVER_URL)
 IMAGE_INFO_CMD = 'docker images %s --format "{{.Tag}},{{.CreatedAt}}" | sed -n 1,3p'
-REPOS_DOMAIN = 'hub.10.com'
+REPOS_DOMAIN = '47.75.159.100:5000'
 DEPLOY_CMD = 'echo {password} | docker login {repository} -u {username} --password-stdin && docker pull {image_name} && docker run {portmap} -d --name {container_name} {image_name} '
 LIST_CONTAINERS_CMD = 'docker ps -a --format "{{.ID}},{{.Names}},{{.Status}},{{.CreatedAt}}"'
 CONTAINER_INFO_CMD = 'docker inspect --format "{{json .}}" %s'
