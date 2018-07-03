@@ -46,6 +46,7 @@ class K8sDeploymentHandler(WebSocketBaseHandler):
             server_info = self.server_service.sync_select(conds={'id': self.params['server_id']}, one=True)
             if not server_info:
                 raise ValueError('没有可用于部署的主机，请尝试其他集群')
+            self.application_service.sync_update({'server_id': self.params['server_id']}, {'id': self.params['app_id']})
 
             # 记录用户操作应用开始构建的动作
             log_params = {
