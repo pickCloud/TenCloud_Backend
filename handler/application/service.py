@@ -34,7 +34,7 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
         @apiParam {Dict} [selector_label] 内部服务选择标签（当服务来源选择1内部服务时使用）
         @apiParam {Dict{'ip': String, 'port': Number}} [externalIpMap] 外部服务IP（当服务来源选择2.外部服务，通过IP映射时使用）
         @apiParam {String} [externalName] 外部服务别名（当服务来源选择3.外部服务，通过别名映射时使用）
-        @apiParam {String} [Namespace] 外部服务命名空间（当服务来源选择3.外部服务，通过别名映射时使用）
+        @apiParam {String} [namespace] 外部服务命名空间（当服务来源选择3.外部服务，通过别名映射时使用）
         @apiParam {Number} service_type 服务类型（1.集群内访问，2.集群内外部可访问，3.负载均衡器）
         @apiParam {String} [clusterIP] 集群IP
         @apiParam {String} [loadBalancerIP] 负载均衡器IP
@@ -244,6 +244,7 @@ class ServiceDetailHandler(BaseHandler):
                         "type": int,
                         "state": int,
                         "source": int,
+                        "endpoint": dict,
                         "yaml": str,
                         "log": str,
                         "verbose": str,
@@ -283,5 +284,18 @@ class ServiceDetailHandler(BaseHandler):
                 # 去除一些查询列表时用不到的字段
                 if not show_log: i.pop('log', None)
                 if not show_yaml: i.pop('yaml', None)
+
+                # 获取endpoints信息
+                i['endpoint'] = {}
+                endpoint_info = yield self.endpoint_service.select({'service_id': i['id']}, one=True)
+                if endpoint_info:
+                    ep_verbose = yaml.load(endpoint_info['verbose']) if endpoint_info.get('verbose') else None
+                    if ep_verbose:
+                        i['endpoint'] = {'name': ep_verbose['metadata'].get('name', ''),
+                                         'subsets': ep_verbose.get('subsets', [])}
+
+                        for address in i['endpoint']['subsets']:
+                            for ip in address:
+                                ip = {'ip': ip.get('ip', '')}
 
             self.success(brief[page_num * (page - 1):page_num * page])

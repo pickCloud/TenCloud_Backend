@@ -220,6 +220,23 @@ class ServerReport(BaseHandler):
                         yield getattr(self, kv[member]).add({'name': obj_name, 'deployment_id': deployment_info['id'],
                                                              'verbose': yaml.dump(item, default_flow_style=False)})
 
+        # service下属资源: endpoints
+        kv = {'k8s_endpoint': 'endpoint_service'}
+        for member in kv.keys():
+            if params.get(member):
+                verbose = yaml.load(params[member])
+
+                for item in verbose.get('items', []):
+                    internal_name = item['metadata']['labels'].get('internal_name', '') if item['metadata'].get(
+                        'labels') else ''
+                    service_name = internal_name[internal_name.find('.') + 1:]
+                    service_info = yield self.service_service.select({'name': service_name}, one=True)
+                    obj_name = item['metadata']['name'][item['metadata']['name'].find('.') + 1:]
+
+                    if service_info:
+                        yield getattr(self, kv[member]).add({'name': obj_name, 'service_id': service_info['id'],
+                                                             'verbose': yaml.dump(item, default_flow_style=False)})
+
 class ServerDelHandler(BaseHandler):
     @require(RIGHT['delete_server'], service=SERVICE['s'])
     @coroutine

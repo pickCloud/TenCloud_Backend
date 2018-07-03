@@ -14,7 +14,7 @@ from setting import settings
 class ApplicationService(BaseService):
     table = 'application'
     fields = """
-                id, name, description, status, master_app, repos_name, 
+                id, name, description, status, master_app, server_id, repos_name, 
                 repos_ssh_url, repos_https_url, logo_url, labels,
                 image_id, lord, form
             """

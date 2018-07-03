@@ -91,6 +91,8 @@ type Stat struct {
 	K8sRS      string                 `json:"k8s_replicaset"`
 	K8sPod     string                 `json:"k8s_pod"`
 	K8sService string                 `json:"k8s_service"`
+	K8sEndpoint string                `json:"k8s_endpoint"`
+	K8sIngress string                 `json:"k8s_ingress"`
 }
 
 type IPInfo struct {
@@ -534,6 +536,18 @@ func (a *agent) postData() {
 		k8s_service = ""
 	}
 
+	k8s_endpoint, err := a.getK8sResourceInfo("endpoints")
+	if err != nil {
+		a.logger.Println(err)
+		k8s_endpoint = ""
+	}
+
+	k8s_ingress, err := a.getK8sResourceInfo("ingress")
+	if err != nil {
+		a.logger.Println(err)
+		k8s_ingress = ""
+	}
+
 	stat := &Stat{
 		IP:         ip,
 		Time:       time.Now().Unix(),
@@ -548,6 +562,8 @@ func (a *agent) postData() {
 		K8sRS:      k8s_replicaset,
 		K8sPod:     k8s_pod,
 		K8sService: k8s_service,
+		K8sEndpoint:k8s_endpoint,
+		K8sIngress: k8s_ingress,
 	}
 	b, err := json.Marshal(stat)
 	if err != nil {
