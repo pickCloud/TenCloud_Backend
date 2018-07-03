@@ -131,7 +131,7 @@ class K8sServiceHandler(WebSocketBaseHandler):
             # 生成部署数据
             log = {"out": out, "err": err}
             arg = {'name': self.params['service_name'], 'app_id': self.params['app_id'],
-                   'type': K8S_SERVICE_TYPE[int(self.params.get('type', K8S_SERVICE_TYPE.index('ClusterIP')))],
+                   'type': int(self.params.get('service_type', K8S_SERVICE_TYPE.index('ClusterIP'))),
                    'state': SERVICE_STATUS['failure'] if err else SERVICE_STATUS['success'],
                    'yaml': self.params['yaml'], 'log': json.dumps(log)}
             arg.update(self.get_lord())
