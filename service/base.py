@@ -373,6 +373,18 @@ class BaseService():
         index = self.sync_db_execute(sql, values + values)
         return index
 
+    def sync_delete(self, conds=None):
+        '''
+        :param conds:  dict 同select 必需的
+        '''
+        conds, params = self.make_pair(conds)
+
+        sql = " DELETE FROM {table} ".format(table=self.table)
+
+        sql += ' WHERE ' + ' AND '.join(conds)
+
+        self.sync_db_execute(sql, params)
+
 
     @coroutine
     def fetch_with_label(self, params=None, label=None, fields=None, table=None):
