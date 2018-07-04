@@ -154,6 +154,41 @@ class K8sServiceHandler(WebSocketBaseHandler):
         finally:
             self.close()
 
+class ServiceDeleteHandler(BaseHandler):
+    @is_login
+    def post(self):
+        """
+        @api {post} /api/service/delete 删除服务
+        @apiName ServiceDeleteHandler
+        @apiGroup Service
+
+        @apiUse cidHeader
+
+        @apiParam {Number} service_id 服务ID
+        @apiParam {Number} app_id 应用ID
+
+        @apiUse Success
+        """
+        with catch(self):
+            self.guarantee('service_id')
+
+            param = self.get_lord()
+            param['id'] = self.params['service_id']
+            service_info = yield self.service_service.select(conds=param, one=True)
+            service_name = service_info.get('name', '') if service_info else None
+            param['id'] = self.params['app_id']
+            app_info = yield self.application_service.select(conds=param, one=True)
+
+            if service_name and app_info:
+                ssh_info = yield self.application_service.fetch_ssh_login_info({'server_id': app_info['server_id']})
+
+                ssh_info['cmd'] = 'kubectl delete service ' + service_info
+                yield self.service_service.remote_ssh(ssh_info)
+                yield self.service_service.delete({'id': self.params['service_id']})
+                self.success()
+            else:
+                self.error()
+
 
 class ServiceBriefHandler(BaseHandler):
     @is_login
