@@ -156,6 +156,7 @@ class K8sServiceHandler(WebSocketBaseHandler):
 
 class ServiceDeleteHandler(BaseHandler):
     @is_login
+    @coroutine
     def post(self):
         """
         @api {post} /api/service/delete 删除服务
