@@ -136,7 +136,7 @@ class K8sServiceHandler(WebSocketBaseHandler):
                    'yaml': self.params['yaml'], 'log': json.dumps(log)}
             arg.update(self.get_lord())
             index = self.service_service.sync_add(arg)
-            self.write_message('service ID:' + index)
+            self.write_message('service ID:' + str(index))
 
             if err:
                 self.application_service.sync_update({'status': APPLICATION_STATE['abnormal']},
