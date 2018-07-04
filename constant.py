@@ -110,6 +110,7 @@ LOAD_IMAGE = """|tail -1|cut -d ' ' -f 3|awk '{b="docker tag "$0" hub.10.com/lib
 
 CLOUD_DOWNLOAD_IMAGE = 'wget -b -c --tries=3 --directory-prefix={store_path} {image_url}'
 K8S_APPLY_CMD = 'kubectl apply -f {server_url}/yaml/'.format(server_url=SERVER_URL)
+K8S_DELETE_CMD = 'kubectl delete '
 
 #################################################################################################
 # 阿里云相关

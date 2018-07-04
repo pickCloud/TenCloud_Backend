@@ -95,6 +95,15 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
 
 
 class K8sServiceHandler(WebSocketBaseHandler):
+    def delete_service(self, params, out_func=None):
+        param = params
+        param['obj_type'] = 'service'
+        service_info = self.service_service.sync_select({'id': params['service_id']}, one=True)
+        param['obj_name'] = service_info['name']
+        out, err = self.k8s_delete(param, out_func)
+        self.service_service.sync_delete({'id': params['service_id']})
+        return out, err
+
     def on_message(self, message):
         self.params.update(json.loads(message))
 
@@ -107,7 +116,8 @@ class K8sServiceHandler(WebSocketBaseHandler):
             duplicate = self.service_service.sync_select({'name': self.params['service_name'],
                                                           'app_id': self.params['app_id']}, one=True)
             if duplicate:
-                raise ValueError('该集群内已有同名服务运行，请换用其他名称')
+                if duplicate['id'] != self.params.get('service_id', 0):
+                    raise ValueError('该集群内已有同名服务运行，请换用其他名称')
 
             # 获取需要部署的主机IP
             app_info = self.application_service.sync_select({'id': self.params['app_id']}, one=True)
@@ -126,6 +136,9 @@ class K8sServiceHandler(WebSocketBaseHandler):
             # 获取集群master的信息并进行部署
             login_info = self.application_service.sync_fetch_ssh_login_info({'public_ip': server_info['public_ip']})
             login_info.update({'filename': filename})
+            if self.params.get('service_id'):
+                login_info['service_id'] = self.params.get('service_id')
+                self.delete_service(params=login_info, out_func=self.write_message)
             out, err = self.k8s_apply(params=login_info, out_func=self.write_message)
 
             # 生成部署数据
@@ -135,6 +148,8 @@ class K8sServiceHandler(WebSocketBaseHandler):
                    'state': SERVICE_STATUS['failure'] if err else SERVICE_STATUS['success'],
                    'yaml': self.params['yaml'], 'log': json.dumps(log)}
             arg.update(self.get_lord())
+            if self.params.get('service_id'):
+                arg['id'] = self.params.get('service_id')
             index = self.service_service.sync_add(arg)
             self.write_message('service ID:' + str(index))
 
