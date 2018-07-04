@@ -182,7 +182,7 @@ class ServiceDeleteHandler(BaseHandler):
             if service_name and app_info:
                 ssh_info = yield self.application_service.fetch_ssh_login_info({'server_id': app_info['server_id']})
 
-                ssh_info['cmd'] = 'kubectl delete service ' + service_info
+                ssh_info['cmd'] = 'kubectl delete service ' + service_name
                 yield self.service_service.remote_ssh(ssh_info)
                 yield self.service_service.delete({'id': self.params['service_id']})
                 self.success()
