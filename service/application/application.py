@@ -18,6 +18,25 @@ class ApplicationService(BaseService):
                 repos_ssh_url, repos_https_url, logo_url, labels,
                 image_id, lord, form
             """
+    @coroutine
+    def fetch_ssh_login_info(self, params):
+        sql = "SELECT s.public_ip, sa.username, sa.passwd FROM server s JOIN server_account sa USING(public_ip) WHERE "
+        conds, data = [], []
+        if params.get('server_id'):
+            conds.append('s.id=%s')
+            data.append(params['server_id'])
+
+        if params.get('public_ip'):
+            conds.append('s.public_ip=%s')
+            data.append(params['public_ip'])
+
+        sql += ' AND '.join(conds)
+
+        cur = yield self.db.execute(sql, data)
+        res = cur.fetchone()
+        res['passwd'] = Aes.decrypt(res['passwd'])
+
+        return res
 
     def sync_fetch_ssh_login_info(self, params):
         sql = "SELECT s.public_ip, sa.username, sa.passwd FROM server s JOIN server_account sa USING(public_ip) WHERE "

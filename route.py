@@ -19,7 +19,7 @@ from handler.application.deployment import K8sDeploymentHandler, K8sDeploymentNa
                                            DeploymentPodSourceHandler, DeploymentLastestHandler, \
                                            ApplicationPodLabelsHandler
 from handler.application.service import K8sServiceYamlGenerateHandler, ServiceBriefHandler, ServiceDetailHandler, \
-                                        K8sServiceHandler
+                                        K8sServiceHandler, ServiceDeleteHandler
 from handler.label.label import LabelListHandler, LabelAddHandler, LabelDelHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
@@ -132,6 +132,7 @@ routes = [
     (r'/api/service/brief', ServiceBriefHandler),
     (r'/api/service/detail', ServiceDetailHandler),
     (r'/api/k8s_service', K8sServiceHandler),
+    (r'/api/service/delete', ServiceDeleteHandler),
 
     # 镜像相关
     (r'/api/image', ImageDetailHandler),
