@@ -240,16 +240,20 @@ class ServiceDetailHandler(BaseHandler):
                     {
                         "id": int,
                         "name": str,
-                        "app_id": int,
-                        "type": int,
-                        "state": int,
-                        "source": int,
-                        "endpoint": dict,
-                        "yaml": str,
-                        "log": str,
-                        "verbose": str,
+                        "app_id": int,      //应用ID
+                        "type": int,        //服务类型（1.集群内访问，2.集群内外部可访问，3.负载均衡器）
+                        "state": int,       //状态
+                        "labels": dict,     //服务标签
+                        "source": int,      //服务来源（1.内部服务，通过标签选择，2.外部服务，通过IP映射，3.外部服务，通过别名映射）
+                        "access": list,     //访问服务
+                        "endpoint": dict,   //服务后端
+                        "yaml": str,        //服务定义
+                        "log": str,         //日志
+                        "verbose": str,     //服务内部数据
                         "form": int,
-                        "lord": int
+                        "lord": int,
+                        "create_time": str,
+                        "update_time"" str
                     },
                     ...
                 ]
@@ -280,6 +284,15 @@ class ServiceDetailHandler(BaseHandler):
                     i['externalIPs'] = verbose['spec'].get('externalIPs', '')
                     i['loadBalancerIP'] = verbose['spec'].get('loadBalancerIP', '')
                     i['ports'] = verbose['spec'].get('ports', '')
+                    i['labels'] = verbose['metadata'].get('labels', {})
+
+                    if verbose['spec'].get('type', '') == 'ClusterIP':
+                        clusterIP = verbose['spec'].get('clusterIP', '')
+                        i['access'] = [clusterIP+':'+str(item.get('port', '')) for item in verbose['spec'].get('ports', [])]
+                    elif verbose['spec'].get('type', '') == 'NodePort':
+                        pass
+                    elif verbose['spec'].get('type', '') == 'LoadBalancer':
+                        pass
 
                 # 去除一些查询列表时用不到的字段
                 if not show_log: i.pop('log', None)
@@ -295,7 +308,6 @@ class ServiceDetailHandler(BaseHandler):
                                          'subsets': ep_verbose.get('subsets', [])}
 
                         for address in i['endpoint']['subsets']:
-                            for ip in address:
-                                ip = {'ip': ip.get('ip', '')}
+                            address['addresses'] = [{'ip': ip.get('ip', '')} for ip in address['addresses']]
 
             self.success(brief[page_num * (page - 1):page_num * page])
