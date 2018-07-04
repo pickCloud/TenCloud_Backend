@@ -370,7 +370,8 @@ class BaseService():
               """.format(table=self.table, fields=fields, formats=get_formats(values))
         sql += ',' + ','.join(sets)
 
-        self.sync_db_execute(sql, values + values)
+        index = self.sync_db_execute(sql, values + values)
+        return index
 
 
     @coroutine
