@@ -19,7 +19,8 @@ from handler.application.deployment import K8sDeploymentHandler, K8sDeploymentNa
                                            DeploymentPodSourceHandler, DeploymentLastestHandler, \
                                            ApplicationPodLabelsHandler
 from handler.application.service import K8sServiceYamlGenerateHandler, ServiceBriefHandler, ServiceDetailHandler, \
-                                        K8sServiceHandler, ServiceDeleteHandler, IngressInfolHandler
+                                        K8sServiceHandler, ServiceDeleteHandler, IngressInfolHandler, \
+                                        IngressConfigHandler
 from handler.label.label import LabelListHandler, LabelAddHandler, LabelDelHandler
 from handler.project.project import ProjectHandler, ProjectNewHandler, ProjectDelHandler, \
     ProjectDetailHandler, ProjectUpdateHandler, ProjectDeploymentHandler, \
@@ -134,6 +135,7 @@ routes = [
     (r'/api/k8s_service', K8sServiceHandler),
     (r'/api/service/delete', ServiceDeleteHandler),
     (r'/api/ingress/info', IngressInfolHandler),
+    (r'/api/ingress/config', IngressConfigHandler),
 
     # 镜像相关
     (r'/api/image', ImageDetailHandler),

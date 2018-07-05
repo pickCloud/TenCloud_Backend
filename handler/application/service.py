@@ -13,7 +13,7 @@ from setting import settings
 from handler.user import user
 from constant import SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, OPERATE_STATUS, LABEL_TYPE, PROJECT_OPERATE_STATUS, \
                      RIGHT, SERVICE, FORM_COMPANY, FORM_PERSON, MSG_PAGE_NUM, APPLICATION_STATE, DEPLOYMENT_STATUS, \
-                     SERVICE_STATUS, DEPLOYMENT_TYPE, K8S_SERVICE_TYPE, SERVICE_SOURCE_TYPE
+                     SERVICE_STATUS, DEPLOYMENT_TYPE, K8S_SERVICE_TYPE, SERVICE_SOURCE_TYPE, K8S_APPLY_CMD
 
 
 class K8sServiceYamlGenerateHandler(BaseHandler):
@@ -428,3 +428,78 @@ class IngressInfolHandler(BaseHandler):
                                                   'app_id': ingress_controller['id'] if ingress_controller else 0}
 
             self.success(ingress_info)
+
+
+class IngressConfigHandler(BaseHandler):
+    def save_yaml(self, app_name, obj_name, obj_type, yaml):
+        full_path = os.path.join('/var/www/Dashboard/static', 'yaml')
+        if not os.path.exists(full_path): os.makedirs(full_path)
+
+        filename = app_name + "." + obj_name + "." + obj_type + ".yaml"
+        fullname = os.path.join(full_path, filename)
+
+        with open(fullname, 'wb') as f:
+            f.write(yaml.encode())
+
+        return filename
+
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/ingress/config 配置ingress规则
+        @apiName IngressConfigHandler
+        @apiGroup Service
+
+        @apiUse cidHeader
+
+        @apiParam {Number} app_id 应用ID
+        @apiParam {[]{'host': str, 'paths': []{'serviceName': str, 'servicePort': int, 'path': str}}} rules 规则
+
+        @apiUse Success
+        """
+        with catch(self):
+            self.guarantee('app_id', 'rules')
+
+            ingress_name = 'ingress-' + str(self.params['app_id'])
+            app_info = yield self.application_service.select({'id': self.params['app_id']}, one=True)
+            app_name = app_info.get('name', 'default') if app_info else 'default'
+            internal_name = app_name + '.' + ingress_name
+
+            yaml_json = {
+                'apiVersion': 'v1',
+                'kind': 'Ingress',
+                'metadata': {
+                    'name': ingress_name,
+                    'labels': {
+                        'internal_name': internal_name,
+                        'app_id': str(self.params['app_id'])
+                    }
+                },
+                'spec': {
+                    'rules': []
+                }
+            }
+
+            for rule in self.params.get('rules', []):
+                rule_item = {'host': rule.get('host', ''), 'http': {'paths': [{'path': path.get('path', '/'),
+                                                                               'backend': {'serviceName': path.get(
+                                                                                   'serviceName', ''),
+                                                                                           'servicePort': path.get(
+                                                                                               'servicePort', 0)}} for
+                                                                              path in rule.get('paths', [])]}}
+                yaml_json['spec']['rules'].append(rule_item)
+
+            ingress_yaml = yaml.dump(yaml_json, default_flow_style=False)
+            # 生成yaml文件并归档到服务器yaml目录下
+            filename = self.save_yaml(app_name, ingress_name, 'ingress', ingress_yaml)
+
+            ssh_info = yield self.application_service.fetch_ssh_login_info({'server_id': app_info['server_id']})
+            ssh_info['cmd'] = K8S_APPLY_CMD + filename
+
+            _, err = yield self.service_service.remote_ssh(ssh_info)
+
+            if err:
+                self.error()
+            else:
+                self.success()
