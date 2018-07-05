@@ -188,7 +188,8 @@ class ServerReport(BaseHandler):
     @coroutine
     def update_k8s_resource(self, params):
         kv = {'k8s_deployment': 'deployment_service',
-              'k8s_service': 'service_service'}
+              'k8s_service': 'service_service',
+              'k8s_ingress': 'ingress_service'}
 
         for member in kv.keys():
             if params.get(member):

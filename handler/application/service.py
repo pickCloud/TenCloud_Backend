@@ -362,3 +362,69 @@ class ServiceDetailHandler(BaseHandler):
                             address['addresses'] = [{'ip': ip.get('ip', '')} for ip in address['addresses']]
 
             self.success(brief[page_num * (page - 1):page_num * page])
+
+
+class IngressInfolHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/ingress/info Ingress信息
+        @apiName IngressInfolHandler
+        @apiGroup Service
+
+        @apiUse cidHeader
+
+        @apiParam {Number} app_id 应用ID
+        @apiParam {Number} [show_detail] 是否查询默认后端、控制器等详情(0.否 1.是)
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": {
+                    "id": int,
+                    "name": str,
+                    "app_id": int,      //应用ID
+                    "ip": str,          //Ingress IP地址
+                    "rules": []{'host': str, 'paths': []{'serviceName': str, 'servicePort': int, 'path': str}}, //访问规则
+                    "backend": {'serviceName': str, 'servicePort': int, 'app_name': str, 'app_id': int},    //默认后端
+                    "controller": {'serviceName': str, 'servicePort': int, 'app_name': str, 'app_id': int}, //控制器
+                    "form": int,
+                    "lord": int,
+                    "create_time": str,
+                    "update_time"" str
+                }
+            }
+        """
+        with catch(self):
+            self.guarantee('app_id')
+
+            ingress_info = yield self.ingress_service.select({'app_id': self.params['app_id']}, one=True)
+            verbose = ingress_info.pop('verbose', None)
+            verbose = yaml.load(verbose) if verbose else None
+            if verbose:
+                ingress_info['ip'] = ''
+                ingress_info['rules'] = [{'host': rule.get('host', ''),
+                                          'paths': [{'path': path.get('path', '/'),
+                                                     'serviceName': path.get('backend', {}).get('serviceName', ''),
+                                                     'servicePort': path.get('backend', {}).get('servicePort', 0)}
+                                                    for path in rule.get('http', {}).get('paths', [])]}
+                                         for rule in verbose['spec'].get('rules', [])]
+                if self.params.get('show_detail'):
+                    ingress_backend = yield self.application_service.select({'master_app': self.params['app_id'],
+                                                                             'name': 'Ingress-default-backend'},
+                                                                            one=True)
+                    ingress_info['backend'] = {'serviceName': 'ingress-default-backend', 'servicePort': 80,
+                                               'app_name': 'Ingress-default-backend',
+                                               'app_id': ingress_backend['id'] if ingress_backend else 0}
+
+                    ingress_controller = yield self.application_service.select({'master_app': self.params['app_id'],
+                                                                                'name': 'Nginx-ingress-controller'},
+                                                                               one=True)
+                    ingress_info['controller'] = {'serviceName': 'nginx-ingress-controller', 'servicePort': 80,
+                                                  'app_name': 'Nginx-ingress-controller',
+                                                  'app_id': ingress_controller['id'] if ingress_controller else 0}
+
+            self.success(ingress_info)
