@@ -13,3 +13,8 @@ class EndpointService(BaseService):
     fields = """
                 id, name, service_id, verbose
             """
+
+
+class IngressService(BaseService):
+    table = 'ingress'
+    fields = "id, name, app_id, verbose"
