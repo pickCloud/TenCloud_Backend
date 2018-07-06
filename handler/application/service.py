@@ -525,6 +525,10 @@ class IngressConfigHandler(BaseHandler):
                     'labels': {
                         'internal_name': internal_name,
                         'app_id': str(self.params['app_id'])
+                    },
+                    'annotations': {
+                        'nginx.ingress.kubernetes.io/add-base-url': 'true',
+                        'nginx.ingress.kubernetes.io/rewrite-target': '/'
                     }
                 },
                 'spec': {
