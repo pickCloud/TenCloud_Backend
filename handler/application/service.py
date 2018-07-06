@@ -260,6 +260,57 @@ class ServiceBriefHandler(BaseHandler):
 
             self.success(brief[page_num * (page - 1):page_num * page])
 
+
+class ServicePortListHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/service/service_port 服务端口信息
+        @apiName ServicePortListHandler
+        @apiGroup Service
+
+        @apiUse cidHeader
+
+        @apiParam {Number} app_id 应用ID
+
+        @apiDescription 样例: /api/service/service_port?app_id=\d
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 200 OK
+            {
+                "status": 0,
+                "msg": "success",
+                "data": [
+                    {
+                        "name": str,
+                        "port": int,           // 端口号
+                    },
+                    ...
+                ]
+            }
+        """
+        with catch(self):
+            self.guarantee('app_id')
+
+            param = self.get_lord()
+            param['app_id'] = int(self.params.get('app_id'))
+
+            fields = "id, name, app_id, type, source, state, verbose"
+            service_info = yield self.service_service.select(conds=param, fields=fields)
+            service_port = []
+
+            for svc in service_info:
+                verbose = svc.get('verbose', None)
+                verbose = yaml.load(verbose) if verbose else None
+                if verbose:
+                    ports = verbose['spec'].get('ports', [])
+                    for port in ports:
+                        service_port.append({'name': svc.get('name', ''), 'port': port.get('port', 0)})
+
+            self.success(service_port)
+
+
 class ServiceDetailHandler(BaseHandler):
     @is_login
     @coroutine
@@ -402,7 +453,7 @@ class IngressInfolHandler(BaseHandler):
             self.guarantee('app_id')
 
             ingress_info = yield self.ingress_service.select({'app_id': self.params['app_id']}, one=True)
-            verbose = ingress_info.pop('verbose', None)
+            verbose = ingress_info.pop('verbose', None) if ingress_info else None
             verbose = yaml.load(verbose) if verbose else None
             if verbose:
                 ingress_info['ip'] = ''
