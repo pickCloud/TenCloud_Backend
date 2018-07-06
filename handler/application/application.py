@@ -436,7 +436,7 @@ class ImageCreationHandler(WebSocketBaseHandler):
             raise ValueError('请输入Dockerfile内容')
 
         #full_path = os.path.join(os.environ['HOME'], 'dockerfile')
-        full_path = os.path.join('/root', 'dockerfile')
+        full_path = os.path.join('/root/build', 'dockerfile')
         if not os.path.exists(full_path): os.makedirs(full_path)
 
         filename = os.path.join(full_path, app_name+"_"+image_name+".dockerfile")
