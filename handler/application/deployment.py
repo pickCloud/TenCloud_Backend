@@ -46,7 +46,7 @@ class K8sDeploymentHandler(WebSocketBaseHandler):
             server_info = self.server_service.sync_select(conds={'id': self.params['server_id']}, one=True)
             if not server_info:
                 raise ValueError('没有可用于部署的主机，请尝试其他集群')
-            app_info = self.application_service.sync_select({'id': self.params['app_id']})
+            app_info = self.application_service.sync_select({'id': self.params['app_id']}, one=True)
             self.application_service.sync_update({'server_id': self.params['server_id']},
                                                  {'id': app_info.get('master_app', 0) if app_info else 0})
 
