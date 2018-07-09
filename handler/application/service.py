@@ -540,8 +540,8 @@ class IngressConfigHandler(BaseHandler):
                 rule_item = {'host': rule.get('host', ''), 'http': {'paths': [{'path': path.get('path', '/'),
                                                                                'backend': {'serviceName': path.get(
                                                                                    'serviceName', ''),
-                                                                                           'servicePort': path.get(
-                                                                                               'servicePort', 0)}} for
+                                                                                           'servicePort': int(path.get(
+                                                                                               'servicePort', 0))}} for
                                                                               path in rule.get('paths', [])]}}
                 yaml_json['spec']['rules'].append(rule_item)
 
