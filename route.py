@@ -149,7 +149,7 @@ routes = [
     (r'/api/application/brief', ApplicationBriefHandler),
     (r'/api/application/summary', ApplicationSummaryHandler),
     (r'/api/sub_application/brief', SubApplicationBriefHandler),
-    (r'/api/application/pod_lables', ApplicationPodLabelsHandler),
+    (r'/api/application/pod_labels', ApplicationPodLabelsHandler),
 
     # 标签相关
     (r'/api/label/new', LabelAddHandler),
