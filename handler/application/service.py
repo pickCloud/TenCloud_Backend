@@ -518,7 +518,7 @@ class IngressConfigHandler(BaseHandler):
             internal_name = app_name + '.' + ingress_name
 
             yaml_json = {
-                'apiVersion': 'v1',
+                'apiVersion': 'extensions/v1beta1',
                 'kind': 'Ingress',
                 'metadata': {
                     'name': ingress_name,
