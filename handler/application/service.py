@@ -557,4 +557,5 @@ class IngressConfigHandler(BaseHandler):
             if err:
                 self.error()
             else:
-                self.success()
+                ingress_info = yield self.ingress_service.add({'name': ingress_name, 'app_id': self.params['app_id']})
+                self.success(ingress_info)
