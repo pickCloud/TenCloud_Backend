@@ -421,15 +421,17 @@ class DeploymentDeleteHandler(BaseHandler):
 
             param = self.get_lord()
             param['id'] = self.params['deployment_id']
-            deployment_info = yield self.service_service.select(conds=param, one=True)
+            deployment_info = yield self.deployment_service.select(conds=param, one=True)
             deployment_name = deployment_info.get('name', '') if deployment_info else None
-            param['id'] = self.params['app_id']
-            app_info = yield self.application_service.select(conds=param, one=True)
+            server_id = deployment_info.get('server_id', 0) if deployment_info else 0
 
-            if deployment_name and app_info:
-                ssh_info = yield self.application_service.fetch_ssh_login_info({'server_id': app_info['server_id']})
+            if deployment_name and server_id:
+                ssh_info = yield self.application_service.fetch_ssh_login_info({'server_id': server_id})
 
-                ssh_info['cmd'] = 'kubectl delete deployment ' + deployment_name
+                app_info = yield self.application_service.select({'id': self.params.get('app_id', 0)}, one=True)
+                full_name = app_info.get('name') + '.' + deployment_name if app_info else deployment_name
+
+                ssh_info['cmd'] = 'kubectl delete deployment ' + full_name
                 yield self.deployment_service.remote_ssh(ssh_info)
                 yield self.deployment_service.delete({'id': self.params['deployment_id']})
                 self.success()
