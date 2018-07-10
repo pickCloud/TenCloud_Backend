@@ -18,7 +18,6 @@ from constant import SUCCESS, FAILURE, OPERATION_OBJECT_STYPE, OPERATE_STATUS, L
 
 class K8sDeploymentHandler(WebSocketBaseHandler):
 
-
     @coroutine
     def init_operation_log(self, log_params):
         yield self.server_operation_service.add(params={
@@ -29,6 +28,15 @@ class K8sDeploymentHandler(WebSocketBaseHandler):
             'operation_status': OPERATE_STATUS['processing'],
         })
 
+    def delete_deployment(self, params, out_func=None):
+        param = params
+        param['obj_type'] = 'deployment'
+        obj_info = self.deployment_service.sync_select({'id': params['deployment_id']}, one=True)
+        param['obj_name'] = param.get('app_name', '') + '.' + obj_info['name']
+        out, err = self.k8s_delete(param, out_func)
+        self.deployment_service.sync_delete({'id': params['deployment_id']})
+        return out, err
+
     def on_message(self, message):
         self.params.update(json.loads(message))
 
@@ -38,9 +46,11 @@ class K8sDeploymentHandler(WebSocketBaseHandler):
             validate_k8s_object_name(self.params['deployment_name'])
 
             # 检查部署名称是否冲突
-            duplicate = self.deployment_service.sync_select({'server_id': self.params['server_id'], 'name': self.params['deployment_name']})
+            duplicate = self.deployment_service.sync_select({'app_id': self.params['app_id'],
+                                                             'name': self.params['deployment_name']}, one=True)
             if duplicate:
-                raise ValueError('该部署名称已被使用，请换用其他名称')
+                if duplicate['id'] != self.params.get('deployment_id', 0):
+                    raise ValueError('已有同名部署运行，请换用其他名称')
 
             # 获取需要部署的主机IP
             server_info = self.server_service.sync_select(conds={'id': self.params['server_id']}, one=True)
@@ -64,6 +74,10 @@ class K8sDeploymentHandler(WebSocketBaseHandler):
             # 获取集群master的信息并进行部署
             login_info = self.application_service.sync_fetch_ssh_login_info({'public_ip': server_info['public_ip']})
             login_info.update({'filename': filename})
+            if self.params.get('deployment_id') and duplicate.get('name', '') != self.params['deployment_name']:
+                login_info['deployment_id'] = self.params.get('deployment_id')
+                login_info['app_name'] = self.params['app_name']
+                self.delete_deployment(params=login_info, out_func=self.write_message)
             out, err = self.k8s_apply(params=login_info, out_func=self.write_message)
 
             # 生成部署数据
@@ -384,6 +398,44 @@ class DeploymentLastestHandler(BaseHandler):
             if not show_yaml: deployment_info.pop('yaml', None)
 
             self.success(deployment_info)
+
+
+class DeploymentDeleteHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/deployment/delete 删除部署
+        @apiName DeploymentDeleteHandler
+        @apiGroup Deployment
+
+        @apiUse cidHeader
+
+        @apiParam {Number} deployment_id 服务ID
+        @apiParam {Number} app_id 应用ID
+
+        @apiUse Success
+        """
+        with catch(self):
+            self.guarantee('deployment_id')
+
+            param = self.get_lord()
+            param['id'] = self.params['deployment_id']
+            deployment_info = yield self.service_service.select(conds=param, one=True)
+            deployment_name = deployment_info.get('name', '') if deployment_info else None
+            param['id'] = self.params['app_id']
+            app_info = yield self.application_service.select(conds=param, one=True)
+
+            if deployment_name and app_info:
+                ssh_info = yield self.application_service.fetch_ssh_login_info({'server_id': app_info['server_id']})
+
+                ssh_info['cmd'] = 'kubectl delete deployment ' + deployment_name
+                yield self.deployment_service.remote_ssh(ssh_info)
+                yield self.deployment_service.delete({'id': self.params['deployment_id']})
+                self.success()
+            else:
+                self.error()
+
 
 class DeploymentReplicasSetSourceHandler(BaseHandler):
     @is_login

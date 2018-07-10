@@ -14,7 +14,7 @@ class DeploymentService(BaseService):
     def add_deployment(self, params):
         sql = """
                 INSERT INTO deployment (name, status, app_id, type, yaml, server_id, log, form, lord) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) 
-                ON DUPLICATE key UPDATE status=%s, update_time=NOW(), yaml=%s, server_id=%s, verbose=%s
+                ON DUPLICATE key UPDATE status=%s, update_time=NOW(), yaml=%s, server_id=%s, log=%s
               """
         arg = [params['name'], params['status'],  params['app_id'], params['type'], params['yaml'], params['server_id'],
                params['log'], params['form'], params['lord'], params['status'], params['yaml'], params['server_id'],

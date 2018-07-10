@@ -17,7 +17,7 @@ from handler.imagehub.image import ImageDetailHandler, ImageNewHandler
 from handler.application.deployment import K8sDeploymentHandler, K8sDeploymentNameCheckHandler, DeploymentBriefHandler, \
                                            K8sDeploymentYamlGenerateHandler, DeploymentReplicasSetSourceHandler, \
                                            DeploymentPodSourceHandler, DeploymentLastestHandler, \
-                                           ApplicationPodLabelsHandler
+                                           ApplicationPodLabelsHandler, DeploymentDeleteHandler
 from handler.application.service import K8sServiceYamlGenerateHandler, ServiceBriefHandler, ServiceDetailHandler, \
                                         K8sServiceHandler, ServiceDeleteHandler, IngressInfolHandler, \
                                         IngressConfigHandler, ServicePortListHandler
@@ -127,6 +127,7 @@ routes = [
     (r'/api/deployment/latest', DeploymentLastestHandler),
     (r'/api/deployment/replicas', DeploymentReplicasSetSourceHandler),
     (r'/api/deployment/pods', DeploymentPodSourceHandler),
+    (r'/api/deployment/delete', DeploymentDeleteHandler),
 
     # service相关
     (r'/api/service/generate', K8sServiceYamlGenerateHandler),
