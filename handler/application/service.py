@@ -378,6 +378,9 @@ class ServiceDetailHandler(BaseHandler):
             brief = yield self.service_service.select(conds=param)
 
             for i in brief:
+                app_info = yield self.application_service.select({'id': i.get('app_id', 0)}, one=True)
+                i['app_name'] = app_info.get('name', '') if app_info else ''
+
                 # 从k8s集群上报过来的yaml信息中解析出pod状态等信息
                 verbose = i.pop('verbose', None)
                 verbose = yaml.load(verbose) if verbose else None
