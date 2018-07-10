@@ -428,7 +428,10 @@ class DeploymentDeleteHandler(BaseHandler):
             if deployment_name and server_id:
                 ssh_info = yield self.application_service.fetch_ssh_login_info({'server_id': server_id})
 
-                ssh_info['cmd'] = 'kubectl delete deployment ' + deployment_name
+                app_info = yield self.application_service.select({'id': self.params.get('app_id', 0)}, one=True)
+                full_name = app_info.get('name') + '.' + deployment_name if app_info else deployment_name
+
+                ssh_info['cmd'] = 'kubectl delete deployment ' + full_name
                 yield self.deployment_service.remote_ssh(ssh_info)
                 yield self.deployment_service.delete({'id': self.params['deployment_id']})
                 self.success()
