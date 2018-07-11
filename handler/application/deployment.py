@@ -49,7 +49,7 @@ class K8sDeploymentHandler(WebSocketBaseHandler):
             duplicate = self.deployment_service.sync_select({'app_id': self.params['app_id'],
                                                              'name': self.params['deployment_name']}, one=True)
             if duplicate:
-                if duplicate['id'] != self.params.get('deployment_id', 0):
+                if duplicate['id'] != int(self.params.get('deployment_id', 0)):
                     raise ValueError('已有同名部署运行，请换用其他名称')
 
             # 获取需要部署的主机IP

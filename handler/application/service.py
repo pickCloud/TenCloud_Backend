@@ -116,7 +116,7 @@ class K8sServiceHandler(WebSocketBaseHandler):
             duplicate = self.service_service.sync_select({'name': self.params['service_name'],
                                                           'app_id': self.params['app_id']}, one=True)
             if duplicate:
-                if duplicate['id'] != self.params.get('service_id', 0):
+                if duplicate['id'] != int(self.params.get('service_id', 0)):
                     raise ValueError('该集群内已有同名服务运行，请换用其他名称')
 
             # 获取需要部署的主机IP
@@ -343,6 +343,7 @@ class ServiceDetailHandler(BaseHandler):
                         "id": int,
                         "name": str,
                         "app_id": int,      //应用ID
+                        "app_name": str,    //应用名称
                         "type": int,        //服务类型（1.集群内访问，2.集群内外部可访问，3.负载均衡器）
                         "state": int,       //状态
                         "labels": dict,     //服务标签
