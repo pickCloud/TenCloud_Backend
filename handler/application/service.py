@@ -35,11 +35,11 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
         @apiParam {Dict{'ip': String, 'port': Number}} [externalIpMap] 外部服务IP（当服务来源选择2.外部服务，通过IP映射时使用）
         @apiParam {String} [externalName] 外部服务别名（当服务来源选择3.外部服务，通过别名映射时使用）
         @apiParam {String} [namespace] 外部服务命名空间（当服务来源选择3.外部服务，通过别名映射时使用）
-        @apiParam {Number} service_type 服务类型（1.集群内访问，2.集群内外部可访问，3.负载均衡器）
+        @apiParam {Number} [service_type] 服务类型（1.集群内访问，2.集群内外部可访问，3.负载均衡器）
         @apiParam {String} [clusterIP] 集群IP
         @apiParam {String} [loadBalancerIP] 负载均衡器IP
         @apiParam {[]String} [externalIPs] 外部IP
-        @apiParam {[]{'name': String, 'protocol': String, 'port': Number, 'targetPort': Number}} ports 端口
+        @apiParam {[]{'name': String, 'protocol': String, 'port': Number, 'targetPort': Number}} [ports] 端口
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -50,7 +50,7 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
             }
         """
         with catch(self):
-            self.guarantee('app_id', 'app_name', 'service_name', 'service_source', 'service_type')
+            self.guarantee('app_id', 'app_name', 'service_name', 'service_source')
 
             service_name = self.params['app_name'] + "." + self.params['service_name']
 
@@ -65,7 +65,6 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
                                 }
                             },
                             'spec': {
-                                'type': K8S_SERVICE_TYPE[self.params['service_type']]
                             }
             }
 
@@ -80,6 +79,9 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
 
             if self.params.get('loadBalancerIP'):
                 yaml_json['spec']['loadBalancerIP'] = self.params['loadBalancerIP']
+
+            if self.params.get('service_type'):
+                yaml_json['spec']['type'] = K8S_SERVICE_TYPE[self.params['service_type']]
 
             source_type = self.params.get('service_source', 0)
             if source_type == SERVICE_SOURCE_TYPE['by_label']:
