@@ -416,7 +416,7 @@ class ServiceDetailHandler(BaseHandler):
                                          'subsets': ep_verbose.get('subsets', [])}
 
                         for address in i['endpoint']['subsets']:
-                            address['addresses'] = [{'ip': ip.get('ip', '')} for ip in address['addresses']]
+                            address['addresses'] = [{'ip': ip.get('ip', '')} for ip in address.get('addresses', [])]
 
             self.success(brief[page_num * (page - 1):page_num * page])
 

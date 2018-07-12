@@ -435,7 +435,7 @@ class BaseService():
                     ON DUPLICATE KEY UPDATE update_time=NOW(),verbose=%s
                   """.format(table=self.table, fields=fields, formats=get_formats(values))
 
-        cur = yield self.db.execute(sql, values, params.get('verbose', ''))
+        cur = yield self.db.execute(sql, values + [params.get('verbose', '')])
 
         return {
             'id': cur.lastrowid,
