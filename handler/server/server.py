@@ -215,11 +215,12 @@ class ServerReport(BaseHandler):
                     internal_name = item['metadata']['labels'].get('internal_name', '') if item['metadata'].get('labels') else ''
                     deployment_name = internal_name[internal_name.find('.')+1:]
                     deployment_info = yield self.deployment_service.select({'name': deployment_name}, one=True)
-                    obj_name = item['metadata']['name'][item['metadata']['name'].find('.')+1:]
 
                     if deployment_info:
-                        yield getattr(self, kv[member]).add({'name': obj_name, 'deployment_id': deployment_info['id'],
-                                                             'verbose': yaml.dump(item, default_flow_style=False)})
+                        obj_name = item['metadata']['name'][item['metadata']['name'].find('.') + 1:]
+                        yield getattr(self, kv[member]).add_k8s_resource({'name': obj_name,
+                                                                          'deployment_id': deployment_info['id'],
+                                                                          'verbose': yaml.dump(item, default_flow_style=False)})
 
         # service下属资源: endpoints
         kv = {'k8s_endpoint': 'endpoint_service'}
@@ -232,11 +233,11 @@ class ServerReport(BaseHandler):
                         'labels') else ''
                     service_name = internal_name[internal_name.find('.') + 1:]
                     service_info = yield self.service_service.select({'name': service_name}, one=True)
-                    obj_name = item['metadata']['name'][item['metadata']['name'].find('.') + 1:]
 
                     if service_info:
-                        yield getattr(self, kv[member]).add({'name': obj_name, 'service_id': service_info['id'],
-                                                             'verbose': yaml.dump(item, default_flow_style=False)})
+                        obj_name = item['metadata']['name'][item['metadata']['name'].find('.') + 1:]
+                        yield getattr(self, kv[member]).add_k8s_resource({'name': obj_name, 'service_id': service_info['id'],
+                                                                          'verbose': yaml.dump(item, default_flow_style=False)})
 
 class ServerDelHandler(BaseHandler):
     @require(RIGHT['delete_server'], service=SERVICE['s'])

@@ -417,3 +417,27 @@ class BaseService():
         cur = yield self.db.execute(sql.format(table=table or self.table, fields=field), param)
         data = cur.fetchall()
         return data
+
+    @coroutine
+    def add_k8s_resource(self, params=None):
+        '''
+        :param params: hash 数据库字段:值, 可传{'name': 'foo', 'description': 'boo'}
+        :return: {
+            'id': cur.lastrowid,
+            'update_time': datetime.datetime.now().strftime(FULL_DATE_FORMAT)
+        }
+        '''
+        fields = ','.join(params.keys())
+        values = list(params.values())
+
+        sql = """
+                    INSERT INTO {table} ({fields}) VALUES ({formats})
+                    ON DUPLICATE KEY UPDATE update_time=NOW(),verbose=%s
+                  """.format(table=self.table, fields=fields, formats=get_formats(values))
+
+        cur = yield self.db.execute(sql, values, params.get('verbose', ''))
+
+        return {
+            'id': cur.lastrowid,
+            'update_time': datetime.datetime.now().strftime(FULL_DATE_FORMAT)
+        }
