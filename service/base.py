@@ -413,7 +413,7 @@ class BaseService():
             param.append(label)
 
         sql += " GROUP BY a.id "
-        sql += " ORDER BY update_time DESC "
+        sql += " ORDER BY create_time DESC "
 
         cur = yield self.db.execute(sql.format(table=table or self.table, fields=field), param)
         data = cur.fetchall()
