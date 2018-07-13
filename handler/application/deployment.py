@@ -156,7 +156,7 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
         @apiParam {String} deployment_name 部署名称
         @apiParam {Number} app_id 应用ID
         @apiParam {String} app_name 应用名称
-        @apiParam {Number} [show_default] 获取默认模板
+        @apiParam {Number} [get_default] 获取默认模板
         @apiParam {Number} [replica_num] 预期POD数量
         @apiParam {Dict} [pod_label] POD模板标签
         @apiParam {[]{'name','image','ports'}} [containers] 容器
@@ -195,7 +195,7 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
         #           protocol: TCP
         #           name: port1
         with catch(self):
-            if self.params.get('show_default'):
+            if self.params.get('get_default'):
                 self.guarantee('app_id', 'app_name', 'deployment_name')
             else:
                 self.guarantee('app_id', 'app_name', 'deployment_name', 'replica_num', 'containers')
