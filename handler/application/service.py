@@ -29,6 +29,7 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
         @apiParam {String} service_name 服务名称
         @apiParam {String} app_name 应用名称
         @apiParam {Number} app_id 应用ID
+        @apiParam {Number} [get_default] 获取默认模板
         @apiParam {Dict} [labels] 服务标签
         @apiParam {Number} service_source 服务来源（1.内部服务，通过标签选择，2.外部服务，通过IP映射，3.外部服务，通过别名映射）
         @apiParam {Dict} [selector_label] 内部服务选择标签（当服务来源选择1内部服务时使用）
@@ -50,7 +51,10 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
             }
         """
         with catch(self):
-            self.guarantee('app_id', 'app_name', 'service_name', 'service_source')
+            if self.params.get('get_default'):
+                self.guarantee('app_id', 'app_name', 'service_name')
+            else:
+                self.guarantee('app_id', 'app_name', 'service_name', 'service_source')
 
             service_name = self.params['app_name'] + "." + self.params['service_name']
 
@@ -67,6 +71,10 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
                             'spec': {
                             }
             }
+
+            if self.params.get('get_default'):
+                yaml_json['spec']['selector'] = {'app': 'default'}
+                yaml_json['spec']['ports'] = [{'name': 'default', 'protocol': 'TCP', 'port': 80, 'targetPort': 80}]
 
             if self.params.get('ports'):
                 yaml_json['spec']['ports'] = self.params['ports']

@@ -156,12 +156,13 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
         @apiParam {String} deployment_name 部署名称
         @apiParam {Number} app_id 应用ID
         @apiParam {String} app_name 应用名称
-        @apiParam {Number} replica_num 预期POD数量
-        @apiParam {Dict} pod_label POD模板标签
-        @apiParam {[]{'name','image','ports'}} containers 容器
-        @apiParam {String} name 容器名称
-        @apiParam {String} image 容器镜像地址
-        @apiParam {[]{'protocol','containerPort','name'}} ports 容器端口
+        @apiParam {Number} [get_default] 获取默认模板
+        @apiParam {Number} [replica_num] 预期POD数量
+        @apiParam {Dict} [pod_label] POD模板标签
+        @apiParam {[]{'name','image','ports'}} [containers] 容器
+        @apiParam {String} [name] 容器名称
+        @apiParam {String} [image] 容器镜像地址
+        @apiParam {[]{'protocol','containerPort','name'}} [ports] 容器端口
 
         @apiSuccessExample {json} Success-Response:
             HTTP/1.1 200 OK
@@ -194,7 +195,10 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
         #           protocol: TCP
         #           name: port1
         with catch(self):
-            self.guarantee('app_id', 'app_name', 'deployment_name', 'replica_num', 'containers')
+            if self.params.get('get_default'):
+                self.guarantee('app_id', 'app_name', 'deployment_name')
+            else:
+                self.guarantee('app_id', 'app_name', 'deployment_name', 'replica_num', 'containers')
 
             deployment_name = self.params['app_name']+"."+self.params['deployment_name']
             labels = {'internal_name': deployment_name, 'app_id': str(self.params['app_id'])}
@@ -210,7 +214,7 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
                              'labels': labels
                          },
                          'spec': {
-                             'replicas': self.params['replica_num'],
+                             'replicas': self.params.get('replica_num', 1),
                              'selector': {
                                  'matchLabels': labels,
                              },
@@ -219,7 +223,19 @@ class K8sDeploymentYamlGenerateHandler(BaseHandler):
                                      'labels': labels,
                                  },
                                  'spec': {
-                                     'containers': []
+                                     'containers': [
+                                         {
+                                             'name': 'default',
+                                             'image': 'default',
+                                             'ports': [
+                                                 {
+                                                     'name': 'default',
+                                                     'protocol': 'TCP',
+                                                     'containerPort': 80
+                                                 }
+                                             ]
+                                         }
+                                     ]
                                  }
                              }
                          }
