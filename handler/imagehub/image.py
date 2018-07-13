@@ -22,11 +22,12 @@ class ImageDetailHandler(BaseHandler):
 
         @apiUse cidHeader
 
-        @apiParam {Number} id 镜像ID
-        @apiParam {Number} type 镜像状态(0.初创建 1.正常 2.异常)
-        @apiParam {Number} page 页数
-        @apiParam {Number} page_num 每页显示项数
-        @apiParam {Number} label 镜像标签ID
+        @apiParam {Number} [id] 镜像ID
+        @apiParam {Number} [app_id] 应用ID
+        @apiParam {Number} [state] 镜像状态(0.初创建 1.正常 2.异常)
+        @apiParam {Number} [page] 页数
+        @apiParam {Number} [page_num] 每页显示项数
+        @apiParam {Number} [label] 镜像标签ID
 
         @apiDescription 样例: /api/image?id=\d&app_id=\d&type=\d&page=\d&page_num=\d&label=\d
 
@@ -37,10 +38,26 @@ class ImageDetailHandler(BaseHandler):
                 "msg": "success",
                 "data": [
                     {
-                        "id": int,
+                        "id": int,              //镜像ID
+                        "app_id": int,          //应用ID
                         "name": str,
                         "description": str,
-                        ...
+                        "version": str,
+                        "type": int,            //镜像类型(1.内部应用, 2.外部镜像)
+                        "state": int,           //镜像构建结果(0.构建中 1.成功 2.失败)
+                        "url": str,             //镜像路径
+                        "labels": str,          //镜像标签编号
+                        "label_name": str,      //镜像标签名称
+                        "logo_url": str,        //镜像图标地址
+                        "commit": str,          //镜像commit标签
+                        "dockerfile": str,      //Dockerfile
+                        "repos_name": str,      //代码仓库名称
+                        "repos_url": str,       //仓库地址
+                        "log": str,             //日志
+                        "form": int,
+                        "lord": int,
+                        "create_time": str,
+                        "update_time": str
                     },
                     ...
                 ]
@@ -50,6 +67,8 @@ class ImageDetailHandler(BaseHandler):
             param = self.get_lord()
             if self.params.get('app_id'):
                 param['app_id'] = self.params.get('app_id')
+            if self.params.get('id'):
+                param['id'] = self.params.get('id')
 
             page = self.params.get('page', 1)
             page_num = self.params.get('page_num', MSG_PAGE_NUM)
@@ -73,7 +92,7 @@ class ImageNewHandler(BaseHandler):
 
         @apiParam {String} name 镜像名称
         @apiParam {String} version 镜像版本
-        @apiParam {Number} type 镜像类型(0.内部应用, 1.外部镜像)
+        @apiParam {Number} type 镜像类型(1.内部应用, 2.外部镜像)
         @apiParam {String} description 描述
         @apiParam {String} url 镜像URL
         @apiParam {String} logo_url LOGO地址
