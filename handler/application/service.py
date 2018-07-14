@@ -356,7 +356,7 @@ class ServiceDetailHandler(BaseHandler):
                         "app_name": str,    //应用名称
                         "type": int,        //服务类型（1.集群内访问，2.集群内外部可访问，3.负载均衡器）
                         "state": int,       //状态
-                        "labels": dict,     //服务标签
+                        "labels": {'name': str, 'subsets': [{'addresses': [{'ip': str}], 'ports': [{'name': str, 'port': int, 'protocol': str}]}]},     //服务标签
                         "source": int,      //服务来源（1.内部服务，通过标签选择，2.外部服务，通过IP映射，3.外部服务，通过别名映射）
                         "access": list,     //访问服务
                         "endpoint": dict,   //服务后端

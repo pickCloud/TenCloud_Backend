@@ -70,8 +70,8 @@ class ImageDetailHandler(BaseHandler):
             if self.params.get('id'):
                 param['id'] = self.params.get('id')
 
-            page = self.params.get('page', 1)
-            page_num = self.params.get('page_num', MSG_PAGE_NUM)
+            page = int(self.params.get('page', 1))
+            page_num = int(self.params.get('page_num', MSG_PAGE_NUM))
             label = int(self.params.get('label', 0))
 
             data = yield self.image_service.fetch_with_label(param, label)
