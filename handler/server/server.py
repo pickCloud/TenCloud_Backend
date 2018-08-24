@@ -995,7 +995,7 @@ class ServerMontiorHandler(BaseHandler):
                                                         conds={'cid': cid, 'uid': uid},
                                                         ct=False, ut=False
                     )
-            sids = [i['sid'] for i in sid]
+            sids = [i['sid'] for i in sid if i and i.get('sid')]
 
             faker_sids, real_sids = [], []
             for sid in sids:
