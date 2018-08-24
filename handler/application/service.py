@@ -71,6 +71,7 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
                             'spec': {
                             }
             }
+            yaml_ep = ''
 
             if self.params.get('get_default'):
                 yaml_json['spec']['selector'] = {'app': 'default'}
@@ -99,8 +100,33 @@ class K8sServiceYamlGenerateHandler(BaseHandler):
                 self.guarantee('externalName')
                 yaml_json['spec']['type'] = 'ExternalName'
                 yaml_json['spec']['externalName'] = self.params.get('externalName', '')
+            elif source_type == SERVICE_SOURCE_TYPE['by_ip']:
+                self.guarantee('externalIpMap')
+                yaml_ep_json = {
+                    'apiVersion': 'v1',
+                    'kind': 'Endpoints',
+                    'metadata': {
+                        'name': self.params['service_name'],
+                        'labels': {
+                            'internal_name': service_name,
+                            'app_id': str(self.params['app_id'])
+                        }
+                    },
+                    'subsets':[
+                        {
+                            'addresses': [{'ip': self.params['externalIpMap'].get('ip', 'default_ip')}],
+                            'ports': [{'port': self.params['externalIpMap'].get('port', 'default_port')}]
+                        }
+                    ]
+                }
+                yaml_ep = yaml.dump(yaml_ep_json, default_flow_style=False)
+
 
             result = yaml.dump(yaml_json, default_flow_style=False)
+            if yaml_ep:
+                result += '\r\n---\r\n'
+                result += yaml_ep
+
             self.success(result)
 
 
