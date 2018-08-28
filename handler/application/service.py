@@ -432,7 +432,9 @@ class ServiceDetailHandler(BaseHandler):
                         clusterIP = verbose['spec'].get('clusterIP', '')
                         i['access'] = [clusterIP+':'+str(item.get('port', '')) for item in verbose['spec'].get('ports', [])]
                     elif verbose['spec'].get('type', '') == 'NodePort':
-                        pass
+                        server_info = yield self.server_service.select({'id': app_info.get('server_id')}, one=True)
+                        master_ip = server_info.get('public_ip', 'nodeIP') if server_info else 'nodeIP'
+                        i['access'] = [master_ip + ':' + str(item.get('nodePort', '')) for item in verbose['spec'].get('ports', [])]
                     elif verbose['spec'].get('type', '') == 'LoadBalancer':
                         pass
 
