@@ -95,6 +95,46 @@ class ClusterDetailHandler(BaseHandler):
             })
 
 
+class ClusterNewHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def post(self):
+        """
+        @api {post} /api/cluster/new 创建集群
+        @apiName ClusterNewHandler
+        @apiGroup Cluster
+
+        @apiUse cidHeader
+
+        @apiParam {[]Number} ids 主机id列表（第一个为集群Master的主机ID）
+        @apiParam {String} name 集群名字
+        @apiParam {Number} type 集群类型(1.Kubernetes集群 2.超级计算能力 2.高可用)
+        @apiParam {Number} [num] 节点数量
+        @apiParam {String} description 集群描述
+
+        @apiUse Success
+        """
+        with catch(self):
+            self.guarantee('ids', 'name', 'type', 'num', 'description')
+            duplicate = yield self.cluster_service.select({'name': self.params.get('name', '')}, one=True)
+            if duplicate:
+                self.error('已有重复名称的集群存在，请换用其他名称')
+                return
+
+            cluster_info = yield self.cluster_service.add({'name': self.params['name'],
+                                                           'description': self.params['description'],
+                                                           'type': int(self.params['type']),
+                                                           'master_server_id': self.params['ids'][0]})
+            if cluster_info:
+                cluster_id = cluster_info.get('id', 0)
+                param = self.get_lord()
+                for server_id in self.params['ids']:
+                    param['id'] = server_id
+                    yield self.server_service.update(sets={'cluster_id': cluster_id}, conds=param)
+
+            self.success(cluster_info)
+
+
 class ClusterWarnServerHandler(BaseHandler):
     @is_login
     @coroutine
