@@ -132,7 +132,7 @@ class ClusterNewHandler(BaseHandler):
                     param['id'] = server_id
                     yield self.server_service.update(sets={'cluster_id': cluster_id}, conds=param)
 
-            self.success()
+            self.success(cluster_info)
 
 
 class ClusterWarnServerHandler(BaseHandler):
