@@ -1021,3 +1021,36 @@ class ServerMontiorHandler(BaseHandler):
 
             data = yield self.server_service.get_monitor_data(sids)
             self.success(data)
+
+
+class ServerListHandler(BaseHandler):
+    @is_login
+    @coroutine
+    def get(self):
+        """
+        @api {get} /api/server/list 服务器列表
+        @apiName ServerListHandler
+        @apiGroup Server
+
+        @apiUse cidHeader
+
+        @apiSuccessExample {json} Success-Response:
+        HTTP/1.1 200 OK
+        {
+            "status": 0,
+            "msg": "success",
+            "data": [
+                {
+                    "id": int,
+                    "name": string,
+                    "public_ip": string,
+                    "cluster_id": int,
+                    "instance_id": string
+                },
+                ...
+            ]
+        }
+        """
+        with catch(self):
+            data = yield self.server_service.select(conds=self.get_lord())
+            self.success(data)

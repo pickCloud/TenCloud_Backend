@@ -34,7 +34,8 @@ from handler.server.server import ServerNewHandler, ServerReport, ServerDelHandl
     ServerStopHandler, ServerStartHandler, ServerRebootHandler, \
     ServerStatusHandler, ServerContainerPerformanceHandler, ServerContainersHandler, \
     ServerContainersInfoHandler, ServerContainerStartHandler, ServerContainerStopHandler, \
-    ServerContainerDelHandler, OperationLogHandler, SystemLoadHandler, ServerThresholdHandler,ServerMontiorHandler
+    ServerContainerDelHandler, OperationLogHandler, SystemLoadHandler, ServerThresholdHandler,ServerMontiorHandler, \
+    ServerListHandler
 from handler.cloud.cloud import CloudsHandler, CloudCredentialHandler
 from handler.user.user import UserLoginHandler, UserLogoutHandler, UserSMSHandler, UserDetailHandler, \
                               UserUpdateHandler, UserUploadToken, GetCaptchaHandler, \
@@ -74,6 +75,7 @@ routes = [
     (r'/api/server/performance', ServerPerformanceHandler),
     (r'/api/server/(\d+)/systemload', SystemLoadHandler),
     (r'/api/server/monitor', ServerMontiorHandler),
+    (r'/api/server/list', ServerListHandler),
 
     (r'/api/clouds', CloudsHandler),
     (r'/api/clouds/credentials', CloudCredentialHandler),
