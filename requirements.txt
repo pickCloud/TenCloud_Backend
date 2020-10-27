@@ -9,7 +9,7 @@ certifi==2017.4.17
 cffi==1.10.0
 chardet==3.0.3
 coverage==4.4.2
-cryptography==2.1.4
+cryptography==3.2
 DBUtils==1.2
 docutils==0.14
 geetest==3.2.1
