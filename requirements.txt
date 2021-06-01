@@ -37,5 +37,5 @@ six==1.10.0
 tornado==4.5.1
 Tornado-MySQL==0.5.1
 twilio==6.5.0
-urllib3==1.21.1
+urllib3==1.26.5
 PyYAML==3.12
